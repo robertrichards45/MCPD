@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="mobile-shell">
+  <header class="mobile-header">
+    <div class="mobile-header-topline">
+      <span class="mobile-header-kicker">{{ mobile_header_kicker or 'MCPD Mobile' }}</span>
+      <span class="mobile-role-pill">{{ portal_effective_role_label }}</span>
+    </div>
+    <div class="mobile-header-main">
+      <div class="mobile-header-copy">
+        <h1>{{ mobile_title }}</h1>
+        {% if mobile_header_note %}
+        <p class="mobile-header-note">{{ mobile_header_note }}</p>
+        {% endif %}
+      </div>
+      <span class="mobile-user-chip">{{ user.display_name }}</span>
+    </div>
+  </header>
+
+  <main class="mobile-main">
+    {% block mobile_content %}{% endblock %}
+  </main>
+
+  {% include 'partials/mobile_tab_bar.html' %}
+</div>
+{% endblock %}
+{% block scripts %}
+  {{ super() }}
+  {% if mobile_incident_boot %}
+  <script id="mobile-call-type-rules-data" type="application/json">{{ mobile_call_type_rules|default({})|tojson }}</script>
+  <script src="{{ url_for('static', filename='vendor/zxing-browser.min.js', v='2026-04-30-scanner-packet-1') }}"></script>
+  <script src="{{ url_for('static', filename='mobile/incident-core.js', v='2026-04-30-scanner-packet-1') }}"></script>
+  {% endif %}
+{% endblock %}
+

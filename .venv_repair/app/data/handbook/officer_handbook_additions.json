@@ -1,0 +1,29 @@
+{
+  "title": "Officer Handbook Additions",
+  "version": "1.0",
+  "sections": [
+    {
+      "id": "form-completion-guide",
+      "title": "Form Completion Guide (Supplemental)",
+      "summary": "Additional guidance for completing MCPD forms correctly. This section supplements, but does not replace, the original handbook.",
+      "topics": [
+        {
+          "title": "How To Use Form Guides",
+          "content": "Use this section for quick reminders on field completion standards. Always confirm final requirements against the original handbook and applicable policy."
+        }
+      ]
+    },
+    {
+      "id": "scenario-paperwork-guide",
+      "title": "Scenario-Based Paperwork Guide (Supplemental)",
+      "summary": "Quick-reference paperwork expectations by common incident type. Validate with current policy and command guidance.",
+      "scenarios": []
+    },
+    {
+      "id": "example-completed-forms",
+      "title": "Example Completed Forms (Supplemental)",
+      "summary": "Training examples and formatting references. Use fictional data only.",
+      "topics": []
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% set body_class = 'landing' %}
+{% block body %}
+<div class="login-bg">
+  <div class="login-panel">
+    <img src="{{ url_for('usmc_emblem') }}" alt="USMC Emblem" class="login-emblem" />
+    <h1>MCPD PORTAL</h1>
+    <p class="subtitle">Internal Access Authorized Users Only</p>
+    {% if error %}
+      <div class="alert alert-danger py-1">{{ error }}</div>
+    {% endif %}
+    {% if portal_write_limited_notice %}
+      <div class="alert alert-warning py-1">{{ portal_write_limited_notice }}</div>
+    {% endif %}
+    <div class="small text-muted mb-3 text-center">
+      Mode: {{ 'Production' if config.APP_ENV == 'prod' else 'Development' }}
+      |
+      CAC: {{ 'Enabled' if config.CAC_AUTH_ENABLED else 'Disabled' }}
+    </div>
+    <form method="post" action="{{ url_for('auth.admin_login') }}">
+      {% if next_url %}
+        <input type="hidden" name="next" value="{{ next_url }}" />
+      {% endif %}
+      <div class="mb-2">
+        <label class="form-label">Username</label>
+        <input type="text" name="username" class="form-control" required />
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Password</label>
+        <input type="password" name="password" class="form-control" required />
+      </div>
+      <button class="btn btn-primary w-100">Manager Login</button>
+    </form>
+    {% if config.CAC_AUTH_ENABLED %}
+      <a class="btn btn-outline-primary w-100 mt-2" href="{{ url_for('auth.cac_login') }}">Login with CAC</a>
+    {% endif %}
+    <a class="btn btn-outline-secondary w-100 mt-2" href="{{ url_for('auth.login_by_name') }}">Login with Name</a>
+    {% if config.PUBLIC_SELF_REGISTER_ENABLED %}
+      <a class="btn btn-secondary w-100 mt-2" href="{{ url_for('auth.account_create_cac') if config.CAC_AUTH_ENABLED else url_for('auth.register') }}">
+        {{ 'Create Account (CAC Required)' if config.CAC_AUTH_ENABLED else 'Create Account' }}
+      </a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

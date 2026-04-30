@@ -1,0 +1,1053 @@
+{
+  "source": "GEORGIA",
+  "entries": [
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-5-1",
+      "title": "Murder",
+      "summary": "Unlawful killing of another human being under malice or felony-murder theories.",
+      "elements": [
+        "A human being was killed.",
+        "The accused caused the death.",
+        "The killing met a statutory murder theory."
+      ],
+      "keywords": ["murder", "homicide", "killed victim", "malice murder", "felony murder"],
+      "minimum_punishment": "As provided by statute and sentencing court.",
+      "maximum_punishment": "As provided by statute and sentencing court."
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-5-2",
+      "title": "Voluntary Manslaughter",
+      "summary": "Killing another under sudden, violent, irresistible passion from serious provocation.",
+      "elements": [
+        "A human being was killed.",
+        "The accused caused the death.",
+        "The killing occurred under statutory provocation/passion circumstances."
+      ],
+      "keywords": ["voluntary manslaughter", "heat of passion", "provocation"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-5-20",
+      "title": "Simple Assault",
+      "summary": "Attempted violent injury or placing another in reasonable apprehension of immediate violent injury.",
+      "elements": [
+        "The accused attempted a violent injury or committed an act causing apprehension of immediate violent injury.",
+        "The act was unlawful.",
+        "The act was directed at another person."
+      ],
+      "keywords": ["simple assault", "threatened to hit", "swung at"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-5-21",
+      "title": "Aggravated Assault",
+      "summary": "Assault with aggravating factors such as deadly weapon, intent to murder/rape/rob, or discharging firearm from vehicle.",
+      "elements": [
+        "A simple assault occurred.",
+        "An aggravating statutory factor was present.",
+        "The conduct was unlawful."
+      ],
+      "keywords": ["aggravated assault", "deadly weapon assault", "gun assault"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-5-23",
+      "title": "Simple Battery",
+      "summary": "Intentional insulting/provoking contact or intentional physical harm.",
+      "elements": [
+        "The accused intentionally made insulting/provoking contact or caused physical harm.",
+        "The contact/harm was unlawful.",
+        "The act was against another person."
+      ],
+      "keywords": ["simple battery", "pushed", "grabbed", "slapped"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-5-23.1",
+      "title": "Battery",
+      "summary": "Intentionally causing substantial physical harm or visible bodily harm.",
+      "elements": [
+        "The accused intentionally caused physical harm.",
+        "The harm met statutory threshold (substantial/visible bodily harm).",
+        "The act was unlawful."
+      ],
+      "keywords": ["battery", "visible injury", "bruising", "substantial harm"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-5-24",
+      "title": "Aggravated Battery",
+      "summary": "Maliciously causing bodily harm by depriving body member, rendering useless, or serious disfigurement.",
+      "elements": [
+        "The accused maliciously caused bodily harm.",
+        "The harm met aggravated battery statutory form.",
+        "The victim was another person."
+      ],
+      "keywords": ["aggravated battery", "disfigurement", "deprived member"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-6-1",
+      "title": "Rape",
+      "summary": "Carnal knowledge of a female forcibly and against her will, or where the female is under the statutory age.",
+      "elements": [
+        "The accused had carnal knowledge as defined by statute.",
+        "The act was forcibly and against the victim's will, or the statutory-age provision applied.",
+        "The conduct was unlawful under OCGA 16-6-1."
+      ],
+      "keywords": ["rape", "forcible rape", "sexual assault", "nonconsensual sex"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-6-22",
+      "title": "Aggravated Sexual Battery",
+      "summary": "Intentional penetration with a foreign object of another person's sexual organ or anus without consent.",
+      "elements": [
+        "The accused intentionally penetrated with a foreign object the sexual organ or anus of another person.",
+        "The penetration was without consent.",
+        "The conduct was unlawful under OCGA 16-6-22."
+      ],
+      "keywords": ["aggravated sexual battery", "sexual battery", "nonconsensual penetration"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-6-8",
+      "title": "Public Indecency",
+      "summary": "Performing lewd exposure or sexual acts in public places or places where conduct may reasonably be expected to be viewed by others.",
+      "elements": [
+        "The accused committed a lewd exposure/act listed by statute.",
+        "The conduct occurred in a public place or a place where others could reasonably view it.",
+        "The act was unlawful under OCGA 16-6-8."
+      ],
+      "keywords": ["sex in public", "public sex", "public indecency", "indecent exposure", "lewd conduct"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-5-40",
+      "title": "Kidnapping",
+      "summary": "Abducting or stealing away another person without lawful authority.",
+      "elements": [
+        "The accused abducted, stole away, or detained another person.",
+        "The act was without lawful authority.",
+        "The movement/holding met statutory requirements."
+      ],
+      "keywords": ["kidnapping", "abduction", "held against will"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-5-41",
+      "title": "False Imprisonment",
+      "summary": "Unlawful detention of another that violates personal liberty.",
+      "elements": [
+        "The accused detained another person.",
+        "The detention was unlawful.",
+        "The detention deprived liberty."
+      ],
+      "keywords": ["false imprisonment", "unlawful detention", "held in room"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-5-60",
+      "title": "Reckless Conduct",
+      "summary": "Causing bodily harm or endangering safety by conscious disregard of substantial and unjustifiable risk.",
+      "elements": [
+        "The accused acted with conscious disregard of substantial/unjustifiable risk.",
+        "The conduct endangered safety or caused harm.",
+        "The conduct was unlawful."
+      ],
+      "keywords": ["reckless conduct", "unsafe handling", "conscious disregard"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-5-70",
+      "title": "Cruelty to Children",
+      "summary": "Criminal conduct involving harm, pain, deprivation, or violence involving children under statutory forms.",
+      "elements": [
+        "The victim was a child under statute.",
+        "The accused committed a prohibited act/omission under charged degree.",
+        "The required mental state was present."
+      ],
+      "keywords": ["cruelty to children", "child abuse", "child harm"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-5-90",
+      "title": "Stalking",
+      "summary": "Following, placing under surveillance, or contacting another person without consent for harassment/intimidation.",
+      "elements": [
+        "The accused followed/surveilled/contacted the victim.",
+        "The conduct lacked consent and lawful purpose.",
+        "The conduct was for harassment/intimidation."
+      ],
+      "keywords": ["stalking", "followed victim", "harassing contact"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-5-91",
+      "title": "Aggravated Stalking",
+      "summary": "Stalking conduct in violation of protective condition, order, injunction, or bond condition.",
+      "elements": [
+        "Stalking conduct occurred.",
+        "A qualifying court/order condition existed.",
+        "The accused acted in violation of that condition."
+      ],
+      "keywords": ["aggravated stalking", "protective order violation stalking"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-5-102",
+      "title": "Terroristic Threats and Acts",
+      "summary": "Threatening to commit violence or offense listed by statute under required intent/context.",
+      "elements": [
+        "The accused made a threat or committed statutory act.",
+        "The threat/act met statutory content requirements.",
+        "Required intent/circumstances were present."
+      ],
+      "keywords": ["terroristic threats", "threatened to kill", "bomb threat"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-7-1",
+      "title": "Criminal Damage to Property",
+      "summary": "Intentional damage/destruction of another's property under statutory forms and degrees.",
+      "elements": [
+        "The property belonged to another.",
+        "The accused intentionally damaged/destroyed property.",
+        "The charged degree conditions were met."
+      ],
+      "keywords": ["criminal damage", "vandalism", "property damage"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-7-21",
+      "title": "Criminal Trespass",
+      "summary": "Knowingly and without authority entering or remaining on property of another under statutory forms.",
+      "elements": [
+        "The accused entered/remained/interfered with property of another.",
+        "The act was without authority.",
+        "The charged statutory form was met."
+      ],
+      "keywords": ["criminal trespass", "no trespass", "refused to leave property"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-7-22",
+      "title": "Burglary",
+      "summary": "Entering or remaining within listed structure without authority with intent to commit felony/theft.",
+      "elements": [
+        "The accused entered or remained in listed structure/vehicle/room.",
+        "The act was without authority.",
+        "Intent to commit theft or felony existed."
+      ],
+      "keywords": ["burglary", "broke into house", "entered with intent to steal"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-8-2",
+      "title": "Theft by Taking",
+      "summary": "Unlawfully taking or appropriating property of another with intent to deprive.",
+      "elements": [
+        "The property belonged to another.",
+        "The accused unlawfully took/appropriated property.",
+        "Intent to deprive owner existed."
+      ],
+      "keywords": ["theft by taking", "stole property", "larceny"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-8-7",
+      "title": "Theft by Receiving Stolen Property",
+      "summary": "Receiving, disposing of, or retaining stolen property which the accused knows or should know was stolen.",
+      "elements": [
+        "Property was stolen.",
+        "Accused received, disposed of, or retained that property.",
+        "Accused knew or should have known the property was stolen."
+      ],
+      "keywords": ["receiving stolen property", "stolen vehicle recovered", "possessing stolen car"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-8-14",
+      "title": "Theft by Shoplifting",
+      "summary": "Concealing/taking merchandise with intent to deprive owner or avoid payment.",
+      "elements": [
+        "The property was offered for sale by merchant.",
+        "The accused committed listed shoplifting act.",
+        "Intent to appropriate/deprive was present."
+      ],
+      "keywords": ["shoplifting", "concealed merchandise", "retail theft"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-8-40",
+      "title": "Robbery",
+      "summary": "Taking property from another by force, intimidation, sudden snatching, or coercion.",
+      "elements": [
+        "Property was taken from person/immediate presence of another.",
+        "Taking was by listed robbery means.",
+        "Intent to commit theft existed."
+      ],
+      "keywords": ["robbery", "forceful theft", "snatched property"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-8-41",
+      "title": "Armed Robbery",
+      "summary": "Robbery using an offensive weapon or replica/article appearing as such.",
+      "elements": [
+        "A robbery occurred.",
+        "The accused used offensive weapon/appearance thereof.",
+        "The conduct met armed robbery statute."
+      ],
+      "keywords": ["armed robbery", "gunpoint robbery", "weapon during robbery"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-8-60",
+      "title": "Entering Automobile",
+      "summary": "Entering another's vehicle without authority with intent to commit theft/felony.",
+      "elements": [
+        "The vehicle belonged to another.",
+        "The accused entered without authority.",
+        "Intent to commit theft/felony existed."
+      ],
+      "keywords": ["entering auto", "car break in", "entered vehicle to steal"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-9-1",
+      "title": "Forgery",
+      "summary": "Knowingly making/altering/possessing/writing listed instruments with intent to defraud.",
+      "elements": [
+        "The accused made/altered/possessed/wrote listed writing.",
+        "The writing/instrument met forgery statute.",
+        "Intent to defraud existed."
+      ],
+      "keywords": ["forgery", "fake check", "forged document"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-10-20",
+      "title": "False Statements and Writings",
+      "summary": "Knowingly and willfully falsifying, concealing, or covering up material fact in matter within state jurisdiction.",
+      "elements": [
+        "The accused made false statement/writing or concealed material fact.",
+        "The act was knowing and willful.",
+        "The matter was within state/government jurisdiction."
+      ],
+      "keywords": ["false statement", "lied to officer", "falsified record"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-10-24",
+      "title": "Obstruction of Law Enforcement Officers",
+      "summary": "Knowingly and willfully obstructing/hindering law enforcement in lawful duties.",
+      "elements": [
+        "Officer was in lawful discharge of official duties.",
+        "Accused knew/should have known officer status.",
+        "Accused knowingly and willfully obstructed/hindered."
+      ],
+      "keywords": ["obstruction", "resisting", "interfered with officer"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-10-25",
+      "title": "Giving False Name, Address, or Birthdate",
+      "summary": "Giving false identifying information to law enforcement in lawful discharge of official duties.",
+      "elements": [
+        "Officer was in lawful discharge of duties.",
+        "Accused gave false identifying information.",
+        "Act was knowing and willful."
+      ],
+      "keywords": ["false name", "false date of birth", "lied about identity"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-10-70",
+      "title": "Hindering Apprehension or Punishment of Criminal",
+      "summary": "Harboring/concealing/assisting known offender to hinder apprehension or punishment.",
+      "elements": [
+        "A person had committed an offense.",
+        "Accused knowingly assisted that person in listed way.",
+        "Intent/effect was hindering apprehension/punishment."
+      ],
+      "keywords": ["hindering apprehension", "harboring fugitive", "helped suspect escape"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-11-37",
+      "title": "Terroristic Acts",
+      "summary": "Discharging firearm at or into occupied/unoccupied listed structures/vehicles under statutory terms.",
+      "elements": [
+        "The accused discharged firearm.",
+        "The shot was at/into listed structure/vehicle/place.",
+        "Conduct met statute and was unlawful."
+      ],
+      "keywords": ["terroristic act", "shot into vehicle", "shot into building"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-11-39",
+      "title": "Disorderly Conduct",
+      "summary": "Violent/tumultuous/obscene/disruptive conduct as listed by statute.",
+      "elements": [
+        "Accused engaged in conduct covered by charged subsection.",
+        "Conduct occurred under statutory circumstances.",
+        "Required intent/circumstances were present."
+      ],
+      "keywords": ["disorderly conduct", "disturbance", "tumultuous behavior"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-11-102",
+      "title": "Loitering or Prowling",
+      "summary": "Loitering/prowling in place/time/manner not usual for law-abiding individuals under circumstances warranting alarm.",
+      "elements": [
+        "Accused loitered/prowled.",
+        "Circumstances warranted safety/property alarm.",
+        "No satisfactory explanation/dispel provided under statute."
+      ],
+      "keywords": ["loitering", "prowling", "suspicious lingering"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-11-126",
+      "title": "Carrying Weapons",
+      "summary": "Carrying weapons subject to current statutory permissions/restrictions and offense conditions.",
+      "elements": [
+        "Accused carried a weapon covered by statute.",
+        "Circumstances/location/status made carrying unlawful.",
+        "Required mental state was present."
+      ],
+      "keywords": ["carrying weapon", "concealed weapon", "unlawful carry"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-11-127",
+      "title": "Carrying Weapons in Unauthorized Locations",
+      "summary": "Prohibited weapon carry in listed restricted places under statute.",
+      "elements": [
+        "Accused carried weapon listed by statute.",
+        "Location was restricted/prohibited by statute.",
+        "No statutory exception applied."
+      ],
+      "keywords": ["weapon prohibited place", "gun in prohibited location"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-11-131",
+      "title": "Possession of Firearm by Convicted Felon",
+      "summary": "Prohibits firearm possession by convicted felons under statute.",
+      "elements": [
+        "Accused had qualifying felony status.",
+        "Accused possessed a firearm.",
+        "No statutory restoration/exception applied."
+      ],
+      "keywords": ["felon in possession", "convicted felon firearm"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-11-132",
+      "title": "Possession of Firearm During Commission of Certain Crimes",
+      "summary": "Possessing firearm or knife while committing listed offenses.",
+      "elements": [
+        "Accused possessed firearm/knife as defined.",
+        "A listed predicate crime was being committed or attempted.",
+        "Temporal nexus between possession and predicate crime existed."
+      ],
+      "keywords": ["weapon during crime", "firearm during felony"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-13-30",
+      "title": "Controlled Substances - Possession / Distribution / Manufacture",
+      "summary": "Core Georgia controlled-substance offense statute covering possession, sale, manufacture, delivery, and related acts.",
+      "elements": [
+        "Substance involved was controlled by statute schedule.",
+        "Accused committed charged act (possess/sell/manufacture/etc.).",
+        "Accused acted knowingly and unlawfully."
+      ],
+      "keywords": ["drug possession", "distribution", "controlled substance", "cocaine", "meth"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-13-31",
+      "title": "Drug Trafficking",
+      "summary": "Trafficking offenses based on threshold quantities/types of controlled substances.",
+      "elements": [
+        "Substance type/quantity met trafficking threshold.",
+        "Accused possessed/sold/manufactured/transported as charged.",
+        "Act was knowing and unlawful."
+      ],
+      "keywords": ["trafficking", "drug weight threshold", "large quantity narcotics"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-13-32.2",
+      "title": "Drug Related Objects",
+      "summary": "Possession/use/manufacture/distribution of drug-related objects under statute.",
+      "elements": [
+        "Object met statutory drug-related object criteria.",
+        "Accused possessed/used/manufactured/distributed object as charged.",
+        "Required unlawful intent/knowledge was present."
+      ],
+      "keywords": ["drug paraphernalia", "drug related object", "pipe"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-13-75",
+      "title": "Marijuana Possession",
+      "summary": "Marijuana possession offenses under statutory quantity and prior-history framework.",
+      "elements": [
+        "Accused possessed marijuana.",
+        "Possession was knowing and unlawful.",
+        "Amount/history supported charged grade."
+      ],
+      "keywords": ["marijuana possession", "weed", "cannabis possession"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-13-30.1",
+      "title": "Drug-Free Zones Near Schools and Certain Facilities",
+      "summary": "Enhanced penalties for certain controlled-substance acts committed in, on, or near schools, parks, housing projects, and other protected zones under statute.",
+      "elements": [
+        "A qualifying underlying controlled-substance offense occurred.",
+        "The offense location met statutory drug-free-zone criteria.",
+        "Accused acted knowingly and unlawfully."
+      ],
+      "keywords": ["drug free zone", "drugs near school", "park drug sale", "housing project drug offense", "school zone narcotics"],
+      "minimum_punishment": "As provided by statute for the charged drug-free-zone offense.",
+      "maximum_punishment": "As provided by statute for the charged drug-free-zone offense."
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-13-30.2",
+      "title": "Drug-Free Commercial Zones and Public Transit Areas",
+      "summary": "Enhanced penalties for certain controlled-substance offenses in designated commercial, recreation, and transit-related protected areas when applicable by statute.",
+      "elements": [
+        "A qualifying underlying controlled-substance offense occurred.",
+        "The offense location met statutory protected-zone requirements.",
+        "Accused acted knowingly and unlawfully."
+      ],
+      "keywords": ["drug sale near transit", "commercial district drug offense", "drug protected area", "enhanced drug penalty zone"],
+      "minimum_punishment": "As provided by statute for the charged zone-enhanced offense.",
+      "maximum_punishment": "As provided by statute for the charged zone-enhanced offense."
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-13-30.3",
+      "title": "Employing or Using a Minor in Drug Activity",
+      "summary": "Using, employing, or coercing a minor to commit or assist with specified drug offenses.",
+      "elements": [
+        "A minor was used, employed, solicited, or coerced.",
+        "The conduct related to a qualifying controlled-substance offense.",
+        "Accused acted knowingly and unlawfully."
+      ],
+      "keywords": ["use of minor for drugs", "juvenile drug runner", "child used in drug sale", "minor involved narcotics"],
+      "minimum_punishment": "As provided by statute for using a minor in drug activity.",
+      "maximum_punishment": "As provided by statute for using a minor in drug activity."
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-13-30.4",
+      "title": "Distributing Controlled Substances Through the Internet",
+      "summary": "Use of electronic or internet-based systems to facilitate qualifying controlled-substance distribution offenses under statute.",
+      "elements": [
+        "Accused used electronic or internet communications.",
+        "Conduct facilitated a qualifying controlled-substance distribution offense.",
+        "Accused acted knowingly and unlawfully."
+      ],
+      "keywords": ["online drug sales", "internet drug trafficking", "social media drug deal", "dark web narcotics"],
+      "minimum_punishment": "As provided by statute for the charged offense.",
+      "maximum_punishment": "As provided by statute for the charged offense."
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-13-32",
+      "title": "Marijuana Trafficking and Related Offenses",
+      "summary": "Trafficking framework for marijuana and related cannabis products based on threshold quantity and act.",
+      "elements": [
+        "Substance involved marijuana or qualifying cannabis product.",
+        "Quantity and act met statutory trafficking criteria.",
+        "Accused acted knowingly and unlawfully."
+      ],
+      "keywords": ["marijuana trafficking", "large quantity weed", "cannabis trafficking", "bulk marijuana"],
+      "minimum_punishment": "As provided by statute for trafficking thresholds.",
+      "maximum_punishment": "As provided by statute for trafficking thresholds."
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-13-32.4",
+      "title": "Counterfeit Substances",
+      "summary": "Manufacturing, delivering, distributing, or possessing counterfeit controlled substances as prohibited by statute.",
+      "elements": [
+        "Substance was counterfeit as defined by statute.",
+        "Accused manufactured/delivered/distributed/possessed as charged.",
+        "Accused acted knowingly and unlawfully."
+      ],
+      "keywords": ["counterfeit drugs", "fake pills", "pressed pills", "fake narcotics", "fentanyl pressed pill"],
+      "minimum_punishment": "As provided by statute for counterfeit-substance offenses.",
+      "maximum_punishment": "As provided by statute for counterfeit-substance offenses."
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-13-32.5",
+      "title": "Imitation Controlled Substances",
+      "summary": "Offenses involving imitation controlled substances represented as real controlled substances.",
+      "elements": [
+        "Substance met statutory definition of an imitation controlled substance.",
+        "Accused distributed, possessed with intent, or represented substance as controlled.",
+        "Accused acted knowingly and unlawfully."
+      ],
+      "keywords": ["imitation drug", "look alike drugs", "fake controlled substance", "sold fake narcotics"],
+      "minimum_punishment": "As provided by statute for imitation controlled-substance offenses.",
+      "maximum_punishment": "As provided by statute for imitation controlled-substance offenses."
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-13-33",
+      "title": "Forgery or Alteration of Drug Prescriptions",
+      "summary": "Forgery, alteration, or unlawful use of prescription documents for obtaining controlled substances.",
+      "elements": [
+        "Prescription or order document was forged, altered, or unlawfully used.",
+        "Conduct sought to obtain a controlled substance unlawfully.",
+        "Accused acted knowingly and unlawfully."
+      ],
+      "keywords": ["forged prescription", "fake rx", "doctor shopping documents", "altered prescription", "prescription fraud"],
+      "minimum_punishment": "As provided by statute for the charged prescription offense.",
+      "maximum_punishment": "As provided by statute for the charged prescription offense."
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-13-33.1",
+      "title": "Obtaining Controlled Substances by Fraud or Deception",
+      "summary": "Obtaining or attempting to obtain controlled substances by fraud, deceit, forgery, misrepresentation, or subterfuge.",
+      "elements": [
+        "Accused obtained or attempted to obtain a controlled substance.",
+        "Method involved fraud, deceit, misrepresentation, forgery, or similar unlawful means.",
+        "Accused acted knowingly and unlawfully."
+      ],
+      "keywords": ["obtain drugs by fraud", "doctor shopping", "deception for narcotics", "pharmacy fraud", "rx fraud"],
+      "minimum_punishment": "As provided by statute for obtaining controlled substances by fraud.",
+      "maximum_punishment": "As provided by statute for obtaining controlled substances by fraud."
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-13-34",
+      "title": "Records and Labeling Violations for Controlled Substances",
+      "summary": "Offenses involving unlawful recordkeeping, labeling, or documentation related to controlled substances.",
+      "elements": [
+        "A recordkeeping, labeling, or documentation duty existed under law.",
+        "Accused failed to comply or falsified required information as charged.",
+        "The conduct was unlawful."
+      ],
+      "keywords": ["drug record violation", "controlled substance records", "pharmacy labeling violation", "narcotics inventory violation"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-13-37",
+      "title": "Unlawful Possession or Transfer of Prescription Blanks",
+      "summary": "Unlawful possession, transfer, or misuse of prescription forms, blanks, or related instruments used to obtain controlled substances.",
+      "elements": [
+        "Accused possessed, transferred, or used prescription forms/blanks as charged.",
+        "Conduct was unauthorized and unlawful.",
+        "Required intent/knowledge was present."
+      ],
+      "keywords": ["stolen prescription pad", "rx blank theft", "prescription form misuse", "controlled substance script forms"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-13-39",
+      "title": "Unlawful Distribution by Practitioners",
+      "summary": "Practitioner-related controlled-substance violations for distribution/prescribing outside lawful professional practice.",
+      "elements": [
+        "Accused acted as or through a practitioner context covered by statute.",
+        "Controlled-substance distribution/prescribing occurred outside lawful professional practice.",
+        "Accused acted knowingly and unlawfully."
+      ],
+      "keywords": ["pill mill", "unlawful prescribing", "doctor unlawful narcotics", "practitioner drug diversion", "overprescribing"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-13-45",
+      "title": "Methamphetamine-Related Precursors and Manufacturing",
+      "summary": "Offenses involving precursor chemicals, equipment, and conduct used to manufacture methamphetamine and similar controlled substances.",
+      "elements": [
+        "Accused possessed, transferred, or used listed precursor materials/equipment as charged.",
+        "Conduct was tied to unlawful manufacture/attempted manufacture of a controlled substance.",
+        "Accused acted knowingly and unlawfully."
+      ],
+      "keywords": ["meth lab", "meth manufacturing", "pseudoephedrine precursor", "one pot meth", "drug lab materials"],
+      "minimum_punishment": "As provided by statute for precursor/manufacturing offenses.",
+      "maximum_punishment": "As provided by statute for precursor/manufacturing offenses."
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-13-49",
+      "title": "Drug-Related Civil/Criminal Forfeiture (Operational Reference)",
+      "summary": "Forfeiture framework applicable to property connected to qualifying controlled-substance offenses; operational reference for seizure-related drug cases.",
+      "elements": [
+        "Property had a qualifying nexus to a covered controlled-substance offense.",
+        "Seizure/forfeiture process complied with statutory procedures.",
+        "Required notice and filing provisions were followed."
+      ],
+      "keywords": ["drug forfeiture", "seize drug money", "narcotics asset seizure", "forfeiture drug case"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-13-57",
+      "title": "Schedule I Controlled Substances (Classification Reference)",
+      "summary": "Schedule I controlled-substance classification reference used to identify prohibited substances and support charging decisions under offense statutes.",
+      "elements": [
+        "Substance is listed or treated as Schedule I under statute.",
+        "Classification supports applicable offense section analysis."
+      ],
+      "keywords": ["schedule i drug", "heroin schedule", "mdma schedule", "lsd schedule", "controlled schedule reference"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-13-58",
+      "title": "Schedule II Controlled Substances (Classification Reference)",
+      "summary": "Schedule II controlled-substance classification reference for charging support under relevant possession/distribution/trafficking statutes.",
+      "elements": [
+        "Substance is listed or treated as Schedule II under statute.",
+        "Classification supports applicable offense section analysis."
+      ],
+      "keywords": ["schedule ii drug", "cocaine schedule", "methamphetamine schedule", "fentanyl schedule", "oxycodone schedule"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-13-59",
+      "title": "Schedule III Controlled Substances (Classification Reference)",
+      "summary": "Schedule III classification reference to support controlled-substance charging decisions.",
+      "elements": [
+        "Substance is listed or treated as Schedule III under statute.",
+        "Classification supports applicable offense section analysis."
+      ],
+      "keywords": ["schedule iii drug", "anabolic steroid controlled", "ketamine schedule", "schedule classification"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-13-60",
+      "title": "Schedule IV Controlled Substances (Classification Reference)",
+      "summary": "Schedule IV classification reference to support controlled-substance charging decisions.",
+      "elements": [
+        "Substance is listed or treated as Schedule IV under statute.",
+        "Classification supports applicable offense section analysis."
+      ],
+      "keywords": ["schedule iv drug", "alprazolam schedule", "benzodiazepine schedule", "xanax controlled"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-13-61",
+      "title": "Schedule V Controlled Substances (Classification Reference)",
+      "summary": "Schedule V classification reference to support controlled-substance charging decisions.",
+      "elements": [
+        "Substance is listed or treated as Schedule V under statute.",
+        "Classification supports applicable offense section analysis."
+      ],
+      "keywords": ["schedule v drug", "codeine mixture schedule", "controlled schedule v"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 16-13-71",
+      "title": "Marijuana and Hashish Offenses (Classification/Handling Reference)",
+      "summary": "Marijuana/hashish statutory treatment reference used with offense sections for possession, transfer, and trafficking analysis.",
+      "elements": [
+        "Substance involved marijuana, hashish, or derivative covered by statute.",
+        "Classification/treatment supports applicable offense section analysis."
+      ],
+      "keywords": ["hashish", "thc concentrate", "cannabis derivative", "marijuana classification", "delta products"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 40-2-8",
+      "title": "Display of License Plate",
+      "summary": "Requires proper display of valid plate/registration.",
+      "elements": [
+        "Vehicle was required to display plate.",
+        "Plate display was missing/improper/noncompliant."
+      ],
+      "keywords": ["no plate", "plate display", "tag violation"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 40-2-41",
+      "title": "Registration Required",
+      "summary": "Motor vehicles must be properly registered as required by Georgia law.",
+      "elements": [
+        "Vehicle required registration under statute.",
+        "Vehicle was unregistered/expired as charged."
+      ],
+      "keywords": ["expired registration", "unregistered vehicle", "tag expired"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 40-5-20",
+      "title": "Driving Without a Valid License",
+      "summary": "Operating a vehicle without required valid license authority.",
+      "elements": [
+        "Accused operated a motor vehicle.",
+        "Accused lacked valid license authority.",
+        "No lawful exception applied."
+      ],
+      "keywords": ["no license", "unlicensed driver", "never licensed"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 40-5-67.1",
+      "title": "Implied Consent Notice",
+      "summary": "Implied consent advisement framework used in DUI investigations.",
+      "elements": [
+        "Driver was arrested for DUI-related offense.",
+        "Required implied consent warning process applied.",
+        "Refusal/submission facts were documented."
+      ],
+      "keywords": ["implied consent", "dui refusal notice"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 40-5-121",
+      "title": "Driving While License Suspended or Revoked",
+      "summary": "Operating motor vehicle while license privilege is suspended/revoked/canceled.",
+      "elements": [
+        "Accused operated motor vehicle.",
+        "Privilege was suspended/revoked/canceled.",
+        "Notice/knowledge element was met."
+      ],
+      "keywords": ["suspended license", "revoked license", "driving while suspended"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 40-6-20",
+      "title": "Obedience to Traffic-Control Devices",
+      "summary": "Drivers must obey official traffic control devices unless lawfully directed otherwise.",
+      "elements": [
+        "Official traffic control device applied.",
+        "Driver failed to obey device."
+      ],
+      "keywords": ["red light", "traffic signal", "ignored sign"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 40-6-221",
+      "title": "Unauthorized Use of Disabled Parking",
+      "summary": "Prohibits parking in designated disabled parking spaces without required placard, plate, or authorization.",
+      "elements": [
+        "Vehicle was parked in a designated disabled parking space.",
+        "Vehicle did not display required disabled parking authorization.",
+        "No lawful exception applied."
+      ],
+      "keywords": ["handicap parking", "parking in handicap without sticker", "disabled parking", "no handicap placard"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 40-6-48",
+      "title": "Failure to Maintain Lane",
+      "summary": "Driver must maintain lane as nearly as practical.",
+      "elements": [
+        "Roadway had marked lanes.",
+        "Driver failed to remain within lane.",
+        "No lawful/safe exception justified movement."
+      ],
+      "keywords": ["failure to maintain lane", "weaving", "drifting", "swerving"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 40-6-49",
+      "title": "Following Too Closely",
+      "summary": "Following distance must be reasonable and prudent.",
+      "elements": [
+        "Driver followed another vehicle.",
+        "Distance was not reasonable/prudent for conditions."
+      ],
+      "keywords": ["tailgating", "following too close", "following too closely"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 40-6-72",
+      "title": "Stop Signs and Yield Signs",
+      "summary": "Requires proper stop/yield behavior at stop/yield intersections.",
+      "elements": [
+        "Stop/yield control applied.",
+        "Driver failed required stop/yield conduct."
+      ],
+      "keywords": ["ran stop sign", "failed to stop", "failed to yield"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 40-6-123",
+      "title": "Turning Movements and Required Signals",
+      "summary": "Requires proper signaling before turns/lane changes.",
+      "elements": [
+        "Driver turned/changed lanes/moved laterally.",
+        "Signal was required.",
+        "Driver failed proper signal timing/use."
+      ],
+      "keywords": ["no turn signal", "failed to signal", "lane change no signal"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 40-6-181",
+      "title": "Speed Restrictions",
+      "summary": "Driving above applicable lawful speed limit.",
+      "elements": [
+        "Driver operated motor vehicle.",
+        "Applicable speed limit existed.",
+        "Driver exceeded lawful speed."
+      ],
+      "keywords": ["speeding", "65 in a 25", "over limit"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "MCLBAO 5560.9G CH3-11",
+      "title": "MCLB Albany Base Speed Limits",
+      "summary": "On MCLB Albany, speed must be reasonable/prudent and not exceed posted limits. Default speed is 35 MPH where not posted; 10 MPH in parking lots; 5 MPH while backing; 10 MPH where troops are in formation; 25 MPH on unimproved/perimeter roads.",
+      "elements": [
+        "Vehicle operated aboard MCLB Albany installation roadways.",
+        "Driver exceeded posted/base-prescribed speed limit or failed to drive at a reasonable/prudent speed for conditions.",
+        "No authorized exception applied."
+      ],
+      "keywords": ["mclb speed limit", "base speed limit", "on base speeding", "parking lot 10 mph", "35 mph on base", "mclb albany traffic"],
+      "minimum_punishment": "Administrative points/court handling per MCLBAO 5560.9G and applicable Georgia/Federal assimilation framework.",
+      "maximum_punishment": "Base driving privilege suspension/revocation and mandatory court appearance for higher-speed categories per MCLBAO 5560.9G."
+    },
+    {
+      "source": "GEORGIA",
+      "code": "MCLBAO 5560.9G CH3-16/17",
+      "title": "MCLB Albany Cell Phone and Texting Restrictions",
+      "summary": "Cell phone use by drivers aboard MCLB Albany requires hands-free operation; use is not authorized for GOV drivers regardless of hands-free. Text messaging restrictions apply under referenced policy.",
+      "elements": [
+        "Driver operated a vehicle aboard MCLB Albany.",
+        "Driver used a cellular/texting function contrary to MCLBAO 5560.9G requirements.",
+        "No authorized exception applied."
+      ],
+      "keywords": ["mclb cell phone", "base texting while driving", "gov no cell phone", "hands free base"],
+      "minimum_punishment": "Administrative points/court handling per MCLBAO 5560.9G.",
+      "maximum_punishment": "Enhanced base administrative actions including suspension based on violation history and court disposition."
+    },
+    {
+      "source": "GEORGIA",
+      "code": "MCLBAO 5560.9G CH3-18",
+      "title": "MCLB Albany Seat Belt Requirements",
+      "summary": "Seat belt use is mandatory for all occupants in motor vehicles aboard MCLB Albany; operators are responsible for ensuring compliance.",
+      "elements": [
+        "Vehicle operated aboard MCLB Albany.",
+        "Operator and/or passenger failed to wear seat belt as required.",
+        "Violation occurred without a lawful exemption."
+      ],
+      "keywords": ["mclb seat belt", "base seat belt violation", "operator passenger seat belt", "mclb traffic court seat belt"],
+      "minimum_punishment": "Point assessment and remedial measures per MCLBAO 5560.9G traffic code table.",
+      "maximum_punishment": "Higher-point penalties and suspension of base driving privileges for repeat offenses under MCLBAO 5560.9G."
+    },
+    {
+      "source": "GEORGIA",
+      "code": "MCLBAO 5560.9G CH6",
+      "title": "MCLB Albany Base Traffic Court",
+      "summary": "MCLB Albany Base Traffic Court adjudicates installation traffic violations, imposes points and administrative actions, and handles mandatory appearance categories and appeals.",
+      "elements": [
+        "Traffic citation/violation occurred on MCLB Albany.",
+        "Violation falls within Base Traffic Court authority or mandatory appearance categories.",
+        "Driver is subject to adjudication, points, and administrative action under Chapter 6."
+      ],
+      "keywords": ["mclb traffic court", "base traffic court", "mandatory appearance mclb", "traffic court appeal mclb"],
+      "minimum_punishment": "Warning or lower administrative action based on violation type and adjudication outcome.",
+      "maximum_punishment": "Suspension/revocation of installation driving privileges and referral to magistrate for specified offenses."
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 40-6-241",
+      "title": "Texting While Driving",
+      "summary": "Restrictions on writing/sending/reading text-based communication while driving.",
+      "elements": [
+        "Accused operated motor vehicle.",
+        "Accused used text-based communication device/function unlawfully while driving."
+      ],
+      "keywords": ["texting while driving", "phone while driving"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 40-6-270",
+      "title": "Duty Upon Striking a Vehicle (Hit and Run)",
+      "summary": "Stopping, exchanging information, and rendering aid duties after collision with attended vehicle/person.",
+      "elements": [
+        "Driver was involved in qualifying collision.",
+        "Driver knew/should have known collision occurred.",
+        "Driver failed required stop/information/aid duties."
+      ],
+      "keywords": ["hit and run", "left scene", "failed to stop after crash"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 40-6-271",
+      "title": "Duty Upon Striking Unattended Vehicle or Property",
+      "summary": "Requires stop/notice duties after striking unattended vehicle/property.",
+      "elements": [
+        "Driver struck unattended vehicle/property.",
+        "Driver knew/should have known collision occurred.",
+        "Driver failed required notice/information duties."
+      ],
+      "keywords": ["struck parked car", "left scene property damage", "unattended hit and run"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 40-6-390",
+      "title": "Reckless Driving",
+      "summary": "Driving with reckless disregard for safety of persons/property.",
+      "elements": [
+        "Driver operated motor vehicle.",
+        "Conduct showed reckless disregard.",
+        "Safety of persons/property was affected."
+      ],
+      "keywords": ["reckless driving", "unsafe driving", "reckless"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 40-6-391",
+      "title": "Driving Under the Influence",
+      "summary": "DUI offense for less-safe/per se alcohol, drugs, or toxic substances.",
+      "elements": [
+        "Driver drove/was in actual physical control of moving vehicle.",
+        "Driver was under influence or per se prohibited concentration.",
+        "Required DUI theory elements were met."
+      ],
+      "keywords": ["dui", "impaired driving", "drunk driving", "dui refusal"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 40-6-392",
+      "title": "Chemical Tests / Evidence in DUI Cases",
+      "summary": "Chemical test evidence and admissibility framework for DUI investigations.",
+      "elements": [
+        "DUI chemical test process occurred or was requested.",
+        "Evidence collection/admissibility framework under statute applied."
+      ],
+      "keywords": ["chemical test", "breath test", "blood test dui"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 40-6-395",
+      "title": "Fleeing or Attempting to Elude a Police Officer",
+      "summary": "Willful failure/refusal to stop after visual/audible signal from officer.",
+      "elements": [
+        "Officer gave visual/audible signal to stop.",
+        "Accused knew/should have known signal was from law enforcement.",
+        "Accused willfully failed/refused to stop or fled/eluded."
+      ],
+      "keywords": ["fleeing and eluding", "failed to stop for police", "pursuit"]
+    },
+    {
+      "source": "GEORGIA",
+      "code": "OCGA 40-6-397",
+      "title": "Aggressive Driving",
+      "summary": "Committing listed traffic offenses with intent to annoy, harass, molest, intimidate, injure, or obstruct.",
+      "elements": [
+        "Accused committed listed predicate traffic offense.",
+        "Act was done with required aggressive-driving intent."
+      ],
+      "keywords": ["aggressive driving", "road rage driving", "intentional hostile driving"]
+    }
+  ]
+}

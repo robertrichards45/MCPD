@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell">
+  {% include 'partials/nav.html' %}
+  <main class="page-wrap report-workspace">
+    <header class="report-workspace-header">
+      <div>
+        <span class="command-kicker">Report Workspace</span>
+        <h1>{{ report.title }}</h1>
+        <p>Owner: {{ report_owner.display_name }} | Report #{{ report.id }}</p>
+      </div>
+      <span class="report-status-pill">{{ report.status }}</span>
+    </header>
+
+    <div class="report-progress-bar" aria-label="Report progress">
+      <span class="is-active">1 Parties</span>
+      <span class="is-active">2 Facts</span>
+      <span class="{% if report.narrative_text %}is-active{% endif %}">3 Narrative</span>
+      <span class="{% if selected_paperwork %}is-active{% endif %}">4 Paperwork</span>
+      <span>5 Review</span>
+    </div>
+
+    <div class="report-split-workspace">
+      <section class="report-left-panel" aria-label="Report workflow">
+        <form method="post" action="{{ url_for('reports.report_update_workflow', report_id=report.id) }}" class="report-step-card" data-report-workflow>
+          <div class="report-step-head">
+            <span>Report Type</span>
+            <select class="form-control" name="call_type_slug">
+              <option value="">Manual / Other</option>
+              {% for slug, rule in call_types|dictsort %}
+              <option value="{{ slug }}" {% if report.call_type_slug == slug %}selected{% endif %}>{{ rule.title }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <section class="report-step-section">
+            <h2>1. Parties</h2>
+            <div class="report-person-list">
+              {% for person in persons %}
+              <div class="report-person-row">
+                <strong>{{ person.name }}</strong>
+                <span>{{ person.role or 'Involved person' }}</span>
+              </div>
+              {% else %}
+              <div class="command-empty">No parties added yet.</div>
+              {% endfor %}
+            </div>
+          </section>
+
+          <section class="report-step-section report-facts-section">
+            <h2>2. Facts</h2>
+            <label class="form-label" for="report-facts">Describe what happened</label>
+            <textarea id="report-facts" class="form-control report-large-textarea" name="facts_text" data-report-facts placeholder="Describe what happened">{{ report.facts_text or '' }}</textarea>
+            <div class="report-button-row">
+              <button class="btn btn-outline-secondary" type="button" data-voice-target="report-facts">Voice to Text</button>
+              <span class="report-inline-status" data-voice-status>Typed input is always available.</span>
+            </div>
+          </section>
+
+          <section class="report-step-section">
+            <h2>3. Narrative</h2>
+            <button class="btn btn-secondary" type="button" data-generate-narrative>Generate Narrative</button>
+            <textarea class="form-control report-large-textarea" name="narrative_text" data-report-narrative placeholder="Generated narrative appears here for officer review and editing.">{{ report.narrative_text or '' }}</textarea>
+            <div class="report-button-row">
+              <button class="btn btn-outline-secondary" type="button" data-generate-blotter>Generate Blotter</button>
+              <span class="report-inline-status">Review and edit before use.</span>
+            </div>
+            <textarea class="form-control" name="blotter_text" data-report-blotter placeholder="Blotter entry">{{ report.blotter_text or '' }}</textarea>
+          </section>
+
+          <section class="report-step-section">
+            <h2>4. Paperwork</h2>
+            <div class="report-paperwork-grid">
+              {% set recommended = selected_call_type.get('recommendedForms', []) if selected_call_type else [] %}
+              {% set optional = selected_call_type.get('optionalForms', []) if selected_call_type else [] %}
+              {% for form_name in recommended + optional %}
+              <label class="report-check-card">
+                <input type="checkbox" name="paperwork" value="{{ form_name }}" {% if form_name in selected_paperwork or form_name in recommended %}checked{% endif %}>
+                <span>{{ form_name }}</span>
+              </label>
+              {% else %}
+              <div class="command-empty">Choose a report type to seed paperwork, or add forms from the Forms page.</div>
+              {% endfor %}
+            </div>
+          </section>
+
+          <section class="report-step-section">
+            <h2>5. Notes</h2>
+            <textarea class="form-control" name="officer_notes" placeholder="Officer notes, follow-up, or supervisor comments">{{ report.officer_notes or '' }}</textarea>
+          </section>
+
+          <div class="report-action-bar">
+            <a class="btn btn-outline-secondary" href="{{ url_for('reports.list_reports') }}">Back</a>
+            <button class="btn btn-primary" type="submit">Save Workflow</button>
+          </div>
+        </form>
+
+        <section class="report-step-card">
+          <h2>Upload Required PDFs</h2>
+          <form method="post" action="{{ url_for('reports.report_upload', report_id=report.id) }}" enctype="multipart/form-data" class="report-upload-row">
+            <select class="form-control" name="page_key">
+              <option value="incident-admin">Incident Admin</option>
+              <option value="narrative">Narrative</option>
+              <option value="persons">Involved Persons</option>
+              <option value="property">Property Report</option>
+              <option value="offenses">Offenses</option>
+              <option value="dd-1408">DD Form 1408</option>
+              <option value="ta-main">Traffic Accident Main</option>
+            </select>
+            <input type="file" class="form-control" name="file" accept="application/pdf" required>
+            <button class="btn btn-secondary">Upload</button>
+          </form>
+          <div class="report-attachment-list">
+            {% for a in attachments %}
+            <div>{{ a.page_key }} | {{ a.uploaded_at.strftime('%Y-%m-%d %H:%M') }}</div>
+            {% else %}
+            <div class="command-empty">No PDFs attached yet.</div>
+            {% endfor %}
+          </div>
+        </section>
+
+        {% if report.owner_id == user.id %}
+        <section class="report-submit-card">
+          <form method="post" action="{{ url_for('reports.report_submit', report_id=report.id) }}">
+            <button class="btn btn-primary btn-lg">Submit Final Report</button>
+          </form>
+          <p>Submission is blocked until facts and narrative are saved.</p>
+        </section>
+        {% endif %}
+      </section>
+
+      <aside class="report-right-panel" aria-label="Research and notes">
+        <div class="report-tabs">
+          <a href="{{ url_for('legal.legal_lookup') }}">Law Lookup</a>
+          <a href="{{ url_for('orders.reference_search') }}">Orders</a>
+          <a href="{{ url_for('forms.list_forms') }}">Forms</a>
+        </div>
+        <section class="report-side-card">
+          <h2>Authority Search</h2>
+          <form method="get" action="{{ url_for('legal.legal_lookup') }}">
+            <input type="hidden" name="source" value="ALL">
+            <input type="hidden" name="state" value="GA">
+            <textarea class="form-control" name="q" placeholder="Describe facts or paste report facts">{{ report.facts_text or '' }}</textarea>
+            <button class="btn btn-primary w-100 mt-2">Search Law</button>
+          </form>
+        </section>
+        <section class="report-side-card">
+          <h2>Quick Packet</h2>
+          <div class="report-packet-summary">
+            <span>{{ persons|length }} parties</span>
+            <span>{{ selected_paperwork|length }} paperwork item{{ '' if selected_paperwork|length == 1 else 's' }}</span>
+            <span>{{ attachments|length }} PDF attachment{{ '' if attachments|length == 1 else 's' }}</span>
+          </div>
+          <div class="report-packet-actions">
+            <a class="btn btn-outline-secondary" href="{{ url_for('reports.report_packet_preview', report_id=report.id) }}" target="_blank" rel="noopener">Preview / Print</a>
+            <a class="btn btn-secondary" href="{{ url_for('reports.report_packet_download', report_id=report.id) }}">Download</a>
+            <form method="post" action="{{ url_for('reports.report_packet_email', report_id=report.id) }}">
+              <button class="btn btn-primary w-100" type="submit">Email Packet</button>
+            </form>
+          </div>
+        </section>
+      </aside>
+    </div>
+
+    <section class="report-admin-review">
+      <form method="post" action="{{ url_for('reports.report_add_person', report_id=report.id) }}" class="report-inline-add">
+        <input class="form-control" name="name" placeholder="Add person name">
+        <input class="form-control" name="role" placeholder="Role">
+        <button class="btn btn-secondary">Add Person</button>
+      </form>
+
+      {% if portal_effective_role == 'WEBSITE_CONTROLLER' %}
+      <details class="card p-3 mb-3 collapse-card">
+        <summary>Grade Report (Admin)</summary>
+        <div class="mt-2">
+          <form method="post" action="{{ url_for('reports.report_grade', report_id=report.id) }}">
+            <div class="mb-2"><input class="form-control" name="score" placeholder="Score (0-100)"></div>
+            <div class="mb-2"><textarea class="form-control" name="comments" placeholder="Comments"></textarea></div>
+            <div class="mb-2"><textarea class="form-control" name="required_fixes" placeholder="Required fixes"></textarea></div>
+            <button class="btn btn-primary">Submit Grade</button>
+          </form>
+          <form method="post" action="{{ url_for('reports.report_return', report_id=report.id) }}" class="mt-2">
+            <button class="btn btn-secondary">Return for Fixes</button>
+          </form>
+        </div>
+      </details>
+      {% endif %}
+
+      {% if grades|length > 0 %}
+      <details class="card p-3 mb-3 collapse-card" open>
+        <summary>Grades</summary>
+        <ul class="list-group">
+          {% for g in grades %}
+          <li class="list-group-item">
+            <strong>Score:</strong> {{ g.score }} | <strong>Comments:</strong> {{ g.comments }} | <strong>Fixes:</strong> {{ g.required_fixes }}
+          </li>
+          {% endfor %}
+        </ul>
+      </details>
+      {% endif %}
+    </section>
+  </main>
+</div>
+{% endblock %}

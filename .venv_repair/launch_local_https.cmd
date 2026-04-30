@@ -1,0 +1,45 @@
+@echo off
+setlocal
+cd /d "%~dp0"
+set "DB_PATH=%~dp0data\app.db"
+set "DB_PATH=%DB_PATH:\=/%"
+set DATABASE_URL=sqlite:///%DB_PATH%
+set APP_ENV=dev
+set PREFERRED_URL_SCHEME=https
+set TRUST_PROXY=0
+set SESSION_COOKIE_SECURE=0
+set REMEMBER_COOKIE_SECURE=0
+set FORCE_HTTPS=0
+set HSTS_ENABLED=0
+set PORT=8091
+set SSL_MODE=adhoc
+set FLASK_DEBUG=0
+set "VENV_PYTHON=%~dp0.venv\Scripts\python.exe"
+
+if exist "%VENV_PYTHON%" (
+  "%VENV_PYTHON%" -c "import sys" >nul 2>nul
+  if not errorlevel 1 (
+    "%VENV_PYTHON%" "%~dp0app.py"
+    goto after_run
+  )
+)
+
+if exist "%~dp0.deps314" (
+  set "PYTHONPATH=%~dp0.deps314;%PYTHONPATH%"
+  py "%~dp0app.py"
+  goto after_run
+)
+
+echo.
+echo No working project Python runtime was found.
+echo The old .venv is broken, and the local fallback dependencies folder is missing.
+echo Recreate the venv or reinstall the local dependency set, then try again.
+pause
+exit /b 1
+
+:after_run
+if errorlevel 1 (
+  echo.
+  echo Server exited with an error.
+  pause
+)

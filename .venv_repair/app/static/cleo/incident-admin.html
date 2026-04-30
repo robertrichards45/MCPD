@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TA Person</title>
+  <link rel="stylesheet" href="/static/cleo/cleo.css" />
+</head>
+<body data-page-key="ta-person">
+  <div class="wrap">
+    <div class="cleo-headerbar"><div id="reportBadge">Report</div><div><button class="save-btn" onclick="cleoSave()">Save</button> <button class="save-btn" onclick="cleoNewReport()">New Report</button> <button class="save-btn" onclick="cleoReports()">Reports</button> <button class="save-btn" onclick="cleoSummary()">Summary</button></div></div>
+    <div class="nav">
+      <label for="cleoNav">CLEOC Pages:</label>
+      <select id="cleoNav" onchange="if(this.value) window.location.href=this.value;">
+        <option value="">Select?</option>
+        <option value="index.html">Home</option>
+        <option value="incident-admin.html">Incident Admin</option>
+        <option value="ta-main.html">TA Main</option>
+        <option value="ta-person.html">TA Person</option>
+        <option value="persons.html">Involved Persons</option>
+        <option value="property.html">Involved Property</option>
+        <option value="organization.html">Involved Organization</option>
+        <option value="vehicle.html">Vehicle Info</option>
+        <option value="offenses.html">Offenses</option>
+        <option value="narcotics.html">Narcotics</option>
+        <option value="narrative.html">Narrative</option>
+        <option value="violation-1408.html">1408 Violation</option>
+        <option value="dd-1408.html">DD Form 1408</option>
+        <option value="enclosure.html">Enclosure</option>
+      </select>
+    </div>
+
+    <div class="cleo-headerbar">
+      <div class="CLEOC-toolbar">
+        <div class="CLEOC-icon"></div>
+        <div class="CLEOC-icon"></div>
+        <div class="CLEOC-icon"></div>
+      </div>
+      <div><strong>MCLB ALBANY</strong> &nbsp; Watch / Platoon Commander</div>
+      <div class="CLEOC-toolbar">
+        <div class="CLEOC-icon"></div>
+        <div class="CLEOC-icon"></div>
+        <div class="CLEOC-icon"></div>
+        <div class="CLEOC-icon"></div>
+        <div class="CLEOC-icon"></div>
+        <div class="CLEOC-icon"></div>
+        <div class="CLEOC-icon"></div>
+        <div class="CLEOC-icon"></div>
+      </div>
+    </div>
+
+    <div class="person-form">
+      <div class="person-title">Person for Traffic Incident 02FEB26-29AB-00017-14CMA</div>
+      <div class="person-alert">Important Information : Please Use YYYYMMDD Format For All Date Fields</div>
+      <div class="person-alert">Important Information : Person Type is not required if a Traffic Role is selected</div>
+
+      <div class="person-row compact">
+        <div class="person-label">Person Role</div>
+        <div class="person-inline">
+          <input class="person-select person-w-180 listbox" />
+          <span class="person-label">Person Traffic Role</span>
+          <input class="person-select person-w-180 listbox" />
+        </div>
+      </div>
+
+      <div class="person-section">Person Information</div>
+
+      <div class="person-row compact">
+        <div class="person-label" style="color:#c00;">Person ID Type</div>
+        <div class="person-inline">
+          <input class="person-select person-w-180 listbox" />
+          <span class="person-label" style="color:#c00;">Person ID</span>
+          <input class="person-input person-w-140" />
+          <span class="person-label" style="color:#c00;">Security Clearance</span>
+          <input class="person-select person-w-140 listbox" />
+        </div>
+      </div>
+
+      <div class="person-row compact">
+        <div class="person-label">Last Name</div>
+        <div class="person-inline">
+          <input class="person-input person-w-140" />
+          <span class="person-label">First Name</span>
+          <input class="person-input person-w-140" />
+          <span class="person-label">Middle Name</span>
+          <input class="person-input person-w-140" />
+          <span class="person-label">Cadency (Jr, Sr)</span>
+          <input class="person-input person-w-80" />
+        </div>
+      </div>
+
+      <div class="person-row compact">
+        <div class="person-label">Title</div>
+        <div class="person-inline">
+          <input class="person-input person-w-140" />
+          <span class="person-label">Country of Citizenship</span>
+          <input class="person-select person-w-180 listbox" />
+        </div>
+      </div>
+
+      <div class="person-row compact">
+        <div class="person-label">Birth Information</div>
+        <div class="person-inline">
+          <span class="person-label">Date of Birth</span>
+          <input class="person-input person-w-110" />
+          <span class="person-label">City</span>
+          <input class="person-input person-w-140" />
+          <span class="person-label">State/Territory of Birth</span>
+          <input class="person-select person-w-140 listbox" />
+          <span class="person-label">Country of Birth</span>
+          <input class="person-select person-w-140 listbox" />
+        </div>
+      </div>
+
+      <div class="person-row compact">
+        <div class="person-label">Driver's License Information</div>
+        <div class="person-inline">
+          <span class="person-label">Number</span>
+--
+  <title>Incident Administrative</title>
+  <link rel="stylesheet" href="/static/cleo/cleo.css" />
+</head>
+<body data-page-key="incident-admin">
+  <div class="wrap">
+    <div class="cleo-headerbar"><div id="reportBadge">Report</div><div><button class="save-btn" onclick="cleoSave()">Save</button> <button class="save-btn" onclick="cleoNewReport()">New Report</button> <button class="save-btn" onclick="cleoReports()">Reports</button> <button class="save-btn" onclick="cleoSummary()">Summary</button></div></div>
+    <div class="nav">
+      <label for="cleoNav">CLEOC Pages:</label>
+      <select id="cleoNav" onchange="if(this.value) window.location.href=this.value;">
+        <option value="">Select?</option>
+        <option value="index.html">Home</option>
+        <option value="incident-admin.html">Incident Admin</option>
+        <option value="ta-main.html">TA Main</option>
+        <option value="ta-person.html">TA Person</option>
+        <option value="persons.html">Involved Persons</option>
+        <option value="property.html">Involved Property</option>
+        <option value="organization.html">Involved Organization</option>
+        <option value="vehicle.html">Vehicle Info</option>
+        <option value="offenses.html">Offenses</option>
+        <option value="narcotics.html">Narcotics</option>
+        <option value="narrative.html">Narrative</option>
+        <option value="violation-1408.html">1408 Violation</option>
+        <option value="dd-1408.html">DD Form 1408</option>
+        <option value="enclosure.html">Enclosure</option>
+      </select>
+    </div>
+
+    <div class="cleo-headerbar">
+      <div class="CLEOC-toolbar">
+        <div class="CLEOC-icon"></div>
+        <div class="CLEOC-icon"></div>
+        <div class="CLEOC-icon"></div>
+      </div>
+      <div><strong>MCLB ALBANY</strong> &nbsp; Watch / Platoon Commander</div>
+      <div class="CLEOC-toolbar">
+        <div class="CLEOC-icon"></div>
+        <div class="CLEOC-icon"></div>
+        <div class="CLEOC-icon"></div>
+        <div class="CLEOC-icon"></div>
+        <div class="CLEOC-icon"></div>
+        <div class="CLEOC-icon"></div>
+        <div class="CLEOC-icon"></div>
+        <div class="CLEOC-icon"></div>
+      </div>
+    </div>
+
+    <div class="ia-form">
+      <div class="ia-title">INCIDENT ADMINISTRATIVE SECTION</div>
+
+      <div class="ia-row">
+        <div class="ia-label">Type of Incident</div>
+        <div class="ia-fieldgroup">
+          <input class="ia-select ia-w-180 listbox" />
+          <span class="ia-label">Date Received (YYYYMMDD)</span>
+          <input class="ia-input ia-w-110" />
+          <span class="ia-label">Time Received (24 Hour)</span>
+          <input class="ia-input ia-w-90" />
+          <span class="ia-label">Incident Received Via</span>
+          <input class="ia-select ia-w-140 listbox" />
+        </div>
+      </div>
+
+      <div class="ia-row">
+        <div class="ia-label">Case Category Code</div>
+        <div class="ia-inline">
+          <input class="ia-select ia-w-180 listbox" />
+          <span class="ia-label">Project Identifier Code</span>
+          <input class="ia-select ia-w-180 listbox" />
+        </div>
+      </div>
+
+      <div class="ia-row">
+        <div class="ia-label">Organization Identification Code</div>
+        <div class="ia-inline">
+          <input class="ia-select ia-w-180 listbox" />
+          <span class="ia-label">Is Date and Time of Incident Known?</span>
+          <input class="ia-select ia-w-110 listbox" />
+        </div>
+      </div>
+
+      <div class="ia-row">
+        <div class="ia-label dark">Date(s) of Incident (YYYYMMDD)</div>
+        <div class="ia-inline">
+          <span>From:</span><input class="ia-input ia-w-110" />
+          <span>To:</span><input class="ia-input ia-w-110" />
+        </div>
+      </div>
+
+      <div class="ia-row">
+        <div class="ia-label dark">Time(s) of Incident (24 Hour)</div>
+        <div class="ia-inline">
+          <span>From:</span><input class="ia-input ia-w-90" />
+          <span>To:</span><input class="ia-input ia-w-90" />
+        </div>
+      </div>
+
+      <div class="ia-row">
+        <div class="ia-label dark">Incident Subject :</div>
+        <input class="ia-input ia-w-220" />
+      </div>
+
+      <div class="ia-row">
+        <div class="ia-label dark">Lighting</div>
+        <div class="ia-radio">
+          <label><input type="radio" name="light" /> Dark (Lighted)</label>
+          <label><input type="radio" name="light" /> Dark (Not Lighted)</label>
+          <label><input type="radio" name="light" /> Dawn</label>
+          <label><input type="radio" name="light" /> Daylight</label>
+          <label><input type="radio" name="light" /> Dusk</label>
+        </div>
+      </div>
+
+      <div class="ia-row">
+        <div class="ia-label dark">Weather</div>
+        <div class="ia-checkbox">
+          <label><input type="checkbox" /> Foggy</label>
+          <label><input type="checkbox" /> Rain</label>
+          <label><input type="checkbox" /> Snow</label>
+          <label><input type="checkbox" /> Cloudy</label>
+          <label><input type="checkbox" /> Ice</label>
+          <label><input type="checkbox" /> Clear</label>
+          <label><input type="checkbox" /> Other</label>
+        </div>
+      </div>
+
+      <div class="ia-row">
+        <div class="ia-label">NCIS Notified:</div>
+        <div class="ia-inline">
+          <input class="ia-select ia-w-90 listbox" />
+          <span class="ia-label dark">Date Notified:</span>
+          <input class="ia-input ia-w-110" />
+        </div>
+      </div>
+
+      <div class="ia-row">
+        <div class="ia-label dark">Result:</div>
+        <div class="ia-inline">
+          <input class="ia-select ia-w-90 listbox" />
+          <span class="ia-label dark">Reason for Declination:</span>
+          <input class="ia-select ia-w-180 listbox" />
+        </div>
+      </div>
+
+      <div class="ia-row">
+        <div class="ia-label dark">Decline Other:</div>
+        <input class="ia-input ia-w-220" />
+      </div>
+
+      <div class="ia-row">
+        <div class="ia-label dark">Journal Narrative (For Journal Entry Only)</div>
+        <div class="ia-inline">
+          <button class="save-btn" type="button">Perform Spell Check</button>
+          <span class="ia-label">Incident Included in Journal :</span>
+          <input class="ia-select ia-w-90 listbox" />
+        </div>
+      </div>
+
+      <div class="ia-row wide">
+        <div class="ia-note">Please Indicate the Location for this Journal Entry on the First Line</div>
+        <textarea class="ia-textarea"></textarea>
+      </div>
+
+      <div class="ia-section-title">JOURNAL NOTIFICATIONS - If you run out of space for notifications, submit form and more will appear (4 additional each time)</div>
+
+      <div class="ia-table">
+        <div><input class="ia-input" placeholder="Time" /></div>
+        <div><input class="ia-input" placeholder="Date" /></div>
+        <div><input class="ia-input" placeholder="Office/Section Notified" /></div>
+        <div><input class="ia-input" placeholder="Name of Person Notified" /></div>
+        <div><input class="ia-select listbox" /></div>
+      </div>
+      <div class="ia-table">
+        <div><input class="ia-input" placeholder="Time" /></div>
+        <div><input class="ia-input" placeholder="Date" /></div>
+        <div><input class="ia-input" placeholder="Office/Section Notified" /></div>
+        <div><input class="ia-input" placeholder="Name of Person Notified" /></div>
+        <div><input class="ia-select listbox" /></div>
+      </div>
+      <div class="ia-table">
+        <div><input class="ia-input" placeholder="Time" /></div>
+        <div><input class="ia-input" placeholder="Date" /></div>
+        <div><input class="ia-input" placeholder="Office/Section Notified" /></div>
+        <div><input class="ia-input" placeholder="Name of Person Notified" /></div>
+        <div><input class="ia-select listbox" /></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/cleo/nav.js?v=20260218-0650"></script>
+  <script src="/static/cleo/cleo_report.js?v=20260218-0650"></script>
+</body>
+</html>
+

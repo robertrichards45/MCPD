@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  {% if config.GOOGLE_SITE_VERIFICATION %}
+  <meta name="google-site-verification" content="{{ config.GOOGLE_SITE_VERIFICATION }}" />
+  {% endif %}
+  <title>{{ title if title else 'MCPD Portal' }}</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('usmc_emblem') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css', v='2026-04-30-command-rms-1') }}" />
+</head>
+<body class="{{ body_class|default('') }}">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="global-flash-stack">
+      {% for category, message in messages %}
+      <div class="global-flash global-flash-{{ category or 'info' }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  {% endwith %}
+  {% block body %}{% endblock %}
+  <script src="{{ url_for('static', filename='js/app.js', v='2026-04-30-report-workspace-1') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>
+

@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell">
+  {% include 'partials/nav.html' %}
+  <div class="page-wrap">
+    <div class="card p-3 mb-3 page-head">
+      <h2 class="mb-1">Reference</h2>
+      <p class="text-muted mb-0">Fast operational checklists for common field tasks.</p>
+    </div>
+
+    <div class="results-list">
+      {% for section in sections %}
+      <details class="card p-3 collapse-card" {% if loop.first %}open{% endif %}>
+        <summary>{{ section.title }}</summary>
+        <ul class="mb-0">
+          {% for item in section.items %}
+          <li class="mb-2">{{ item }}</li>
+          {% endfor %}
+        </ul>
+      </details>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,305 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell">
+  {% include 'partials/nav.html' %}
+  <div class="page-wrap">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert {{ 'alert-danger' if category == 'error' else 'alert-success' }} mb-2">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <div class="card p-3 mb-3 page-head">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+          <h2 class="mb-1">{{ module_title }}</h2>
+          <p class="text-muted mb-0">Profiles, cards, assets, and issue logs.</p>
+        </div>
+        <div class="text-muted small">Updated: <span data-live-refresh-label>{{ last_updated }}</span></div>
+      </div>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-md-6">
+        <details class="card p-3 collapse-card" open>
+          <summary>Scanner</summary>
+          <h5>Scanner</h5>
+          <p class="text-muted">This station only accepts RFI-authorized QR tokens.</p>
+          <div class="d-flex gap-2 mb-2">
+            <button class="btn btn-primary" type="button" data-scanner-open data-scanner-context="{{ module_key }}">Open Scanner</button>
+            <button class="btn btn-secondary" type="button" data-scanner-stop>Stop Scanner</button>
+          </div>
+          <video class="scanner-video" data-scanner-video playsinline muted></video>
+          <div class="mt-2">
+            <input class="form-control" type="text" placeholder="USB scanner or manual code entry" data-scanner-manual />
+          </div>
+          <div class="summary-box mt-2" data-scanner-status>
+            Scanner idle. Non-RFI cards must be rejected here.
+          </div>
+        </details>
+      </div>
+
+      <div class="col-md-6">
+        <details class="card p-3 collapse-card" open>
+          <summary>Live Activity Feed</summary>
+          <h5>Live Activity Feed</h5>
+          <p class="text-muted">RFI activity refreshes every 15 seconds without reloading the page.</p>
+          <div class="list-group" data-module-feed data-feed-url="{{ url_for('ops_modules.rfi_feed') }}">
+            <div class="list-group-item">No activity yet.</div>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <div class="row mt-3">
+      <div class="col-md-4">
+        <div class="summary-box">
+          <strong>Total Profiles</strong><br />
+          {{ rfi_total_profiles }}
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="summary-box">
+          <strong>Command-Level Profiles</strong><br />
+          {{ rfi_command_profiles }}
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="summary-box">
+          <strong>Pending Review Queue</strong><br />
+          {{ rfi_pending_count }}
+        </div>
+      </div>
+    </div>
+
+    {% if can_manage_module %}
+      <details class="card p-3 mt-3 collapse-card">
+        <summary>Build Entries From Appointment Letter Info</summary>
+        <h5>Build Entries From Appointment Letter Info</h5>
+        <p class="text-muted">Use the file only to stage officer info into the pending list. No copy is kept.</p>
+        <form method="post" action="{{ url_for('ops_modules.rfi_appointment_letter_upload') }}" enctype="multipart/form-data">
+          <div class="mb-2">
+            <label class="form-label text-dark">Appointment Letter Files (Info Only)</label>
+            <input class="form-control" type="file" name="appointment_letters" multiple accept=".jpg,.jpeg,.png,.heic,.pdf" />
+          </div>
+          <button class="btn btn-secondary" type="submit">Build Pending RFI Entries</button>
+        </form>
+      </details>
+
+      <details class="card p-3 mt-3 collapse-card" {% if editing_profile %}open{% endif %}>
+        <summary>Weapons Profile</summary>
+        <h5>Weapons Profile</h5>
+        <p class="text-muted">Defaults use rack number for standard users and initials for command users.</p>
+        <form method="post" action="{{ url_for('ops_modules.rfi_profile_save') }}">
+          {% if editing_profile %}
+            <input type="hidden" name="profile_id" value="{{ editing_profile.id }}" />
+          {% endif %}
+          <div class="row">
+            <div class="col-md-3 mb-2">
+              <label class="form-label text-dark">First Name</label>
+              <input class="form-control" name="first_name" value="{{ editing_profile.first_name if editing_profile else '' }}" required />
+            </div>
+            <div class="col-md-3 mb-2">
+              <label class="form-label text-dark">Last Name</label>
+              <input class="form-control" name="last_name" value="{{ editing_profile.last_name if editing_profile else '' }}" required />
+            </div>
+            <div class="col-md-2 mb-2">
+              <label class="form-label text-dark">Officer #</label>
+              <input class="form-control" name="officer_number" value="{{ editing_profile.officer_number if editing_profile else '' }}" />
+            </div>
+            <div class="col-md-4 mb-2">
+              <label class="form-label text-dark">Role Level</label>
+              <select class="form-control" name="role_level">
+                <option value="">Standard Officer</option>
+                {% for role_key in command_role_options %}
+                  <option value="{{ role_key }}" {% if editing_profile and editing_profile.role_level == role_key %}selected{% endif %}>{{ role_key.replace('_', ' ').title() }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-2 mb-2">
+              <label class="form-label text-dark">Rack #</label>
+              <input class="form-control" name="rack_number" value="{{ editing_profile.rack_number if editing_profile else '' }}" />
+            </div>
+            <div class="col-md-3 mb-2">
+              <label class="form-label text-dark">Weapon Serial #</label>
+              <input class="form-control" name="weapon_serial_number" value="{{ editing_profile.weapon_serial_number if editing_profile else '' }}" />
+            </div>
+            <div class="col-md-3 mb-2">
+              <label class="form-label text-dark">Weapon Type</label>
+              <input class="form-control" name="weapon_type" value="{{ editing_profile.weapon_type if editing_profile else '' }}" />
+            </div>
+            <div class="col-md-2 mb-2">
+              <label class="form-label text-dark">OC Identifier</label>
+              <input class="form-control" name="oc_identifier" value="{{ editing_profile.oc_identifier if editing_profile else '' }}" placeholder="Leave blank for default" />
+            </div>
+            <div class="col-md-2 mb-2">
+              <label class="form-label text-dark">Radio Identifier</label>
+              <input class="form-control" name="radio_identifier" value="{{ editing_profile.radio_identifier if editing_profile else '' }}" placeholder="Leave blank for default" />
+            </div>
+            </div>
+            <div class="d-flex gap-2 mt-2">
+              <button class="btn btn-primary" type="submit">{{ 'Update RFI Profile' if editing_profile else 'Save RFI Profile' }}</button>
+              {% if editing_profile %}
+                <a class="btn btn-secondary" href="{{ url_for('ops_modules.rfi') }}">Clear Form</a>
+              {% endif %}
+            </div>
+          </form>
+          {% if editing_profile %}
+            <form class="mt-2" method="post" action="{{ url_for('ops_modules.rfi_profile_reset_defaults') }}">
+              <input type="hidden" name="profile_id" value="{{ editing_profile.id }}" />
+              <button class="btn btn-outline-secondary" type="submit">Reset To Defaults</button>
+            </form>
+          {% endif %}
+        </details>
+      {% endif %}
+
+    <details class="card p-3 mt-3 collapse-card" open>
+      <summary>Weapons Profiles</summary>
+      <h5>Weapons Profiles</h5>
+      <form class="row g-2 mb-3" method="get" action="{{ url_for('ops_modules.rfi') }}">
+        <div class="col-md-9">
+          <input class="form-control" type="text" name="q" value="{{ search_term or '' }}" placeholder="Search by name, officer #, rack #, weapon serial, radio, or OC" />
+        </div>
+        <div class="col-md-3 d-flex gap-2">
+          <button class="btn btn-secondary flex-fill" type="submit">Search</button>
+          <a class="btn btn-outline-secondary flex-fill" href="{{ url_for('ops_modules.rfi_export_csv', q=search_term) }}">CSV</a>
+          {% if search_term %}
+            <a class="btn btn-outline-secondary flex-fill" href="{{ url_for('ops_modules.rfi') }}">Clear</a>
+          {% endif %}
+        </div>
+      </form>
+      <div class="table-responsive">
+        <table class="table table-striped table-bordered">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Officer #</th>
+              <th>Role Level</th>
+              <th>Rack #</th>
+              <th>Weapon Serial</th>
+              <th>Weapon Type</th>
+              <th>OC</th>
+              <th>Radio</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for profile in profiles %}
+                <tr>
+                  <td>{{ profile.display_name }}</td>
+                  <td>{{ profile.officer_number or '' }}</td>
+                  <td>{{ profile.role_level or 'STANDARD' }}</td>
+                  <td>{{ profile.rack_number or '' }}</td>
+                <td>{{ profile.weapon_serial_number or '' }}</td>
+                  <td>{{ profile.weapon_type or '' }}</td>
+                  <td>{{ profile.oc_identifier or '' }}</td>
+                  <td>{{ profile.radio_identifier or '' }}</td>
+                    <td>
+                      <div class="d-flex gap-1">
+                        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('ops_modules.rfi', edit_profile_id=profile.id) }}">Edit</a>
+                        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('ops_modules.rfi_profile_export_csv', profile_id=profile.id) }}">CSV</a>
+                        {% if can_manage_module %}
+                          <form method="post" action="{{ url_for('ops_modules.rfi_profile_reset_defaults') }}">
+                            <input type="hidden" name="profile_id" value="{{ profile.id }}" />
+                            <button class="btn btn-outline-secondary btn-sm" type="submit">Defaults</button>
+                          </form>
+                      {% endif %}
+                    </div>
+                  </td>
+                </tr>
+            {% else %}
+              <tr>
+                <td colspan="9">No RFI weapon profiles yet.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </details>
+
+    {% if pending_uploads %}
+        <details class="card p-3 mt-3 collapse-card" open>
+          <summary>Pending Review</summary>
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h5 class="mb-0">Pending Review</h5>
+            <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('ops_modules.rfi_pending_export_csv', pending_q=pending_search_term) }}">CSV</a>
+          </div>
+          <p class="text-muted">Edit values in-line, then commit the row into the weapons list.</p>
+          <form class="row g-2 mb-3" method="get" action="{{ url_for('ops_modules.rfi') }}">
+            <input type="hidden" name="q" value="{{ search_term or '' }}" />
+            <div class="col-md-9">
+              <input class="form-control" type="text" name="pending_q" value="{{ pending_search_term or '' }}" placeholder="Search pending file, name, officer #, rack, serial, or status" />
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+              <button class="btn btn-secondary flex-fill" type="submit">Filter</button>
+              {% if pending_search_term %}
+                <a class="btn btn-outline-secondary flex-fill" href="{{ url_for('ops_modules.rfi', q=search_term) }}">Clear</a>
+              {% endif %}
+            </div>
+          </form>
+          <div class="table-responsive">
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Uploaded</th>
+                  <th>File</th>
+                  <th>Status</th>
+                  <th>First Name</th>
+                  <th>Last Name</th>
+                  <th>Officer #</th>
+                  <th>Role Level</th>
+                  <th>Rack</th>
+                  <th>Weapon Serial</th>
+                  <th>Weapon Type</th>
+                  <th>OC</th>
+                  <th>Radio</th>
+                  <th>Commit</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in pending_uploads %}
+                  <tr>
+                    {% set form_id = 'pending-rfi-' ~ item.id %}
+                    <td>
+                      {{ item.created_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                    </td>
+                    <td>{{ item.original_filename }}</td>
+                    <td>{{ item.status }}</td>
+                    <td><input class="form-control form-control-sm" name="first_name" value="{{ item.extracted_first_name or '' }}" form="{{ form_id }}" {% if item.status == 'COMMITTED' %}disabled{% endif %} /></td>
+                    <td><input class="form-control form-control-sm" name="last_name" value="{{ item.extracted_last_name or '' }}" form="{{ form_id }}" {% if item.status == 'COMMITTED' %}disabled{% endif %} /></td>
+                    <td><input class="form-control form-control-sm" name="officer_number" value="{{ item.extracted_officer_number or '' }}" form="{{ form_id }}" {% if item.status == 'COMMITTED' %}disabled{% endif %} /></td>
+                    <td>
+                      <select class="form-control form-control-sm" name="role_level" form="{{ form_id }}" {% if item.status == 'COMMITTED' %}disabled{% endif %}>
+                        <option value="">Standard Officer</option>
+                        {% for role_key in command_role_options %}
+                          <option value="{{ role_key }}">{{ role_key.replace('_', ' ').title() }}</option>
+                        {% endfor %}
+                      </select>
+                    </td>
+                    <td><input class="form-control form-control-sm" name="rack_number" value="{{ item.extracted_rack_number or '' }}" form="{{ form_id }}" {% if item.status == 'COMMITTED' %}disabled{% endif %} /></td>
+                    <td><input class="form-control form-control-sm" name="weapon_serial_number" value="{{ item.extracted_weapon_serial_number or '' }}" form="{{ form_id }}" {% if item.status == 'COMMITTED' %}disabled{% endif %} /></td>
+                    <td><input class="form-control form-control-sm" name="weapon_type" value="" form="{{ form_id }}" {% if item.status == 'COMMITTED' %}disabled{% endif %} /></td>
+                    <td><input class="form-control form-control-sm" name="oc_identifier" value="" placeholder="Default if blank" form="{{ form_id }}" {% if item.status == 'COMMITTED' %}disabled{% endif %} /></td>
+                    <td><input class="form-control form-control-sm" name="radio_identifier" value="" placeholder="Default if blank" form="{{ form_id }}" {% if item.status == 'COMMITTED' %}disabled{% endif %} /></td>
+                    <td>
+                      {% if can_manage_module and item.status != 'COMMITTED' %}
+                        <form id="{{ form_id }}" method="post" action="{{ url_for('ops_modules.rfi_appointment_letter_commit') }}">
+                          <input type="hidden" name="upload_id" value="{{ item.id }}" />
+                        </form>
+                        <button class="btn btn-outline-secondary btn-sm" type="submit" form="{{ form_id }}">Commit</button>
+                      {% else %}
+                        <span class="text-muted small">Done</span>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+        </div>
+      </details>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

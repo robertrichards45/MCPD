@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell">
+  {% include 'partials/nav.html' %}
+  <div class="page-wrap">
+    <div class="card p-3 mb-3 page-head">
+      <h2 class="mb-1">PDF Render Diagnostics</h2>
+      <p class="text-muted mb-0">Recent form PDF render events for mapping quality checks.</p>
+      <div class="d-flex gap-2 mt-2">
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('forms.forms_pdf_renders_view') }}">All Events</a>
+        <a class="btn btn-warning btn-sm" href="{{ url_for('forms.forms_pdf_renders_view', truncations_only='1') }}">Needs Attention (Truncations)</a>
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('forms.forms_pdf_renders_export_csv', form_id=form_id_filter, truncations_only='1' if truncations_only else '0') }}">Export CSV</a>
+      </div>
+    </div>
+
+    <form class="card p-3 mb-3" method="get" action="{{ url_for('forms.forms_pdf_renders_view') }}">
+      <div class="row g-2 align-items-end">
+        <div class="col-md-4">
+          <label class="form-label text-dark">Form ID</label>
+          <input class="form-control" type="number" name="form_id" value="{{ form_id_filter if form_id_filter else '' }}" placeholder="Optional" />
+        </div>
+        <div class="col-md-4">
+          <div class="form-check mt-4">
+            <input class="form-check-input" type="checkbox" id="truncations_only" name="truncations_only" value="1" {% if truncations_only %}checked{% endif %} />
+            <label class="form-check-label" for="truncations_only">Show only events with truncations</label>
+          </div>
+        </div>
+        <div class="col-md-4 d-flex gap-2">
+          <button class="btn btn-primary w-100" type="submit">Apply Filters</button>
+          <a class="btn btn-outline-secondary w-100" href="{{ url_for('forms.forms_pdf_renders_view') }}">Reset</a>
+        </div>
+      </div>
+    </form>
+
+    <div class="card p-3 mb-3">
+      <h5 class="mb-2">Per-Form Summary</h5>
+      <div class="table-responsive">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Form</th>
+              <th>Total Renders</th>
+              <th>Events w/ Truncation</th>
+              <th>Max Truncations in One Render</th>
+              <th>Fillable</th>
+              <th>Overlay</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in summary %}
+            <tr>
+              <td>{{ item.form_title or ('Form ' ~ item.form_id) }}</td>
+              <td>{{ item.count }}</td>
+              <td>
+                {% if item.truncation_events > 0 %}
+                <span class="badge bg-warning text-dark">{{ item.truncation_events }}</span>
+                {% else %}
+                <span class="badge bg-success">0</span>
+                {% endif %}
+              </td>
+              <td>{{ item.max_truncations }}</td>
+              <td>{{ item.fillable_count }}</td>
+              <td>{{ item.overlay_count }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" class="text-muted">No summary data available.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card p-3 mb-3">
+      <h5 class="mb-2">Highest-Risk Forms (By Truncation Rate)</h5>
+      <div class="table-responsive">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Form</th>
+              <th>Renders</th>
+              <th>Truncation Events</th>
+              <th>Truncation Rate</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in risk_summary %}
+            <tr>
+              <td>{{ item.form_title or ('Form ' ~ item.form_id) }}</td>
+              <td>{{ item.count }}</td>
+              <td>{{ item.truncation_events }}</td>
+              <td>
+                {% if item.truncation_rate >= 20 %}
+                <span class="badge bg-warning text-dark">{{ item.truncation_rate }}%</span>
+                {% else %}
+                <span class="badge bg-secondary">{{ item.truncation_rate }}%</span>
+                {% endif %}
+              </td>
+              <td class="d-flex gap-1">
+                <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('forms.forms_pdf_renders_view', form_id=item.form_id, truncations_only='1') }}">View Truncations</a>
+                <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('forms.form_pdf_debug_view', form_id=item.form_id) }}">PDF Debug</a>
+                <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('forms.form_pdf_template_editor', form_id=item.form_id, load_suggested='1') }}">Fix (Suggested)</a>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-muted">Not enough render history yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card p-3">
+      <div class="table-responsive">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>When</th>
+              <th>Form</th>
+              <th>Action</th>
+              <th>Mode</th>
+              <th>Mapped</th>
+              <th>Truncations</th>
+              <th>Template</th>
+              <th>No-Retention</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in events %}
+            <tr>
+              <td>{{ display_dt(item.created_at) }}</td>
+              <td>
+                <div>{{ item.form_title or ('Form ' ~ item.form_id) }}</div>
+                <div class="small text-muted">Form ID: {{ item.form_id }}{% if item.saved_form_id %} | Saved: {{ item.saved_form_id }}{% endif %}</div>
+              </td>
+              <td>{{ item.action }}</td>
+              <td>{{ item.mode }}</td>
+              <td>{{ item.mapped_count }}</td>
+              <td>
+                {% if item.truncation_count > 0 %}
+                <span class="badge bg-warning text-dark">{{ item.truncation_count }}</span>
+                {% else %}
+                <span class="badge bg-success">0</span>
+                {% endif %}
+              </td>
+              <td>{{ item.template_id }}</td>
+              <td>{{ 'Yes' if item.no_retention else 'No' }}</td>
+              <td class="d-flex gap-1">
+                {% if item.form_id %}
+                <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('forms.form_pdf_debug_view', form_id=item.form_id) }}">Debug</a>
+                <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('forms.form_pdf_template_editor', form_id=item.form_id, load_suggested='1') }}">Fix</a>
+                {% else %}
+                <span class="text-muted small">N/A</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="9" class="text-muted">No PDF render events found.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

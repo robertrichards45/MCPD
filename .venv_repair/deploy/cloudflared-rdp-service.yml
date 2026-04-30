@@ -1,0 +1,2 @@
+ingress:
+  - service: rdp://127.0.0.1:3389

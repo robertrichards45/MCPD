@@ -1,0 +1,8 @@
+Title: Duty Officer Incident Brief and Sitrep Format
+Category: Reporting
+Order Number: -
+Memo Number: PMO-MEMO-25-012
+Issuing Authority: PMO Command Staff
+Summary: Standardized format for duty officer notifications, initial incident briefs, and updates.
+Aliases: duty officer memorandum, incident brief format, sitrep template
+Sets required facts, timeline fields, and follow-up reporting intervals.

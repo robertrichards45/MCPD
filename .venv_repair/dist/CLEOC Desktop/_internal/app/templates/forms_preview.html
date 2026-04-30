@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell">
+  <div class="page-wrap form-preview-wrap">
+    <div class="card p-3 mb-3 no-print">
+      <div class="d-flex justify-content-between align-items-center gap-2">
+        <div>
+          <h2 class="mb-1">{{ preview_title }}</h2>
+          <p class="text-muted mb-0">{{ form.title }} | Generated {{ generated_at }}</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+          {% if saved_record %}
+          <a class="btn btn-outline-secondary" href="{{ url_for('forms.fill_form', form_id=form.id, saved_form_id=saved_record.id) }}">Back to Edit</a>
+          <a class="btn btn-outline-secondary" href="{{ url_for('forms.view_saved_form', saved_form_id=saved_record.id) }}">Saved Form</a>
+          {% else %}
+          <a class="btn btn-outline-secondary" href="{{ url_for('forms.fill_form', form_id=form.id) }}">Back to Edit</a>
+          {% endif %}
+          {% if no_retention_mode and temp_token %}
+          <a class="btn btn-outline-secondary" href="{{ url_for('forms.download_temp_form', form_id=form.id, token=temp_token) }}">Download Completed</a>
+          <form method="post" action="{{ url_for('forms.email_temp_form', form_id=form.id, token=temp_token) }}">
+            <button class="btn btn-outline-secondary">Email Completed</button>
+          </form>
+          {% endif %}
+          <button class="btn btn-primary" onclick="window.print()">Print</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-print-sheet">
+      {% if preview_pdf_url %}
+      <section class="print-section no-print">
+        <h4>Completed PDF Preview (Source of Truth)</h4>
+        <div class="mb-2">
+          <a class="btn btn-outline-secondary btn-sm" href="{{ preview_pdf_url }}">Open Generated PDF</a>
+          <span class="small text-muted ms-2">{{ preview_pdf_download_name }}</span>
+        </div>
+        <div class="small text-muted mb-2">This preview uses the same populated PDF output as print, download, and email.</div>
+        <object data="{{ preview_pdf_url }}" type="application/pdf" style="width:100%;min-height:520px;border:1px solid #d7dbe5;border-radius:10px;">
+          <p class="small text-muted mb-0">PDF preview unavailable in this browser. Use “Open Generated PDF”.</p>
+        </object>
+      </section>
+      {% endif %}
+
+      {% if no_retention_mode %}
+      <div class="card p-2 mb-2 no-print">
+        <strong>No-Retention Mode:</strong> This completed data is temporary and will not be saved on the website.
+      </div>
+      {% endif %}
+      <div class="form-print-header">
+        <div>
+          <h3 class="mb-1">{{ form.title }}</h3>
+          <div class="small text-muted">Schema: {{ schema.title }}</div>
+        </div>
+        <div class="small text-muted">
+          <div>Printed: {{ generated_at }}</div>
+          {% if blank_mode %}<div>BLANK VERSION</div>{% else %}<div>COMPLETED VERSION</div>{% endif %}
+        </div>
+      </div>
+
+      {% for section in sections %}
+      <section class="print-section">
+        <h4>{{ section.title }}</h4>
+        <div class="print-grid">
+          {% for row in section.rows %}
+          <div class="print-field">
+            <div class="print-label">{{ row.label }}</div>
+            {% if row.type == 'textarea' %}
+            <div class="print-value print-value-multiline">{{ row.value }}</div>
+            {% else %}
+            <div class="print-value">{{ row.value }}</div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      </section>
+      {% endfor %}
+
+      {% if schema.show_role_entry %}
+      <section class="print-section">
+        <h4>People by Role</h4>
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>Role</th>
+                <th>Full Name</th>
+                <th>ID / DL</th>
+                <th>Phone</th>
+                <th>Vehicle</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in role_rows %}
+              <tr>
+                <td>{{ row.role }}</td>
+                <td>{{ row.full_name }}</td>
+                <td>{{ row.identifier }}</td>
+                <td>{{ row.phone }}</td>
+                <td>{{ row.vehicle }}</td>
+                <td>{{ row.notes }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+      {% endif %}
+
+      {% if schema.show_notes %}
+      <section class="print-section">
+        <h4>General Notes</h4>
+        <div class="print-value print-value-multiline">{{ payload.notes if payload.notes else ('' if blank_mode else 'N/A') }}</div>
+      </section>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+  {{ super() }}
+  {% if print_mode %}
+  <script>
+    window.addEventListener('load', function () {
+      window.print();
+    });
+  </script>
+  {% endif %}
+{% endblock %}

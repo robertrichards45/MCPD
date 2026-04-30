@@ -1,0 +1,292 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell">
+  {% include 'partials/nav.html' %}
+  <div class="page-wrap">
+    <div class="card p-3 mb-3 legal-search-card search-panel">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+        <div>
+          <h2 class="mb-1">Orders and References</h2>
+          <p class="text-muted mb-0">Search all orders, memorandums, regulations, and local references in plain language.</p>
+        </div>
+      <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-outline-secondary" href="{{ url_for('orders.reference_search') }}">USMC Orders & Memos</a>
+        <a class="btn btn-outline-secondary" href="{{ url_for('orders.civilian_help') }}">Civilian</a>
+        {% if can_upload_orders %}
+        <a class="btn btn-outline-secondary" href="{{ url_for('orders.orders_source_admin') }}">Source Controls</a>
+        {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <form method="get">
+      <div class="row g-2 align-items-end">
+      <div class="col-md-8">
+        <label class="form-label text-dark">Search Orders and Memorandums</label>
+        <input class="form-control" name="q" value="{{ order_search_term }}" placeholder="Example: grooming standards, leave policy, gate procedures, vehicle registration, watch commander duties" />
+      </div>
+      <div class="col-md-4 d-flex gap-2">
+        <button class="btn btn-primary flex-fill">Search</button>
+        {% if order_search_term or order_category_filter or order_status_filter != 'ACTIVE' or order_source_type_filter or order_year_filter or order_topic_filter or order_source_filter %}
+        <a class="btn btn-outline-secondary flex-fill" href="{{ url_for('orders.library') }}">Reset</a>
+        {% endif %}
+      </div>
+      <details class="col-12 collapse-card mt-2">
+        <summary>Filters</summary>
+        <div class="row g-3 mt-1">
+          <div class="col-md-3">
+            <label class="form-label text-dark">Category</label>
+            <select class="form-control" name="category">
+              <option value="">All categories</option>
+              {% for category in categories %}
+                <option value="{{ category }}" {% if order_category_filter == category %}selected{% endif %}>{{ category }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label text-dark">Order Type</label>
+            <select class="form-control" name="source_type">
+              <option value="">All types</option>
+              {% for source_type in source_type_options %}
+                <option value="{{ source_type }}" {% if order_source_type_filter == source_type %}selected{% endif %}>{{ source_type }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label text-dark">Year</label>
+            <select class="form-control" name="year">
+              <option value="">All years</option>
+              {% for y in years %}
+                <option value="{{ y }}" {% if order_year_filter == y|string %}selected{% endif %}>{{ y }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label text-dark">Status</label>
+            <select class="form-control" name="status">
+              <option value="ACTIVE" {% if order_status_filter == 'ACTIVE' %}selected{% endif %}>Active</option>
+              <option value="INACTIVE" {% if order_status_filter == 'INACTIVE' %}selected{% endif %}>Archived</option>
+              <option value="ALL" {% if order_status_filter == 'ALL' %}selected{% endif %}>All</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label text-dark">Topic</label>
+            <input class="form-control" list="order-topic-options" name="topic" value="{{ order_topic_filter }}" placeholder="grooming, leave, barracks, traffic..." />
+            <datalist id="order-topic-options">
+              {% for topic in topic_values %}
+                <option value="{{ topic }}"></option>
+              {% endfor %}
+            </datalist>
+          </div>
+          <div class="col-md-5">
+            <label class="form-label text-dark">Source Group</label>
+            <select class="form-control" name="source">
+              <option value="">All sources</option>
+              {% for group in source_groups %}
+                <option value="{{ group }}" {% if order_source_filter == group %}selected{% endif %}>{{ group }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+      </details>
+      </div>
+    </form>
+    </div>
+
+  {% if can_upload_orders %}
+  <details class="card p-3 mb-3 collapse-card">
+    <summary>Admin Upload and Versioning</summary>
+    <div class="mt-3">
+    <div class="d-flex flex-wrap gap-2 mb-3">
+      {% if orders_seed_available %}
+      <form method="post">
+        <input type="hidden" name="action" value="seed_library" />
+        <button class="btn btn-outline-secondary" type="submit">Load Starter USMC/Base Orders & Memo Library</button>
+      </form>
+      {% endif %}
+      <form method="post">
+        <input type="hidden" name="action" value="reindex_library" />
+        <button class="btn btn-outline-dark" type="submit">Reindex Orders Library</button>
+      </form>
+      <form method="post">
+        <input type="hidden" name="action" value="reindex_approved_sources" />
+        <button class="btn btn-outline-dark" type="submit">Reindex Approved Sources Only</button>
+      </form>
+      <form method="post" class="d-flex gap-2 align-items-center">
+        <input type="hidden" name="action" value="ingest_official_sources" />
+        <input class="form-control" style="width:110px;" type="number" name="max_new" min="1" max="100" value="20" />
+        <button class="btn btn-outline-primary" type="submit">Ingest Official USMC Sources</button>
+      </form>
+    </div>
+    <div class="small text-muted mb-3">
+      Last run: {{ ingestion_state.last_run_utc or '-' }} |
+      Last success: {{ ingestion_state.last_success_utc or '-' }} |
+      Last inserted: {{ ingestion_state.last_inserted or 0 }} |
+      Last updated: {{ ingestion_state.last_updated or 0 }} |
+      Next due: {{ ingestion_state.next_due_utc or '-' }}
+      {% if ingestion_state.last_error %}
+        | Last error: {{ ingestion_state.last_error }}
+      {% endif %}
+    </div>
+    <form method="post" enctype="multipart/form-data" class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label text-dark">Title</label>
+        <input class="form-control" name="title" required />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label text-dark">Category</label>
+        <input class="form-control" name="category" placeholder="Traffic, Evidence, Security..." />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label text-dark">Version</label>
+        <input class="form-control" name="version_label" placeholder="v1.0 / 2026-03" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label text-dark">Source Type</label>
+        <select class="form-control" name="source_type">
+          {% for source_type in source_type_options %}
+          <option value="{{ source_type }}">{{ source_type }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label text-dark">Source Group</label>
+        <input class="form-control" name="source_group" placeholder="MCLB Albany, USMC, Local..." />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label text-dark">Order #</label>
+        <input class="form-control" name="order_number" placeholder="MCO 5500.6H" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label text-dark">Memo #</label>
+        <input class="form-control" name="memo_number" placeholder="Memo ID" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label text-dark">Issuing Authority</label>
+        <input class="form-control" name="issuing_authority" placeholder="Command / Office" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label text-dark">Issue Date</label>
+        <input class="form-control" type="date" name="issue_date" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label text-dark">Revision Date</label>
+        <input class="form-control" type="date" name="revision_date" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label text-dark">Source Version</label>
+        <input class="form-control" name="source_version" placeholder="2026.03 / rev 4" />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label text-dark">Audience Tags</label>
+        <input class="form-control" name="audience_tags" placeholder="Marines, Civilian Police, Command" />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label text-dark">Topic Tags</label>
+        <input class="form-control" name="topic_tags" placeholder="grooming, leave, reporting, vehicle" />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label text-dark">Superseded By (optional)</label>
+        <select class="form-control" name="superseded_by_id">
+          <option value="">None</option>
+          {% for candidate in known_documents %}
+          <option value="{{ candidate.id }}">{{ candidate.title }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-12">
+        <label class="form-label text-dark">Summary</label>
+        <textarea class="form-control" name="summary" rows="2" placeholder="Short summary or notes"></textarea>
+      </div>
+      <div class="col-md-8">
+        <label class="form-label text-dark">File</label>
+        <input class="form-control" type="file" name="order_file" accept=".pdf,.doc,.docx,.txt,.rtf" required />
+      </div>
+      <div class="col-md-4 d-flex align-items-end">
+        <button class="btn btn-primary w-100">Upload</button>
+      </div>
+    </form>
+    </div>
+  </details>
+  {% endif %}
+
+  {% if ai_guidance %}
+  <details class="card p-3 mb-3 collapse-card">
+    <summary>AI Recommendation</summary>
+    <div class="mt-2">
+    <div>{{ ai_guidance }}</div>
+    </div>
+  </details>
+  {% endif %}
+
+  <div class="card p-3" id="orders-results">
+    <div class="d-flex justify-content-between align-items-center mb-2 legal-results-header">
+      <h5 class="mb-0">Results</h5>
+      <span class="small text-muted">{{ documents|length }} match{% if documents|length != 1 %}es{% endif %}</span>
+    </div>
+    {% if documents %}
+      <div class="legal-results-list">
+      {% for document in documents %}
+        <details class="legal-accordion-item">
+          <summary class="legal-accordion-summary">
+            <span class="legal-accordion-title">{{ document.title }}</span>
+            <div class="d-flex gap-1 align-items-center legal-result-badges">
+              <span class="badge bg-dark">{{ document.source_type or 'LOCAL_DOCUMENT' }}</span>
+              {% if document.audience_label %}
+                <span class="badge bg-info text-dark">{{ document.audience_label }}</span>
+              {% endif %}
+              {% if document.is_active %}
+                <span class="badge bg-success">Active</span>
+              {% else %}
+                <span class="badge bg-secondary">Archived</span>
+              {% endif %}
+            </div>
+          </summary>
+          <div class="legal-accordion-body">
+            <p class="mb-2">
+              <strong>{{ document.category or 'General' }}</strong>
+              {% if document.order_number or document.memo_number %} | {{ document.order_number or document.memo_number }}{% endif %}
+            </p>
+            <p class="mb-2">{{ document.match_snippet or document.summary or 'No summary available' }}</p>
+            {% if document.match_reference %}
+              <div class="small mb-2"><strong>Reference:</strong> {{ document.match_reference }}</div>
+            {% endif %}
+            <div class="d-flex gap-2 mb-2">
+              <a class="btn btn-sm btn-outline-dark" href="{{ url_for('orders.view_order', order_id=document.id, q=order_search_term) }}">Open Text</a>
+              {% if document.download_available %}
+              <a class="btn btn-sm btn-primary" href="{{ url_for('orders.download_order', order_id=document.id) }}">Download</a>
+              {% else %}
+              <span class="badge bg-secondary align-self-center">download not available</span>
+              {% endif %}
+            </div>
+            <div class="small">
+              <div><strong>Uploaded:</strong> {{ display_dt(document.uploaded_at) }}</div>
+              <div><strong>Version:</strong> {{ document.version_label or document.source_version or '-' }}</div>
+              {% if order_search_term %}
+                <div><strong>Confidence:</strong> {{ document.search_confidence }}%</div>
+                {% if document.match_reasons %}<div><strong>Why matched:</strong> {{ document.match_reasons|join(', ') }}</div>{% endif %}
+                {% if document.search_confidence < 35 %}<div><strong>Note:</strong> possible match - verify source</div>{% endif %}
+              {% endif %}
+              {% if can_upload_orders %}
+              <form method="post" action="{{ url_for('orders.toggle_order', order_id=document.id) }}" class="mt-2">
+                <button class="btn btn-sm btn-outline-secondary">{{ 'Archive' if document.is_active else 'Activate' }}</button>
+              </form>
+              {% endif %}
+            </div>
+          </div>
+        </details>
+      {% endfor %}
+      </div>
+    {% else %}
+      <div class="text-muted">
+        {% if order_search_term %}
+          No approved order/reference source found for this search.
+        {% else %}
+          No approved orders found.
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+  </div>
+</div>
+{% endblock %}

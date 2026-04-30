@@ -1,0 +1,14 @@
+CLEOC Desktop Build
+
+Run:
+  CLEOC Desktop.exe
+
+This packaged app stores its local database and uploaded files in:
+  %LOCALAPPDATA%\MCPD-CLEOC-Desktop
+
+Default local address:
+  http://127.0.0.1:8092/cleo/reports
+
+If you want a shared in-station host instead of a single-PC local app,
+use the source project launcher:
+  launch_cleoc_shared_host.cmd

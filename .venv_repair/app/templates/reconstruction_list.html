@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell">
+  {% include 'partials/nav.html' %}
+
+  <div class="page-wrap recon-workbench-page">
+    <section class="recon-hero">
+      <div>
+        <div class="eyebrow">Crash Reconstruction</div>
+        <h1>Professional scene packets, diagrams, vehicles, measurements, and exports.</h1>
+        <p>Build a reconstruction case that looks like command staff can trust it before it ever leaves the portal.</p>
+      </div>
+      <form method="get" action="{{ url_for('reconstruction.case_list') }}" class="recon-search">
+        <input class="form-control" name="q" placeholder="Search case, location, or ID..." value="{{ q }}" />
+        <button class="btn btn-light">Search</button>
+      </form>
+    </section>
+
+    <div class="recon-list-layout">
+      <section class="recon-create-card">
+        <div class="eyebrow">New Case</div>
+        <h2>Start a scene file</h2>
+        <form method="post" action="{{ url_for('reconstruction.case_list') }}">
+          <label class="scenario-field">
+            <span>Case title</span>
+            <input class="form-control form-control-lg" name="title" placeholder="Two-vehicle collision at Gate 2" />
+          </label>
+          <label class="scenario-field">
+            <span>Incident date</span>
+            <input class="form-control" name="incident_date" type="date" />
+          </label>
+          <label class="scenario-field">
+            <span>Location</span>
+            <input class="form-control" name="location" placeholder="Street / intersection / parking lot" />
+          </label>
+          <button class="btn btn-primary btn-lg w-100">Create Reconstruction Case</button>
+        </form>
+      </section>
+
+      <section class="recon-case-board">
+        <div class="recon-board-head">
+          <div>
+            <h2>Case Board</h2>
+            <p>{{ cases|length }} visible case{{ '' if cases|length == 1 else 's' }}</p>
+          </div>
+        </div>
+        <div class="recon-case-grid">
+          {% for c in cases %}
+          <a class="recon-case-card" href="{{ url_for('reconstruction.case_detail', case_id=c.id) }}">
+            <span>Case #{{ c.id }}</span>
+            <strong>{{ c.title }}</strong>
+            <small>{{ c.incident_date or 'No date' }}{% if c.location %} | {{ c.location }}{% endif %}</small>
+            <em>Updated {{ c.updated_at.strftime('%Y-%m-%d') if c.updated_at else 'unknown' }}</em>
+          </a>
+          {% else %}
+          <div class="report-empty-state">No reconstruction cases yet.</div>
+          {% endfor %}
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% set body_class = 'landing' %}
+{% block body %}
+<div class="login-bg">
+  <div class="login-panel">
+    <img src="{{ url_for('usmc_emblem') }}" alt="USMC Emblem" class="login-emblem" />
+    <h1>CAC Access Setup</h1>
+    <p class="subtitle">Use your CAC to create or link your portal account.</p>
+    {% if error %}
+      <div class="alert alert-danger py-1">{{ error }}</div>
+    {% endif %}
+    {% if cac_context and cac_context.identifier_value %}
+      <div class="alert alert-info py-1">CAC Identifier: {{ cac_context.identifier_value }}</div>
+    {% endif %}
+
+    <div class="mb-3">
+      <h5>Create New CAC Account</h5>
+      <form method="post" action="{{ url_for('auth.cac_account_start') }}">
+        {% if next_url %}
+          <input type="hidden" name="next" value="{{ next_url }}" />
+        {% endif %}
+        <input type="hidden" name="action" value="create" />
+        <div class="mb-2">
+          <label class="form-label">First Name</label>
+          <input type="text" name="first_name" class="form-control" required />
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Last Name</label>
+          <input type="text" name="last_name" class="form-control" required />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Officer Number</label>
+          <input type="text" name="officer_number" class="form-control" required />
+        </div>
+        <button class="btn btn-primary w-100">Create with CAC</button>
+      </form>
+    </div>
+
+    <div class="mb-2">
+      <h5>Link CAC to Existing Account</h5>
+      <form method="post" action="{{ url_for('auth.cac_account_start') }}">
+        {% if next_url %}
+          <input type="hidden" name="next" value="{{ next_url }}" />
+        {% endif %}
+        <input type="hidden" name="action" value="link" />
+        <div class="mb-2">
+          <label class="form-label">Officer Number</label>
+          <input type="text" name="officer_number" class="form-control" required />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Enrollment Code</label>
+          <input type="text" name="enrollment_code" class="form-control" required />
+        </div>
+        <button class="btn btn-secondary w-100">Link Existing Account</button>
+      </form>
+    </div>
+
+    <a class="btn btn-outline-secondary w-100 mt-2" href="{{ url_for('auth.landing') }}">Back to Login</a>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,9 @@
+tunnel: replace-with-mclbpd-tunnel-uuid
+credentials-file: C:\Users\rober\.cloudflared\replace-with-mclbpd-tunnel-uuid.json
+
+ingress:
+  - hostname: mclbpd.com
+    service: http://127.0.0.1:8091
+  - hostname: www.mclbpd.com
+    service: http://127.0.0.1:8091
+  - service: http_status:404

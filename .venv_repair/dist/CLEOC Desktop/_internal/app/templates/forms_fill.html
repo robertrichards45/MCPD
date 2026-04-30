@@ -1,0 +1,251 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell">
+  {% include 'partials/nav.html' %}
+  <div class="page-wrap">
+    <div class="card p-3 mb-3 page-head">
+      <h2 class="mb-1">Complete Form</h2>
+      <p class="text-muted mb-0">{{ form.title }}{% if form.category %} | {{ form.category }}{% endif %}</p>
+      <div class="small text-muted mt-1">{{ fill_state.source_of_truth_label }}</div>
+    </div>
+
+    {% if policy.is_no_retention %}
+    <div class="card p-3 mb-3">
+      <strong>No-Retention PII Mode</strong>
+      <div class="small text-muted mt-1">
+        Completed form data is not saved on this website. Use Preview, Print, Email, or Download before leaving this session.
+      </div>
+    </div>
+    {% endif %}
+
+    <form method="post" class="card p-3 form-workflow-shell">
+      <input type="hidden" name="saved_title" value="{{ (saved_record.title if saved_record else form.title) or form.title }}" />
+
+      {% if scan_supported and can_edit %}
+      <details class="collapse-card mb-3 form-section" {% if scan_result %}open{% endif %}>
+        <summary>Scan ID</summary>
+        <div class="scan-panel">
+          <p class="small text-muted mb-2">Use a phone camera or upload a license image if your device supports barcode reading. You can also paste raw barcode text from a scanner. Existing values stay in place unless you choose Replace Existing.</p>
+          {% if scan_result %}
+          <div class="card p-2 mb-3">
+            <div class="small"><strong>Imported:</strong> {{ scan_result.imported|join(', ') if scan_result.imported else 'none' }}</div>
+            {% if scan_result.skipped %}<div class="small text-muted"><strong>Kept existing:</strong> {{ scan_result.skipped|join(', ') }}</div>{% endif %}
+          </div>
+          {% endif %}
+          <div class="row g-2">
+            <div class="col-md-6">
+              <label class="form-label text-dark">Scan Image</label>
+              <input class="form-control" type="file" id="id-scan-file" accept="image/*" capture="environment" />
+            </div>
+            <div class="col-md-6 d-flex align-items-end">
+              <label class="scan-checkbox"><input type="checkbox" name="scan_replace_existing" value="1" /> Replace Existing</label>
+            </div>
+            <div class="col-12">
+              <label class="form-label text-dark">Barcode Data</label>
+              <textarea class="form-control" name="scan_payload" id="id-scan-payload" rows="4" placeholder="If automatic scan is unavailable, paste the raw barcode text here."></textarea>
+            </div>
+            <div class="col-12 d-flex flex-wrap gap-2">
+              <button class="btn btn-outline-secondary" name="action" value="scan_id">Import ID Data</button>
+              <span class="small text-muted align-self-center" id="id-scan-status">No scan loaded.</span>
+            </div>
+          </div>
+        </div>
+      </details>
+      {% endif %}
+
+      {% if not fill_state.is_ready %}
+      <div class="card p-3 mb-3" style="background:#fff8e6;border-color:#f1d59a;">
+        <strong>Online Completion Not Available Yet</strong>
+        <div class="small text-muted mt-1">{{ fill_state.fallback_message }}</div>
+      </div>
+      {% else %}
+      <div class="small text-muted mb-3">Complete the real PDF-backed fields below. Preview, print, download, and email will use the same generated PDF output.</div>
+      {% for section in schema.sections %}
+      <details class="collapse-card mb-3 form-section" {% if loop.first %}open{% endif %}>
+        <summary>{{ section.title }}</summary>
+        <div class="form-section-grid">
+          {% for field in section.fields %}
+          <div class="form-field-block form-field-type-{{ field.type }}">
+            <label class="form-label text-dark">{{ field.label }}{% if field.required %} *{% endif %}</label>
+            {% if field.type == 'textarea' %}
+            <textarea class="form-control" name="field_{{ field.name }}" rows="3" placeholder="{{ field.placeholder }}" {% if not can_edit %}readonly{% endif %}>{{ payload['values'].get(field.name, '') }}</textarea>
+            {% elif field.type == 'checkbox' %}
+            {% set checked = payload['values'].get(field.name, '')|lower in ['yes', 'true', '1', 'on', 'x'] %}
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                name="field_{{ field.name }}"
+                id="field_{{ field.name }}"
+                value="1"
+                {% if checked %}checked{% endif %}
+                {% if not can_edit %}disabled{% endif %}
+              />
+              <label class="form-check-label" for="field_{{ field.name }}">Selected</label>
+            </div>
+            {% else %}
+            <input
+              class="form-control"
+              type="{{ 'text' if field.type in ['select', 'textarea'] else field.type }}"
+              name="field_{{ field.name }}"
+              value="{{ payload['values'].get(field.name, '') }}"
+              placeholder="{{ field.placeholder }}"
+              {% if field.required %}required{% endif %}
+              {% if not can_edit %}readonly{% endif %}
+            />
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      </details>
+      {% endfor %}
+
+      {% if schema.show_role_entry %}
+      <details class="collapse-card mb-3 form-section" open>
+        <summary>{{ schema.role_entry.title }}</summary>
+        <div id="role-entry-list" class="role-entry-list">
+          {% set role_rows = payload.role_entries if payload.role_entries else [{'role':'','full_name':'','identifier':'','phone':'','vehicle':'','notes':''}] %}
+          {% for row in role_rows %}
+          <div class="role-entry-card">
+            <div class="row g-2">
+              <div class="col-md-3">
+                <label class="form-label text-dark">Role</label>
+                <select class="form-control" name="role_entry_role" {% if not can_edit %}disabled{% endif %}>
+                  <option value="">Select role</option>
+                  {% for opt in schema.role_entry.role_options %}
+                  <option value="{{ opt }}" {% if row.role == opt %}selected{% endif %}>{{ opt }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label text-dark">Full Name</label>
+                <input class="form-control" name="role_entry_name" value="{{ row.full_name }}" {% if not can_edit %}readonly{% endif %} />
+              </div>
+              <div class="col-md-2">
+                <label class="form-label text-dark">ID / DL</label>
+                <input class="form-control" name="role_entry_identifier" value="{{ row.identifier }}" {% if not can_edit %}readonly{% endif %} />
+              </div>
+              <div class="col-md-2">
+                <label class="form-label text-dark">Phone</label>
+                <input class="form-control" name="role_entry_phone" value="{{ row.phone }}" {% if not can_edit %}readonly{% endif %} />
+              </div>
+              <div class="col-md-2">
+                <label class="form-label text-dark">Vehicle</label>
+                <input class="form-control" name="role_entry_vehicle" value="{{ row.vehicle }}" {% if not can_edit %}readonly{% endif %} />
+              </div>
+              <div class="col-12">
+                <label class="form-label text-dark">Role Notes</label>
+                <input class="form-control" name="role_entry_notes" value="{{ row.notes }}" {% if not can_edit %}readonly{% endif %} />
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% if can_edit %}
+        <button type="button" class="btn btn-outline-secondary btn-sm mt-2" id="add-role-entry-btn">Add Role Entry</button>
+        {% endif %}
+      </details>
+      {% endif %}
+
+      {% if schema.show_notes %}
+      <details class="collapse-card mb-3 form-section" open>
+        <summary>Notes</summary>
+        <label class="form-label text-dark">General Notes</label>
+        <textarea class="form-control" name="notes" rows="5" {% if not can_edit %}readonly{% endif %}>{{ payload.notes }}</textarea>
+      </details>
+      {% endif %}
+      {% endif %}
+
+      <div class="form-action-footer sticky-actions">
+        {% if can_edit and fill_state.is_ready %}
+        {% if not policy.is_no_retention and policy.allow_completed_save %}
+        <button class="btn btn-outline-secondary" name="action" value="save_draft">Save Draft</button>
+        <button class="btn btn-primary" name="action" value="save_completed">Save Completed</button>
+        {% endif %}
+        <button class="btn btn-outline-secondary" name="action" value="preview_completed">Preview</button>
+        <button class="btn btn-outline-secondary" name="action" value="print_completed">Print</button>
+        {% if policy.allow_download %}
+        <button class="btn btn-outline-secondary" name="action" value="download_completed">Download</button>
+        {% endif %}
+        {% if policy.allow_email %}
+        <button class="btn btn-outline-secondary" name="action" value="email_form">Email</button>
+        {% endif %}
+        {% endif %}
+        {% if policy.allow_blank_print %}
+        <a class="btn btn-outline-secondary" href="{{ url_for('forms.blank_form_preview', form_id=form.id) }}">Blank Preview</a>
+        {% endif %}
+        <a class="btn btn-outline-secondary" href="{{ url_for('forms.download_form', form_id=form.id) }}">Blank Download</a>
+        <a class="btn btn-outline-secondary" href="{{ url_for('forms.list_forms') }}">Back to Forms</a>
+        <a class="btn btn-outline-secondary" href="{{ url_for('forms.saved_forms') }}">Saved Forms</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+  {{ super() }}
+  {% if scan_supported and can_edit %}
+  <script>
+    (function () {
+      var fileInput = document.getElementById('id-scan-file');
+      var payload = document.getElementById('id-scan-payload');
+      var status = document.getElementById('id-scan-status');
+      if (!fileInput || !payload || !status) return;
+
+      async function detectFromFile(file) {
+        if (!('BarcodeDetector' in window)) {
+          status.textContent = 'Automatic scan is not available on this device. Paste barcode text if needed.';
+          return;
+        }
+        try {
+          var detector = new BarcodeDetector({ formats: ['pdf417'] });
+          var bitmap = await createImageBitmap(file);
+          var codes = await detector.detect(bitmap);
+          if (codes && codes.length && codes[0].rawValue) {
+            payload.value = codes[0].rawValue;
+            status.textContent = 'Barcode captured. Select Import ID Data.';
+            return;
+          }
+          status.textContent = 'No PDF417 barcode found. You can still paste barcode text manually.';
+        } catch (_err) {
+          status.textContent = 'Automatic scan failed on this device. Paste barcode text if needed.';
+        }
+      }
+
+      fileInput.addEventListener('change', function () {
+        var file = fileInput.files && fileInput.files[0];
+        if (!file) return;
+        status.textContent = 'Reading barcode...';
+        detectFromFile(file);
+      });
+    })();
+  </script>
+  {% endif %}
+  {% if can_edit and schema.show_role_entry %}
+  <script>
+    (function () {
+      var addRoleBtn = document.getElementById('add-role-entry-btn');
+      var roleList = document.getElementById('role-entry-list');
+      if (!addRoleBtn || !roleList) return;
+      var roleOptions = {{ schema.role_entry.role_options|tojson }};
+      addRoleBtn.addEventListener('click', function () {
+        var wrap = document.createElement('div');
+        wrap.className = 'role-entry-card';
+        var options = '<option value="">Select role</option>' + roleOptions.map(function (opt) {
+          return '<option value="' + opt + '">' + opt + '</option>';
+        }).join('');
+        wrap.innerHTML =
+          '<div class="row g-2">' +
+            '<div class="col-md-3"><label class="form-label text-dark">Role</label><select class="form-control" name="role_entry_role">' + options + '</select></div>' +
+            '<div class="col-md-3"><label class="form-label text-dark">Full Name</label><input class="form-control" name="role_entry_name" /></div>' +
+            '<div class="col-md-2"><label class="form-label text-dark">ID / DL</label><input class="form-control" name="role_entry_identifier" /></div>' +
+            '<div class="col-md-2"><label class="form-label text-dark">Phone</label><input class="form-control" name="role_entry_phone" /></div>' +
+            '<div class="col-md-2"><label class="form-label text-dark">Vehicle</label><input class="form-control" name="role_entry_vehicle" /></div>' +
+            '<div class="col-12"><label class="form-label text-dark">Role Notes</label><input class="form-control" name="role_entry_notes" /></div>' +
+          '</div>';
+        roleList.appendChild(wrap);
+      });
+    })();
+  </script>
+  {% endif %}
+{% endblock %}

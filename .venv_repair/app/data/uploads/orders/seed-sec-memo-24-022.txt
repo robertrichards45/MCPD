@@ -1,0 +1,8 @@
+Title: Suspicious Package and Bomb Threat Response
+Category: Force Protection
+Order Number: -
+Memo Number: SEC-MEMO-24-022
+Issuing Authority: Security Office
+Summary: Immediate actions for suspicious package reports and bomb threat communications.
+Aliases: bomb threat procedures, suspicious package, evacuation protocol
+Provides scene isolation, EOD coordination, and communication restrictions.

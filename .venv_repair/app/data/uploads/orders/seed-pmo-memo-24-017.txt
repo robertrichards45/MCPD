@@ -1,0 +1,8 @@
+Title: Lost or Stolen CAC and Access Credential Response
+Category: Security
+Order Number: -
+Memo Number: PMO-MEMO-24-017
+Issuing Authority: PMO Operations
+Summary: Immediate reporting and replacement workflow for lost or stolen CAC and installation credentials.
+Aliases: lost cac procedures, credential loss, id card lost, access card missing
+Requires immediate notification, temporary access controls, and coordination with access control center.

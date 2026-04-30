@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell">
+  {% include 'partials/nav.html' %}
+  <div class="page-wrap">
+    <div class="card p-3 mb-3 page-head">
+      <h2 class="mb-1">Personnel Management</h2>
+      <p class="text-muted mb-0">Website Controllers can manage all personnel. Watch Commanders can manage only assigned officers.</p>
+    </div>
+    {% if database_write_notice %}<div class="alert alert-warning">{{ database_write_notice }}</div>{% endif %}
+    {% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+    {% if success %}<div class="alert alert-success">{{ success }}</div>{% endif %}
+    {% if issued_code %}<div class="alert alert-warning">Enrollment Code: <strong>{{ issued_code }}</strong></div>{% endif %}
+
+    <div class="row">
+      <div class="col-md-6">
+        <details class="card p-3 mb-3 collapse-card" open>
+          <summary>Create User</summary>
+          <div class="mt-2">
+        <form method="post">
+          <input type="hidden" name="action" value="create" />
+          <div class="mb-2"><label>First Name</label><input class="form-control" name="first_name" /></div>
+          <div class="mb-2"><label>Last Name</label><input class="form-control" name="last_name" /></div>
+          <div class="mb-2"><label>Phone Number</label><input class="form-control" name="phone_number" /></div>
+          <div class="mb-2"><label>Address</label><textarea class="form-control" name="address" rows="2"></textarea></div>
+          <div class="mb-2"><label>Officer Number</label><input class="form-control" name="officer_number" /></div>
+          <div class="mb-2"><label>EDIPI</label><input class="form-control" name="edipi" /></div>
+          <div class="mb-2"><label>Username</label><input class="form-control" name="username" /></div>
+          <div class="mb-2"><label>Password</label><input class="form-control" name="password" /></div>
+          <div class="mb-2"><label>Role</label>
+            <select class="form-control" name="role">
+              {% for role in role_options %}
+                <option value="{{ role }}">{{ role_labels.get(role, role.replace('_', ' ').title()) }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-2"><label>Supervisor</label>
+            <select class="form-control" name="supervisor_id">
+              <option value="">Unassigned</option>
+              {% for supervisor in supervisors %}
+                <option value="{{ supervisor.id }}">{{ supervisor.display_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" name="can_grade_cleoc_reports" value="1" id="createCanGradeCleoc">
+              <label class="form-check-label" for="createCanGradeCleoc">Can review mock reports</label>
+          </div>
+          <button class="btn btn-primary">Create</button>
+        </form>
+          </div>
+        </details>
+      </div>
+      <div class="col-md-6">
+        <details class="card p-3 mb-3 collapse-card" open>
+          <summary>Update / Reset / Disable</summary>
+          <div class="mt-2">
+        <form method="post" class="mb-3">
+          <input type="hidden" name="action" value="update" />
+          <div class="mb-2"><label>Username</label><input class="form-control" name="username" /></div>
+          <div class="mb-2"><label>Role</label>
+            <select class="form-control" name="role">
+              {% for role in role_options %}
+                <option value="{{ role }}">{{ role_labels.get(role, role.replace('_', ' ').title()) }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-2"><label>Supervisor</label>
+            <select class="form-control" name="supervisor_id">
+              <option value="">Unassigned</option>
+              {% for supervisor in supervisors %}
+                <option value="{{ supervisor.id }}">{{ supervisor.display_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" name="can_grade_cleoc_reports" value="1" id="updateCanGradeCleoc">
+              <label class="form-check-label" for="updateCanGradeCleoc">Grant mock report review access</label>
+          </div>
+          <button class="btn btn-secondary">Update Assignment</button>
+        </form>
+        <form method="post" class="mb-3">
+          <input type="hidden" name="action" value="reset" />
+          <div class="mb-2"><label>Username</label><input class="form-control" name="username" /></div>
+          <div class="mb-2"><label>New Password</label><input class="form-control" name="password" /></div>
+          <button class="btn btn-secondary">Reset Password</button>
+        </form>
+        <form method="post">
+          <input type="hidden" name="action" value="disable" />
+          <div class="mb-2"><label>Username</label><input class="form-control" name="username" /></div>
+          <button class="btn btn-danger">Disable User</button>
+        </form>
+        <form method="post" class="mt-3">
+          <input type="hidden" name="action" value="issue_code" />
+          <div class="mb-2"><label>Username</label><input class="form-control" name="username" /></div>
+          <div class="mb-2"><label>Hours Valid</label><input class="form-control" name="hours" value="24" /></div>
+          <button class="btn btn-outline-primary">Issue Enrollment Code</button>
+        </form>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <details class="card p-3 collapse-card" open>
+      <summary>Current Personnel</summary>
+      <div class="table-responsive mt-2">
+        <table class="table table-striped">
+              <thead><tr><th>Name</th><th>Username</th><th>Officer #</th><th>Phone</th><th>CAC</th><th>Role</th><th>Mock Report Reviewer</th><th>Supervisor</th><th>Active</th></tr></thead>
+          <tbody>
+            {% for u in users %}
+              <tr>
+                <td>{{ u.display_name }}</td>
+                <td>{{ u.username }}</td>
+                <td>{{ u.officer_number or '' }}</td>
+                <td>{{ u.phone_number or '' }}</td>
+                <td>{{ 'Linked' if u.cac_identifier else '' }}</td>
+                <td>{{ u.role_label }}</td>
+                <td>{{ 'Yes' if u.can_grade_cleoc_reports or u.can_manage_site() else 'No' }}</td>
+                <td>
+                  {{ u.supervisor.display_name if u.supervisor else '' }}
+                </td>
+                <td>{{ u.active }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </details>
+  </div>
+</div>
+{% endblock %}
