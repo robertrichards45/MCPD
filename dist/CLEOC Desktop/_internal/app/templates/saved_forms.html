@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell">
+  {% include 'partials/nav.html' %}
+  <div class="page-wrap">
+    <div class="card p-3 mb-3 page-head">
+      <h2 class="mb-1">Saved Forms</h2>
+      <p class="text-muted mb-0">Only your forms and watch-commander-visible forms are listed.</p>
+    </div>
+
+    <div class="card p-3 mb-3">
+      <form method="get" class="row g-2">
+        <div class="col-md-4">
+          <input class="form-control" name="q" value="{{ search_term }}" placeholder="Search title or officer" />
+        </div>
+        <div class="col-md-3">
+          <input class="form-control" name="form_type" value="{{ form_type }}" placeholder="Form type" />
+        </div>
+        <div class="col-md-3">
+          <select class="form-control" name="status">
+            <option value="" {% if not status %}selected{% endif %}>All statuses</option>
+            <option value="DRAFT" {% if status == 'DRAFT' %}selected{% endif %}>Draft</option>
+            <option value="COMPLETED" {% if status == 'COMPLETED' %}selected{% endif %}>Completed</option>
+            <option value="SUBMITTED" {% if status == 'SUBMITTED' %}selected{% endif %}>Submitted</option>
+          </select>
+        </div>
+        <div class="col-md-2"><button class="btn btn-outline-secondary w-100">Filter</button></div>
+      </form>
+    </div>
+
+    <div class="results-list">
+      {% for row in saved_forms %}
+      <article class="result-card">
+        <div class="result-head">
+          <h4>{{ row.title or 'Untitled Form' }}</h4>
+          <span class="badge bg-dark">{{ row.status }}</span>
+        </div>
+        <p class="result-sub">
+          Owner: {{ row.officer.display_name if row.officer else row.officer_user_id }} |
+          Updated: {{ row.updated_at.strftime('%Y-%m-%d %H:%M:%S') if row.updated_at else '' }}
+        </p>
+        <div class="result-actions">
+          <a class="btn btn-sm btn-primary" href="{{ url_for('forms.view_saved_form', saved_form_id=row.id) }}">Open</a>
+          <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('forms.preview_saved_form', saved_form_id=row.id) }}">Preview</a>
+          <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('forms.download_saved_form', saved_form_id=row.id) }}">Download</a>
+        </div>
+      </article>
+      {% else %}
+      <div class="card p-3 text-muted">No saved forms found.</div>
+      {% endfor %}
+    </div>
+
+    {% if show_admin_retention_events %}
+    <details class="card p-3 mt-3 collapse-card">
+      <summary>No-Retention Form Events</summary>
+      <div class="table-responsive mt-2">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>When</th>
+              <th>Form</th>
+              <th>Mode</th>
+              <th>Action</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for event in no_retention_events %}
+            <tr>
+              <td>{{ display_dt(event.created_at) }}</td>
+              <td>{{ event.form_title }}</td>
+              <td>{{ event.retention_mode }}</td>
+              <td>{{ event.action_type }}</td>
+              <td>{{ event.status }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-muted">No no-retention events logged.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </details>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

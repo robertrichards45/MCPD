@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell">
+  {% include 'partials/nav.html' %}
+  <div class="page-wrap">
+    <div class="card p-3 mb-3 page-head">
+      <h2 class="mb-1">{{ record.title or 'Saved Form' }}</h2>
+      <p class="text-muted mb-0">
+        Owner: {{ owner.display_name if owner else record.officer_user_id }} |
+        Status: {{ record.status }} |
+        Updated: {{ display_dt(record.updated_at) }}
+      </p>
+    </div>
+
+    <div class="card p-3 mb-3">
+      <div class="d-flex flex-wrap gap-2">
+        {% if can_edit and form %}
+        <a class="btn btn-primary" href="{{ url_for('forms.fill_form', form_id=form.id, saved_form_id=record.id) }}">Continue Editing</a>
+        {% endif %}
+        <a class="btn btn-outline-secondary" href="{{ url_for('forms.preview_saved_form', saved_form_id=record.id) }}">Preview Completed Form</a>
+        <a class="btn btn-outline-secondary" href="{{ url_for('forms.preview_saved_form', saved_form_id=record.id, print='1') }}">Print Completed Form</a>
+        {% if form %}
+        <a class="btn btn-outline-secondary" href="{{ url_for('forms.blank_form_preview', form_id=form.id, print='1') }}">Print Blank Form</a>
+        {% endif %}
+        <a class="btn btn-outline-secondary" href="{{ url_for('forms.download_saved_form', saved_form_id=record.id) }}">Download PDF</a>
+      </div>
+    </div>
+
+    {% if policy.allow_email %}
+    <details class="card p-3 mb-3 collapse-card" {% if email_requested %}open{% endif %}>
+      <summary>Email Form</summary>
+      <form method="post" action="{{ url_for('forms.email_saved_form', saved_form_id=record.id) }}" class="row g-2 mt-2">
+        <div class="col-md-6">
+          <label class="form-label text-dark">Version</label>
+          <select class="form-control" name="mode">
+            <option value="completed">Completed printable version</option>
+            <option value="blank">Blank printable version</option>
+          </select>
+        </div>
+        <div class="col-md-6 d-flex align-items-end">
+          <button class="btn btn-primary w-100">Send Email</button>
+        </div>
+      </form>
+      <div class="small text-muted mt-2">Recipient is fixed to your profile email. CC is automatically sent to Watch Commander and Desk Sgt.</div>
+      <div class="small text-muted">If SMTP is not configured, a mailto fallback link will be provided.</div>
+    </details>
+    {% endif %}
+
+    {% for section in sections %}
+    <details class="card p-3 mb-3 collapse-card" {% if loop.first %}open{% endif %}>
+      <summary>{{ section.title }}</summary>
+      <div class="table-responsive mt-2">
+        <table class="table table-striped">
+          <tbody>
+            {% for row in section.rows %}
+            <tr>
+              <th style="width: 36%;">{{ row.label }}</th>
+              <td>{{ row.value }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </details>
+    {% endfor %}
+
+    {% if schema.show_role_entry %}
+    <details class="card p-3 mb-3 collapse-card" open>
+      <summary>People by Role</summary>
+      <div class="table-responsive mt-2">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Role</th>
+              <th>Full Name</th>
+              <th>ID / DL</th>
+              <th>Phone</th>
+              <th>Vehicle</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if role_rows %}
+              {% for row in role_rows %}
+              <tr>
+                <td>{{ row.role }}</td>
+                <td>{{ row.full_name }}</td>
+                <td>{{ row.identifier }}</td>
+                <td>{{ row.phone }}</td>
+                <td>{{ row.vehicle }}</td>
+                <td>{{ row.notes }}</td>
+              </tr>
+              {% endfor %}
+            {% else %}
+              <tr><td colspan="6" class="text-muted">No role entries recorded.</td></tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </details>
+    {% endif %}
+
+    <details class="card p-3 mb-3 collapse-card">
+      <summary>Audit History</summary>
+      <div class="table-responsive mt-2">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>When</th>
+              <th>Action</th>
+              <th>By</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in audits %}
+            <tr>
+              <td>{{ display_dt(item.created_at) }}</td>
+              <td>{{ item.action }}</td>
+              <td>{{ item.actor.display_name if item.actor else item.actor_user_id }}</td>
+              <td>{{ item.details or '-' }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" class="text-muted">No audit events recorded.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </details>
+  </div>
+</div>
+{% endblock %}

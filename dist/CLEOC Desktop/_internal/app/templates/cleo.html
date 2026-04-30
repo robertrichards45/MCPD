@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell">
+  {% include 'partials/nav.html' %}
+  <div class="page-wrap">
+    <div class="card p-3 mb-3 page-head">
+      <h2 class="mb-1">CLEOC Report Writing System</h2>
+      <p class="text-muted mb-0">Use CLEOC for full report package authoring.</p>
+    </div>
+    <div class="card p-2 embed-wrap">
+      <iframe src="{{ cleo_url if cleo_url else url_for('static', filename='cleo/index.html') }}" title="CLEOC"></iframe>
+    </div>
+  </div>
+</div>
+{% endblock %}

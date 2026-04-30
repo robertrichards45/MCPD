@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600" viewBox="0 0 1200 600">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0f1b23"/>
+      <stop offset="1" stop-color="#2b3725"/>
+    </linearGradient>
+    <pattern id="hatch" width="24" height="24" patternUnits="userSpaceOnUse" patternTransform="rotate(20)">
+      <line x1="0" y1="0" x2="0" y2="24" stroke="rgba(255,255,255,0.08)" stroke-width="6"/>
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="600" fill="url(#bg)"/>
+  <rect width="1200" height="600" fill="url(#hatch)"/>
+
+  <!-- Road / intersection -->
+  <g opacity="0.95">
+    <path d="M 0 320 L 1200 320" stroke="rgba(255,255,255,0.22)" stroke-width="160"/>
+    <path d="M 600 0 L 600 600" stroke="rgba(255,255,255,0.20)" stroke-width="160"/>
+    <path d="M 0 320 L 1200 320" stroke="rgba(0,0,0,0.12)" stroke-width="160"/>
+    <path d="M 600 0 L 600 600" stroke="rgba(0,0,0,0.12)" stroke-width="160"/>
+  </g>
+
+  <!-- Lane markers -->
+  <g stroke="rgba(255,255,255,0.7)" stroke-width="10" stroke-linecap="round">
+    <path d="M 90 320 L 190 320"/>
+    <path d="M 270 320 L 370 320"/>
+    <path d="M 450 320 L 550 320"/>
+    <path d="M 650 320 L 750 320"/>
+    <path d="M 830 320 L 930 320"/>
+    <path d="M 1010 320 L 1110 320"/>
+  </g>
+
+  <!-- Vehicles + skid -->
+  <g fill="#ffffff" opacity="0.92">
+    <rect x="350" y="260" width="110" height="60" rx="12"/>
+    <rect x="690" y="340" width="110" height="60" rx="12"/>
+  </g>
+  <path d="M 430 300 C 520 320, 610 350, 680 380" fill="none" stroke="rgba(201,168,106,0.95)" stroke-width="10" stroke-linecap="round" stroke-dasharray="16 14"/>
+
+  <!-- Title -->
+  <g font-family="Arial, Helvetica, sans-serif" fill="#ffffff">
+    <text x="80" y="110" font-size="56" font-weight="700" letter-spacing="1">Accident Reconstruction</text>
+    <text x="80" y="150" font-size="24" opacity="0.9">Case workspaces, scene diagrams, uploads, packet export</text>
+  </g>
+</svg>
+

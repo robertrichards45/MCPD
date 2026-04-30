@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell">
+  {% include 'partials/nav.html' %}
+  <div class="page-wrap">
+    <div class="card p-3 mb-3 page-head">
+      <h2 class="mb-1">{{ document.title }}</h2>
+      <div class="small text-muted">
+        {{ document.order_number or document.memo_number or 'No formal reference listed' }} |
+        {{ document.source_type or 'LOCAL_DOCUMENT' }} |
+        {{ document.issue_date.strftime('%Y-%m-%d') if document.issue_date else (document.revision_date.strftime('%Y-%m-%d') if document.revision_date else 'undated') }}
+      </div>
+    </div>
+
+    {% if freshness_warning %}
+    <div class="card p-3 mb-3" style="background:#fff8e6;border-color:#f1d59a;">
+      <strong>{{ freshness_warning }}</strong>
+    </div>
+    {% endif %}
+
+    <div class="card p-3 mb-3">
+      <div class="row g-2 small mb-2">
+        <div class="col-md-4"><strong>Authority:</strong> {{ document.issuing_authority or '-' }}</div>
+        <div class="col-md-4"><strong>Version:</strong> {{ document.source_version or document.version_label or '-' }}</div>
+        <div class="col-md-4"><strong>Parser Confidence:</strong> {{ '%.0f'|format((document.parser_confidence or 0) * 100) }}%</div>
+      </div>
+      {% if document.summary %}<div class="mb-2">{{ document.summary }}</div>{% endif %}
+      {% if partial_text_warning %}
+      <div class="small text-muted mb-2">{{ partial_text_warning }}</div>
+      {% endif %}
+      <div class="mt-3 d-flex flex-wrap gap-2">
+        {% if file_exists %}
+        <a class="btn btn-primary" href="{{ url_for('orders.download_order', order_id=document.id) }}">Download Reference</a>
+        {% else %}
+        <span class="badge bg-secondary">Download not available</span>
+        {% endif %}
+        <a class="btn btn-outline-secondary" href="{{ url_for('orders.reference_search', q=search_term) if search_term else url_for('orders.reference_search') }}">Back to Results</a>
+        <a class="btn btn-outline-secondary" href="#full-text-reader">Open Full Text</a>
+      </div>
+    </div>
+
+    <details class="card p-3 collapse-card mb-3" open>
+      <summary>Relevant Section First</summary>
+      {% if excerpt_text %}
+        {% if excerpt_reference %}
+          <div class="small mb-2"><strong>Section:</strong> <span id="order-excerpt-reference">{{ excerpt_reference }}</span></div>
+        {% endif %}
+        <div id="order-reader-focus" class="reader-panel">
+          {% for block in reader_context.leading_blocks %}
+            <p class="mb-2 text-muted">{{ block.text }}</p>
+          {% endfor %}
+          {% for block in reader_context.focus_blocks %}
+            <div class="p-3 mb-2 border rounded" style="background:#fff8e6;border-color:#f1d59a !important;">
+              <div class="small text-muted mb-1">Matched section</div>
+              <div id="order-excerpt-text">{{ block.text }}</div>
+            </div>
+          {% endfor %}
+          {% for block in reader_context.trailing_blocks %}
+            <p class="mb-2">{{ block.text }}</p>
+          {% endfor %}
+        </div>
+        {% if reader_context.extra_blocks %}
+        <details class="mt-2">
+          <summary>Show More Surrounding Paragraphs</summary>
+          <div id="order-reader-expanded" class="mt-2">
+            {% for block in reader_context.extra_blocks %}
+              <p class="mb-2">{{ block.text }}</p>
+            {% endfor %}
+          </div>
+        </details>
+        {% endif %}
+        {% if simplify_warning %}
+          <div class="small mb-2"><strong>Note:</strong> {{ simplify_warning }}</div>
+        {% endif %}
+        <div class="d-flex gap-2">
+          <button class="btn btn-outline-secondary btn-sm" type="button" id="simplify-order-btn">Simplify This</button>
+          <a class="btn btn-outline-secondary btn-sm" href="#full-text-reader">Show Full Section</a>
+        </div>
+        <div id="simplified-order-box" class="summary-box mt-2" style="display:none;">
+          <strong>Plain-English Summary</strong>
+          <div id="simplified-order-text" class="mt-1"></div>
+        </div>
+      {% else %}
+        <div class="text-muted">relevant section may require manual review</div>
+      {% endif %}
+    </details>
+
+    <details class="card p-3 collapse-card" id="full-text-reader" open>
+      <summary>Full Text Preview</summary>
+      {% if body_text %}
+        <div style="max-height:70vh;overflow:auto;">
+          {% for block in reader_context.all_blocks %}
+            {% if loop.index0 == reader_context.focus_index %}
+              <div id="matched-full-text-block" class="p-3 mb-2 border rounded" style="background:#fff8e6;border-color:#f1d59a !important;">
+                <div class="small text-muted mb-1">Matched location</div>
+                <div>{{ block.text }}</div>
+              </div>
+            {% elif block.kind == 'heading' %}
+              <h5 class="mt-3 mb-2">{{ block.text }}</h5>
+            {% else %}
+              <p class="mb-2">{{ block.text }}</p>
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="text-muted">Full text preview unavailable. Use the source download if available.</div>
+      {% endif %}
+    </details>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <script>
+    (function () {
+      var btn = document.getElementById('simplify-order-btn');
+      if (!btn) return;
+      btn.addEventListener('click', async function () {
+        btn.disabled = true;
+        btn.textContent = 'Simplifying...';
+        var excerpt = '';
+        var focus = document.getElementById('order-reader-focus');
+        var expanded = document.getElementById('order-reader-expanded');
+        if (focus) excerpt += focus.textContent || '';
+        if (expanded && expanded.parentElement && expanded.parentElement.open) excerpt += '\n' + (expanded.textContent || '');
+        var reference = (document.getElementById('order-excerpt-reference') || {}).textContent || '';
+        try {
+          var res = await fetch('{{ url_for("orders.simplify_order_excerpt", order_id=document.id) }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ excerpt: excerpt, reference: reference })
+          });
+          var data = await res.json();
+          if (!res.ok || !data.ok) throw new Error((data && data.error) || 'Simplify failed');
+          document.getElementById('simplified-order-text').textContent = data.summary;
+          document.getElementById('simplified-order-box').style.display = 'block';
+          btn.textContent = 'Simplified';
+          document.getElementById('simplified-order-box').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } catch (err) {
+          alert('Unable to simplify this excerpt right now. Use the official text.');
+          btn.textContent = 'Simplify This';
+        } finally {
+          btn.disabled = false;
+        }
+      });
+    })();
+  </script>
+{% endblock %}

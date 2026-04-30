@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#3e2458"/>
+      <stop offset="100%" stop-color="#7f4bc8"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="360" fill="url(#bg)"/>
+  <circle cx="176" cy="180" r="102" fill="#efe6ff" opacity=".94"/>
+  <circle cx="146" cy="154" r="12" fill="#5d3f8b"/>
+  <circle cx="206" cy="154" r="12" fill="#5d3f8b"/>
+  <path d="M136 206c18 20 62 20 80 0" fill="none" stroke="#5d3f8b" stroke-width="10" stroke-linecap="round"/>
+  <path d="M176 88v-24M124 104l-18-16M228 104l18-16M116 180H92M260 180h24" stroke="#d9c0ff" stroke-width="10" stroke-linecap="round"/>
+  <rect x="340" y="108" width="220" height="28" rx="10" fill="#d9c0ff" opacity=".35"/>
+  <rect x="340" y="160" width="188" height="28" rx="10" fill="#d9c0ff" opacity=".35"/>
+  <text x="340" y="286" fill="#ffffff" font-size="38" font-family="Segoe UI, Arial, sans-serif" font-weight="700">AI Assist</text>
+</svg>

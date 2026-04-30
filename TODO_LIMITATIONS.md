@@ -45,6 +45,8 @@ Last updated: 2026-04-30
 - Browser downloads/previews for dynamic XFA forms now use a portal-generated compatible PDF so the browser no longer shows the Adobe `Please wait...` shell.
 - The compatible XFA render now uses a clean sectioned official-question layout instead of unreliable XFA coordinates. This fixes the visible alignment problem in browser-generated PDFs, but it is still not the same as a true Adobe XFA flatten of the original page art.
 - DLA/NFOL currently states that digital forms are being moved to DSO/Navy Digital Storefront. When those current copies are available, replace any old Adobe-wait source PDFs with the newest official usable copies and rerun form mapping verification.
+- Forms Manager now supports official source URL tracking and direct official PDF update checks. DSO storefront/login pages are detected as gated and will not be applied as form replacements.
+- Scheduled form updates are available through `scripts/check_form_source_updates.py --apply`, but only for forms with auto-update enabled and a direct official PDF URL.
 - Some original PDFs do not expose meaningful captions for every field. The worst remaining label-review items are DD Form 2504, DD Form 2505, DD Form 2506, DD Form 2507, and DD Form 2701, where Adobe/XFA metadata still exposes generic names like `TextField2` for some inputs.
 - Those forms should be manually reviewed in Forms Manager / Template Editor and given curated UI labels where the source PDF does not provide usable label text.
 

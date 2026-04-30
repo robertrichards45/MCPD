@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell">
+  {% include 'partials/nav.html' %}
+  <div class="page-wrap">
+    <div class="card p-3 mb-3 legal-search-card search-panel">
+      <div class="mb-2">
+        <h2 class="mb-1">{{ page_title }}</h2>
+        <p class="text-muted mb-0">{{ page_subtitle }}</p>
+      </div>
+      <form method="get" action="{{ url_for('legal.legal_lookup') }}">
+        <div class="row g-2">
+          <div class="col-md-7">
+            <label class="form-label text-dark">Search</label>
+            <input class="form-control" type="text" name="q" value="{{ query }}" placeholder="Type what you observed. Example: trespassing on a federal installation" />
+          </div>
+          <div class="col-md-3">
+            <label class="form-label text-dark">Source</label>
+            <select class="form-control" name="source">
+              {% for option in source_options %}
+              <option value="{{ option }}" {% if source == option %}selected{% endif %}>
+                {% if option == 'ALL' %}All Sources{% elif option == 'GEORGIA' %}Georgia Code{% elif option == 'UCMJ' %}UCMJ{% elif option == 'BASE_ORDER' %}Base Orders{% else %}United States Code{% endif %}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-2 d-flex align-items-end">
+            <button class="btn btn-primary w-100" type="submit">Search</button>
+          </div>
+        </div>
+      </form>
+      <details class="mt-3 collapse-card">
+        <summary>Example Searches</summary>
+        <div class="d-flex flex-wrap gap-2 mt-2">
+          {% for example_query, example_source in example_terms %}
+          <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('legal.legal_lookup', q=example_query, source=example_source) }}">{{ example_query }}</a>
+          {% endfor %}
+        </div>
+      </details>
+    </div>
+
+    {% if order_reference_matches %}
+    <div class="card p-3 mb-3">
+      <h5 class="mb-2">Related Orders and Memorandums</h5>
+      <div class="small text-muted mb-2">Policy and memorandum references for the same search.</div>
+      <div class="legal-results-list">
+        {% for item in order_reference_matches %}
+        <details class="legal-accordion-item">
+          <summary class="legal-accordion-summary">
+            <span class="legal-accordion-title">{{ item.title }}</span>
+            <span class="badge bg-info text-dark">{{ item.source_type }}</span>
+          </summary>
+          <div class="legal-accordion-body">
+            {% if item.order_number %}<div class="mb-1"><strong>Identifier:</strong> {{ item.order_number }}</div>{% endif %}
+            {% if item.reasons %}<div class="small mb-2"><strong>Why this matched:</strong> {{ item.reasons|join(', ') }}</div>{% endif %}
+            {% if item.snippet %}<div class="small text-muted mb-2">{{ item.snippet }}</div>{% endif %}
+            <div class="d-flex gap-2">
+              <a class="btn btn-sm btn-outline-dark" href="{{ url_for('orders.view_order', order_id=item.id) }}">Open Full Text</a>
+              <a class="btn btn-sm btn-primary" href="{{ url_for('orders.download_order', order_id=item.id) }}">Download Reference</a>
+            </div>
+          </div>
+        </details>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="card p-3" id="legal-results">
+      <div class="d-flex justify-content-between align-items-center mb-2 legal-results-header">
+        <h5 class="mb-0">Results</h5>
+        <span class="small text-muted">{{ results|length }} match{% if results|length != 1 %}es{% endif %}</span>
+      </div>
+      <div class="small text-muted mb-3">Enter incident facts in plain language. {{ search_tip }}</div>
+      {% if overlap_note %}
+      <div class="mb-3 p-2" style="background:#eef5ff;border:1px solid #b7cff5;border-radius:8px;">
+        <strong>Jurisdiction Note:</strong> {{ overlap_note }}
+      </div>
+      {% endif %}
+
+      {% if results %}
+        {% for group in grouped_results %}
+        <div class="mb-3">
+          <h6 class="mb-2">{{ group.label }}</h6>
+          {% set tiers = [('Strong Matches', group.strongest), ('Probable Matches', group.probable), ('Related / Review If Needed', group.possible)] %}
+          {% for tier_label, tier_items in tiers %}
+          {% if tier_items %}
+          <div class="mb-2 small fw-semibold text-muted">{{ tier_label }}</div>
+          <div class="legal-results-list mb-3">
+            {% for item in tier_items %}
+            {% set download_info = reference_download_info(item.entry) %}
+            <details class="legal-accordion-item {% if loop.first and query %}legal-top-match{% endif %}">
+              <summary class="legal-accordion-summary">
+                <span class="legal-accordion-title">{{ item.entry.code }} | {{ item.entry.title }}</span>
+                <div class="d-flex gap-1 align-items-center legal-result-badges">
+                  <span class="badge {% if item.entry.source == 'GEORGIA' %}bg-primary{% elif item.entry.source == 'FEDERAL_USC' %}bg-info text-dark{% else %}bg-dark{% endif %}">{{ item.entry.source }}</span>
+                  <span class="badge {% if item.certainty_bucket == 'strong' %}bg-success{% elif item.certainty_bucket == 'probable' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                    {{ item.certainty_bucket|title }} {{ item.confidence }}%
+                  </span>
+                </div>
+              </summary>
+              <div class="legal-accordion-body">
+                <p class="mb-2">{{ item.entry.plain_language_summary or item.entry.summary }}</p>
+                <div class="d-flex flex-wrap gap-2 mb-2">
+                  <a class="btn btn-sm btn-outline-dark" href="{{ url_for('legal.view_reference', source=item.entry.source, code=item.entry.code, q=query) }}">Open Full Text</a>
+                  {% if download_info.available %}
+                  <a class="btn btn-sm btn-primary" href="{{ url_for('legal.download_reference', source=item.entry.source, code=item.entry.code) }}">Download Reference</a>
+                  {% else %}
+                  <span class="badge bg-secondary align-self-center">Download not available</span>
+                  {% endif %}
+                </div>
+                <ol class="mb-2">
+                  {% for element in item.entry.required_elements or item.entry.elements %}
+                  <li>{{ element }}</li>
+                  {% endfor %}
+                </ol>
+                {% if item.reasons %}<div class="small mb-2"><strong>Why this matched:</strong> {{ item.reasons|join('; ') }}</div>{% endif %}
+                {% if item.entry.penalties or item.entry.minimum_punishment or item.entry.maximum_punishment %}
+                <div class="small">
+                  {% if item.entry.penalties %}<div><strong>Penalties:</strong> {{ item.entry.penalties }}</div>{% endif %}
+                  {% if item.entry.minimum_punishment %}<div><strong>Minimum:</strong> {{ item.entry.minimum_punishment }}</div>{% endif %}
+                  {% if item.entry.maximum_punishment %}<div><strong>Maximum:</strong> {{ item.entry.maximum_punishment }}</div>{% endif %}
+                </div>
+                {% endif %}
+              </div>
+            </details>
+            {% endfor %}
+          </div>
+          {% endif %}
+          {% endfor %}
+        </div>
+        {% endfor %}
+      {% else %}
+      <div class="text-muted">No approved legal reference was found for this search.</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
