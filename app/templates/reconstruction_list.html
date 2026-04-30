@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell">
+  {% include 'partials/nav.html' %}
+
+  <div class="page-wrap">
+    <div class="card p-3 mb-3 page-head d-flex justify-content-between align-items-center">
+      <h2 class="mb-0">Accident Reconstruction</h2>
+      <form method="get" action="{{ url_for('reconstruction.case_list') }}" class="d-flex gap-2">
+        <input class="form-control" name="q" placeholder="Search cases..." value="{{ q }}" />
+        <button class="btn btn-primary">Search</button>
+      </form>
+    </div>
+
+    <div class="row">
+      <div class="col-md-5">
+        <div class="card p-3">
+          <h3 class="mb-3">New Case</h3>
+          <form method="post" action="{{ url_for('reconstruction.case_list') }}">
+            <div class="mb-2">
+              <label class="form-label text-dark">Title</label>
+              <input class="form-control" name="title" placeholder="Crash reconstruction" />
+            </div>
+            <div class="mb-2">
+              <label class="form-label text-dark">Incident Date (YYYY-MM-DD)</label>
+              <input class="form-control" name="incident_date" placeholder="2026-02-10" />
+            </div>
+            <div class="mb-2">
+              <label class="form-label text-dark">Location</label>
+              <input class="form-control" name="location" placeholder="Street / Intersection" />
+            </div>
+            <button class="btn btn-primary w-100">Create</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="card p-3">
+          <h3 class="mb-3">Cases</h3>
+          {% if cases %}
+            <div class="list-group">
+              {% for c in cases %}
+                <a class="list-group-item list-group-item-action" href="{{ url_for('reconstruction.case_detail', case_id=c.id) }}">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <strong>#{{ c.id }} {{ c.title }}</strong>
+                    <span class="small text-muted">{{ c.updated_at.strftime('%Y-%m-%d') if c.updated_at else '' }}</span>
+                  </div>
+                  <div class="small text-muted">
+                    {{ c.incident_date or '' }}{% if c.location %} | {{ c.location }}{% endif %}
+                  </div>
+                </a>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="text-muted">No cases yet.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

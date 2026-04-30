@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell">
+  {% include 'partials/nav.html' %}
+  <div class="page-wrap forms-library-shell">
+    <section class="card p-3 mb-3 page-head ops-head-card">
+      <div class="ops-head-grid">
+        <div class="ops-head-copy">
+          <div class="eyebrow forms-library-eyebrow">Paperwork Center</div>
+          <h2 class="mb-1">Forms Library</h2>
+          <p class="mb-0 text-muted">Launch official forms, move from incident guidance into documentation, and keep saved paperwork close at hand.</p>
+        </div>
+        <div class="ops-head-stats">
+          <article class="ops-stat-pill">
+            <span>Active Forms</span>
+            <strong>{{ forms|length }}</strong>
+          </article>
+          <article class="ops-stat-pill">
+            <span>Categories</span>
+            <strong>{{ categories|length }}</strong>
+          </article>
+          <article class="ops-stat-pill">
+            <span>Saved Drafts</span>
+            <strong>{{ saved_form_count|default(0) }}</strong>
+          </article>
+        </div>
+      </div>
+
+      <div class="forms-toolbar">
+        <a class="btn btn-primary" href="{{ url_for('forms.saved_forms') }}">Open Saved Work</a>
+        <a class="btn btn-outline-secondary" href="{{ url_for('reference.incident_paperwork_guide') }}">Paperwork Navigator</a>
+        <a class="btn btn-outline-secondary" href="{{ url_for('reports.list_reports') }}">Reports Center</a>
+        {% if can_manage_form_maintenance %}
+        <a class="btn btn-outline-dark" href="{{ url_for('forms.forms_manager') }}">Manage Forms</a>
+        {% endif %}
+        {% if can_manage_uploads %}
+        <a class="btn btn-outline-dark" href="{{ url_for('forms.upload_form') }}">Add New Form</a>
+        {% endif %}
+      </div>
+    </section>
+
+    {% if can_manage_uploads or can_manage_form_maintenance %}
+    <details class="card p-3 mb-3 collapse-card">
+      <summary>Admin Form Tools</summary>
+      <div class="forms-toolbar mt-2">
+        {% if can_manage_form_maintenance %}
+        <a class="btn btn-outline-secondary" href="{{ url_for('forms.forms_maintenance') }}">Form Maintenance</a>
+        <a class="btn btn-outline-secondary" href="{{ url_for('forms.forms_manager') }}">Forms Manager</a>
+        {% endif %}
+        {% if can_manage_uploads %}
+        <a class="btn btn-outline-secondary" href="{{ url_for('forms.upload_form') }}">Upload Form</a>
+        {% endif %}
+      </div>
+    </details>
+    {% endif %}
+
+    <form class="card p-3 mb-3 search-panel forms-filter-panel" method="get">
+      <div class="row g-2">
+        <div class="col-md-7">
+          <label class="form-label forms-filter-label" for="forms-search">Search</label>
+          <input class="form-control" id="forms-search" name="q" value="{{ search_term }}" placeholder="Search form title" />
+        </div>
+        <div class="col-md-3">
+          <label class="form-label forms-filter-label" for="forms-category">Category</label>
+          <select class="form-control" id="forms-category" name="category">
+            <option value="">All categories</option>
+            {% for category in categories %}
+            <option value="{{ category }}" {% if category_filter == category %}selected{% endif %}>{{ category }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2 d-flex align-items-end"><button class="btn btn-primary w-100">Search</button></div>
+      </div>
+    </form>
+
+    <div class="results-list forms-results-grid">
+      {% for f in forms %}
+      <article class="result-card forms-result-card">
+        <div class="forms-card-topline">
+          <div class="forms-card-meta">
+            <span class="forms-card-kicker">{{ f.category or 'General' }}</span>
+            {% if f.retention_mode in ['no_pii_retention', 'temporary_pii_only'] %}
+            <span class="badge bg-warning text-dark">No-Retention PII</span>
+            {% endif %}
+            {% if f.version_label %}
+            <span class="badge bg-dark">v{{ f.version_label }}</span>
+            {% endif %}
+          </div>
+          <span class="forms-card-date">Uploaded {{ f.uploaded_at.strftime('%Y-%m-%d') }}</span>
+        </div>
+        <div class="result-head forms-card-head">
+          <h4>{{ f.title }}</h4>
+        </div>
+        <p class="result-sub forms-card-sub">Launch the fill workflow, scan ID details on mobile when supported, then preview or download the matching PDF output.</p>
+        <div class="result-actions forms-card-actions">
+          <a class="btn btn-sm btn-primary" href="{{ url_for('forms.fill_form', form_id=f.id) }}">Open Form</a>
+          <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('forms.blank_form_preview', form_id=f.id) }}">Preview Blank</a>
+          <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('forms.download_form', form_id=f.id) }}">Download Blank</a>
+        </div>
+      </article>
+      {% else %}
+      <div class="card p-3 text-muted">No forms found.</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

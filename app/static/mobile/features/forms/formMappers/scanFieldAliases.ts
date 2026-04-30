@@ -1,0 +1,18 @@
+export const scanFieldAliases: Record<string, string[]> = {
+  first_name: ['first name', 'firstname', 'given name'],
+  middle_name: ['middle name', 'middlename', 'middle initial'],
+  last_name: ['last name', 'lastname', 'surname', 'family name'],
+  full_name: ['full name', 'name', 'subject name', 'person name'],
+  date_of_birth: ['date of birth', 'dob', 'birth date'],
+  license_number: ['driver license', 'driver license number', 'license number', 'drivers license', 'id number', 'identifier'],
+  issuing_state: ['issuing state', 'license state'],
+  address: ['address', 'street address'],
+  city: ['city'],
+  state: ['state', 'address state'],
+  zip: ['zip', 'zip code', 'postal code'],
+  sex: ['sex', 'gender'],
+  height: ['height'],
+  eye_color: ['eye color', 'eyes'],
+  hair_color: ['hair color', 'hair'],
+  expiration_date: ['expiration date', 'exp date', 'expires'],
+};

@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Narrative</title>
+  <link rel="stylesheet" href="./cleo.css" />
+</head>
+<body>
+  <div class="wrap">
+    <div class="nav">
+      <label for="cleoNav">CLEO Pages:</label>
+      <select id="cleoNav" onchange="if(this.value) window.location.href=this.value;">
+        <option value="">Select?</option>
+        <option value="index.html">Home</option>
+        <option value="incident-admin.html">Incident Admin</option>
+        <option value="ta-main.html">TA Main</option>
+        <option value="ta-person.html">TA Person</option>
+        <option value="persons.html">Involved Persons</option>
+        <option value="property.html">Involved Property</option>
+        <option value="organization.html">Involved Organization</option>
+        <option value="vehicle.html">Vehicle Info</option>
+        <option value="offenses.html">Offenses</option>
+        <option value="narcotics.html">Narcotics</option>
+        <option value="narrative.html">Narrative</option>
+        <option value="violation-1408.html">1408 Violation</option>
+        <option value="dd-1408.html">DD Form 1408</option>
+        <option value="enclosure.html">Enclosure</option>
+      </select>
+    </div>
+
+    <div class="cleo-headerbar">
+      <div class="cleo-toolbar">
+        <div class="cleo-icon"></div>
+        <div class="cleo-icon"></div>
+        <div class="cleo-icon"></div>
+      </div>
+      <div><strong>MCLB ALBANY</strong> &nbsp; Watch / Platoon Commander</div>
+      <div class="cleo-toolbar">
+        <div class="cleo-icon"></div>
+        <div class="cleo-icon"></div>
+        <div class="cleo-icon"></div>
+        <div class="cleo-icon"></div>
+        <div class="cleo-icon"></div>
+        <div class="cleo-icon"></div>
+        <div class="cleo-icon"></div>
+        <div class="cleo-icon"></div>
+      </div>
+    </div>
+
+    <div class="cleo-titlebar">NARRATIVE</div>
+
+    <div class="cleo-action-bar">
+      <button class="save-btn" type="button" onclick="addNarrativePage()">Add Page</button>
+    </div>
+
+    <div id="narrativePages">
+      <div class="narrative-shell narrative-page">
+        <div class="narrative-area">
+          <textarea class="narrative-textarea" placeholder=""></textarea>
+        </div>
+
+        <div class="enclosure-header">
+          <div>ENCLOSURE #</div>
+          <div>DESCRIPTION</div>
+          <div>Upload</div>
+          <div>Delete From List ?</div>
+          <div class="enclosure-sub">(Add all Attached Supporting Documents i.e. Statements, Photographs, Sketches, etc.)</div>
+        </div>
+        <div class="enclosure-table" id="enclosureTable">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="save-bar">
+    <button class="save-btn green">Save</button>
+    <button class="save-btn">Load</button>
+    <button class="save-btn">Clear</button>
+  </div>
+
+  <script src="./nav.js"></script>
+  <script>
+    const enclosureTable = document.getElementById('enclosureTable');
+
+    function addEnclosureRow() {
+      const row = document.createElement('div');
+      row.className = 'enclosure-row';
+      row.innerHTML = `
+        <input class="enclosure-input" />
+        <input class="enclosure-input" />
+        <input type="file" class="enclosure-file" />
+        <select class="enclosure-select listbox">
+          <option></option>
+          <option>No</option>
+          <option>Yes</option>
+        </select>
+      `;
+      enclosureTable.appendChild(row);
+    }
+
+    function addNarrativePage() {
+      const pages = document.getElementById('narrativePages');
+      const first = pages.querySelector('.narrative-page');
+      const clone = first.cloneNode(true);
+      const table = clone.querySelector('.enclosure-table');
+      table.innerHTML = '';
+      for (let i = 0; i < 15; i++) {
+        const row = document.createElement('div');
+        row.className = 'enclosure-row';
+        row.innerHTML = `
+          <input class="enclosure-input" />
+          <input class="enclosure-input" />
+          <input type="file" class="enclosure-file" />
+          <select class="enclosure-select listbox">
+            <option></option>
+            <option>No</option>
+            <option>Yes</option>
+          </select>
+        `;
+        table.appendChild(row);
+      }
+      pages.appendChild(clone);
+    }
+
+    for (let i = 0; i < 15; i++) addEnclosureRow();
+  </script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% set body_class = 'landing' %}
+{% block body %}
+<div class="login-bg">
+  <div class="login-panel">
+    <img src="{{ url_for('usmc_emblem') }}" alt="USMC Emblem" class="login-emblem" />
+    <h1>Link CAC</h1>
+    <p class="subtitle">Link your current account to the CAC being presented.</p>
+    {% if error %}
+      <div class="alert alert-danger py-1">{{ error }}</div>
+    {% endif %}
+    {% if cac_context and cac_context.identifier_value %}
+      <div class="alert alert-info py-1">CAC Identifier: {{ cac_context.identifier_value }}</div>
+    {% endif %}
+    <form method="post" action="{{ url_for('auth.account_link_cac') }}">
+      {% if next_url %}
+        <input type="hidden" name="next" value="{{ next_url }}" />
+      {% endif %}
+      <button class="btn btn-primary w-100">Link This CAC</button>
+    </form>
+    <a class="btn btn-outline-secondary w-100 mt-2" href="{{ url_for('dashboard.dashboard') }}">Back to Dashboard</a>
+  </div>
+</div>
+{% endblock %}

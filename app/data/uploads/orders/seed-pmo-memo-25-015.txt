@@ -1,0 +1,10 @@
+Title: Desk Sergeant Shift Responsibilities
+Category: Command Operations
+Order Number: -
+Memo Number: PMO-MEMO-25-015
+Issuing Authority: PMO Operations
+Summary: Defines desk sergeant duties for shift accountability, dispatch coordination, and report quality control.
+Aliases: desk sergeant duties, desk sgt responsibilities, front desk watch duties
+Audience: Desk Sergeants, Watch Commanders
+Topics: desk sergeant, shift duties, front desk
+Section Desk Sergeant Duties: Ensure shift coverage, verify log completeness, and elevate critical incidents to watch commander.

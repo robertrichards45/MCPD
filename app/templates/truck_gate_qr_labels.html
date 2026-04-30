@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Truck Gate QR Labels</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+<body class="bg-white text-dark">
+  <div class="page-wrap">
+    <div class="d-flex justify-content-between align-items-center mb-3 no-print">
+      <div>
+        <h2>Truck Gate QR Labels</h2>
+        <p class="text-muted">Print these labels and place them on driver cards.</p>
+      </div>
+      <div>
+        <button class="btn btn-primary" type="button" onclick="window.print()">Print</button>
+      </div>
+    </div>
+
+    <div class="summary-box mb-3 no-print">
+      Total labels in this print batch: {{ labels|length }}
+    </div>
+
+    <div class="qr-label-grid">
+      {% for label in labels %}
+        <div class="qr-label-card">
+          <div class="qr-label-name">{{ label.driver.full_name }}</div>
+          <div class="qr-label-sub">Officer / Driver ID {{ label.driver.id }}</div>
+          {% if label.driver.company %}
+            <div class="qr-label-sub">{{ label.driver.company.name }}</div>
+          {% endif %}
+          <img class="qr-label-image" src="{{ label.qr_url }}" alt="QR code for {{ label.driver.full_name }}">
+          <div class="qr-label-token">{{ label.token }}</div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</body>
+</html>

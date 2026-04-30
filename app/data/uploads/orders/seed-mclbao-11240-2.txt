@@ -1,0 +1,10 @@
+Title: Government Vehicle Use and Dispatch Policy
+Category: Logistics and Transportation
+Order Number: MCLBAO 11240.2
+Memo Number: -
+Issuing Authority: Motor Transport Office
+Summary: Requirements for official government vehicle use, dispatch controls, and trip documentation.
+Aliases: government vehicle use, motor pool policy, dispatch rules
+Audience: Marines, Civilian Employees, Motor Pool
+Topics: government vehicle, dispatch, transportation
+Section Vehicle Dispatch: Operators must be authorized, licensed, and dispatched through approved channels before vehicle movement.

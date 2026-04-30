@@ -1,0 +1,8 @@
+Title: Evidence Photo and Digital Media Management
+Category: Evidence
+Order Number: -
+Memo Number: PMO-MEMO-24-031
+Issuing Authority: Investigations Section
+Summary: Rules for digital evidence capture, labeling, transfer, and retention.
+Aliases: photo evidence policy, digital evidence, body cam export
+Covers metadata preservation, secure upload workflow, and audit requirements.
