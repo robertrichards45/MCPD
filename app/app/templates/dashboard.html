@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell">
+  {% include 'partials/nav.html' %}
+
+  <main class="dashboard desktop-command-desk">
+    <section class="desktop-command-hero">
+      <div class="desktop-command-copy">
+        <div class="eyebrow">MCPD Command Desk</div>
+        <h1>Choose the work. Move fast. Stay grounded.</h1>
+        <p>One desktop board for authority checks, paperwork, reports, and command follow-up.</p>
+        <form class="desktop-command-search" method="get" action="{{ url_for('legal.legal_lookup') }}">
+          <input type="hidden" name="source" value="ALL">
+          <input type="hidden" name="state" value="GA">
+          <label class="visually-hidden" for="desktop-law-search">Search law, UCMJ, and federal sources</label>
+          <input id="desktop-law-search" name="q" type="text" placeholder="Search an incident, statute, UCMJ article, or federal issue">
+          <button class="btn btn-light" type="submit">Search Authority</button>
+        </form>
+      </div>
+      <aside class="desktop-command-identity">
+        <span>Signed in</span>
+        <strong>{{ user.display_name }}</strong>
+        <small>{{ portal_effective_role_label }} / {{ user.section_unit or user.officer_number or user.username }}</small>
+      </aside>
+    </section>
+
+    <section class="desktop-work-grid" aria-label="Primary desktop tools">
+      <a class="desktop-work-card is-primary" href="{{ url_for('legal.legal_home') }}">
+        <span class="desktop-work-kicker">Authority</span>
+        <strong>Law Lookup</strong>
+        <small>State, federal, UCMJ, and base-order search.</small>
+      </a>
+      <a class="desktop-work-card" href="{{ url_for('reference.incident_paperwork_guide') }}">
+        <span class="desktop-work-kicker">Calls</span>
+        <strong>Paperwork Navigator</strong>
+        <small>Find the forms needed for an incident type.</small>
+      </a>
+      <a class="desktop-work-card" href="{{ url_for('forms.list_forms') }}">
+        <span class="desktop-work-kicker">Forms</span>
+        <strong>Forms Library</strong>
+        <small>Open, fill, preview, and save active forms.</small>
+      </a>
+      <a class="desktop-work-card" href="{{ url_for('reports.list_reports') }}">
+        <span class="desktop-work-kicker">Reports</span>
+        <strong>Reports Center</strong>
+        <small>Standard reports, mock reports, and reviews.</small>
+      </a>
+      <a class="desktop-work-card" href="{{ url_for('orders.reference_search') }}">
+        <span class="desktop-work-kicker">Policy</span>
+        <strong>Orders Desk</strong>
+        <small>Approved orders, memorandums, and policy text.</small>
+      </a>
+      <a class="desktop-work-card" href="{{ url_for('forms.saved_forms') }}">
+        <span class="desktop-work-kicker">Resume</span>
+        <strong>Saved Work</strong>
+        <small>{{ dashboard_saved_forms_count }} saved form item{{ '' if dashboard_saved_forms_count == 1 else 's' }} ready.</small>
+      </a>
+    </section>
+
+    <section class="desktop-command-lower">
+      <div class="desktop-status-strip">
+        {% for metric in dashboard_metrics %}
+        <article>
+          <span>{{ metric.label }}</span>
+          <strong>{{ metric.value }}</strong>
+          <small>{{ metric.detail }}</small>
+        </article>
+        {% endfor %}
+      </div>
+
+      <section class="desktop-quick-panel">
+        <div>
+          <div class="eyebrow">Operations</div>
+          <h2>Specialized tools</h2>
+        </div>
+        <div class="desktop-mini-grid">
+          <a href="{{ url_for('ops_modules.vehicle_inspections') }}">Inspections</a>
+          <a href="{{ url_for('training.training_menu') }}">Training</a>
+          <a href="{{ url_for('stats.stats_home') }}">Stats</a>
+          <a href="{{ url_for('officers.profile') }}">Profile</a>
+          <a href="{{ url_for('annual_ai.page') }}">Assistant</a>
+          <a href="{{ url_for('reconstruction.case_list') }}">Reconstruction</a>
+          {% if user.can_manage_team() %}<a href="{{ url_for('auth.manage_users') }}">Personnel</a>{% endif %}
+          {% if portal_can_access_truck_gate %}<a href="{{ url_for('ops_modules.truck_gate') }}">Truck Gate</a>{% endif %}
+          {% if portal_can_access_armory %}<a href="{{ url_for('ops_modules.armory') }}">Armory</a>{% endif %}
+          {% if portal_can_access_rfi %}<a href="{{ url_for('ops_modules.rfi') }}">RFI</a>{% endif %}
+        </div>
+      </section>
+
+      <section class="desktop-notice-panel">
+        <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
+          <div>
+            <div class="eyebrow">Command Radar</div>
+            <h2 class="mb-0">Notices</h2>
+          </div>
+          <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('announcements.board') }}">Open</a>
+        </div>
+        {% if dashboard_announcements %}
+        <div class="notice-feed">
+          {% for item in dashboard_announcements[:3] %}
+          <article class="notice-feed-item">
+            <div class="notice-feed-head">
+              <strong>{{ item.title }}</strong>
+              <span class="badge bg-primary">{{ item.scope.replace('_', ' ').title() }}</span>
+            </div>
+            <p>{{ item.message }}</p>
+            <small>{{ item.created_at.strftime('%b %d, %Y') }}</small>
+          </article>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="notice-panel notice-panel-soft">No active notices are assigned to your current scope.</div>
+        {% endif %}
+      </section>
+    </section>
+  </main>
+</div>
+{% endblock %}

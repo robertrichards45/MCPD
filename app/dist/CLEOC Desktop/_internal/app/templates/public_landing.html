@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MCPD Portal</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 24px;
+      font-family: Arial, sans-serif;
+      background: #f2f4f7;
+      color: #111;
+    }
+    .wrap {
+      max-width: 520px;
+      margin: 0 auto;
+      background: #fff;
+      border: 1px solid #d9dee5;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      text-align: center;
+    }
+    .emblem {
+      width: 72px;
+      height: 72px;
+      margin-bottom: 8px;
+    }
+    h1 {
+      margin: 8px 0;
+      font-size: 24px;
+    }
+    p {
+      margin: 8px 0;
+      line-height: 1.4;
+    }
+    .warn {
+      margin: 14px 0;
+      padding: 10px;
+      border-radius: 8px;
+      background: #fff3cd;
+      border: 1px solid #f3d58a;
+    }
+    .btn {
+      display: block;
+      margin-top: 10px;
+      padding: 12px 14px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 700;
+    }
+    .btn-primary {
+      background: #1f4f8a;
+      color: #fff;
+    }
+    .btn-secondary {
+      background: #fff;
+      color: #1f4f8a;
+      border: 1px solid #1f4f8a;
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <img src="{{ url_for('usmc_emblem') }}" alt="USMC Emblem" class="emblem">
+    <h1>Marine Corps Police Department Portal</h1>
+    <p>Training and administrative system for MCPD personnel.</p>
+    <div class="warn">Unauthorized access prohibited.</div>
+    <p>This is an official MCPD operations support portal for authorized use only.</p>
+    <a class="btn btn-primary" href="{{ url_for('auth.login') }}">Portal Login</a>
+    {% if config.CAC_AUTH_ENABLED %}
+      <a class="btn btn-secondary" href="{{ url_for('auth.cac_login') }}">CAC Login</a>
+    {% endif %}
+  </main>
+</body>
+</html>

@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell">
+  {% include 'partials/nav.html' %}
+  <div class="page-wrap saved-forms-shell">
+    <section class="card p-3 mb-3 page-head ops-head-card">
+      <div class="ops-head-grid">
+        <div class="ops-head-copy">
+          <div class="eyebrow forms-library-eyebrow">Paperwork Queue</div>
+          <h2 class="mb-1">Saved Forms</h2>
+          <p class="text-muted mb-0">Resume drafts, review completed paperwork, and keep the latest field work lined up in one place.</p>
+        </div>
+        <div class="ops-head-stats">
+          <article class="ops-stat-pill">
+            <span>Visible Forms</span>
+            <strong>{{ saved_forms|length }}</strong>
+          </article>
+          <article class="ops-stat-pill">
+            <span>Drafts</span>
+            <strong>{{ draft_count|default(0) }}</strong>
+          </article>
+          <article class="ops-stat-pill">
+            <span>Completed / Submitted</span>
+            <strong>{{ (completed_count|default(0)) + (submitted_count|default(0)) }}</strong>
+          </article>
+        </div>
+      </div>
+
+      <div class="forms-toolbar">
+        <a class="btn btn-primary" href="{{ url_for('forms.list_forms') }}">Open Forms Library</a>
+          <a class="btn btn-outline-secondary" href="{{ url_for('reference.incident_paperwork_guide') }}">Paperwork Navigator</a>
+        <a class="btn btn-outline-secondary" href="{{ url_for('reports.list_reports') }}">Reports Center</a>
+      </div>
+    </section>
+
+    <form method="get" class="card p-3 mb-3 search-panel forms-filter-panel">
+      <div class="row g-2">
+        <div class="col-md-4">
+          <label class="form-label forms-filter-label" for="saved-form-search">Search</label>
+          <input class="form-control" id="saved-form-search" name="q" value="{{ search_term }}" placeholder="Search title or officer" />
+        </div>
+        <div class="col-md-3">
+          <label class="form-label forms-filter-label" for="saved-form-type">Form Type</label>
+          <input class="form-control" id="saved-form-type" name="form_type" value="{{ form_type }}" placeholder="Form type" />
+        </div>
+        <div class="col-md-3">
+          <label class="form-label forms-filter-label" for="saved-form-status">Status</label>
+          <select class="form-control" id="saved-form-status" name="status">
+            <option value="" {% if not status %}selected{% endif %}>All statuses</option>
+            <option value="DRAFT" {% if status == 'DRAFT' %}selected{% endif %}>Draft</option>
+            <option value="COMPLETED" {% if status == 'COMPLETED' %}selected{% endif %}>Completed</option>
+            <option value="SUBMITTED" {% if status == 'SUBMITTED' %}selected{% endif %}>Submitted</option>
+          </select>
+        </div>
+        <div class="col-md-2 d-flex align-items-end"><button class="btn btn-primary w-100">Filter</button></div>
+      </div>
+    </form>
+
+    <div class="results-list forms-results-grid saved-forms-grid">
+      {% for row in saved_forms %}
+      <article class="result-card forms-result-card saved-form-card">
+        <div class="forms-card-topline">
+          <div class="forms-card-meta">
+            <span class="forms-card-kicker">{{ row.form.category if row.form and row.form.category else 'General' }}</span>
+            <span class="badge bg-dark">{{ row.status }}</span>
+            {% if row.form and row.form.retention_mode in ['no_pii_retention', 'temporary_pii_only'] %}
+            <span class="badge bg-warning text-dark">No-Retention PII</span>
+            {% endif %}
+          </div>
+          <span class="forms-card-date">{{ row.updated_at.strftime('%Y-%m-%d %H:%M') if row.updated_at else '' }}</span>
+        </div>
+        <div class="result-head forms-card-head">
+          <h4>{{ row.title or (row.form.title if row.form else 'Untitled Form') or 'Untitled Form' }}</h4>
+        </div>
+        <p class="result-sub forms-card-sub">
+          Owner: {{ row.officer.display_name if row.officer else row.officer_user_id }}
+          {% if row.form and row.form.version_label %}| Version {{ row.form.version_label }}{% endif %}
+        </p>
+        <div class="result-actions forms-card-actions">
+          <a class="btn btn-sm btn-primary" href="{{ url_for('forms.view_saved_form', saved_form_id=row.id) }}">Open</a>
+          <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('forms.preview_saved_form', saved_form_id=row.id) }}">Preview</a>
+          <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('forms.download_saved_form', saved_form_id=row.id) }}">Download</a>
+        </div>
+      </article>
+      {% else %}
+      <div class="card p-3 text-muted report-empty-state">No saved forms found for the current filters.</div>
+      {% endfor %}
+    </div>
+
+    {% if show_admin_retention_events %}
+    <details class="card p-3 mt-3 collapse-card">
+      <summary>No-Retention Form Events</summary>
+      <div class="table-responsive mt-2">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>When</th>
+              <th>Form</th>
+              <th>Mode</th>
+              <th>Action</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for event in no_retention_events %}
+            <tr>
+              <td>{{ display_dt(event.created_at) }}</td>
+              <td>{{ event.form_title }}</td>
+              <td>{{ event.retention_mode }}</td>
+              <td>{{ event.action_type }}</td>
+              <td>{{ event.status }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-muted">No no-retention events logged.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </details>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

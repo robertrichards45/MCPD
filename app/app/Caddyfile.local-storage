@@ -1,0 +1,30 @@
+{
+    auto_https disable_redirects
+    storage file_system {
+        root "C:\Users\rober\Desktop\mcpd-portal\app\.caddy"
+    }
+}
+
+mclbpd.com {
+    encode zstd gzip
+
+    tls {
+        issuer acme {
+            disable_http_challenge
+        }
+
+        client_auth {
+            mode require_and_verify
+            trust_pool file C:\certs\cac-chain.pem
+        }
+    }
+
+    reverse_proxy 127.0.0.1:5055 {
+        header_up -X-Authenticated-User
+        header_up -X-Authenticated-Name
+        header_up X-Authenticated-User {tls_client_subject}
+        header_up X-Authenticated-Name {tls_client_subject}
+        header_up X-Forwarded-Proto https
+        header_up X-Forwarded-Host {host}
+    }
+}

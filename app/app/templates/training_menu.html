@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell">
+  {% include 'partials/nav.html' %}
+  <div class="page-wrap">
+    <div class="card p-3 mb-3 page-head">
+      <h2 class="mb-1">Training</h2>
+      <p class="text-muted mb-0">Browse, search, and sign rosters.</p>
+    </div>
+    <div class="card p-3">
+      <div class="quick-actions-grid">
+        <a class="quick-action-btn subtle" href="{{ url_for('training.training_list') }}">Training Rosters</a>
+        <a class="quick-action-btn subtle" href="{{ url_for('training.training_search') }}">Search Rosters</a>
+        {% if portal_effective_role == 'WEBSITE_CONTROLLER' %}
+          <a class="quick-action-btn" href="{{ url_for('training.training_upload') }}">Upload Roster</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

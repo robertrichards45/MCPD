@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell">
+  {% include 'partials/nav.html' %}
+  <div class="page-wrap">
+    <div class="card p-3 mb-3 page-head">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h2 class="mb-1">Training Rosters</h2>
+          <p class="text-muted mb-0">Open and sign current rosters.</p>
+        </div>
+        <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary" href="{{ url_for('training.training_menu') }}">Menu</a>
+        <a class="btn btn-outline-secondary" href="{{ url_for('training.training_search') }}">Search</a>
+        {% if portal_effective_role == 'WEBSITE_CONTROLLER' %}
+          <a class="btn btn-primary" href="{{ url_for('training.training_upload') }}">Upload Roster</a>
+        {% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="results-list">
+      {% for r in rosters %}
+      <article class="result-card">
+        <div class="result-head">
+          <h4>{{ r.title }}</h4>
+          <span class="badge bg-dark">{{ r.uploaded_at.strftime('%Y-%m-%d') }}</span>
+        </div>
+        <p class="result-snippet">{{ r.description or 'No description' }}</p>
+        <div class="result-actions">
+          <a class="btn btn-sm btn-primary" href="{{ url_for('training.training_detail', roster_id=r.id) }}">Open Roster</a>
+        </div>
+      </article>
+      {% else %}
+      <div class="card p-3 text-muted">No rosters found.</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell">
+  {% include 'partials/nav.html' %}
+  <div class="page-wrap">
+    <div class="card p-3 mb-3 page-head d-flex justify-content-between align-items-center">
+      <h2 class="mb-0">Report #{{ report.id }} {{ report.title }}</h2>
+      <span class="badge bg-dark">{{ report.status }}</span>
+    </div>
+    <p class="text-muted">Owner: {{ report_owner.display_name }}</p>
+
+    <div class="row">
+      <div class="col-md-6">
+        <div class="card p-3 mb-3">
+        <h5 class="mb-3">Upload Required PDFs</h5>
+        <form method="post" action="{{ url_for('reports.report_upload', report_id=report.id) }}" enctype="multipart/form-data">
+          <div class="mb-2">
+            <label>PDF Type</label>
+            <select class="form-control" name="page_key">
+              <option value="incident-admin">Incident Admin</option>
+              <option value="ta-main">TA Main</option>
+              <option value="ta-person">TA Person</option>
+              <option value="persons">Involved Persons</option>
+              <option value="property">Involved Property</option>
+              <option value="organization">Involved Organization</option>
+              <option value="vehicle">Vehicle Information</option>
+              <option value="offenses">Offenses</option>
+              <option value="narcotics">Narcotics</option>
+              <option value="narrative">Narrative</option>
+              <option value="violation-1408">1408 Violation</option>
+              <option value="dd-1408">DD Form 1408</option>
+              <option value="enclosure">Enclosure</option>
+            </select>
+          </div>
+          <div class="mb-2"><input type="file" class="form-control" name="file" accept="application/pdf" required /></div>
+          <button class="btn btn-primary">Upload PDF</button>
+        </form>
+
+        <h6 class="mt-4">Attached PDFs</h6>
+        <ul class="list-group">
+          {% for a in attachments %}
+            <li class="list-group-item d-flex justify-content-between">
+              <span>{{ a.page_key }}  {{ a.uploaded_at.strftime('%Y-%m-%d %H:%M') }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="card p-3 mb-3">
+        <h5 class="mb-3">Involved Persons</h5>
+        <form method="post" action="{{ url_for('reports.report_add_person', report_id=report.id) }}">
+          <div class="mb-2"><input class="form-control" name="name" placeholder="Name" /></div>
+          <div class="mb-2"><input class="form-control" name="role" placeholder="Role (victim/suspect/witness)" /></div>
+          <button class="btn btn-secondary">Add Person</button>
+        </form>
+        <ul class="list-group mt-2">
+          {% for p in persons %}
+            <li class="list-group-item">{{ p.name }}  {{ p.role }}</li>
+          {% endfor %}
+        </ul>
+
+        <h5 class="mt-4">Co-Authors</h5>
+        <form method="post" action="{{ url_for('reports.report_add_coauthor', report_id=report.id) }}">
+          <div class="mb-2"><input class="form-control" name="username" placeholder="Username" /></div>
+          <button class="btn btn-secondary">Add Co-Author</button>
+        </form>
+        <ul class="list-group mt-2">
+          {% for c in coauthors %}
+            <li class="list-group-item">{{ users[c.user_id].display_name }}</li>
+          {% endfor %}
+        </ul>
+        </div>
+      </div>
+    </div>
+
+    {% if report.owner_id == user.id %}
+      <div class="card p-3 mb-3">
+        <form method="post" action="{{ url_for('reports.report_submit', report_id=report.id) }}">
+          <button class="btn btn-primary">Submit Final Report</button>
+        </form>
+      </div>
+    {% endif %}
+
+    {% if portal_effective_role == 'WEBSITE_CONTROLLER' %}
+      <details class="card p-3 mb-3 collapse-card">
+        <summary>Grade Report (Admin)</summary>
+        <div class="mt-2">
+        <form method="post" action="{{ url_for('reports.report_grade', report_id=report.id) }}">
+          <div class="mb-2"><input class="form-control" name="score" placeholder="Score (0-100)" /></div>
+          <div class="mb-2"><textarea class="form-control" name="comments" placeholder="Comments"></textarea></div>
+          <div class="mb-2"><textarea class="form-control" name="required_fixes" placeholder="Required fixes"></textarea></div>
+          <button class="btn btn-primary">Submit Grade</button>
+        </form>
+        <form method="post" action="{{ url_for('reports.report_return', report_id=report.id) }}" class="mt-2">
+          <button class="btn btn-secondary">Return for Fixes</button>
+        </form>
+        </div>
+      </details>
+    {% endif %}
+
+    {% if grades|length > 0 %}
+      <details class="card p-3 mb-3 collapse-card" open>
+        <summary>Grades</summary>
+        <ul class="list-group">
+          {% for g in grades %}
+            <li class="list-group-item">
+              <strong>Score:</strong> {{ g.score }} | <strong>Comments:</strong> {{ g.comments }} | <strong>Fixes:</strong> {{ g.required_fixes }}
+            </li>
+          {% endfor %}
+        </ul>
+      </details>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

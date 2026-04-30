@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <system.webServer>
+    <rewrite>
+      <allowedServerVariables>
+        <add name="HTTP_X_AUTHENTICATED_USER" />
+        <add name="HTTP_X_AUTHENTICATED_NAME" />
+        <add name="HTTP_X_FORWARDED_PROTO" />
+        <add name="HTTP_X_FORWARDED_HOST" />
+      </allowedServerVariables>
+      <rules>
+        <rule name="ReverseProxyToFlask" stopProcessing="true">
+          <match url="(.*)" />
+          <serverVariables>
+            <set name="HTTP_X_AUTHENTICATED_USER" value="{LOGON_USER}" />
+            <set name="HTTP_X_AUTHENTICATED_NAME" value="{LOGON_USER}" />
+            <set name="HTTP_X_FORWARDED_PROTO" value="https" />
+            <set name="HTTP_X_FORWARDED_HOST" value="{HTTP_HOST}" />
+          </serverVariables>
+          <action type="Rewrite" url="http://127.0.0.1:5055/{R:1}" />
+        </rule>
+      </rules>
+    </rewrite>
+  </system.webServer>
+</configuration>

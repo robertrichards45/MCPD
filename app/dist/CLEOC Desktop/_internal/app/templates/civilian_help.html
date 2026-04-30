@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell">
+  {% include 'partials/nav.html' %}
+  <div class="page-wrap">
+    <div class="card p-3 mb-3 legal-search-card search-panel">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+          <h2 class="mb-1">Civilian Search</h2>
+          <p class="text-muted mb-0">Describe what you need and the portal will point you to the right document.</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+          <a class="btn btn-outline-secondary" href="{{ url_for('orders.reference_search') }}">Marine & Base</a>
+          <a class="btn btn-outline-secondary" href="{{ url_for('orders.library') }}">Library</a>
+        </div>
+      </div>
+    </div>
+
+    <form method="get">
+      <div class="row g-2 align-items-end">
+      <div class="col-md-10">
+        <label class="form-label text-dark">What do you need?</label>
+        <input class="form-control" name="q" value="{{ search_term }}" placeholder="Parking guidance, badge access, leave paperwork..." />
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-primary w-100">Find It</button>
+      </div>
+      </div>
+    </form>
+    </div>
+
+  <div class="card p-3 mb-3">
+    <h5 class="mb-2">Quick Guidance</h5>
+    {% if suggestions %}
+      <ul class="mb-0">
+        {% for suggestion in suggestions %}
+          <li>{{ suggestion }}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <div class="text-muted">Type what you need in plain language and the portal will search the active orders library for the closest matches.</div>
+    {% endif %}
+  </div>
+
+  {% if ai_guidance %}
+  <div class="card p-3 mb-3">
+    <h5 class="mb-2">AI Guidance</h5>
+    <div>{{ ai_guidance }}</div>
+  </div>
+  {% endif %}
+
+  <div class="card p-3" id="civilian-orders-results">
+    <div class="d-flex justify-content-between align-items-center mb-2 legal-results-header">
+      <h5 class="mb-0">Results</h5>
+      <span class="small text-muted">{{ documents|length }} match{% if documents|length != 1 %}es{% endif %}</span>
+    </div>
+    {% if documents %}
+      <div class="legal-results-list">
+      {% for document in documents %}
+        <details class="legal-accordion-item">
+          <summary class="legal-accordion-summary">
+            <span class="legal-accordion-title">{{ document.title }}</span>
+            <div class="d-flex gap-1 align-items-center legal-result-badges">
+              <span class="badge bg-dark">{{ document.source_type or 'LOCAL_DOCUMENT' }}</span>
+              {% if document.audience_label %}<span class="badge bg-info text-dark">{{ document.audience_label }}</span>{% endif %}
+            </div>
+          </summary>
+          <div class="legal-accordion-body">
+            <p class="mb-2"><strong>{{ document.category or 'General' }}</strong> | {{ display_dt(document.uploaded_at) }}</p>
+            <p class="mb-2">{{ document.match_snippet or document.summary or '-' }}</p>
+            {% if document.match_reference %}<div class="small mb-2"><strong>Reference:</strong> {{ document.match_reference }}</div>{% endif %}
+            <div class="d-flex gap-2 mb-2">
+              <a class="btn btn-sm btn-outline-dark" href="{{ url_for('orders.view_order', order_id=document.id, q=search_term) }}">Open Text</a>
+              <a class="btn btn-sm btn-primary" href="{{ url_for('orders.download_order', order_id=document.id) }}">Download</a>
+            </div>
+            <div class="small">
+              <div><strong>Confidence:</strong> {{ document.search_confidence }}%</div>
+              {% if document.match_reasons %}<div><strong>Why matched:</strong> {{ document.match_reasons|join(', ') }}</div>{% endif %}
+              {% if document.search_confidence < 35 %}<div><strong>Note:</strong> possible match - verify source</div>{% endif %}
+            </div>
+          </div>
+        </details>
+      {% endfor %}
+      </div>
+    {% else %}
+      <div class="text-muted">No matching documents found yet.</div>
+    {% endif %}
+  </div>
+  </div>
+</div>
+{% endblock %}

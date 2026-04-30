@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell">
+  {% include 'partials/nav.html' %}
+  <div class="page-wrap">
+    <div class="card p-3 mb-3 page-head">
+      <h2 class="mb-1">Upload Form</h2>
+      <p class="text-muted mb-0">Upload one or more forms and review detected metadata before save.</p>
+    </div>
+    {% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+    <div class="card p-3">
+    <form method="post" enctype="multipart/form-data" class="search-panel">
+      <div class="mb-2"><label class="form-label text-dark">Notes</label><textarea class="form-control" name="notes"></textarea></div>
+      <div class="mb-3">
+        <label class="form-label text-dark">Files</label>
+        <input type="file" class="form-control" name="files" id="forms-files-input" multiple required />
+        <div class="small text-muted mt-2">AI auto-detects each file's title, category, and version label. You can adjust before upload.</div>
+      </div>
+      <div class="mb-3" id="forms-upload-preview" style="display:none;">
+        <label class="form-label text-dark">Upload Preview</label>
+        <div class="card p-2">
+          <div id="forms-upload-preview-list" class="small text-muted"></div>
+        </div>
+      </div>
+      <button class="btn btn-primary">Upload Files</button>
+    </form>
+    </div>
+  </div>
+</div>
+<script>
+  (function () {
+    const input = document.getElementById('forms-files-input');
+    const preview = document.getElementById('forms-upload-preview');
+    const list = document.getElementById('forms-upload-preview-list');
+    const categoryOptions = {{ category_options|tojson }};
+    if (!input || !preview || !list) {
+      return;
+    }
+
+    function escapeHtml(value) {
+      return String(value || '').replace(/[&<>"]/g, function (char) {
+        return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[char];
+      });
+    }
+
+    async function renderPreview(files) {
+      const formData = new FormData();
+      files.forEach(function (file) {
+        formData.append('files', file);
+      });
+      const response = await fetch("{{ url_for('forms.detect_upload_metadata') }}", {
+        method: 'POST',
+        body: formData
+      });
+      const payload = await response.json();
+      const results = Array.isArray(payload.results) ? payload.results : [];
+      const retentionOptions = Array.isArray(payload.retention_options) ? payload.retention_options : [];
+
+      list.innerHTML = results.map(function (item, index) {
+        const safeName = escapeHtml(item.filename || (files[index] && files[index].name) || '');
+        const title = escapeHtml(item.title || '');
+        const versionLabel = escapeHtml(item.version_label || '');
+        const category = item.category || 'General';
+        const options = categoryOptions.map(function (option) {
+          const selected = option === category ? ' selected' : '';
+          return '<option value="' + escapeHtml(option) + '"' + selected + '>' + escapeHtml(option) + '</option>';
+        }).join('');
+        const retentionSelect = retentionOptions.map(function (option) {
+          const selected = option === 'full_save_allowed' ? ' selected' : '';
+          return '<option value="' + escapeHtml(option) + '"' + selected + '>' + escapeHtml(option) + '</option>';
+        }).join('');
+        return (
+          '<div class="card mb-2">' +
+            '<div><strong>' + safeName + '</strong></div>' +
+            '<div class="mt-2"><label class="small">Title</label><input class="form-control" name="file_title" value="' + title + '" /></div>' +
+            '<div class="mt-2"><label class="small">Category</label><select class="form-control" name="file_category">' + options + '</select></div>' +
+            '<div class="mt-2"><label class="small">Version Label</label><input class="form-control" name="file_version_label" value="' + versionLabel + '" /></div>' +
+            '<div class="mt-2"><label class="small">Contains PII</label><select class="form-control" name="file_contains_pii"><option value="0">No</option><option value="1">Yes</option></select></div>' +
+            '<div class="mt-2"><label class="small">Retention Mode</label><select class="form-control" name="file_retention_mode">' + retentionSelect + '</select></div>' +
+            '<div class="mt-2"><label class="small">Allow Email</label><select class="form-control" name="file_allow_email"><option value="1">Yes</option><option value="0">No</option></select></div>' +
+            '<div class="mt-2"><label class="small">Allow Download</label><select class="form-control" name="file_allow_download"><option value="1">Yes</option><option value="0">No</option></select></div>' +
+            '<div class="mt-2"><label class="small">Allow Completed Save</label><select class="form-control" name="file_allow_completed_save"><option value="1">Yes</option><option value="0">No</option></select></div>' +
+            '<div class="mt-2"><label class="small">Allow Blank Print</label><select class="form-control" name="file_allow_blank_print"><option value="1">Yes</option><option value="0">No</option></select></div>' +
+          '</div>'
+        );
+      }).join('');
+      preview.style.display = 'block';
+    }
+
+    input.addEventListener('change', async function () {
+      const files = Array.from(input.files || []);
+      if (!files.length) {
+        preview.style.display = 'none';
+        list.innerHTML = '';
+        return;
+      }
+      list.innerHTML = '<div>Detecting metadata...</div>';
+      preview.style.display = 'block';
+      try {
+        await renderPreview(files);
+      } catch (error) {
+        list.innerHTML = '<div class="text-muted">Metadata detection failed. You can still upload the selected files.</div>';
+      }
+    });
+  })();
+</script>
+{% endblock %}

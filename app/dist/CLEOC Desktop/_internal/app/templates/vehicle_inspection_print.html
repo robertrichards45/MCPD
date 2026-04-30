@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vehicle Inspection Print</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 18px; color: #111; }
+    .header { margin-bottom: 16px; }
+    .sheet {
+      border: 2px solid #111;
+      padding: 14px;
+      margin-bottom: 18px;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    .sheet h2 { margin: 0 0 10px; font-size: 22px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px 18px;
+      margin-bottom: 12px;
+    }
+    .label { font-size: 12px; color: #555; text-transform: uppercase; }
+    .value { font-size: 16px; border-bottom: 1px solid #999; min-height: 24px; padding-top: 3px; }
+    .checks { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
+    .checks th, .checks td { border: 1px solid #999; padding: 6px 8px; text-align: left; }
+    .remarks { min-height: 70px; border: 1px solid #999; padding: 8px; margin-bottom: 12px; }
+    .template-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .template-card {
+      border: 1px solid #999;
+      padding: 8px;
+      background: #fafafa;
+    }
+    .template-card img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border: 1px solid #ddd;
+      background: #fff;
+    }
+    .template-card .name {
+      font-size: 12px;
+      margin-top: 6px;
+      word-break: break-word;
+      color: #333;
+    }
+    .overlay-preview {
+      border: 1px solid #999;
+      padding: 8px;
+      margin-bottom: 18px;
+      background: #fafafa;
+    }
+    .overlay-canvas {
+      position: relative;
+      display: inline-block;
+      max-width: 100%;
+      border: 1px solid #ddd;
+      background: #fff;
+      overflow: hidden;
+    }
+    .overlay-canvas img {
+      display: block;
+      width: 100%;
+      max-width: 720px;
+      height: auto;
+    }
+    .overlay-field {
+      position: absolute;
+      font-size: 12px;
+      line-height: 1.2;
+      color: #b00020;
+      font-weight: 600;
+      background: rgba(255,255,255,0.75);
+      padding: 1px 3px;
+      max-width: 220px;
+      word-break: break-word;
+    }
+    .overlay-signature {
+      position: absolute;
+      border: 1px dashed rgba(0,0,0,0.35);
+      background: rgba(255,255,255,0.45);
+      overflow: hidden;
+    }
+    .overlay-signature img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      background: transparent;
+    }
+    .overlay-signature.empty::after {
+      content: attr(data-label);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      font-size: 11px;
+      color: #666;
+      text-align: center;
+      padding: 4px;
+      box-sizing: border-box;
+    }
+    .signature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .sig-box {
+      border: 1px solid #999;
+      min-height: 120px;
+      padding: 8px;
+    }
+    .sig-box img {
+      max-width: 100%;
+      max-height: 70px;
+      display: block;
+      margin-top: 8px;
+      background: #fff;
+    }
+    @media print {
+      .header button { display: none; }
+      body { margin: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Vehicle Inspection Sheets</h1>
+    <p>Printed: {{ printed_at }}</p>
+    {% if batch_mode %}
+      <p>Date: {{ current_log_date }} | Total Sheets: {{ inspections|length }}</p>
+    {% endif %}
+    <button type="button" onclick="window.print()">Print</button>
+  </div>
+
+  {% if inspection_template_images %}
+    <div class="template-strip">
+      {% for image_name in inspection_template_images %}
+        {% set calibration = inspection_template_calibration_map.get(image_name, {}) if inspection_template_calibration_map else {} %}
+        {% set x_offset = calibration.get('global_x_offset', 0) %}
+        {% set y_offset = calibration.get('global_y_offset', 0) %}
+        {% set scale = calibration.get('global_scale', 1.0) %}
+        <div class="template-card">
+          <div style="overflow:hidden;">
+            <img
+              src="{{ url_for('ops_modules.vehicle_inspection_template_file', filename=image_name) }}"
+              alt="{{ image_name }}"
+              style="margin-left: {{ x_offset }}px; margin-top: {{ y_offset }}px; transform: scale({{ scale }}); transform-origin: top left;"
+            />
+          </div>
+          <div class="name">{{ image_name }} | X={{ x_offset }} Y={{ y_offset }} Scale={{ '%.2f'|format(scale) }}</div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  {% if not batch_mode and overlay_template_name and overlay_preview %}
+    <div class="overlay-preview">
+      <div class="label" style="margin-bottom: 8px;">Overlay Preview (Page 1 Template)</div>
+      <div class="overlay-canvas">
+        <img src="{{ url_for('ops_modules.vehicle_inspection_template_file', filename=overlay_template_name) }}" alt="{{ overlay_template_name }}" />
+        {% for field in overlay_preview %}
+          <div class="overlay-field" style="left: {{ field.left }}px; top: {{ field.top }}px;">
+            {{ field.text }}
+          </div>
+        {% endfor %}
+        {% for sig in overlay_signature_boxes %}
+          <div
+            class="overlay-signature{% if not sig.image %} empty{% endif %}"
+            data-label="{{ sig.label }}"
+            style="left: {{ sig.left }}px; top: {{ sig.top }}px; width: {{ sig.width }}px; height: {{ sig.height }}px;"
+          >
+            {% if sig.image %}<img src="{{ sig.image }}" alt="{{ sig.label }} Signature" />{% endif %}
+          </div>
+        {% endfor %}
+      </div>
+      <div class="name mt-2">{{ overlay_template_name }}</div>
+    </div>
+  {% endif %}
+
+  {% if batch_mode %}
+    {% for inspection in inspections %}
+      {% set condition = condition_maps.get(inspection.id, {}) %}
+      {% set batch_overlay = (batch_overlay_items | selectattr('inspection_id', 'equalto', inspection.id) | list | first) if batch_overlay_items else None %}
+      <div class="sheet">
+        <h2>Patrol Vehicle Inspection</h2>
+        {% if batch_overlay %}
+          <div class="overlay-preview">
+            <div class="label" style="margin-bottom: 8px;">Overlay Preview (Page 1 Template)</div>
+            <div class="overlay-canvas">
+              <img src="{{ url_for('ops_modules.vehicle_inspection_template_file', filename=batch_overlay.template_name) }}" alt="{{ batch_overlay.template_name }}" />
+              {% for field in batch_overlay.fields %}
+                <div class="overlay-field" style="left: {{ field.left }}px; top: {{ field.top }}px;">
+                  {{ field.text }}
+                </div>
+              {% endfor %}
+              {% for sig in batch_overlay.signatures %}
+                <div
+                  class="overlay-signature{% if not sig.image %} empty{% endif %}"
+                  data-label="{{ sig.label }}"
+                  style="left: {{ sig.left }}px; top: {{ sig.top }}px; width: {{ sig.width }}px; height: {{ sig.height }}px;"
+                >
+                  {% if sig.image %}<img src="{{ sig.image }}" alt="{{ sig.label }} Signature" />{% endif %}
+                </div>
+              {% endfor %}
+            </div>
+            <div class="name mt-2">{{ batch_overlay.template_name }}</div>
+          </div>
+        {% endif %}
+        <div class="grid">
+          <div>
+            <div class="label">Date</div>
+            <div class="value">{{ inspection.inspection_date }}</div>
+          </div>
+          <div>
+            <div class="label">Vehicle #</div>
+            <div class="value">{{ inspection.vehicle_number }}</div>
+          </div>
+          <div>
+            <div class="label">Mileage</div>
+            <div class="value">{{ inspection.mileage or '' }}</div>
+          </div>
+          <div>
+            <div class="label">Fuel Level</div>
+            <div class="value">{{ inspection.fuel_level or '' }}</div>
+          </div>
+        </div>
+
+        <table class="checks">
+          <thead>
+            <tr><th>Item</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Lights</td><td>{{ condition.get('lights', '') }}</td></tr>
+            <tr><td>Tires</td><td>{{ condition.get('tires', '') }}</td></tr>
+            <tr><td>Equipment</td><td>{{ condition.get('equipment', '') }}</td></tr>
+            <tr><td>Cleanliness</td><td>{{ condition.get('cleanliness', '') }}</td></tr>
+          </tbody>
+        </table>
+
+        <div class="label">Remarks</div>
+        <div class="remarks">{{ inspection.remarks or '' }}</div>
+
+        <div class="signature-grid">
+          <div class="sig-box">
+            <div class="label">Patrol Officer</div>
+            {% if inspection.officer_signature %}<img src="{{ inspection.officer_signature }}" alt="Officer Signature" />{% endif %}
+          </div>
+          <div class="sig-box">
+            <div class="label">Patrol Sgt</div>
+            {% if inspection.sgt_signature %}<img src="{{ inspection.sgt_signature }}" alt="Sgt Signature" />{% endif %}
+          </div>
+          <div class="sig-box">
+            <div class="label">Watch Commander</div>
+            {% if inspection.watch_commander_signature %}<img src="{{ inspection.watch_commander_signature }}" alt="Watch Commander Signature" />{% endif %}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="sheet">
+      <h2>Patrol Vehicle Inspection</h2>
+      <div class="grid">
+        <div>
+          <div class="label">Date</div>
+          <div class="value">{{ inspection.inspection_date }}</div>
+        </div>
+        <div>
+          <div class="label">Vehicle #</div>
+          <div class="value">{{ inspection.vehicle_number }}</div>
+        </div>
+        <div>
+          <div class="label">Mileage</div>
+          <div class="value">{{ inspection.mileage or '' }}</div>
+        </div>
+        <div>
+          <div class="label">Fuel Level</div>
+          <div class="value">{{ inspection.fuel_level or '' }}</div>
+        </div>
+      </div>
+
+      <table class="checks">
+        <thead>
+          <tr><th>Item</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Lights</td><td>{{ condition_map.get('lights', '') }}</td></tr>
+          <tr><td>Tires</td><td>{{ condition_map.get('tires', '') }}</td></tr>
+          <tr><td>Equipment</td><td>{{ condition_map.get('equipment', '') }}</td></tr>
+          <tr><td>Cleanliness</td><td>{{ condition_map.get('cleanliness', '') }}</td></tr>
+        </tbody>
+      </table>
+
+      <div class="label">Remarks</div>
+      <div class="remarks">{{ inspection.remarks or '' }}</div>
+
+      <div class="signature-grid">
+        <div class="sig-box">
+          <div class="label">Patrol Officer</div>
+          {% if inspection.officer_signature %}<img src="{{ inspection.officer_signature }}" alt="Officer Signature" />{% endif %}
+        </div>
+        <div class="sig-box">
+          <div class="label">Patrol Sgt</div>
+          {% if inspection.sgt_signature %}<img src="{{ inspection.sgt_signature }}" alt="Sgt Signature" />{% endif %}
+        </div>
+        <div class="sig-box">
+          <div class="label">Watch Commander</div>
+          {% if inspection.watch_commander_signature %}<img src="{{ inspection.watch_commander_signature }}" alt="Watch Commander Signature" />{% endif %}
+        </div>
+      </div>
+    </div>
+  {% endif %}
+</body>
+</html>

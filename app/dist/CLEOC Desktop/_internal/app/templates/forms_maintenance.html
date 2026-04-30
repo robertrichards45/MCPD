@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell">
+  {% include 'partials/nav.html' %}
+  <div class="page-wrap">
+    <div class="card p-3 mb-3 page-head">
+      <h2 class="mb-1">Forms Template Maintenance</h2>
+      <p class="text-muted mb-0">Restricted PDF template, debug, and render-diagnostics tools for configured form maintenance.</p>
+    </div>
+
+    <div class="card p-3">
+      <div class="table-responsive">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Form</th>
+              <th>Schema</th>
+              <th>Online Fill</th>
+              <th>Visible Fields</th>
+              <th>Maintenance</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in rows %}
+            <tr>
+              <td>
+                <div>{{ row.form.title }}</div>
+                <div class="small text-muted">{{ row.form.category or 'General' }}</div>
+              </td>
+              <td><code>{{ row.schema_id }}</code></td>
+              <td>
+                {% if row.online_ready %}
+                <span class="badge bg-success">Ready</span>
+                {% else %}
+                <span class="badge bg-warning text-dark">Needs setup</span>
+                <div class="small text-muted mt-1">{{ row.warning }}</div>
+                {% endif %}
+              </td>
+              <td>{{ row.field_count }}</td>
+              <td class="d-flex flex-wrap gap-1">
+                <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('forms.form_pdf_template_editor', form_id=row.form.id) }}">Template Editor</a>
+                <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('forms.form_pdf_debug_view', form_id=row.form.id) }}">PDF Debug</a>
+                <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('forms.forms_pdf_renders_view', form_id=row.form.id) }}">Render Diagnostics</a>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-muted">No forms available.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
