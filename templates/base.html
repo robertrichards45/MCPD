@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/styles.css">
+    <title>{% block title %}Default Title{% endblock %}</title>
+</head>
+<body>
+    <div class="sidebar">
+        <ul>
+            <li><a href="/dashboard">Dashboard</a></li>
+            <li><a href="/law-lookup">Law Lookup</a></li>
+            <li><a href="/reports">Reports</a></li>
+            <li><a href="/forms">Forms</a></li>
+            <li><a href="/orders">Orders</a></li>
+            <li><a href="/training">Training</a></li>
+            <li><a href="/personnel">Personnel</a></li>
+            <li><a href="/saved-work">Saved Work</a></li>
+        </ul>
+    </div>
+    <div class="main-content">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>
