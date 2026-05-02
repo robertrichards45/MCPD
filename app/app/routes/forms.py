@@ -281,7 +281,17 @@ def _pdf_field_ui_type(source_item):
     if any(token in f'{name} {label}' for token in ('describe', 'statement', 'utterance', 'explain', 'details', 'remarks', 'notes')):
         return 'textarea'
     if base_type == 'signature':
-        return 'text'
+        # Return 'initial' for fields whose name/label contains 'initial' so the
+        # template can render a smaller initials canvas widget; otherwise 'signature'
+        # for the full signature canvas. Both used to be downgraded to 'text' — that
+        # prevented canvas-based capture on desktop. Phase-1 fix.
+        if 'initial' in name or 'initial' in label:
+            return 'initial'
+        return 'signature'
+    # Non-/Sig text fields whose name strongly implies initials (common in military
+    # forms: "Initials of person making statement") get the initials canvas widget.
+    if base_type == 'text' and ('initial' in name or ('initial' in label and 'initial' not in ('initial_date', 'initial_time'))):
+        return 'initial'
     return base_type
 
 

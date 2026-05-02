@@ -140,10 +140,32 @@
                     />
                     <label class="form-check-label" for="field_{{ field.name }}">Selected</label>
                   </div>
+                  {% elif field.type in ['signature', 'initial'] %}
+                  {# Canvas-based signature/initials capture — Phase-1 fix.
+                     The hidden input carries the DataURL to the server on submit.
+                     The PDF renderer draws the image in the output PDF. #}
+                  {% set existing_val = payload['values'].get(field.name, '') %}
+                  <div class="sig-widget" data-sig-field="{{ field.name }}" data-sig-type="{{ field.type }}">
+                    <canvas
+                      class="sig-canvas {% if field.type == 'initial' %}sig-canvas-initial{% endif %}"
+                      data-sig-canvas="{{ field.name }}"
+                      {% if not can_edit %}style="pointer-events:none;opacity:0.7;"{% endif %}
+                    ></canvas>
+                    <input type="hidden" name="field_{{ field.name }}" data-sig-output="{{ field.name }}" value="{{ existing_val }}" />
+                    {% if can_edit %}
+                    <div class="sig-controls">
+                      <button type="button" class="btn btn-outline-secondary btn-sm sig-clear-btn" data-sig-clear="{{ field.name }}">Clear</button>
+                      <span class="sig-hint">{% if field.type == 'initial' %}Draw initials{% else %}Draw signature{% endif %} with mouse or finger</span>
+                    </div>
+                    {% endif %}
+                    {% if existing_val and existing_val.startswith('data:image/') %}
+                    <p class="sig-saved-note">Signature recorded. Draw again to replace.</p>
+                    {% endif %}
+                  </div>
                   {% else %}
                   <input
                     class="form-control"
-                    type="{{ 'text' if field.type in ['select', 'textarea', 'signature', 'initial'] else field.type }}"
+                    type="{{ 'text' if field.type in ['select'] else field.type }}"
                     name="field_{{ field.name }}"
                     value="{{ payload['values'].get(field.name, '') }}"
                     placeholder="{{ field.placeholder }}"
@@ -340,6 +362,139 @@
 {% endblock %}
 {% block scripts %}
   {{ super() }}
+  {# ── Signature / Initials canvas widget ── #}
+  <style>
+    .sig-widget {
+      border: 1px solid #bfc6bc;
+      border-radius: 8px;
+      background: #fff;
+      padding: 6px;
+      display: inline-flex;
+      flex-direction: column;
+      gap: 6px;
+      max-width: 100%;
+    }
+    .sig-canvas {
+      display: block;
+      width: 360px;
+      height: 100px;
+      max-width: 100%;
+      border: 1px dashed #c0c8be;
+      border-radius: 6px;
+      background: #f9faf8;
+      cursor: crosshair;
+      touch-action: none;
+    }
+    .sig-canvas-initial {
+      width: 160px;
+      height: 70px;
+    }
+    .sig-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .sig-hint {
+      font-size: 12px;
+      color: #6a7a6a;
+    }
+    .sig-saved-note {
+      margin: 0;
+      font-size: 11px;
+      color: #4a8a4a;
+    }
+  </style>
+  <script>
+    (function () {
+      function initSigWidget(widget) {
+        var fieldName = widget.getAttribute('data-sig-field');
+        var canvas = widget.querySelector('[data-sig-canvas="' + fieldName + '"]');
+        var output = widget.querySelector('[data-sig-output="' + fieldName + '"]');
+        var clearBtn = widget.querySelector('[data-sig-clear="' + fieldName + '"]');
+        if (!canvas || !output) return;
+
+        // Set canvas internal resolution to match its CSS display size
+        function resizeCanvas() {
+          var rect = canvas.getBoundingClientRect();
+          var dpr = window.devicePixelRatio || 1;
+          canvas.width = Math.round(rect.width * dpr);
+          canvas.height = Math.round(rect.height * dpr);
+          var ctx = canvas.getContext('2d');
+          ctx.scale(dpr, dpr);
+          ctx.strokeStyle = '#1a2a3a';
+          ctx.lineWidth = 2;
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          // Restore saved signature if one exists
+          if (output.value && output.value.startsWith('data:image/')) {
+            var img = new Image();
+            img.onload = function () { ctx.drawImage(img, 0, 0, rect.width, rect.height); };
+            img.src = output.value;
+          }
+        }
+
+        // Debounced resize on window change
+        var resizeTimer;
+        window.addEventListener('resize', function () {
+          clearTimeout(resizeTimer);
+          resizeTimer = setTimeout(resizeCanvas, 120);
+        });
+        resizeCanvas();
+
+        var drawing = false;
+        var lastX = 0, lastY = 0;
+
+        function canvasPoint(e) {
+          var rect = canvas.getBoundingClientRect();
+          var src = e.touches ? e.touches[0] : e;
+          return { x: src.clientX - rect.left, y: src.clientY - rect.top };
+        }
+
+        function startDraw(e) {
+          e.preventDefault();
+          drawing = true;
+          var pt = canvasPoint(e);
+          lastX = pt.x; lastY = pt.y;
+        }
+        function continueDraw(e) {
+          if (!drawing) return;
+          e.preventDefault();
+          var ctx = canvas.getContext('2d');
+          var pt = canvasPoint(e);
+          ctx.beginPath();
+          ctx.moveTo(lastX, lastY);
+          ctx.lineTo(pt.x, pt.y);
+          ctx.stroke();
+          lastX = pt.x; lastY = pt.y;
+        }
+        function endDraw(e) {
+          if (!drawing) return;
+          drawing = false;
+          // Save the DataURL into the hidden input so it submits with the form
+          output.value = canvas.toDataURL('image/png');
+        }
+
+        canvas.addEventListener('mousedown', startDraw);
+        canvas.addEventListener('mousemove', continueDraw);
+        canvas.addEventListener('mouseup', endDraw);
+        canvas.addEventListener('mouseleave', endDraw);
+        canvas.addEventListener('touchstart', startDraw, { passive: false });
+        canvas.addEventListener('touchmove', continueDraw, { passive: false });
+        canvas.addEventListener('touchend', endDraw);
+
+        if (clearBtn) {
+          clearBtn.addEventListener('click', function () {
+            var rect = canvas.getBoundingClientRect();
+            canvas.getContext('2d').clearRect(0, 0, rect.width, rect.height);
+            output.value = '';
+          });
+        }
+      }
+
+      document.querySelectorAll('[data-sig-field]').forEach(initSigWidget);
+    })();
+  </script>
   {% if scan_supported and can_edit %}
   <script>
     (function () {

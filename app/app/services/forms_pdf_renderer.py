@@ -1,3 +1,4 @@
+import base64
 import json
 import os
 import re
@@ -8,6 +9,7 @@ from io import BytesIO
 from pathlib import Path
 
 from reportlab.lib.pagesizes import letter
+from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
 
 
@@ -171,8 +173,22 @@ def _is_generic_visible_field(item: dict) -> bool:
     name = str(item.get('name') or '').strip()
     if not name or not _is_user_fillable_field_name(name):
         return False
+    pdf_type = str(item.get('type') or '').strip()
+    # Properly-typed AcroForm signature fields (/Sig) and fields whose PDF type
+    # was detected as 'signature' via XFA inspection are now shown with a canvas
+    # widget rather than a text input. Include them in the visible schema.
+    # Phase-1 fix: was unconditionally excluded to avoid ugly text input rendering.
+    if pdf_type in {'/Sig', 'signature'}:
+        return True
     lowered = name.lower()
     if 'signature' in lowered or 'initial' in lowered:
+        # Include initial-named text fields (e.g. "Initials of person making statement")
+        # — they get an initials canvas widget. Exclude ambiguous date/time helpers like
+        # "initial_date" that are not actual capture fields.
+        if 'initial' in lowered and pdf_type in {'', '/Tx', 'text'}:
+            skip_tokens = ('initial_date', 'initial_time', 'initialdate', 'initialtime')
+            if not any(tok in lowered for tok in skip_tokens):
+                return True
         return False
     return True
 
@@ -849,8 +865,17 @@ def _write_fillable_pdf(source_pdf: str, target_pdf: str, schema: dict, payload:
     flat_values = _flatten_payload(schema, payload, blank_mode=blank_mode)
     mapped = _field_name_map(field_names, template, flat_values)
     coerced = {}
+    # Collect DataURL signature values separately — they are drawn as image overlays
+    # after the AcroForm fields are written (DataURLs cannot be stored in text fields).
+    dataurl_fields: dict[str, str] = {}
     truncations = []
     for field_name, value in mapped.items():
+        str_value = str(value or '').strip()
+        if str_value.startswith('data:image/'):
+            # Store for post-fill image overlay; skip from AcroForm text values.
+            dataurl_fields[field_name] = str_value
+            coerced[field_name] = ''
+            continue
         raw = fields.get(field_name)
         if isinstance(raw, dict):
             override = checkbox_overrides.get(field_name) if isinstance(checkbox_overrides, dict) else None
@@ -859,7 +884,7 @@ def _write_fillable_pdf(source_pdf: str, target_pdf: str, schema: dict, payload:
             if trunc_info:
                 truncations.append({'field': field_name, **trunc_info})
         else:
-            coerced[field_name] = str(value or '').strip()
+            coerced[field_name] = str_value
     used_manual_fallback = False
     for page in writer.pages:
         try:
@@ -875,6 +900,19 @@ def _write_fillable_pdf(source_pdf: str, target_pdf: str, schema: dict, payload:
         pass
     with open(target_pdf, 'wb') as handle:
         writer.write(handle)
+
+    # If any signature/initials DataURLs were captured, overlay them as images on
+    # the first page of the generated PDF. AcroForm /Sig fields cannot store image
+    # data via update_page_form_field_values, so we stamp the image on top.
+    # TODO (Phase 2): map each DataURL to its precise annotation rectangle so the
+    #   image lands exactly on the right field; current approach places signatures
+    #   sequentially at the bottom of page 1 as a safe fallback.
+    if dataurl_fields:
+        try:
+            _stamp_dataurl_signatures_on_pdf(target_pdf, dataurl_fields)
+        except Exception:
+            pass  # Never let a signature stamp failure block the download
+
     return {
         'mode': 'fillable',
         'mapped_count': len(coerced),
@@ -883,7 +921,54 @@ def _write_fillable_pdf(source_pdf: str, target_pdf: str, schema: dict, payload:
         'template_id': template.get('template_id') or '',
         'manual_widget_fallback': used_manual_fallback,
         'unmapped_input_keys': sorted([key for key in flat_values.keys() if key and flat_values.get(key) and key not in (template.get('field_map') or {})]),
+        'signature_fields_stamped': sorted(dataurl_fields.keys()),
     }
+
+
+def _stamp_dataurl_signatures_on_pdf(pdf_path: str, dataurl_map: dict) -> None:
+    """Overlay DataURL signature images onto the first page of an existing PDF.
+
+    Each signature is placed sequentially along the bottom margin of page 1.
+    This is a Phase-1 safe fallback. Phase-2 should map each field name to the
+    actual annotation rectangle so signatures land on the correct field line.
+    """
+    PdfReader, PdfWriter = _pdf_classes()
+    reader = PdfReader(pdf_path)
+    writer = PdfWriter()
+    writer.clone_document_from_reader(reader)
+
+    if not reader.pages:
+        return
+
+    overlay_buffer = BytesIO()
+    page = reader.pages[0]
+    page_width = float(page.mediabox.width)
+    page_height = float(page.mediabox.height)
+    draw = canvas.Canvas(overlay_buffer, pagesize=(page_width, page_height))
+
+    sig_w, sig_h = 160.0, 40.0
+    x = 36.0
+    y = 36.0  # start at bottom-left margin
+    for _field_name, dataurl in dataurl_map.items():
+        img_reader = _decode_dataurl_image(dataurl)
+        if img_reader is None:
+            continue
+        draw.setStrokeColorRGB(0.6, 0.6, 0.6)
+        draw.rect(x, y, sig_w, sig_h, stroke=1, fill=0)
+        draw.drawImage(img_reader, x + 2, y + 2, width=sig_w - 4, height=sig_h - 4, mask='auto', preserveAspectRatio=True, anchor='sw')
+        x += sig_w + 12
+        if x + sig_w > page_width - 36:
+            x = 36.0
+            y += sig_h + 8
+
+    draw.save()
+    overlay_reader = PdfReader(BytesIO(overlay_buffer.getvalue()))
+    writer.pages[0].merge_page(overlay_reader.pages[0])
+
+    tmp = pdf_path + '.sig_tmp'
+    with open(tmp, 'wb') as fh:
+        writer.write(fh)
+    os.replace(tmp, pdf_path)
 
 
 def _write_overlay_pdf(target_pdf: str, schema: dict, payload: dict, blank_mode: bool = False) -> dict:
@@ -957,6 +1042,18 @@ def _wrap_overlay_text(value: str, width_points: float, field_height: float, fon
     return lines[:max_lines]
 
 
+def _decode_dataurl_image(value: str):
+    """Return an ImageReader for a data:image/... DataURL, or None on failure."""
+    try:
+        if not str(value or '').startswith('data:image/'):
+            return None
+        header, encoded = value.split(',', 1)
+        img_bytes = base64.b64decode(encoded)
+        return ImageReader(BytesIO(img_bytes))
+    except Exception:
+        return None
+
+
 def _draw_xfa_value(draw, page_height: float, field: dict, value: str) -> None:
     field_type = str(field.get('type') or 'text').strip().lower()
     x = float(field.get('x') or 0.0)
@@ -973,6 +1070,14 @@ def _draw_xfa_value(draw, page_height: float, field: dict, value: str) -> None:
     text_value = str(value or '').strip()
     if not text_value:
         return
+
+    # Signature/initial canvas DataURL — draw as image at the field's coordinates.
+    img_reader = _decode_dataurl_image(text_value)
+    if img_reader is not None:
+        pad = 2.0
+        draw.drawImage(img_reader, x + pad, y + pad, width=max(width - pad * 2, 10), height=max(height - pad * 2, 8), mask='auto', preserveAspectRatio=True, anchor='sw')
+        return
+
     font_size = 8 if field_type in {'text', 'date', 'signature'} else 7
     draw.setFont('Helvetica', font_size)
     lines = _wrap_overlay_text(text_value, width, height, font_size)
@@ -1144,11 +1249,17 @@ def _draw_sectioned_text_field(
 
     text_value = str(value or '').strip()
     if text_value:
-        draw.setFillColorRGB(0.03, 0.06, 0.09)
-        draw.setFont('Helvetica', 8)
-        max_lines = 3 if field_height >= 28 else 1
-        for index, line in enumerate(_wrap_overlay_text(text_value, box_w - 8, field_height - 4, 8)[:max_lines]):
-            draw.drawString(box_x + 4, box_y + field_height - 11 - (index * 9), line[:150])
+        # Signature/initials canvas DataURL — draw as image inside the field box.
+        img_reader = _decode_dataurl_image(text_value)
+        if img_reader is not None:
+            pad = 3.0
+            draw.drawImage(img_reader, box_x + pad, box_y + pad, width=max(box_w - pad * 2, 10), height=max(field_height - pad * 2, 8), mask='auto', preserveAspectRatio=True, anchor='sw')
+        else:
+            draw.setFillColorRGB(0.03, 0.06, 0.09)
+            draw.setFont('Helvetica', 8)
+            max_lines = 3 if field_height >= 28 else 1
+            for index, line in enumerate(_wrap_overlay_text(text_value, box_w - 8, field_height - 4, 8)[:max_lines]):
+                draw.drawString(box_x + 4, box_y + field_height - 11 - (index * 9), line[:150])
     elif blank_mode:
         draw.setStrokeColorRGB(0.82, 0.86, 0.90)
         draw.line(box_x + 4, box_y + 6, box_x + box_w - 4, box_y + 6)
