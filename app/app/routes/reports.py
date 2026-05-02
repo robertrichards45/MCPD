@@ -1,6 +1,7 @@
+import io
 import os
 from datetime import datetime, timezone
-from flask import Blueprint, render_template, request, redirect, url_for, abort, current_app, flash
+from flask import Blueprint, render_template, request, redirect, url_for, abort, current_app, flash, send_file
 from flask_login import login_required, current_user
 from sqlalchemy import func
 from ..extensions import db
@@ -203,3 +204,60 @@ def report_grade(report_id):
     db.session.add(AuditLog(actor_id=current_user.id, action='report_grade', details=str(r.id)))
     db.session.commit()
     return redirect(url_for('reports.report_detail', report_id=r.id))
+
+
+@bp.route('/reports/<int:report_id>/packet.pdf')
+@login_required
+def report_packet(report_id):
+    """Merge all uploaded PDF attachments for this report into a single download.
+
+    Uses pypdf (already a project dependency) to concatenate pages in the order
+    the files were uploaded. If no attachments exist, returns 404.
+
+    TODO (Phase 2): prepend a cover page with incident metadata, title, officer
+    name, and date before the merged attachment pages.
+    """
+    r = _get_or_404(Report, report_id)
+    owner = _get_or_404(User, r.owner_id)
+    if not can_view_user(current_user, owner):
+        abort(403)
+
+    attachments = (
+        ReportAttachment.query
+        .filter_by(report_id=r.id)
+        .order_by(ReportAttachment.uploaded_at.asc())
+        .all()
+    )
+    valid_paths = [a.file_path for a in attachments if a.file_path and os.path.exists(a.file_path)]
+    if not valid_paths:
+        flash('No uploaded PDFs found for this report. Upload at least one PDF to generate a packet.', 'info')
+        return redirect(url_for('reports.report_detail', report_id=r.id))
+
+    try:
+        from pypdf import PdfReader, PdfWriter
+    except ImportError:
+        flash('PDF merge library not available.', 'error')
+        return redirect(url_for('reports.report_detail', report_id=r.id))
+
+    writer = PdfWriter()
+    for path in valid_paths:
+        try:
+            reader = PdfReader(path)
+            for page in reader.pages:
+                writer.add_page(page)
+        except Exception:
+            continue  # Skip corrupted individual files; never block the whole packet
+
+    if len(writer.pages) == 0:
+        flash('Could not read any pages from the uploaded PDFs.', 'error')
+        return redirect(url_for('reports.report_detail', report_id=r.id))
+
+    buf = io.BytesIO()
+    writer.write(buf)
+    buf.seek(0)
+
+    safe_title = ''.join(c if c.isalnum() or c in '-_' else '_' for c in (r.title or 'Report'))[:40]
+    filename = f"report-{r.id}-{safe_title}-packet.pdf"
+    db.session.add(AuditLog(actor_id=current_user.id, action='report_packet_download', details=str(r.id)))
+    db.session.commit()
+    return send_file(buf, mimetype='application/pdf', as_attachment=True, download_name=filename)

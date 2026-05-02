@@ -37,13 +37,23 @@
         </form>
 
         <h6 class="mt-4">Attached PDFs</h6>
-        <ul class="list-group">
+        <ul class="list-group mb-3">
           {% for a in attachments %}
-            <li class="list-group-item d-flex justify-content-between">
-              <span>{{ a.page_key }}  {{ a.uploaded_at.strftime('%Y-%m-%d %H:%M') }}</span>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span>{{ a.page_key }} &mdash; {{ a.uploaded_at.strftime('%Y-%m-%d %H:%M') }}</span>
+              <span class="badge bg-secondary">PDF</span>
             </li>
+          {% else %}
+            <li class="list-group-item text-muted">No PDFs uploaded yet.</li>
           {% endfor %}
         </ul>
+        {% if attachments %}
+        <a class="btn btn-outline-secondary"
+           href="{{ url_for('reports.report_packet', report_id=report.id) }}">
+          Download Packet ({{ attachments|length }} PDF{{ '' if attachments|length == 1 else 's' }} merged)
+        </a>
+        {# TODO (Phase 2): add a "Print Packet" button that opens the merged PDF in a new tab #}
+        {% endif %}
         </div>
       </div>
 

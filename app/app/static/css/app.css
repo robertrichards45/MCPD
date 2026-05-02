@@ -7578,3 +7578,726 @@ textarea.form-control {
   }
 }
 
+/* ============================================================
+   PHASE-1 SIDEBAR LAYOUT — overrides the horizontal top-nav
+   with a fixed dark-navy left sidebar on desktop.
+   Mobile collapses to a hamburger-toggled panel.
+   ============================================================ */
+
+:root {
+  --sb-width: 220px;
+  --sb-bg: #0d1b2a;
+  --sb-border: rgba(255, 255, 255, 0.08);
+  --sb-link: rgba(210, 225, 240, 0.78);
+  --sb-link-hover: #ffffff;
+  --sb-link-active-bg: rgba(255, 255, 255, 0.11);
+  --sb-header-bg: #071320;
+  --sb-accent: #4d9fff;
+  --workspace-bg: #eef0f3;
+}
+
+/* Shell: flex row so sidebar sits left of main content */
+.app-shell {
+  display: flex !important;
+  flex-direction: row !important;
+  min-height: 100vh;
+  background: var(--workspace-bg) !important;
+}
+
+/* ---- Fixed left sidebar ---- */
+.app-shell .top-nav {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  bottom: 0 !important;
+  width: var(--sb-width) !important;
+  height: 100vh !important;
+  background: var(--sb-bg) !important;
+  border-right: 1px solid var(--sb-border) !important;
+  border-bottom: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  z-index: 200 !important;
+  justify-content: flex-start !important;
+  align-items: stretch !important;
+  gap: 0 !important;
+}
+
+/* Brand / logo block */
+.app-shell .top-nav .brand {
+  display: flex !important;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 14px 12px;
+  background: var(--sb-header-bg);
+  border-bottom: 1px solid var(--sb-border);
+  flex-shrink: 0;
+}
+
+.app-shell .top-nav .brand img {
+  width: 30px !important;
+  height: 30px !important;
+  flex-shrink: 0;
+}
+
+.app-shell .top-nav .brand-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.app-shell .top-nav .brand-kicker {
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(170, 195, 220, 0.65);
+  font-weight: 600;
+}
+
+.app-shell .top-nav .brand-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Nav menu: vertical column filling remaining height */
+.app-shell .top-nav .nav-menu {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 auto !important;
+  gap: 0 !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  overflow-y: auto !important;
+  padding: 8px 0 0 !important;
+}
+
+.app-shell .top-nav .nav-links {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0 !important;
+  flex: 1 1 auto !important;
+  padding: 0 !important;
+}
+
+/* Nav link items */
+.app-shell .top-nav .nav-links a,
+.app-shell .top-nav .nav-links .nav-more > summary {
+  display: block !important;
+  color: var(--sb-link) !important;
+  text-decoration: none !important;
+  padding: 8px 14px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-left: 3px solid transparent !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+  line-height: 1.4;
+  transition: background 0.14s, color 0.14s;
+}
+
+.app-shell .top-nav .nav-links a:hover,
+.app-shell .top-nav .nav-links .nav-more > summary:hover {
+  background: var(--sb-link-active-bg) !important;
+  color: var(--sb-link-hover) !important;
+}
+
+.app-shell .top-nav .nav-links a.is-active {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
+  border-left-color: var(--sb-accent) !important;
+  font-weight: 600 !important;
+}
+
+.app-shell .top-nav .nav-links .nav-more.has-active > summary {
+  color: rgba(200, 225, 255, 0.95) !important;
+}
+
+/* Details/summary: expand inline in sidebar */
+.app-shell .top-nav .nav-links .nav-more {
+  position: static !important;
+  width: 100%;
+}
+
+.app-shell .top-nav .nav-links .nav-more > summary {
+  cursor: pointer;
+  list-style: none !important;
+}
+
+.app-shell .top-nav .nav-links .nav-more > summary::-webkit-details-marker {
+  display: none;
+}
+
+.app-shell .top-nav .nav-links .nav-more > summary::after {
+  content: '▸' !important;
+  float: right;
+  font-size: 10px;
+  opacity: 0.55;
+  margin-top: 1px;
+}
+
+.app-shell .top-nav .nav-links .nav-more[open] > summary::after {
+  content: '▾' !important;
+}
+
+/* Sub-menus: inline expansion, not absolute dropdown */
+.app-shell .top-nav .nav-more-menu {
+  position: static !important;
+  background: rgba(0, 0, 0, 0.22) !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 2px 0 4px !important;
+  margin: 0 !important;
+  min-width: 0 !important;
+  display: grid !important;
+  gap: 0 !important;
+}
+
+.app-shell .top-nav .nav-more-menu a {
+  padding-left: 26px !important;
+  font-size: 12px !important;
+  color: rgba(190, 215, 240, 0.72) !important;
+}
+
+.app-shell .top-nav .nav-more-menu a.is-active {
+  color: #fff !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* User info + logout panel pinned to bottom of sidebar */
+.app-shell .top-nav .nav-right {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  padding: 10px 12px !important;
+  border-top: 1px solid var(--sb-border) !important;
+  background: rgba(0, 0, 0, 0.15) !important;
+  flex-shrink: 0;
+  justify-content: flex-start !important;
+  align-items: stretch !important;
+}
+
+.app-shell .top-nav .nav-user-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.app-shell .top-nav .nav-user-identity {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.app-shell .top-nav .nav-user-label {
+  font-size: 10px !important;
+  color: rgba(160, 190, 215, 0.58) !important;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.app-shell .top-nav .user-name {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: #ffffff !important;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.app-shell .top-nav .nav-user-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.app-shell .top-nav .nav-logout-form {
+  width: 100%;
+}
+
+.app-shell .top-nav .nav-logout-form .btn {
+  width: 100% !important;
+  font-size: 12px !important;
+  min-height: 32px !important;
+  padding: 4px 8px !important;
+}
+
+.app-shell .top-nav .nav-role-switch {
+  width: 100%;
+}
+
+.app-shell .top-nav .nav-role-switch > summary {
+  color: rgba(170, 200, 230, 0.75);
+  font-size: 11px;
+  cursor: pointer;
+  list-style: none;
+  padding: 4px 0;
+}
+
+.app-shell .top-nav .nav-scope-menu {
+  position: static !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 4px 0 0 !important;
+  min-width: 0 !important;
+}
+
+/* Hide hamburger on desktop; sidebar is always visible */
+.app-shell .nav-toggle {
+  display: none !important;
+}
+
+/* ---- Main content area: shift right by sidebar width ---- */
+.app-shell .page-wrap,
+.app-shell .dashboard,
+.app-shell > main {
+  margin-left: var(--sb-width) !important;
+  max-width: none !important;
+  width: calc(100% - var(--sb-width)) !important;
+  box-sizing: border-box !important;
+  padding-top: 0 !important;
+}
+
+/* ============================================================
+   COMPACT DASHBOARD — Phase-1
+   ============================================================ */
+
+.dash-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 14px 18px;
+  background: #ffffff;
+  border-bottom: 1px solid #d8dde0;
+  margin-bottom: 16px;
+}
+
+.dash-header-left h1 {
+  font-size: 17px;
+  font-weight: 700;
+  margin: 0 0 2px;
+  color: #0d1b2a;
+}
+
+.dash-header-left p {
+  margin: 0;
+  font-size: 12px;
+  color: #5f6f7a;
+}
+
+.dash-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  padding: 0 18px 14px;
+}
+
+.dash-metric {
+  background: #ffffff;
+  border: 1px solid #d8dde0;
+  border-radius: 8px;
+  padding: 12px 14px;
+  text-align: center;
+}
+
+.dash-metric strong {
+  display: block;
+  font-size: 24px;
+  font-weight: 700;
+  color: #0d1b2a;
+  line-height: 1.15;
+}
+
+.dash-metric span {
+  font-size: 11px;
+  color: #6a7a84;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.dash-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  padding: 0 18px 18px;
+}
+
+.dash-panel {
+  background: #ffffff;
+  border: 1px solid #d8dde0;
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.dash-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #edf0ec;
+}
+
+.dash-panel-head h3 {
+  font-size: 11px;
+  font-weight: 700;
+  margin: 0;
+  color: #3d5060;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.dash-panel-head a {
+  font-size: 12px;
+  color: #1a5296;
+  text-decoration: none;
+}
+
+.dash-panel-head a:hover {
+  text-decoration: underline;
+}
+
+.dash-quick-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.dash-quick-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 8px;
+  border-radius: 7px;
+  background: #123456;
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  min-height: 44px;
+  border: none;
+  transition: background 0.14s;
+}
+
+.dash-quick-btn:hover {
+  background: #1a4a74;
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.dash-quick-btn.alt {
+  background: #f0f4f8;
+  color: #123456;
+  border: 1px solid #bfcad4;
+}
+
+.dash-quick-btn.alt:hover {
+  background: #e0ebf5;
+  color: #0d1b2a;
+}
+
+.dash-list {
+  display: grid;
+  gap: 6px;
+}
+
+.dash-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 10px;
+  border-radius: 6px;
+  background: #f5f7fa;
+  border: 1px solid #e4e8ec;
+  font-size: 13px;
+  color: #1a2a3a;
+  text-decoration: none;
+  gap: 8px;
+}
+
+.dash-list-item:hover {
+  background: #eaf0f7;
+  text-decoration: none;
+  color: #0d1b2a;
+}
+
+.dash-list-item-label {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dash-list-item-meta {
+  font-size: 11px;
+  color: #7a8e9a;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.dash-empty {
+  color: #7a8e9a;
+  font-size: 13px;
+  padding: 6px 0;
+}
+
+.dash-notice-item {
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: #f0f5fc;
+  border-left: 3px solid #4d9fff;
+  margin-bottom: 6px;
+}
+
+.dash-notice-item strong {
+  display: block;
+  font-size: 13px;
+  color: #0d1b2a;
+  margin-bottom: 2px;
+}
+
+.dash-notice-item p {
+  margin: 0 0 2px;
+  font-size: 12px;
+  color: #3a5060;
+  line-height: 1.4;
+}
+
+.dash-notice-item small {
+  font-size: 11px;
+  color: #8090a0;
+}
+
+/* ---- Mobile: collapse sidebar to hamburger ---- */
+@media (max-width: 768px) {
+  .app-shell {
+    flex-direction: column !important;
+  }
+
+  .app-shell .top-nav {
+    position: relative !important;
+    width: 100% !important;
+    height: auto !important;
+    bottom: auto !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--sb-border) !important;
+    flex-direction: column !important;
+    overflow: visible !important;
+  }
+
+  .app-shell .nav-toggle {
+    display: block !important;
+    margin: 10px 14px 10px auto !important;
+  }
+
+  .app-shell .top-nav .nav-menu {
+    display: none !important;
+    padding-bottom: 8px !important;
+  }
+
+  .app-shell .top-nav.nav-open .nav-menu {
+    display: flex !important;
+  }
+
+  .app-shell .page-wrap,
+  .app-shell .dashboard,
+  .app-shell > main {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+
+  .dash-metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .dash-body {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .dash-metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .dash-quick-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================================
+   MOBILE UI CLEANUP — Task 1
+   Larger tap targets, readable fonts, reduced clutter.
+   No layout structure changes; purely additive overrides.
+   ============================================================ */
+
+/* Tab labels: 10px → 12px. Override the duplicate ≤640px rule
+   by appearing later in the cascade with !important. */
+.mobile-tab-label {
+  font-size: 12px !important;
+}
+
+/* Mobile shell header subtitle note: 11.5px → 13px */
+.mobile-header p {
+  font-size: 13px;
+}
+
+/* Progress step label below section header: 11px → 12px */
+.mobile-step-progress span {
+  font-size: 12px;
+}
+
+/* Call-type cards: reduce from 132px to 110px so more cards
+   fit on screen without the officer needing to scroll as far. */
+.mobile-call-type-card {
+  min-height: 110px;
+}
+
+/* Checklist items: nudge tap target from 58px to 62px */
+.mobile-checklist-item {
+  min-height: 62px;
+}
+
+/* ---- Dashboard: officer-friendly sizing on phones ---- */
+@media (max-width: 768px) {
+  /* Quick-action buttons: 44px → 52px, font 13px → 15px */
+  .dash-quick-btn {
+    min-height: 52px;
+    font-size: 15px;
+  }
+
+  /* List row items: more vertical padding, larger text */
+  .dash-list-item {
+    min-height: 46px;
+    padding: 10px 14px;
+  }
+
+  .dash-list-item-label {
+    font-size: 14px;
+  }
+
+  .dash-list-item-meta {
+    font-size: 13px;
+  }
+
+  /* Metric values: keep readable at 2-up grid */
+  .dash-metric strong {
+    font-size: 22px;
+  }
+
+  /* Section heading inside panels */
+  .dash-panel-head h3 {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Very small screens: buttons slightly taller */
+  .dash-quick-btn {
+    min-height: 56px;
+    font-size: 16px;
+  }
+
+  /* Metric number is the key data; keep it prominent */
+  .dash-metric strong {
+    font-size: 20px;
+  }
+
+  .dash-metric span {
+    font-size: 10px;
+  }
+}
+
+/* ============================================================
+   FORMS WORKFLOW — Task 2 improvements
+   Responsive layout, mobile-friendly field sizing, footer
+   grouping, and role-entry grid.
+   ============================================================ */
+
+/* ---- Forms fill layout: collapse sidebar below main on phone ---- */
+@media (max-width: 900px) {
+  .forms-fill-layout {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* On very small screens hide the sidebar altogether; the header
+   already shows status/retention in the ops-stat-pill strip. */
+@media (max-width: 640px) {
+  .forms-fill-side {
+    display: none;
+  }
+}
+
+/* ---- Form controls: minimum 52px + 16px font prevents iOS zoom ---- */
+@media (max-width: 768px) {
+  .forms-fill-page .form-control,
+  .forms-fill-page .form-select {
+    min-height: 52px;
+    font-size: 16px;
+    padding: 12px 14px;
+  }
+
+  .forms-fill-page textarea.form-control {
+    min-height: 96px;
+  }
+
+  /* Form section summary: slightly larger on phone */
+  .forms-fill-page .form-section > summary {
+    font-size: 15px;
+    padding: 12px 0;
+  }
+}
+
+/* ---- Action footer: three stacked groups on mobile ---- */
+@media (max-width: 768px) {
+  .form-action-footer.sticky-actions {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .fill-action-group {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .fill-action-group .btn {
+    width: 100%;
+    min-height: 52px;
+    font-size: 15px;
+  }
+
+  .fill-action-primary .btn-primary {
+    min-height: 58px;
+    font-size: 16px;
+  }
+}
+
+/* ---- Role entry card: always stack to 1-col on phone ---- */
+@media (max-width: 640px) {
+  .role-entry-grid {
+    grid-template-columns: 1fr;
+  }
+}
+

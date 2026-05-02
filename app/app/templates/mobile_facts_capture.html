@@ -16,5 +16,63 @@
   data-mobile-narrative-url="{{ url_for('mobile.incident_narrative_review') }}"
   data-mobile-forms-url="{{ url_for('mobile.incident_selected_forms') }}"
   data-mobile-reference-url="{{ url_for('reference.incident_paperwork_guide') }}"
-></div>
+>
+  {#
+    Server-side fallback content shown before JavaScript renders this page.
+    The JS (incident-core.js) replaces this content via innerHTML once loaded.
+    If JS fails or is blocked, the officer can still capture facts and navigate.
+  #}
+  <section class="mobile-section-block" id="facts-fallback">
+    <div class="mobile-section-head">
+      <h3>Facts Capture</h3>
+    </div>
+    <div class="mobile-step-progress">
+      <span>Main facts</span>
+      <strong>Describe what happened</strong>
+    </div>
+
+    <article class="mobile-fact-card is-focused">
+      <div class="mobile-fact-head">
+        <strong>Tell what happened</strong>
+      </div>
+      <textarea
+        class="mobile-text-input mobile-text-area"
+        rows="10"
+        placeholder="Observed or reported facts only. Describe what happened, who was involved, where, and when."
+        style="width:100%;min-height:180px;font-size:16px;"
+        aria-label="Describe what happened"
+      ></textarea>
+    </article>
+
+    <p class="mobile-inline-note" style="font-size:13px;margin-top:10px;">
+      This page captures incident facts before the narrative is drafted.
+      Enter everything you observed or were told at the scene.
+    </p>
+
+    <noscript>
+      <div class="mobile-inline-note" style="margin-top:12px;">
+        <strong>JavaScript is required for the full facts workflow.</strong>
+        Please enable JavaScript or use the desktop portal to complete this report.
+      </div>
+    </noscript>
+  </section>
+
+  <div class="mobile-wizard-bar" id="facts-fallback-nav">
+    <div class="mobile-wizard-copy">
+      <strong>Facts Capture</strong>
+      <span>Describe what happened at the scene</span>
+    </div>
+    <div class="mobile-wizard-actions">
+      <a class="mobile-wizard-link"
+         href="{{ url_for('mobile.incident_checklist') if mobile_incident_page else url_for('mobile.home') }}">
+        &larr; Back
+      </a>
+      <a class="mobile-wizard-cta"
+         href="{{ url_for('mobile.incident_narrative_review') if mobile_incident_page else url_for('mobile.home') }}">
+        Next &rarr;
+      </a>
+    </div>
+  </div>
+</div>
+
 {% endblock %}

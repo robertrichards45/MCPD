@@ -3,36 +3,37 @@
 <div class="app-shell">
   {% include 'partials/nav.html' %}
   <div class="page-wrap forms-fill-page">
+
+    {# ── Page header ── #}
     <section class="card p-3 mb-3 page-head ops-head-card">
       <div class="ops-head-grid">
         <div class="ops-head-copy">
           <div class="eyebrow forms-library-eyebrow">Paperwork Workflow</div>
           <h2 class="mb-1">{{ saved_record.title if saved_record and saved_record.title else form.title }}</h2>
-          <p class="text-muted mb-0">{{ form.category or 'Operational Form' }} | {{ fill_state.source_of_truth_label or 'PDF-backed workflow' }}</p>
+          <p class="text-muted mb-0">{{ form.category or 'Operational Form' }}{% if fill_state.source_of_truth_label %} &mdash; {{ fill_state.source_of_truth_label }}{% endif %}</p>
         </div>
         <div class="ops-head-stats">
           <article class="ops-stat-pill">
-            <span>Session</span>
-            <strong>{{ saved_record.status if saved_record else 'New Form' }}</strong>
+            <span>Status</span>
+            <strong>{{ saved_record.status if saved_record else 'New' }}</strong>
           </article>
           <article class="ops-stat-pill">
             <span>Workflow</span>
-            <strong>{{ 'Ready' if fill_state.is_ready else 'Blank Only' }}</strong>
+            <strong>{{ 'Online Fill' if fill_state.is_ready else 'Blank Only' }}</strong>
           </article>
           <article class="ops-stat-pill">
             <span>Retention</span>
-            <strong>{{ 'No-Retention' if policy.is_no_retention else 'Portal Save' }}</strong>
+            <strong>{{ 'No-Retain' if policy.is_no_retention else 'Saved' }}</strong>
           </article>
         </div>
       </div>
     </section>
 
+    {# ── No-retention warning ── #}
     {% if policy.is_no_retention %}
-    <div class="card p-3 mb-3">
-      <strong>No-Retention PII Mode</strong>
-      <div class="small text-muted mt-1">
-        Completed form data is not saved on this website. Use Preview, Print, Email, or Download before leaving this session.
-      </div>
+    <div class="fill-no-retention-banner">
+      <strong>No-Retention Mode</strong>
+      <span>Data is not saved on this server. Use Preview, Download, Print, or Email before leaving this page.</span>
     </div>
     {% endif %}
 
@@ -41,17 +42,19 @@
 
       <div class="forms-fill-layout">
         <div class="forms-fill-main">
+
+          {# ── License scan / autofill ── #}
           {% if scan_supported and can_edit %}
           <details class="collapse-card mb-3 form-section scan-collapse" {% if scan_result %}open{% endif %}>
-            <summary>License Scan & Autofill</summary>
+            <summary>License Scan &amp; Autofill</summary>
             <div class="scan-panel form-scan-panel">
               <div class="scan-intro-card">
                 <div>
                   <strong>Scan Driver License</strong>
-                  <p class="small text-muted mb-0">On mobile, use the rear camera or a saved photo. When the device detects the PDF417 barcode, the form imports the data automatically into matching fields.</p>
+                  <p class="small text-muted mb-0">Use the rear camera or a saved photo. When the barcode is detected the form fills automatically.</p>
                 </div>
                 <div class="scan-intro-badges">
-                  <span class="badge bg-dark">Mobile Ready</span>
+                  <span class="badge bg-dark">Mobile</span>
                   <span class="badge bg-success">Auto Fill</span>
                 </div>
               </div>
@@ -59,7 +62,7 @@
               {% if scan_result %}
               <div class="scan-review-card">
                 <div class="scan-review-head">
-                  <strong>Last Import Result</strong>
+                  <strong>Last Import</strong>
                   <span class="badge bg-success">{{ scan_result.imported|length }} imported</span>
                 </div>
                 <div class="small"><strong>Imported:</strong> {{ scan_result.imported|join(', ') if scan_result.imported else 'none' }}</div>
@@ -83,19 +86,19 @@
                 <article class="scan-upload-card">
                   <span class="scan-step-index">Step 1</span>
                   <h4>Capture the license</h4>
-                  <p class="small text-muted">Tap below to open the camera or choose a clear license photo from your device.</p>
+                  <p class="small text-muted">Tap below to open the camera or choose a photo from your device.</p>
                   <input class="scan-file-input" type="file" id="id-scan-file" accept="image/*" capture="environment" />
                   <label class="btn btn-primary scan-file-label" for="id-scan-file">Scan Driver License</label>
-                  <small class="text-muted">Barcode reading works best when the back of the license is fully visible.</small>
+                  <small class="text-muted">Back of license must be clearly visible.</small>
                 </article>
 
                 <article class="scan-upload-card">
                   <span class="scan-step-index">Step 2</span>
-                  <h4>Review or paste barcode data</h4>
-                  <p class="small text-muted">If the phone cannot read the barcode automatically, paste raw scanner output here and import it manually.</p>
+                  <h4>Or paste barcode data</h4>
+                  <p class="small text-muted">If the camera cannot read the barcode, paste the raw scanner output here.</p>
                   <label class="form-label text-dark" for="id-scan-payload">Barcode Data</label>
-                  <textarea class="form-control" name="scan_payload" id="id-scan-payload" rows="5" placeholder="If automatic scan is unavailable, paste the raw barcode text here."></textarea>
-                  <label class="scan-checkbox"><input type="checkbox" name="scan_replace_existing" value="1" /> Replace Existing Fields</label>
+                  <textarea class="form-control" name="scan_payload" id="id-scan-payload" rows="4" placeholder="Paste raw barcode text here if auto-scan is unavailable."></textarea>
+                  <label class="scan-checkbox"><input type="checkbox" name="scan_replace_existing" value="1" /> Replace existing fields</label>
                 </article>
               </div>
 
@@ -109,28 +112,48 @@
           </details>
           {% endif %}
 
+          {# ── Form not ready ── #}
           {% if not fill_state.is_ready %}
-          <div class="card p-3 mb-3" style="background:#fff8e6;border-color:#f1d59a;">
-            <strong>Online Completion Not Available Yet</strong>
-            <div class="small text-muted mt-1">{{ fill_state.fallback_message }}</div>
+          <div class="fill-unavailable-card">
+            <strong>Online Completion Not Available</strong>
+            <p class="small text-muted mb-0 mt-1">{{ fill_state.fallback_message }}</p>
           </div>
           {% else %}
-          <div class="small text-muted">Complete the real PDF-backed fields below. Preview, print, download, and email use the same generated output.</div>
+
+          {# ── Field sections ── #}
+          <p class="small text-muted mb-1">Fill in the fields below. Use Preview or Download after saving to get the completed PDF.</p>
           <div class="form-sections-stack">
             {% for section in schema.sections %}
+            {% set field_count = section.fields|length %}
             <details class="collapse-card form-section" {% if loop.first %}open{% endif %}>
-              <summary>{{ section.title }}</summary>
+              <summary>
+                {{ section.title }}
+                <span class="form-section-count">{{ field_count }} field{{ '' if field_count == 1 else 's' }}</span>
+              </summary>
               <div class="form-section-grid">
                 {% for field in section.fields %}
                 <div class="form-field-block form-field-type-{{ field.type }}">
-                  <label class="form-label text-dark">{{ field.label }}{% if field.required %} *{% endif %}</label>
+                  <label class="form-label form-fill-label" for="field_{{ field.name }}">
+                    {{ field.label }}{% if field.required %} <span class="fill-required-star">*</span>{% endif %}
+                  </label>
+
+                  {# textarea #}
                   {% if field.type == 'textarea' %}
-                  <textarea class="form-control" name="field_{{ field.name }}" rows="3" placeholder="{{ field.placeholder }}" {% if not can_edit %}readonly{% endif %}>{{ payload['values'].get(field.name, '') }}</textarea>
+                  <textarea
+                    class="form-control fill-textarea"
+                    id="field_{{ field.name }}"
+                    name="field_{{ field.name }}"
+                    rows="3"
+                    placeholder="{{ field.placeholder or 'Enter ' + field.label|lower }}"
+                    {% if not can_edit %}readonly{% endif %}
+                  >{{ payload['values'].get(field.name, '') }}</textarea>
+
+                  {# checkbox #}
                   {% elif field.type == 'checkbox' %}
                   {% set checked = payload['values'].get(field.name, '')|lower in ['yes', 'true', '1', 'on', 'x'] %}
-                  <div class="form-check">
+                  <div class="form-check fill-check-row">
                     <input
-                      class="form-check-input"
+                      class="form-check-input fill-checkbox"
                       type="checkbox"
                       name="field_{{ field.name }}"
                       id="field_{{ field.name }}"
@@ -138,15 +161,66 @@
                       {% if checked %}checked{% endif %}
                       {% if not can_edit %}disabled{% endif %}
                     />
-                    <label class="form-check-label" for="field_{{ field.name }}">Selected</label>
+                    <label class="form-check-label" for="field_{{ field.name }}">{{ field.label }}</label>
                   </div>
+
+                  {# signature / initials canvas #}
+                  {% elif field.type in ['signature', 'initial'] %}
+                  {% set existing_val = payload['values'].get(field.name, '') %}
+                  <div class="sig-widget" data-sig-field="{{ field.name }}" data-sig-type="{{ field.type }}">
+                    <p class="sig-prompt">
+                      {% if field.type == 'initial' %}Draw initials{% else %}Draw signature{% endif %}
+                      with mouse or finger{% if not can_edit %} (read-only){% endif %}
+                    </p>
+                    <canvas
+                      class="sig-canvas {% if field.type == 'initial' %}sig-canvas-initial{% endif %}"
+                      data-sig-canvas="{{ field.name }}"
+                      {% if not can_edit %}style="pointer-events:none;opacity:0.6;"{% endif %}
+                    ></canvas>
+                    <input type="hidden" name="field_{{ field.name }}" data-sig-output="{{ field.name }}" value="{{ existing_val }}" />
+                    {% if can_edit %}
+                    <div class="sig-controls">
+                      <button type="button" class="btn btn-outline-secondary btn-sm sig-clear-btn" data-sig-clear="{{ field.name }}">Clear</button>
+                      {% if existing_val and existing_val.startswith('data:image/') %}
+                      <span class="sig-saved-note">Saved &mdash; draw again to replace</span>
+                      {% endif %}
+                    </div>
+                    {% elif existing_val and existing_val.startswith('data:image/') %}
+                    <p class="sig-saved-note">Signature on file.</p>
+                    {% endif %}
+                  </div>
+
+                  {# select — render as <select> when options known, text input otherwise #}
+                  {% elif field.type == 'select' %}
+                  {% set existing_val = payload['values'].get(field.name, '') %}
+                  {% if field.options %}
+                  <select class="form-control" id="field_{{ field.name }}" name="field_{{ field.name }}" {% if not can_edit %}disabled{% endif %}>
+                    <option value="">— Select —</option>
+                    {% for opt in field.options %}
+                    <option value="{{ opt }}" {% if existing_val == opt %}selected{% endif %}>{{ opt }}</option>
+                    {% endfor %}
+                  </select>
                   {% else %}
                   <input
                     class="form-control"
-                    type="{{ 'text' if field.type in ['select', 'textarea', 'signature', 'initial'] else field.type }}"
+                    type="text"
+                    id="field_{{ field.name }}"
+                    name="field_{{ field.name }}"
+                    value="{{ existing_val }}"
+                    placeholder="{{ field.placeholder or 'Enter ' + field.label|lower }}"
+                    {% if not can_edit %}readonly{% endif %}
+                  />
+                  {% endif %}
+
+                  {# date / text / number and everything else #}
+                  {% else %}
+                  <input
+                    class="form-control"
+                    type="{{ field.type if field.type in ['date', 'number', 'time', 'email', 'tel'] else 'text' }}"
+                    id="field_{{ field.name }}"
                     name="field_{{ field.name }}"
                     value="{{ payload['values'].get(field.name, '') }}"
-                    placeholder="{{ field.placeholder }}"
+                    placeholder="{{ field.placeholder or '' }}"
                     {% if field.required %}required{% endif %}
                     {% if not can_edit %}readonly{% endif %}
                   />
@@ -157,17 +231,18 @@
             </details>
             {% endfor %}
 
+            {# ── Involved persons ── #}
             {% if schema.show_role_entry %}
             <details class="collapse-card form-section" open>
               <summary>{{ schema.role_entry.title }}</summary>
               <div class="role-entry-toolbar">
-                <p class="small text-muted mb-0">Track people tied to this form without leaving the paperwork flow.</p>
+                <p class="small text-muted mb-0">Track people tied to this form (victim, suspect, witness, or other).</p>
                 {% if can_edit %}
                 <button type="button" class="btn btn-outline-secondary btn-sm" id="add-role-entry-btn">Add Person</button>
                 {% endif %}
               </div>
               {% set role_rows = payload.role_entries if payload.role_entries else [] %}
-              <div id="role-entry-empty" class="role-entry-empty" {% if role_rows %}hidden{% endif %}>No people added yet. Add a role entry when you need to track a victim, suspect, witness, or other subject.</div>
+              <div id="role-entry-empty" class="role-entry-empty" {% if role_rows %}hidden{% endif %}>No people added yet.</div>
               <div id="role-entry-list" class="role-entry-list">
                 {% for row in role_rows %}
                 <div class="role-entry-card" data-role-entry-card>
@@ -177,9 +252,9 @@
                     <button type="button" class="btn btn-outline-secondary btn-sm role-entry-remove">Remove</button>
                     {% endif %}
                   </div>
-                  <div class="row g-2">
-                    <div class="col-md-3">
-                      <label class="form-label text-dark">Role</label>
+                  <div class="role-entry-grid">
+                    <div class="role-entry-field">
+                      <label class="form-label form-fill-label">Role</label>
                       <select class="form-control" name="role_entry_role" {% if not can_edit %}disabled{% endif %}>
                         <option value="">Select role</option>
                         {% for opt in schema.role_entry.role_options %}
@@ -187,25 +262,25 @@
                         {% endfor %}
                       </select>
                     </div>
-                    <div class="col-md-3">
-                      <label class="form-label text-dark">Full Name</label>
-                      <input class="form-control" name="role_entry_name" value="{{ row.full_name }}" {% if not can_edit %}readonly{% endif %} />
+                    <div class="role-entry-field">
+                      <label class="form-label form-fill-label">Full Name</label>
+                      <input class="form-control" name="role_entry_name" value="{{ row.full_name }}" placeholder="First Last" {% if not can_edit %}readonly{% endif %} />
                     </div>
-                    <div class="col-md-2">
-                      <label class="form-label text-dark">ID / DL</label>
-                      <input class="form-control" name="role_entry_identifier" value="{{ row.identifier }}" {% if not can_edit %}readonly{% endif %} />
+                    <div class="role-entry-field">
+                      <label class="form-label form-fill-label">ID / DL #</label>
+                      <input class="form-control" name="role_entry_identifier" value="{{ row.identifier }}" placeholder="License or ID number" {% if not can_edit %}readonly{% endif %} />
                     </div>
-                    <div class="col-md-2">
-                      <label class="form-label text-dark">Phone</label>
-                      <input class="form-control" name="role_entry_phone" value="{{ row.phone }}" {% if not can_edit %}readonly{% endif %} />
+                    <div class="role-entry-field">
+                      <label class="form-label form-fill-label">Phone</label>
+                      <input class="form-control" name="role_entry_phone" value="{{ row.phone }}" placeholder="(000) 000-0000" {% if not can_edit %}readonly{% endif %} />
                     </div>
-                    <div class="col-md-2">
-                      <label class="form-label text-dark">Vehicle</label>
-                      <input class="form-control" name="role_entry_vehicle" value="{{ row.vehicle }}" {% if not can_edit %}readonly{% endif %} />
+                    <div class="role-entry-field">
+                      <label class="form-label form-fill-label">Vehicle</label>
+                      <input class="form-control" name="role_entry_vehicle" value="{{ row.vehicle }}" placeholder="Year Make Model / Plate" {% if not can_edit %}readonly{% endif %} />
                     </div>
-                    <div class="col-12">
-                      <label class="form-label text-dark">Role Notes</label>
-                      <input class="form-control" name="role_entry_notes" value="{{ row.notes }}" {% if not can_edit %}readonly{% endif %} />
+                    <div class="role-entry-field role-entry-field-full">
+                      <label class="form-label form-fill-label">Notes</label>
+                      <input class="form-control" name="role_entry_notes" value="{{ row.notes }}" placeholder="Additional observations" {% if not can_edit %}readonly{% endif %} />
                     </div>
                   </div>
                 </div>
@@ -218,9 +293,9 @@
                     <strong data-role-entry-label>Person</strong>
                     <button type="button" class="btn btn-outline-secondary btn-sm role-entry-remove">Remove</button>
                   </div>
-                  <div class="row g-2">
-                    <div class="col-md-3">
-                      <label class="form-label text-dark">Role</label>
+                  <div class="role-entry-grid">
+                    <div class="role-entry-field">
+                      <label class="form-label form-fill-label">Role</label>
                       <select class="form-control" name="role_entry_role">
                         <option value="">Select role</option>
                         {% for opt in schema.role_entry.role_options %}
@@ -228,25 +303,25 @@
                         {% endfor %}
                       </select>
                     </div>
-                    <div class="col-md-3">
-                      <label class="form-label text-dark">Full Name</label>
-                      <input class="form-control" name="role_entry_name" />
+                    <div class="role-entry-field">
+                      <label class="form-label form-fill-label">Full Name</label>
+                      <input class="form-control" name="role_entry_name" placeholder="First Last" />
                     </div>
-                    <div class="col-md-2">
-                      <label class="form-label text-dark">ID / DL</label>
-                      <input class="form-control" name="role_entry_identifier" />
+                    <div class="role-entry-field">
+                      <label class="form-label form-fill-label">ID / DL #</label>
+                      <input class="form-control" name="role_entry_identifier" placeholder="License or ID number" />
                     </div>
-                    <div class="col-md-2">
-                      <label class="form-label text-dark">Phone</label>
-                      <input class="form-control" name="role_entry_phone" />
+                    <div class="role-entry-field">
+                      <label class="form-label form-fill-label">Phone</label>
+                      <input class="form-control" name="role_entry_phone" placeholder="(000) 000-0000" />
                     </div>
-                    <div class="col-md-2">
-                      <label class="form-label text-dark">Vehicle</label>
-                      <input class="form-control" name="role_entry_vehicle" />
+                    <div class="role-entry-field">
+                      <label class="form-label form-fill-label">Vehicle</label>
+                      <input class="form-control" name="role_entry_vehicle" placeholder="Year Make Model / Plate" />
                     </div>
-                    <div class="col-12">
-                      <label class="form-label text-dark">Role Notes</label>
-                      <input class="form-control" name="role_entry_notes" />
+                    <div class="role-entry-field role-entry-field-full">
+                      <label class="form-label form-fill-label">Notes</label>
+                      <input class="form-control" name="role_entry_notes" placeholder="Additional observations" />
                     </div>
                   </div>
                 </div>
@@ -255,83 +330,80 @@
             </details>
             {% endif %}
 
+            {# ── General notes ── #}
             {% if schema.show_notes %}
-            <details class="collapse-card form-section" open>
-              <summary>Notes</summary>
-              <label class="form-label text-dark">General Notes</label>
-              <textarea class="form-control" name="notes" rows="5" {% if not can_edit %}readonly{% endif %}>{{ payload.notes }}</textarea>
+            <details class="collapse-card form-section">
+              <summary>General Notes</summary>
+              <textarea class="form-control fill-textarea" name="notes" rows="5" placeholder="Enter any additional context, observations, or notes about this form." {% if not can_edit %}readonly{% endif %}>{{ payload.notes }}</textarea>
             </details>
             {% endif %}
           </div>
-          {% endif %}
-        </div>
+          {% endif %}{# end fill_state.is_ready #}
+        </div>{# end forms-fill-main #}
 
+        {# ── Sidebar ── #}
         <aside class="forms-fill-side">
           <section class="form-side-card">
-            <h4>Workflow Status</h4>
+            <h4>Status</h4>
             <div class="form-side-list">
               <article class="form-side-item">
-                <span>Completion</span>
-                <strong>{{ 'Ready for preview, print, or save.' if fill_state.is_ready else 'Blank preview and download only.' }}</strong>
+                <span>Session</span>
+                <strong>{{ saved_record.title if saved_record and saved_record.title else 'New session' }}</strong>
               </article>
               <article class="form-side-item">
-                <span>Retention</span>
-                <strong>{{ 'Completed data is not retained on the portal.' if policy.is_no_retention else 'Draft and completed work can remain in the portal.' }}</strong>
+                <span>Output</span>
+                <strong>{{ 'Preview &amp; download ready' if fill_state.is_ready else 'Blank download only' }}</strong>
               </article>
               <article class="form-side-item">
-                <span>Saved Record</span>
-                <strong>{{ saved_record.title if saved_record and saved_record.title else 'New paperwork session' }}</strong>
+                <span>Data</span>
+                <strong>{{ 'Not saved on portal' if policy.is_no_retention else 'Saved on portal' }}</strong>
               </article>
             </div>
           </section>
 
           <section class="form-side-card">
-            <h4>Quick Route</h4>
-            <div class="form-side-list">
-              <article class="form-side-item">
-                <span>Need the paperwork first?</span>
-              <strong>Use the paperwork navigator to confirm what belongs in this packet.</strong>
-              </article>
-              {% if scan_supported and can_edit %}
-              <article class="form-side-item">
-                <span>Mobile Autofill</span>
-                <strong>License scan can fill name, DOB, license number, address, and the first role entry.</strong>
-              </article>
-              {% endif %}
-            </div>
+            <h4>Navigate</h4>
             <div class="forms-toolbar">
-                <a class="btn btn-outline-secondary" href="{{ url_for('reference.incident_paperwork_guide') }}">Paperwork Navigator</a>
+              <a class="btn btn-outline-secondary" href="{{ url_for('reference.incident_paperwork_guide') }}">Paperwork Guide</a>
               <a class="btn btn-outline-secondary" href="{{ url_for('forms.saved_forms') }}">Saved Forms</a>
               <a class="btn btn-outline-secondary" href="{{ url_for('forms.list_forms') }}">Forms Library</a>
             </div>
+            {% if scan_supported and can_edit %}
+            <p class="small text-muted mt-2 mb-0">Tip: License scan auto-fills name, DOB, license #, and the first involved person.</p>
+            {% endif %}
           </section>
         </aside>
-      </div>
+      </div>{# end forms-fill-layout #}
 
+      {# ── Action footer ── #}
       <div class="form-action-footer sticky-actions">
-        <div class="form-action-group">
-          {% if can_edit and fill_state.is_ready %}
+        {% if can_edit and fill_state.is_ready %}
+        {# Primary: save actions #}
+        <div class="fill-action-group fill-action-primary">
           {% if not policy.is_no_retention and policy.allow_completed_save %}
+          <button class="btn btn-primary" name="action" value="save_completed">Save &amp; Complete</button>
           <button class="btn btn-outline-secondary" name="action" value="save_draft">Save Draft</button>
-          <button class="btn btn-primary" name="action" value="save_completed">Save Completed</button>
           {% endif %}
-          <button class="btn btn-outline-secondary" name="action" value="preview_completed">Preview</button>
+        </div>
+        {# Output: preview / download / print / email #}
+        <div class="fill-action-group fill-action-output">
+          <button class="btn btn-outline-secondary" name="action" value="preview_completed">Preview PDF</button>
           <button class="btn btn-outline-secondary" name="action" value="print_completed">Print</button>
           {% if policy.allow_download %}
-          <button class="btn btn-outline-secondary" name="action" value="download_completed">Download</button>
+          <button class="btn btn-outline-secondary" name="action" value="download_completed">Download PDF</button>
           {% endif %}
           {% if policy.allow_email %}
           <button class="btn btn-outline-secondary" name="action" value="email_form">Email</button>
           {% endif %}
-          {% endif %}
         </div>
-        <div class="form-action-group form-action-group-secondary">
+        {% endif %}
+        {# Secondary: blank versions and navigation #}
+        <div class="fill-action-group fill-action-secondary">
           {% if policy.allow_blank_print %}
           <a class="btn btn-outline-secondary" href="{{ url_for('forms.blank_form_preview', form_id=form.id) }}">Blank Preview</a>
           {% endif %}
           <a class="btn btn-outline-secondary" href="{{ url_for('forms.download_form', form_id=form.id) }}">Blank Download</a>
-          <a class="btn btn-outline-secondary" href="{{ url_for('forms.list_forms') }}">Back to Forms</a>
-          <a class="btn btn-outline-secondary" href="{{ url_for('forms.saved_forms') }}">Saved Forms</a>
+          <a class="btn btn-outline-secondary" href="{{ url_for('forms.list_forms') }}">Forms Library</a>
         </div>
       </div>
     </form>
@@ -340,6 +412,286 @@
 {% endblock %}
 {% block scripts %}
   {{ super() }}
+  <style>
+    /* ── No-retention banner ── */
+    .fill-no-retention-banner {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding: 10px 16px;
+      margin-bottom: 14px;
+      border-radius: 10px;
+      background: #fff3cd;
+      border: 1px solid #f5c842;
+      font-size: 13px;
+      color: #5c4a00;
+    }
+    .fill-no-retention-banner strong {
+      white-space: nowrap;
+    }
+
+    /* ── Unavailable card ── */
+    .fill-unavailable-card {
+      padding: 14px 16px;
+      border-radius: 10px;
+      background: #fff8e6;
+      border: 1px solid #f1d59a;
+      margin-bottom: 12px;
+    }
+
+    /* ── Section count badge ── */
+    .form-section-count {
+      font-size: 11px;
+      font-weight: 600;
+      color: #8a9aaa;
+      margin-left: 8px;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+
+    /* ── Form fill labels ── */
+    .form-fill-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #2a3a4a;
+      letter-spacing: 0.02em;
+      margin-bottom: 4px;
+    }
+    .fill-required-star {
+      color: #c0392b;
+      margin-left: 2px;
+    }
+
+    /* ── Textarea ── */
+    .fill-textarea {
+      min-height: 96px;
+      resize: vertical;
+    }
+
+    /* ── Checkbox row ── */
+    .fill-check-row {
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .fill-checkbox {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    /* ── Signature / Initials widget ── */
+    .sig-widget {
+      border: 1px solid #bfc6bc;
+      border-radius: 10px;
+      background: #fff;
+      padding: 8px;
+      display: inline-flex;
+      flex-direction: column;
+      gap: 6px;
+      max-width: 100%;
+    }
+    .sig-prompt {
+      margin: 0;
+      font-size: 11px;
+      color: #6a7a6a;
+    }
+    .sig-canvas {
+      display: block;
+      width: 360px;
+      height: 100px;
+      max-width: 100%;
+      border: 1px dashed #c0c8be;
+      border-radius: 6px;
+      background: #f9faf8;
+      cursor: crosshair;
+      touch-action: none;
+    }
+    .sig-canvas-initial {
+      width: 160px;
+      height: 70px;
+    }
+    .sig-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .sig-saved-note {
+      margin: 0;
+      font-size: 11px;
+      color: #3a7a3a;
+    }
+
+    /* ── Role entry grid ── */
+    .role-entry-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .role-entry-field {
+      display: grid;
+      gap: 4px;
+    }
+    .role-entry-field-full {
+      grid-column: 1 / -1;
+    }
+    .role-entry-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #e4e8ec;
+    }
+    .role-entry-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+
+    /* ── Action footer groups ── */
+    .fill-action-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+    .fill-action-primary .btn-primary {
+      min-width: 140px;
+    }
+    .fill-action-secondary {
+      margin-left: auto;
+    }
+
+    /* ── Mobile overrides ── */
+    @media (max-width: 768px) {
+      .form-action-footer {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+      }
+      .fill-action-group {
+        flex-direction: column;
+      }
+      .fill-action-group .btn {
+        width: 100%;
+        min-height: 52px;
+        font-size: 15px;
+      }
+      .fill-action-secondary {
+        margin-left: 0;
+      }
+      .role-entry-grid {
+        grid-template-columns: 1fr;
+      }
+      .sig-canvas {
+        width: 100%;
+        min-width: 0;
+      }
+      .sig-canvas-initial {
+        width: 100%;
+        max-width: 200px;
+      }
+    }
+  </style>
+
+  {# ── Signature / Initials JS ── #}
+  <script>
+    (function () {
+      function initSigWidget(widget) {
+        var fieldName = widget.getAttribute('data-sig-field');
+        var canvas = widget.querySelector('[data-sig-canvas="' + fieldName + '"]');
+        var output = widget.querySelector('[data-sig-output="' + fieldName + '"]');
+        var clearBtn = widget.querySelector('[data-sig-clear="' + fieldName + '"]');
+        if (!canvas || !output) return;
+
+        function resizeCanvas() {
+          var dpr = window.devicePixelRatio || 1;
+          var rect = canvas.getBoundingClientRect();
+          var savedDataURL = output.value || '';
+          canvas.width = Math.round(rect.width * dpr);
+          canvas.height = Math.round(rect.height * dpr);
+          var ctx = canvas.getContext('2d');
+          ctx.scale(dpr, dpr);
+          ctx.strokeStyle = '#1a2a3a';
+          ctx.lineWidth = 2;
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          // Redraw saved signature after resize clears the canvas
+          if (savedDataURL && savedDataURL.startsWith('data:image/')) {
+            var img = new Image();
+            img.onload = function () { ctx.drawImage(img, 0, 0, rect.width, rect.height); };
+            img.src = savedDataURL;
+          }
+        }
+
+        var resizeTimer;
+        window.addEventListener('resize', function () {
+          clearTimeout(resizeTimer);
+          resizeTimer = setTimeout(resizeCanvas, 120);
+        });
+        resizeCanvas();
+
+        var drawing = false, lastX = 0, lastY = 0;
+
+        function canvasPoint(e) {
+          var rect = canvas.getBoundingClientRect();
+          var src = e.touches ? e.touches[0] : e;
+          return { x: src.clientX - rect.left, y: src.clientY - rect.top };
+        }
+        function startDraw(e) {
+          e.preventDefault();
+          drawing = true;
+          var pt = canvasPoint(e);
+          lastX = pt.x; lastY = pt.y;
+        }
+        function continueDraw(e) {
+          if (!drawing) return;
+          e.preventDefault();
+          var ctx = canvas.getContext('2d');
+          var pt = canvasPoint(e);
+          ctx.beginPath();
+          ctx.moveTo(lastX, lastY);
+          ctx.lineTo(pt.x, pt.y);
+          ctx.stroke();
+          lastX = pt.x; lastY = pt.y;
+        }
+        function endDraw() {
+          if (!drawing) return;
+          drawing = false;
+          output.value = canvas.toDataURL('image/png');
+        }
+
+        canvas.addEventListener('mousedown', startDraw);
+        canvas.addEventListener('mousemove', continueDraw);
+        canvas.addEventListener('mouseup', endDraw);
+        canvas.addEventListener('mouseleave', endDraw);
+        canvas.addEventListener('touchstart', startDraw, { passive: false });
+        canvas.addEventListener('touchmove', continueDraw, { passive: false });
+        canvas.addEventListener('touchend', endDraw);
+
+        if (clearBtn) {
+          clearBtn.addEventListener('click', function () {
+            var dpr = window.devicePixelRatio || 1;
+            var rect = canvas.getBoundingClientRect();
+            canvas.getContext('2d').clearRect(0, 0, rect.width * dpr, rect.height * dpr);
+            output.value = '';
+          });
+        }
+      }
+
+      document.querySelectorAll('[data-sig-field]').forEach(initSigWidget);
+    })();
+  </script>
+
   {% if scan_supported and can_edit %}
   <script>
     (function () {
@@ -354,16 +706,13 @@
       function autoImport(message) {
         if (!form || !autoImportButton || !payload.value.trim()) return;
         status.textContent = message || 'Barcode captured. Importing data...';
-        if (typeof form.requestSubmit === 'function') {
-          form.requestSubmit(autoImportButton);
-          return;
-        }
+        if (typeof form.requestSubmit === 'function') { form.requestSubmit(autoImportButton); return; }
         autoImportButton.click();
       }
 
       async function detectFromFile(file) {
         if (!('BarcodeDetector' in window)) {
-          status.textContent = 'Automatic scan is not available on this device. Paste barcode text if needed.';
+          status.textContent = 'Automatic scan unavailable on this device. Paste barcode text if needed.';
           return;
         }
         try {
@@ -373,14 +722,12 @@
           if (bitmap && typeof bitmap.close === 'function') bitmap.close();
           if (codes && codes.length && codes[0].rawValue) {
             payload.value = codes[0].rawValue;
-            window.setTimeout(function () {
-              autoImport('License barcode detected. Importing data...');
-            }, 120);
+            window.setTimeout(function () { autoImport('License detected. Importing...'); }, 120);
             return;
           }
-          status.textContent = 'No PDF417 barcode found. You can still paste barcode text manually.';
+          status.textContent = 'No PDF417 barcode found. Paste barcode text if needed.';
         } catch (_err) {
-          status.textContent = 'Automatic scan failed on this device. Paste barcode text if needed.';
+          status.textContent = 'Scan failed. Paste barcode text if needed.';
         }
       }
 
@@ -392,11 +739,7 @@
       });
 
       payload.addEventListener('input', function () {
-        if (payload.value.trim()) {
-          status.textContent = 'Barcode data ready. Select Import Barcode Data if auto-import did not start.';
-          return;
-        }
-        status.textContent = 'No scan loaded.';
+        status.textContent = payload.value.trim() ? 'Data ready. Press Import if auto-import did not start.' : 'No scan loaded.';
       });
 
       if (clearButton) {
@@ -409,6 +752,7 @@
     })();
   </script>
   {% endif %}
+
   {% if can_edit and schema.show_role_entry %}
   <script>
     (function () {
