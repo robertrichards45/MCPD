@@ -8144,3 +8144,86 @@ textarea.form-control {
   }
 }
 
+/* ============================================================
+   MOBILE UI CLEANUP — Task 1
+   Larger tap targets, readable fonts, reduced clutter.
+   No layout structure changes; purely additive overrides.
+   ============================================================ */
+
+/* Tab labels: 10px → 12px. Override the duplicate ≤640px rule
+   by appearing later in the cascade with !important. */
+.mobile-tab-label {
+  font-size: 12px !important;
+}
+
+/* Mobile shell header subtitle note: 11.5px → 13px */
+.mobile-header p {
+  font-size: 13px;
+}
+
+/* Progress step label below section header: 11px → 12px */
+.mobile-step-progress span {
+  font-size: 12px;
+}
+
+/* Call-type cards: reduce from 132px to 110px so more cards
+   fit on screen without the officer needing to scroll as far. */
+.mobile-call-type-card {
+  min-height: 110px;
+}
+
+/* Checklist items: nudge tap target from 58px to 62px */
+.mobile-checklist-item {
+  min-height: 62px;
+}
+
+/* ---- Dashboard: officer-friendly sizing on phones ---- */
+@media (max-width: 768px) {
+  /* Quick-action buttons: 44px → 52px, font 13px → 15px */
+  .dash-quick-btn {
+    min-height: 52px;
+    font-size: 15px;
+  }
+
+  /* List row items: more vertical padding, larger text */
+  .dash-list-item {
+    min-height: 46px;
+    padding: 10px 14px;
+  }
+
+  .dash-list-item-label {
+    font-size: 14px;
+  }
+
+  .dash-list-item-meta {
+    font-size: 13px;
+  }
+
+  /* Metric values: keep readable at 2-up grid */
+  .dash-metric strong {
+    font-size: 22px;
+  }
+
+  /* Section heading inside panels */
+  .dash-panel-head h3 {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Very small screens: buttons slightly taller */
+  .dash-quick-btn {
+    min-height: 56px;
+    font-size: 16px;
+  }
+
+  /* Metric number is the key data; keep it prominent */
+  .dash-metric strong {
+    font-size: 20px;
+  }
+
+  .dash-metric span {
+    font-size: 10px;
+  }
+}
+

@@ -22,12 +22,19 @@
     color: #172017 !important;
   }
   .mobile-home-menu {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     min-height: 36px;
-    padding: 0 12px;
+    padding: 0 14px;
     border: 1px solid #d0c2aa;
     border-radius: 12px;
     background: rgba(255,255,255,0.85) !important;
     color: #243022 !important;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
   }
   .mobile-home-main {
     flex: 1;
@@ -69,7 +76,7 @@
 <div class="mobile-home-screen">
   <header class="mobile-home-header">
     <h1>MCPD Portal</h1>
-    <button class="mobile-home-menu" type="button" aria-label="Menu">Menu</button>
+    <a class="mobile-home-menu" href="{{ url_for('dashboard.dashboard') }}" aria-label="Full portal">Portal</a>
   </header>
 
   <main class="mobile-home-main" aria-label="Field home">
