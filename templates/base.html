@@ -1,26 +1,31 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/styles.css">
-    <title>{% block title %}Default Title{% endblock %}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body { margin:0; font-family: Arial; background:#eef3f7;}
+.sidebar { position:fixed; width:220px; height:100%; background:#0b1f33; color:white;}
+.sidebar a { display:block; padding:15px; color:white; text-decoration:none;}
+.sidebar a:hover { background:#123a5a;}
+.main { margin-left:220px; padding:20px;}
+.topbar { background:white; padding:10px; border-bottom:1px solid #ccc;}
+</style>
 </head>
 <body>
-    <div class="sidebar">
-        <ul>
-            <li><a href="/dashboard">Dashboard</a></li>
-            <li><a href="/law-lookup">Law Lookup</a></li>
-            <li><a href="/reports">Reports</a></li>
-            <li><a href="/forms">Forms</a></li>
-            <li><a href="/orders">Orders</a></li>
-            <li><a href="/training">Training</a></li>
-            <li><a href="/personnel">Personnel</a></li>
-            <li><a href="/saved-work">Saved Work</a></li>
-        </ul>
-    </div>
-    <div class="main-content">
-        {% block content %}{% endblock %}
-    </div>
+
+<div class="sidebar">
+<h2>MCPD</h2>
+<a href="/dashboard">Dashboard</a>
+<a href="/law">Law Lookup</a>
+<a href="/reports">Reports</a>
+<a href="/forms">Forms</a>
+<a href="/orders">Orders</a>
+</div>
+
+<div class="main">
+<div class="topbar">MCPD Portal</div>
+{% block content %}{% endblock %}
+</div>
+
 </body>
 </html>
