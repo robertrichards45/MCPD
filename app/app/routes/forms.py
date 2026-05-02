@@ -52,8 +52,8 @@ def _utcnow_naive():
     return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
-def _field(name, label, field_type='text', required=False, placeholder=''):
-    return {'name': name, 'label': label, 'type': field_type, 'required': bool(required), 'placeholder': placeholder or ''}
+def _field(name, label, field_type='text', required=False, placeholder='', options=None):
+    return {'name': name, 'label': label, 'type': field_type, 'required': bool(required), 'placeholder': placeholder or '', 'options': list(options) if options else []}
 
 
 MCPD_STAT_SHEET_SCHEMA = {
@@ -310,6 +310,7 @@ def _build_section_fields(source_items):
                 _pdf_field_ui_type(item),
                 required=False,
                 placeholder='',
+                options=item.get('options') or [],
             )
         )
     return fields
@@ -472,11 +473,13 @@ def _schema_from_pdf_fields(form, base_schema, source_pdf):
         if key in known_names:
             continue
         inferred_type = 'text'
+        inferred_opts: list = []
         for item in pdf_fields:
             if not isinstance(item, dict):
                 continue
             if str(item.get('name') or '').strip() == key:
                 inferred_type = _pdf_field_ui_type(item)
+                inferred_opts = item.get('options') or []
                 break
         inferred.append(
             _field(
@@ -485,6 +488,7 @@ def _schema_from_pdf_fields(form, base_schema, source_pdf):
                 inferred_type,
                 required=False,
                 placeholder='',
+                options=inferred_opts,
             )
         )
         known_names.add(key)
