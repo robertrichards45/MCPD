@@ -5,6 +5,8 @@
       "source": "GEORGIA",
       "code": "OCGA 16-5-1",
       "title": "Murder",
+      "category": "Crimes Against the Person",
+      "source_reference": "Official Code of Georgia Annotated § 16-5-1",
       "summary": "Unlawful killing of another human being under malice or felony-murder theories.",
       "elements": [
         "A human being was killed.",
@@ -12,505 +14,713 @@
         "The killing met a statutory murder theory."
       ],
       "keywords": ["murder", "homicide", "killed victim", "malice murder", "felony murder"],
-      "minimum_punishment": "As provided by statute and sentencing court.",
-      "maximum_punishment": "As provided by statute and sentencing court."
+      "minimum_punishment": "Life imprisonment.",
+      "maximum_punishment": "Death or life imprisonment without parole (malice murder); life imprisonment (felony murder).",
+      "enforcement_notes": "Arrest and hold for magistrate. Document all scene evidence and witness statements. Notify supervisor immediately. Two theories apply: express malice (intent to kill) and felony-murder (death during felony). Both require the same initial response and thorough scene preservation."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-5-2",
       "title": "Voluntary Manslaughter",
+      "category": "Crimes Against the Person",
+      "source_reference": "Official Code of Georgia Annotated § 16-5-2",
       "summary": "Killing another under sudden, violent, irresistible passion from serious provocation.",
       "elements": [
         "A human being was killed.",
         "The accused caused the death.",
         "The killing occurred under statutory provocation/passion circumstances."
       ],
-      "keywords": ["voluntary manslaughter", "heat of passion", "provocation"]
+      "keywords": ["voluntary manslaughter", "heat of passion", "provocation"],
+      "minimum_punishment": "1 year imprisonment.",
+      "maximum_punishment": "1–20 years imprisonment (felony).",
+      "enforcement_notes": "Document provocation evidence carefully — 'serious provocation' is a key defense issue. Preserve evidence of what triggered the accused's response and the time elapsed between provocation and act."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-5-20",
       "title": "Simple Assault",
+      "category": "Crimes Against the Person",
+      "source_reference": "Official Code of Georgia Annotated § 16-5-20",
       "summary": "Attempted violent injury or placing another in reasonable apprehension of immediate violent injury.",
       "elements": [
         "The accused attempted a violent injury or committed an act causing apprehension of immediate violent injury.",
         "The act was unlawful.",
         "The act was directed at another person."
       ],
-      "keywords": ["simple assault", "threatened to hit", "swung at"]
+      "keywords": ["simple assault", "threatened to hit", "swung at"],
+      "minimum_punishment": "As determined by court.",
+      "maximum_punishment": "12 months imprisonment and/or $1,000 fine (misdemeanor).",
+      "enforcement_notes": "Victim does not need to be physically harmed — apprehension of imminent harm is sufficient. Document victim's stated fear and circumstances of the encounter. Threatening words alone may qualify depending on context."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-5-21",
       "title": "Aggravated Assault",
+      "category": "Crimes Against the Person",
+      "source_reference": "Official Code of Georgia Annotated § 16-5-21",
       "summary": "Assault with aggravating factors such as deadly weapon, intent to murder/rape/rob, or discharging firearm from vehicle.",
       "elements": [
         "A simple assault occurred.",
         "An aggravating statutory factor was present.",
         "The conduct was unlawful."
       ],
-      "keywords": ["aggravated assault", "deadly weapon assault", "gun assault"]
+      "keywords": ["aggravated assault", "deadly weapon assault", "gun assault"],
+      "minimum_punishment": "1 year (standard); enhanced minimums apply for firearm use or officer/transit victim.",
+      "maximum_punishment": "1–20 years imprisonment (felony); enhanced minimums for specific weapon types or victim classes.",
+      "enforcement_notes": "Identify and document the aggravating factor: deadly weapon, intent to murder/rape/rob, or discharge from vehicle. Weapon description and collection are critical to the charging decision. Photograph the weapon and scene."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-5-23",
       "title": "Simple Battery",
+      "category": "Crimes Against the Person",
+      "source_reference": "Official Code of Georgia Annotated § 16-5-23",
       "summary": "Intentional insulting/provoking contact or intentional physical harm.",
       "elements": [
         "The accused intentionally made insulting/provoking contact or caused physical harm.",
         "The contact/harm was unlawful.",
         "The act was against another person."
       ],
-      "keywords": ["simple battery", "pushed", "grabbed", "slapped"]
+      "keywords": ["simple battery", "pushed", "grabbed", "slapped"],
+      "minimum_punishment": "As determined by court.",
+      "maximum_punishment": "12 months imprisonment and/or $1,000 fine (misdemeanor).",
+      "enforcement_notes": "Insulting or provoking contact with no visible injury is sufficient — a push or spit qualifies. Document the nature of contact and obtain a victim statement. No injury photograph required but always attempt to document."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-5-23.1",
       "title": "Battery",
+      "category": "Crimes Against the Person",
+      "source_reference": "Official Code of Georgia Annotated § 16-5-23.1",
       "summary": "Intentionally causing substantial physical harm or visible bodily harm.",
       "elements": [
         "The accused intentionally caused physical harm.",
         "The harm met statutory threshold (substantial/visible bodily harm).",
         "The act was unlawful."
       ],
-      "keywords": ["battery", "visible injury", "bruising", "substantial harm"]
+      "keywords": ["battery", "visible injury", "bruising", "substantial harm"],
+      "minimum_punishment": "As determined by court.",
+      "maximum_punishment": "12 months (first offense misdemeanor); 1–5 years (prior battery conviction or family violence felony).",
+      "enforcement_notes": "Requires visible bodily harm (bruising, lacerations, swelling) or substantial physical harm. Photograph injuries at scene and upon booking if possible. Family violence battery carries enhanced penalties and mandatory reporting."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-5-24",
       "title": "Aggravated Battery",
+      "category": "Crimes Against the Person",
+      "source_reference": "Official Code of Georgia Annotated § 16-5-24",
       "summary": "Maliciously causing bodily harm by depriving body member, rendering useless, or serious disfigurement.",
       "elements": [
         "The accused maliciously caused bodily harm.",
         "The harm met aggravated battery statutory form.",
         "The victim was another person."
       ],
-      "keywords": ["aggravated battery", "disfigurement", "deprived member"]
+      "keywords": ["aggravated battery", "disfigurement", "deprived member"],
+      "minimum_punishment": "1 year.",
+      "maximum_punishment": "1–20 years imprisonment (felony); enhanced minimums for certain victim classes.",
+      "enforcement_notes": "Three statutory forms: rendering a body member useless, seriously disfiguring, or depriving of a body member. Photograph and document injuries noting permanence. Medical assessment is important evidence for prosecution."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-6-1",
       "title": "Rape",
+      "category": "Sexual Offenses",
+      "source_reference": "Official Code of Georgia Annotated § 16-6-1",
       "summary": "Carnal knowledge of a female forcibly and against her will, or where the female is under the statutory age.",
       "elements": [
         "The accused had carnal knowledge as defined by statute.",
         "The act was forcibly and against the victim's will, or the statutory-age provision applied.",
         "The conduct was unlawful under OCGA 16-6-1."
       ],
-      "keywords": ["rape", "forcible rape", "sexual assault", "nonconsensual sex"]
+      "keywords": ["rape", "forcible rape", "sexual assault", "nonconsensual sex"],
+      "minimum_punishment": "25 years imprisonment.",
+      "maximum_punishment": "25 years to life imprisonment; mandatory sex offender registration upon conviction.",
+      "enforcement_notes": "Activate SANE/SART protocols immediately. Preserve physical evidence — do not allow victim to wash, change clothes, or use restroom before examination if possible. Notify victim advocate. Document all force, threats, or incapacity indicators."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-6-22",
       "title": "Aggravated Sexual Battery",
+      "category": "Sexual Offenses",
+      "source_reference": "Official Code of Georgia Annotated § 16-6-22",
       "summary": "Intentional penetration with a foreign object of another person's sexual organ or anus without consent.",
       "elements": [
         "The accused intentionally penetrated with a foreign object the sexual organ or anus of another person.",
         "The penetration was without consent.",
         "The conduct was unlawful under OCGA 16-6-22."
       ],
-      "keywords": ["aggravated sexual battery", "sexual battery", "nonconsensual penetration"]
+      "keywords": ["aggravated sexual battery", "sexual battery", "nonconsensual penetration"],
+      "minimum_punishment": "25 years imprisonment.",
+      "maximum_punishment": "25 years to life imprisonment; mandatory sex offender registration.",
+      "enforcement_notes": "Foreign object penetration without consent. SANE protocol applies. Document the object, location of assault, and all consent indicators. Mandatory sex offender registration upon conviction. Preserve all physical evidence."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-6-8",
       "title": "Public Indecency",
+      "category": "Sexual Offenses",
+      "source_reference": "Official Code of Georgia Annotated § 16-6-8",
       "summary": "Performing lewd exposure or sexual acts in public places or places where conduct may reasonably be expected to be viewed by others.",
       "elements": [
         "The accused committed a lewd exposure/act listed by statute.",
         "The conduct occurred in a public place or a place where others could reasonably view it.",
         "The act was unlawful under OCGA 16-6-8."
       ],
-      "keywords": ["sex in public", "public sex", "public indecency", "indecent exposure", "lewd conduct"]
+      "keywords": ["sex in public", "public sex", "public indecency", "indecent exposure", "lewd conduct"],
+      "minimum_punishment": "As determined by court.",
+      "maximum_punishment": "12 months and/or fine (first offense misdemeanor); 1–5 years (prior conviction).",
+      "enforcement_notes": "Document the public or observable location and the specific act committed. Witness statements and location details (nearby children, public area) are key evidence elements. Photograph the scene."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-5-40",
       "title": "Kidnapping",
+      "category": "Crimes Against the Person",
+      "source_reference": "Official Code of Georgia Annotated § 16-5-40",
       "summary": "Abducting or stealing away another person without lawful authority.",
       "elements": [
         "The accused abducted, stole away, or detained another person.",
         "The act was without lawful authority.",
         "The movement/holding met statutory requirements."
       ],
-      "keywords": ["kidnapping", "abduction", "held against will"]
+      "keywords": ["kidnapping", "abduction", "held against will"],
+      "minimum_punishment": "10 years.",
+      "maximum_punishment": "10–20 years (standard); 25 years to life if victim suffered bodily harm, was held for ransom, or is under age 14.",
+      "enforcement_notes": "Document asportation (movement) carefully — Georgia requires movement of the victim. Notify FBI if interstate or other federal trigger applies. Consider AMBER Alert if victim is a child. Secure crime scene and canvass for witnesses immediately."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-5-41",
       "title": "False Imprisonment",
+      "category": "Crimes Against the Person",
+      "source_reference": "Official Code of Georgia Annotated § 16-5-41",
       "summary": "Unlawful detention of another that violates personal liberty.",
       "elements": [
         "The accused detained another person.",
         "The detention was unlawful.",
         "The detention deprived liberty."
       ],
-      "keywords": ["false imprisonment", "unlawful detention", "held in room"]
+      "keywords": ["false imprisonment", "unlawful detention", "held in room"],
+      "minimum_punishment": "As determined by court.",
+      "maximum_punishment": "Up to 10 years imprisonment (felony).",
+      "enforcement_notes": "Document how liberty was restrained: locked room, physical restraint, or threats of force. No movement required (distinguishes from kidnapping). Victim statement is essential evidence."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-5-60",
       "title": "Reckless Conduct",
+      "category": "Crimes Against the Person",
+      "source_reference": "Official Code of Georgia Annotated § 16-5-60",
       "summary": "Causing bodily harm or endangering safety by conscious disregard of substantial and unjustifiable risk.",
       "elements": [
         "The accused acted with conscious disregard of substantial/unjustifiable risk.",
         "The conduct endangered safety or caused harm.",
         "The conduct was unlawful."
       ],
-      "keywords": ["reckless conduct", "unsafe handling", "conscious disregard"]
+      "keywords": ["reckless conduct", "unsafe handling", "conscious disregard"],
+      "minimum_punishment": "As determined by court.",
+      "maximum_punishment": "12 months and/or fine (misdemeanor).",
+      "enforcement_notes": "Conscious disregard — not mere negligence. Document the specific reckless act and the risk it created. Useful when reckless firearm handling does not rise to the level of aggravated assault."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-5-70",
       "title": "Cruelty to Children",
+      "category": "Crimes Against the Person",
+      "source_reference": "Official Code of Georgia Annotated § 16-5-70",
       "summary": "Criminal conduct involving harm, pain, deprivation, or violence involving children under statutory forms.",
       "elements": [
         "The victim was a child under statute.",
         "The accused committed a prohibited act/omission under charged degree.",
         "The required mental state was present."
       ],
-      "keywords": ["cruelty to children", "child abuse", "child harm"]
+      "keywords": ["cruelty to children", "child abuse", "child harm"],
+      "minimum_punishment": "1st degree: 5 years; 2nd degree: 1 year.",
+      "maximum_punishment": "1st degree (malice/intent): 5–20 years (felony); 2nd degree (criminal negligence): 1–10 years (felony).",
+      "enforcement_notes": "Multiple degrees: 1st (malice/intent) and 2nd (criminal negligence). Notify DFCS/child protective services immediately regardless of arrest. Document injuries photographically and obtain medical assessment."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-5-90",
       "title": "Stalking",
+      "category": "Crimes Against the Person",
+      "source_reference": "Official Code of Georgia Annotated § 16-5-90",
       "summary": "Following, placing under surveillance, or contacting another person without consent for harassment/intimidation.",
       "elements": [
         "The accused followed/surveilled/contacted the victim.",
         "The conduct lacked consent and lawful purpose.",
         "The conduct was for harassment/intimidation."
       ],
-      "keywords": ["stalking", "followed victim", "harassing contact"]
+      "keywords": ["stalking", "followed victim", "harassing contact"],
+      "minimum_punishment": "As determined by court.",
+      "maximum_punishment": "12 months (first offense misdemeanor); 1–10 years (second conviction felony).",
+      "enforcement_notes": "Document all incidents, contacts, and communications — pattern of conduct matters. Collect prior incidents even if not previously reported. Advise victim on Temporary Protective Order (TPO) options."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-5-91",
       "title": "Aggravated Stalking",
+      "category": "Crimes Against the Person",
+      "source_reference": "Official Code of Georgia Annotated § 16-5-91",
       "summary": "Stalking conduct in violation of protective condition, order, injunction, or bond condition.",
       "elements": [
         "Stalking conduct occurred.",
         "A qualifying court/order condition existed.",
         "The accused acted in violation of that condition."
       ],
-      "keywords": ["aggravated stalking", "protective order violation stalking"]
+      "keywords": ["aggravated stalking", "protective order violation stalking"],
+      "minimum_punishment": "1 year.",
+      "maximum_punishment": "1–10 years imprisonment (felony).",
+      "enforcement_notes": "Requires violation of an existing protective order, bond condition, or injunction. Obtain and document the specific order violated and its terms. This is a mandatory felony charge. Contact court/probation to confirm order validity."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-5-102",
       "title": "Terroristic Threats and Acts",
+      "category": "Crimes Against the Person",
+      "source_reference": "Official Code of Georgia Annotated § 16-5-102",
       "summary": "Threatening to commit violence or offense listed by statute under required intent/context.",
       "elements": [
         "The accused made a threat or committed statutory act.",
         "The threat/act met statutory content requirements.",
         "Required intent/circumstances were present."
       ],
-      "keywords": ["terroristic threats", "threatened to kill", "bomb threat"]
+      "keywords": ["terroristic threats", "threatened to kill", "bomb threat"],
+      "minimum_punishment": "As determined by court.",
+      "maximum_punishment": "1–5 years (felony threat); misdemeanor for specified lesser threats.",
+      "enforcement_notes": "Preserve all communications: texts, voicemails, written notes, social media posts. Document victim and witness statements regarding the threat verbatim. Assess imminent danger and consider emergency protective order."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-7-1",
       "title": "Criminal Damage to Property",
+      "category": "Property Crimes",
+      "source_reference": "Official Code of Georgia Annotated § 16-7-1",
       "summary": "Intentional damage/destruction of another's property under statutory forms and degrees.",
       "elements": [
         "The property belonged to another.",
         "The accused intentionally damaged/destroyed property.",
         "The charged degree conditions were met."
       ],
-      "keywords": ["criminal damage", "vandalism", "property damage"]
+      "keywords": ["criminal damage", "vandalism", "property damage"],
+      "minimum_punishment": "1st degree: 1 year; 2nd degree: as determined by court.",
+      "maximum_punishment": "1st degree (damage >$500 or endangering life): 1–10 years (felony); 2nd degree: 12 months (misdemeanor).",
+      "enforcement_notes": "Two degrees: 1st (intentional damage >$500 or endangering human life) and 2nd (intentional damage or reckless disregard). Document damage value with owner's estimate and photographs — this determines the charging level."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-7-21",
       "title": "Criminal Trespass",
+      "category": "Property Crimes",
+      "source_reference": "Official Code of Georgia Annotated § 16-7-21",
       "summary": "Knowingly and without authority entering or remaining on property of another under statutory forms.",
       "elements": [
         "The accused entered/remained/interfered with property of another.",
         "The act was without authority.",
         "The charged statutory form was met."
       ],
-      "keywords": ["criminal trespass", "no trespass", "refused to leave property"]
+      "keywords": ["criminal trespass", "no trespass", "refused to leave property"],
+      "minimum_punishment": "As determined by court.",
+      "maximum_punishment": "12 months and/or $1,000 fine (misdemeanor).",
+      "enforcement_notes": "Document whether accused had actual notice: posted signs, prior written warning, or verbal order to leave. 'Without authority' is the key element. Obtain property owner or authorized agent's on-scene statement."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-7-22",
       "title": "Burglary",
+      "category": "Property Crimes",
+      "source_reference": "Official Code of Georgia Annotated § 16-7-22",
       "summary": "Entering or remaining within listed structure without authority with intent to commit felony/theft.",
       "elements": [
         "The accused entered or remained in listed structure/vehicle/room.",
         "The act was without authority.",
         "Intent to commit theft or felony existed."
       ],
-      "keywords": ["burglary", "broke into house", "entered with intent to steal"]
+      "keywords": ["burglary", "broke into house", "entered with intent to steal"],
+      "minimum_punishment": "1 year.",
+      "maximum_punishment": "1st degree (occupied dwelling): 1–20 years (felony); 2nd degree: 1–5 years (felony).",
+      "enforcement_notes": "No forced entry required — 'remaining within' after authority ends is sufficient. Degree depends on structure type: dwelling = 1st degree. Intent to commit felony/theft must exist at time of entry. Document entry method and any items disturbed."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-8-2",
       "title": "Theft by Taking",
+      "category": "Theft",
+      "source_reference": "Official Code of Georgia Annotated § 16-8-2",
       "summary": "Unlawfully taking or appropriating property of another with intent to deprive.",
       "elements": [
         "The property belonged to another.",
         "The accused unlawfully took/appropriated property.",
         "Intent to deprive owner existed."
       ],
-      "keywords": ["theft by taking", "stole property", "larceny"]
+      "keywords": ["theft by taking", "stole property", "larceny"],
+      "minimum_punishment": "As determined by court.",
+      "maximum_punishment": "Over $1,500: 1–10 years (felony); $1,500 or under: 12 months (misdemeanor).",
+      "enforcement_notes": "Value determines felony vs. misdemeanor: over $1,500 = felony. Document value with receipts, owner's estimate, or retail price. Multiple thefts may be aggregated. Vehicle theft is always a felony regardless of value."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-8-7",
       "title": "Theft by Receiving Stolen Property",
+      "category": "Theft",
+      "source_reference": "Official Code of Georgia Annotated § 16-8-7",
       "summary": "Receiving, disposing of, or retaining stolen property which the accused knows or should know was stolen.",
       "elements": [
         "Property was stolen.",
         "Accused received, disposed of, or retained that property.",
         "Accused knew or should have known the property was stolen."
       ],
-      "keywords": ["receiving stolen property", "stolen vehicle recovered", "possessing stolen car"]
+      "keywords": ["receiving stolen property", "stolen vehicle recovered", "possessing stolen car"],
+      "minimum_punishment": "As determined by court.",
+      "maximum_punishment": "Same tiered structure as theft by taking — value determines felony vs. misdemeanor.",
+      "enforcement_notes": "Document facts supporting knowledge/should-have-known: price paid, condition of property, lack of documentation. Run vehicle history (NCIC/GCIC) immediately for stolen vehicle cases."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-8-14",
       "title": "Theft by Shoplifting",
+      "category": "Theft",
+      "source_reference": "Official Code of Georgia Annotated § 16-8-14",
       "summary": "Concealing/taking merchandise with intent to deprive owner or avoid payment.",
       "elements": [
         "The property was offered for sale by merchant.",
         "The accused committed listed shoplifting act.",
         "Intent to appropriate/deprive was present."
       ],
-      "keywords": ["shoplifting", "concealed merchandise", "retail theft"]
+      "keywords": ["shoplifting", "concealed merchandise", "retail theft"],
+      "minimum_punishment": "As determined by court.",
+      "maximum_punishment": "Under $300: misdemeanor; $300–$999: misdemeanor (high and aggravated); $1,000+: 1–10 years (felony).",
+      "enforcement_notes": "Obtain loss prevention statement and video footage. Document that accused passed last point of sale with concealed merchandise. Multiple acts within a 180-day period may be aggregated to reach the felony threshold."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-8-40",
       "title": "Robbery",
+      "category": "Theft",
+      "source_reference": "Official Code of Georgia Annotated § 16-8-40",
       "summary": "Taking property from another by force, intimidation, sudden snatching, or coercion.",
       "elements": [
         "Property was taken from person/immediate presence of another.",
         "Taking was by listed robbery means.",
         "Intent to commit theft existed."
       ],
-      "keywords": ["robbery", "forceful theft", "snatched property"]
+      "keywords": ["robbery", "forceful theft", "snatched property"],
+      "minimum_punishment": "1 year.",
+      "maximum_punishment": "1–20 years imprisonment (felony).",
+      "enforcement_notes": "Force/intimidation must be at or immediately before/after the taking. Document the specific method used. Quick snatching is a separate statutory form with a lower force requirement. Document all victim injuries."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-8-41",
       "title": "Armed Robbery",
+      "category": "Theft",
+      "source_reference": "Official Code of Georgia Annotated § 16-8-41",
       "summary": "Robbery using an offensive weapon or replica/article appearing as such.",
       "elements": [
         "A robbery occurred.",
         "The accused used offensive weapon/appearance thereof.",
         "The conduct met armed robbery statute."
       ],
-      "keywords": ["armed robbery", "gunpoint robbery", "weapon during robbery"]
+      "keywords": ["armed robbery", "gunpoint robbery", "weapon during robbery"],
+      "minimum_punishment": "10 years (mandatory minimum, non-probatable).",
+      "maximum_punishment": "10–20 years; life imprisonment if firearm was discharged; no parole eligibility in first 10 years.",
+      "enforcement_notes": "Even a replica weapon or object appearing to be a weapon qualifies. Document weapon description and victim's stated perception. Mandatory 10-year minimum with no probation or early parole — confirm this with prosecutor before charge negotiation."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-8-60",
       "title": "Entering Automobile",
+      "category": "Property Crimes",
+      "source_reference": "Official Code of Georgia Annotated § 16-8-60",
       "summary": "Entering another's vehicle without authority with intent to commit theft/felony.",
       "elements": [
         "The vehicle belonged to another.",
         "The accused entered without authority.",
         "Intent to commit theft/felony existed."
       ],
-      "keywords": ["entering auto", "car break in", "entered vehicle to steal"]
+      "keywords": ["entering auto", "car break in", "entered vehicle to steal"],
+      "minimum_punishment": "1 year.",
+      "maximum_punishment": "1–5 years imprisonment (felony).",
+      "enforcement_notes": "Document entry method (broken window, unlocked door) and any items disturbed or taken. Look for tool marks. Even partial entry into the vehicle can qualify. Photograph the scene before processing."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-9-1",
       "title": "Forgery",
+      "category": "Fraud / Forgery",
+      "source_reference": "Official Code of Georgia Annotated § 16-9-1",
       "summary": "Knowingly making/altering/possessing/writing listed instruments with intent to defraud.",
       "elements": [
         "The accused made/altered/possessed/wrote listed writing.",
         "The writing/instrument met forgery statute.",
         "Intent to defraud existed."
       ],
-      "keywords": ["forgery", "fake check", "forged document"]
+      "keywords": ["forgery", "fake check", "forged document"],
+      "minimum_punishment": "1 year (felony degrees).",
+      "maximum_punishment": "1st degree: 1–10 years (felony); 2nd–4th degree: 1–5 years or misdemeanor depending on degree.",
+      "enforcement_notes": "Four statutory degrees depending on instrument type and use. Preserve original documents as evidence — do not fold or damage. Document the specific false representation and chain of possession."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-10-20",
       "title": "False Statements and Writings",
+      "category": "Crimes Against Public Administration",
+      "source_reference": "Official Code of Georgia Annotated § 16-10-20",
       "summary": "Knowingly and willfully falsifying, concealing, or covering up material fact in matter within state jurisdiction.",
       "elements": [
         "The accused made false statement/writing or concealed material fact.",
         "The act was knowing and willful.",
         "The matter was within state/government jurisdiction."
       ],
-      "keywords": ["false statement", "lied to officer", "falsified record"]
+      "keywords": ["false statement", "lied to officer", "falsified record"],
+      "minimum_punishment": "1 year.",
+      "maximum_punishment": "1–10 years imprisonment (felony).",
+      "enforcement_notes": "The false statement must be in a matter within state or government jurisdiction. Document the specific false representation and the official context or form in which it was made. Obtain the original document if written."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-10-24",
       "title": "Obstruction of Law Enforcement Officers",
+      "category": "Crimes Against Public Administration",
+      "source_reference": "Official Code of Georgia Annotated § 16-10-24",
       "summary": "Knowingly and willfully obstructing/hindering law enforcement in lawful duties.",
       "elements": [
         "Officer was in lawful discharge of official duties.",
         "Accused knew/should have known officer status.",
         "Accused knowingly and willfully obstructed/hindered."
       ],
-      "keywords": ["obstruction", "resisting", "interfered with officer"]
+      "keywords": ["obstruction", "resisting", "interfered with officer"],
+      "minimum_punishment": "As determined by court.",
+      "maximum_punishment": "Felony obstruction (violence/offering violence): 1–5 years; Misdemeanor obstruction: 12 months / $1,000 fine.",
+      "enforcement_notes": "Two degrees: misdemeanor (non-violent interference) and felony (involving violence or offering violence). Officer must be in lawful discharge of duties — document the specific lawful act being performed. Specify the exact obstructive conduct in the report."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-10-25",
       "title": "Giving False Name, Address, or Birthdate",
+      "category": "Crimes Against Public Administration",
+      "source_reference": "Official Code of Georgia Annotated § 16-10-25",
       "summary": "Giving false identifying information to law enforcement in lawful discharge of official duties.",
       "elements": [
         "Officer was in lawful discharge of duties.",
         "Accused gave false identifying information.",
         "Act was knowing and willful."
       ],
-      "keywords": ["false name", "false date of birth", "lied about identity"]
+      "keywords": ["false name", "false date of birth", "lied about identity"],
+      "minimum_punishment": "As determined by court.",
+      "maximum_punishment": "12 months and/or fine (misdemeanor).",
+      "enforcement_notes": "Verify identity through all available means: GCIC/NCIC database check, fingerprints, witness statements. Document the specific false information given and the method used to determine it was false."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-10-70",
       "title": "Hindering Apprehension or Punishment of Criminal",
+      "category": "Crimes Against Public Administration",
+      "source_reference": "Official Code of Georgia Annotated § 16-10-70",
       "summary": "Harboring/concealing/assisting known offender to hinder apprehension or punishment.",
       "elements": [
         "A person had committed an offense.",
         "Accused knowingly assisted that person in listed way.",
         "Intent/effect was hindering apprehension/punishment."
       ],
-      "keywords": ["hindering apprehension", "harboring fugitive", "helped suspect escape"]
+      "keywords": ["hindering apprehension", "harboring fugitive", "helped suspect escape"],
+      "minimum_punishment": "As determined by court.",
+      "maximum_punishment": "Felony or misdemeanor depending on the class of the predicate offense.",
+      "enforcement_notes": "Must show accused knew the person was a fugitive or had committed an offense. Document the specific assistance provided (harboring, concealing, warning, assisting escape) and facts establishing accused's knowledge."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-11-37",
       "title": "Terroristic Acts",
+      "category": "Public Order / Weapons",
+      "source_reference": "Official Code of Georgia Annotated § 16-11-37",
       "summary": "Discharging firearm at or into occupied/unoccupied listed structures/vehicles under statutory terms.",
       "elements": [
         "The accused discharged firearm.",
         "The shot was at/into listed structure/vehicle/place.",
         "Conduct met statute and was unlawful."
       ],
-      "keywords": ["terroristic act", "shot into vehicle", "shot into building"]
+      "keywords": ["terroristic act", "shot into vehicle", "shot into building"],
+      "minimum_punishment": "As determined by court (felony).",
+      "maximum_punishment": "Felony; range based on occupied/unoccupied status and resulting harm — up to life if death results.",
+      "enforcement_notes": "Document entry points, trajectory, and occupied status of structure or vehicle at time of shooting. Notify supervisor immediately. Consider whether federal charges apply (e.g., shots targeting federal property or involving interstate commerce)."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-11-39",
       "title": "Disorderly Conduct",
+      "category": "Public Order / Weapons",
+      "source_reference": "Official Code of Georgia Annotated § 16-11-39",
       "summary": "Violent/tumultuous/obscene/disruptive conduct as listed by statute.",
       "elements": [
         "Accused engaged in conduct covered by charged subsection.",
         "Conduct occurred under statutory circumstances.",
         "Required intent/circumstances were present."
       ],
-      "keywords": ["disorderly conduct", "disturbance", "tumultuous behavior"]
+      "keywords": ["disorderly conduct", "disturbance", "tumultuous behavior"],
+      "minimum_punishment": "As determined by court.",
+      "maximum_punishment": "12 months and/or fine (misdemeanor).",
+      "enforcement_notes": "Multiple subsections cover fighting, obscene language, and offensive conduct. Document which specific subsection applies and include the exact facts supporting it. Note any prior warnings given before arrest."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-11-102",
       "title": "Loitering or Prowling",
+      "category": "Public Order / Weapons",
+      "source_reference": "Official Code of Georgia Annotated § 16-11-102",
       "summary": "Loitering/prowling in place/time/manner not usual for law-abiding individuals under circumstances warranting alarm.",
       "elements": [
         "Accused loitered/prowled.",
         "Circumstances warranted safety/property alarm.",
         "No satisfactory explanation/dispel provided under statute."
       ],
-      "keywords": ["loitering", "prowling", "suspicious lingering"]
+      "keywords": ["loitering", "prowling", "suspicious lingering"],
+      "minimum_punishment": "As determined by court.",
+      "maximum_punishment": "12 months and/or fine (misdemeanor).",
+      "enforcement_notes": "Officer must first give the suspect an opportunity to provide an explanation. An unsatisfactory explanation or flight supports the charge. Document the specific circumstances that warranted alarm before the contact."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-11-126",
       "title": "Carrying Weapons",
+      "category": "Public Order / Weapons",
+      "source_reference": "Official Code of Georgia Annotated § 16-11-126",
       "summary": "Carrying weapons subject to current statutory permissions/restrictions and offense conditions.",
       "elements": [
         "Accused carried a weapon covered by statute.",
         "Circumstances/location/status made carrying unlawful.",
         "Required mental state was present."
       ],
-      "keywords": ["carrying weapon", "concealed weapon", "unlawful carry"]
+      "keywords": ["carrying weapon", "concealed weapon", "unlawful carry"],
+      "minimum_punishment": "As determined by court.",
+      "maximum_punishment": "12 months (first offense in some circumstances); up to 5 years (felony form).",
+      "enforcement_notes": "Georgia Weapons Carry License (WCL) is the primary authorization. Check for valid WCL via GCIC. Age restrictions apply (under 18). Document all circumstances of carry including location, manner, and whether WCL was presented."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-11-127",
       "title": "Carrying Weapons in Unauthorized Locations",
+      "category": "Public Order / Weapons",
+      "source_reference": "Official Code of Georgia Annotated § 16-11-127",
       "summary": "Prohibited weapon carry in listed restricted places under statute.",
       "elements": [
         "Accused carried weapon listed by statute.",
         "Location was restricted/prohibited by statute.",
         "No statutory exception applied."
       ],
-      "keywords": ["weapon prohibited place", "gun in prohibited location"]
+      "keywords": ["weapon prohibited place", "gun in prohibited location"],
+      "minimum_punishment": "As determined by court.",
+      "maximum_punishment": "12 months and/or fine (misdemeanor first offense); felony for certain restricted locations.",
+      "enforcement_notes": "Restricted locations include government buildings, courts, polling places, bars, and schools. Even valid WCL holders may not carry in restricted locations. Document the specific prohibited location and post any signage present."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-11-131",
       "title": "Possession of Firearm by Convicted Felon",
+      "category": "Public Order / Weapons",
+      "source_reference": "Official Code of Georgia Annotated § 16-11-131",
       "summary": "Prohibits firearm possession by convicted felons under statute.",
       "elements": [
         "Accused had qualifying felony status.",
         "Accused possessed a firearm.",
         "No statutory restoration/exception applied."
       ],
-      "keywords": ["felon in possession", "convicted felon firearm"]
+      "keywords": ["felon in possession", "convicted felon firearm"],
+      "minimum_punishment": "1 year.",
+      "maximum_punishment": "1–10 years imprisonment (felony); enhanced penalties for subsequent offenses.",
+      "enforcement_notes": "Confirm felony conviction through GCIC/NCIC criminal history. Document possession clearly — constructive possession (accessible, within reach) qualifies. Note whether rights restoration applies. Consider concurrent federal 18 USC 922(g) charge."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-11-132",
       "title": "Possession of Firearm During Commission of Certain Crimes",
+      "category": "Public Order / Weapons",
+      "source_reference": "Official Code of Georgia Annotated § 16-11-132",
       "summary": "Possessing firearm or knife while committing listed offenses.",
       "elements": [
         "Accused possessed firearm/knife as defined.",
         "A listed predicate crime was being committed or attempted.",
         "Temporal nexus between possession and predicate crime existed."
       ],
-      "keywords": ["weapon during crime", "firearm during felony"]
+      "keywords": ["weapon during crime", "firearm during felony"],
+      "minimum_punishment": "5 years (mandatory consecutive).",
+      "maximum_punishment": "5 years consecutive to predicate offense sentence (mandatory).",
+      "enforcement_notes": "This is an enhancement charge — charge alongside the predicate offense. The sentence is mandatory and consecutive. Document the proximity and accessibility of the weapon during the predicate offense."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-13-30",
       "title": "Controlled Substances - Possession / Distribution / Manufacture",
+      "category": "Controlled Substances",
+      "source_reference": "Official Code of Georgia Annotated § 16-13-30",
       "summary": "Core Georgia controlled-substance offense statute covering possession, sale, manufacture, delivery, and related acts.",
       "elements": [
         "Substance involved was controlled by statute schedule.",
         "Accused committed charged act (possess/sell/manufacture/etc.).",
         "Accused acted knowingly and unlawfully."
       ],
-      "keywords": ["drug possession", "distribution", "controlled substance", "cocaine", "meth"]
+      "keywords": ["drug possession", "distribution", "controlled substance", "cocaine", "meth"],
+      "minimum_punishment": "1 year (Schedule I/II possession); 5 years (sale/manufacturing Schedule I/II).",
+      "maximum_punishment": "Possession Schedule I/II: 1–15 years; Sale/manufacture: 5–30 years; enhanced for subsequent offenses.",
+      "enforcement_notes": "Document schedule of substance if known at scene. Preserve all physical evidence per department protocol. Quantity affects charge level. Chain of custody documentation is critical — any gap may result in evidence suppression."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-13-31",
       "title": "Drug Trafficking",
+      "category": "Controlled Substances",
+      "source_reference": "Official Code of Georgia Annotated § 16-13-31",
       "summary": "Trafficking offenses based on threshold quantities/types of controlled substances.",
       "elements": [
         "Substance type/quantity met trafficking threshold.",
         "Accused possessed/sold/manufactured/transported as charged.",
         "Act was knowing and unlawful."
       ],
-      "keywords": ["trafficking", "drug weight threshold", "large quantity narcotics"]
+      "keywords": ["trafficking", "drug weight threshold", "large quantity narcotics"],
+      "minimum_punishment": "5 years mandatory minimum (varies by drug and quantity threshold).",
+      "maximum_punishment": "5–25 years mandatory minimum sentences depending on drug type and quantity; no suspended sentence.",
+      "enforcement_notes": "Threshold quantity triggers trafficking regardless of stated intent. Document weight precisely — field weight vs. lab weight may differ; charge on field weight but note. Notify supervisor and narcotics unit. Mandatory minimums are non-negotiable without DA approval."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-13-32.2",
       "title": "Drug Related Objects",
+      "category": "Controlled Substances",
+      "source_reference": "Official Code of Georgia Annotated § 16-13-32.2",
       "summary": "Possession/use/manufacture/distribution of drug-related objects under statute.",
       "elements": [
         "Object met statutory drug-related object criteria.",
         "Accused possessed/used/manufactured/distributed object as charged.",
         "Required unlawful intent/knowledge was present."
       ],
-      "keywords": ["drug paraphernalia", "drug related object", "pipe"]
+      "keywords": ["drug paraphernalia", "drug related object", "pipe"],
+      "minimum_punishment": "As determined by court.",
+      "maximum_punishment": "Possession: 12 months (misdemeanor); distribution: up to 5 years (felony).",
+      "enforcement_notes": "Mere possession of paraphernalia is a misdemeanor. Possession with intent to distribute paraphernalia is a felony. Residue found on objects may support additional controlled substance possession charges."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-13-75",
       "title": "Marijuana Possession",
+      "category": "Controlled Substances",
+      "source_reference": "Official Code of Georgia Annotated § 16-13-75",
       "summary": "Marijuana possession offenses under statutory quantity and prior-history framework.",
       "elements": [
         "Accused possessed marijuana.",
         "Possession was knowing and unlawful.",
         "Amount/history supported charged grade."
       ],
-      "keywords": ["marijuana possession", "weed", "cannabis possession"]
+      "keywords": ["marijuana possession", "weed", "cannabis possession"],
+      "minimum_punishment": "As determined by court.",
+      "maximum_punishment": "Under 1 oz (personal use): 12 months (misdemeanor); 1 oz or more: 1–10 years (felony).",
+      "enforcement_notes": "Under 1 oz for personal use is misdemeanor; 1 oz or more is felony possession. Document quantity carefully. Low-THC oil possession under 20 fluid ounces is permitted with a valid Georgia registry card under OCGA 16-12-191."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-13-30.1",
       "title": "Drug-Free Zones Near Schools and Certain Facilities",
+      "category": "Controlled Substances",
+      "source_reference": "Official Code of Georgia Annotated § 16-13-30.1",
       "summary": "Enhanced penalties for certain controlled-substance acts committed in, on, or near schools, parks, housing projects, and other protected zones under statute.",
       "elements": [
         "A qualifying underlying controlled-substance offense occurred.",
@@ -519,12 +729,14 @@
       ],
       "keywords": ["drug free zone", "drugs near school", "park drug sale", "housing project drug offense", "school zone narcotics"],
       "minimum_punishment": "As provided by statute for the charged drug-free-zone offense.",
-      "maximum_punishment": "As provided by statute for the charged drug-free-zone offense."
+      "maximum_punishment": "As provided by statute for the charged drug-free-zone offense — enhanced above base offense."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-13-30.2",
       "title": "Drug-Free Commercial Zones and Public Transit Areas",
+      "category": "Controlled Substances",
+      "source_reference": "Official Code of Georgia Annotated § 16-13-30.2",
       "summary": "Enhanced penalties for certain controlled-substance offenses in designated commercial, recreation, and transit-related protected areas when applicable by statute.",
       "elements": [
         "A qualifying underlying controlled-substance offense occurred.",
@@ -533,12 +745,14 @@
       ],
       "keywords": ["drug sale near transit", "commercial district drug offense", "drug protected area", "enhanced drug penalty zone"],
       "minimum_punishment": "As provided by statute for the charged zone-enhanced offense.",
-      "maximum_punishment": "As provided by statute for the charged zone-enhanced offense."
+      "maximum_punishment": "As provided by statute for the charged zone-enhanced offense — enhanced above base offense."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-13-30.3",
       "title": "Employing or Using a Minor in Drug Activity",
+      "category": "Controlled Substances",
+      "source_reference": "Official Code of Georgia Annotated § 16-13-30.3",
       "summary": "Using, employing, or coercing a minor to commit or assist with specified drug offenses.",
       "elements": [
         "A minor was used, employed, solicited, or coerced.",
@@ -547,12 +761,15 @@
       ],
       "keywords": ["use of minor for drugs", "juvenile drug runner", "child used in drug sale", "minor involved narcotics"],
       "minimum_punishment": "As provided by statute for using a minor in drug activity.",
-      "maximum_punishment": "As provided by statute for using a minor in drug activity."
+      "maximum_punishment": "As provided by statute for using a minor in drug activity — felony with enhanced penalties.",
+      "enforcement_notes": "Notify juvenile authorities and DFCS when a minor is involved. Document the minor's role and the accused's direction or coercion of the minor. Age of minor affects penalty range."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-13-30.4",
       "title": "Distributing Controlled Substances Through the Internet",
+      "category": "Controlled Substances",
+      "source_reference": "Official Code of Georgia Annotated § 16-13-30.4",
       "summary": "Use of electronic or internet-based systems to facilitate qualifying controlled-substance distribution offenses under statute.",
       "elements": [
         "Accused used electronic or internet communications.",
@@ -561,12 +778,14 @@
       ],
       "keywords": ["online drug sales", "internet drug trafficking", "social media drug deal", "dark web narcotics"],
       "minimum_punishment": "As provided by statute for the charged offense.",
-      "maximum_punishment": "As provided by statute for the charged offense."
+      "maximum_punishment": "As provided by statute for the charged offense — felony with potential federal nexus."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-13-32",
       "title": "Marijuana Trafficking and Related Offenses",
+      "category": "Controlled Substances",
+      "source_reference": "Official Code of Georgia Annotated § 16-13-32",
       "summary": "Trafficking framework for marijuana and related cannabis products based on threshold quantity and act.",
       "elements": [
         "Substance involved marijuana or qualifying cannabis product.",
@@ -575,12 +794,14 @@
       ],
       "keywords": ["marijuana trafficking", "large quantity weed", "cannabis trafficking", "bulk marijuana"],
       "minimum_punishment": "As provided by statute for trafficking thresholds.",
-      "maximum_punishment": "As provided by statute for trafficking thresholds."
+      "maximum_punishment": "As provided by statute — mandatory minimums based on quantity tier."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-13-32.4",
       "title": "Counterfeit Substances",
+      "category": "Controlled Substances",
+      "source_reference": "Official Code of Georgia Annotated § 16-13-32.4",
       "summary": "Manufacturing, delivering, distributing, or possessing counterfeit controlled substances as prohibited by statute.",
       "elements": [
         "Substance was counterfeit as defined by statute.",
@@ -589,12 +810,15 @@
       ],
       "keywords": ["counterfeit drugs", "fake pills", "pressed pills", "fake narcotics", "fentanyl pressed pill"],
       "minimum_punishment": "As provided by statute for counterfeit-substance offenses.",
-      "maximum_punishment": "As provided by statute for counterfeit-substance offenses."
+      "maximum_punishment": "As provided by statute for counterfeit-substance offenses — felony.",
+      "enforcement_notes": "Document appearance of substance and any markings mimicking legitimate pharmaceuticals. Even if substance turns out not to be a controlled substance, the counterfeit statute may still apply based on representation."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-13-32.5",
       "title": "Imitation Controlled Substances",
+      "category": "Controlled Substances",
+      "source_reference": "Official Code of Georgia Annotated § 16-13-32.5",
       "summary": "Offenses involving imitation controlled substances represented as real controlled substances.",
       "elements": [
         "Substance met statutory definition of an imitation controlled substance.",
@@ -609,6 +833,8 @@
       "source": "GEORGIA",
       "code": "OCGA 16-13-33",
       "title": "Forgery or Alteration of Drug Prescriptions",
+      "category": "Controlled Substances",
+      "source_reference": "Official Code of Georgia Annotated § 16-13-33",
       "summary": "Forgery, alteration, or unlawful use of prescription documents for obtaining controlled substances.",
       "elements": [
         "Prescription or order document was forged, altered, or unlawfully used.",
@@ -617,12 +843,15 @@
       ],
       "keywords": ["forged prescription", "fake rx", "doctor shopping documents", "altered prescription", "prescription fraud"],
       "minimum_punishment": "As provided by statute for the charged prescription offense.",
-      "maximum_punishment": "As provided by statute for the charged prescription offense."
+      "maximum_punishment": "As provided by statute for the charged prescription offense — felony.",
+      "enforcement_notes": "Preserve original prescription document as evidence — do not fold or damage. Obtain pharmacy records and prescriber verification. Coordinate with prescription monitoring program (PMP) data if available."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-13-33.1",
       "title": "Obtaining Controlled Substances by Fraud or Deception",
+      "category": "Controlled Substances",
+      "source_reference": "Official Code of Georgia Annotated § 16-13-33.1",
       "summary": "Obtaining or attempting to obtain controlled substances by fraud, deceit, forgery, misrepresentation, or subterfuge.",
       "elements": [
         "Accused obtained or attempted to obtain a controlled substance.",
@@ -631,48 +860,62 @@
       ],
       "keywords": ["obtain drugs by fraud", "doctor shopping", "deception for narcotics", "pharmacy fraud", "rx fraud"],
       "minimum_punishment": "As provided by statute for obtaining controlled substances by fraud.",
-      "maximum_punishment": "As provided by statute for obtaining controlled substances by fraud."
+      "maximum_punishment": "As provided by statute for obtaining controlled substances by fraud — felony."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-13-34",
       "title": "Records and Labeling Violations for Controlled Substances",
+      "category": "Controlled Substances",
+      "source_reference": "Official Code of Georgia Annotated § 16-13-34",
       "summary": "Offenses involving unlawful recordkeeping, labeling, or documentation related to controlled substances.",
       "elements": [
         "A recordkeeping, labeling, or documentation duty existed under law.",
         "Accused failed to comply or falsified required information as charged.",
         "The conduct was unlawful."
       ],
-      "keywords": ["drug record violation", "controlled substance records", "pharmacy labeling violation", "narcotics inventory violation"]
+      "keywords": ["drug record violation", "controlled substance records", "pharmacy labeling violation", "narcotics inventory violation"],
+      "minimum_punishment": "As determined by court.",
+      "maximum_punishment": "As provided by statute — misdemeanor or felony depending on violation type."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-13-37",
       "title": "Unlawful Possession or Transfer of Prescription Blanks",
+      "category": "Controlled Substances",
+      "source_reference": "Official Code of Georgia Annotated § 16-13-37",
       "summary": "Unlawful possession, transfer, or misuse of prescription forms, blanks, or related instruments used to obtain controlled substances.",
       "elements": [
         "Accused possessed, transferred, or used prescription forms/blanks as charged.",
         "Conduct was unauthorized and unlawful.",
         "Required intent/knowledge was present."
       ],
-      "keywords": ["stolen prescription pad", "rx blank theft", "prescription form misuse", "controlled substance script forms"]
+      "keywords": ["stolen prescription pad", "rx blank theft", "prescription form misuse", "controlled substance script forms"],
+      "minimum_punishment": "As determined by court.",
+      "maximum_punishment": "As provided by statute — felony."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-13-39",
       "title": "Unlawful Distribution by Practitioners",
+      "category": "Controlled Substances",
+      "source_reference": "Official Code of Georgia Annotated § 16-13-39",
       "summary": "Practitioner-related controlled-substance violations for distribution/prescribing outside lawful professional practice.",
       "elements": [
         "Accused acted as or through a practitioner context covered by statute.",
         "Controlled-substance distribution/prescribing occurred outside lawful professional practice.",
         "Accused acted knowingly and unlawfully."
       ],
-      "keywords": ["pill mill", "unlawful prescribing", "doctor unlawful narcotics", "practitioner drug diversion", "overprescribing"]
+      "keywords": ["pill mill", "unlawful prescribing", "doctor unlawful narcotics", "practitioner drug diversion", "overprescribing"],
+      "minimum_punishment": "As determined by court.",
+      "maximum_punishment": "As provided by statute — felony with potential license revocation."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-13-45",
       "title": "Methamphetamine-Related Precursors and Manufacturing",
+      "category": "Controlled Substances",
+      "source_reference": "Official Code of Georgia Annotated § 16-13-45",
       "summary": "Offenses involving precursor chemicals, equipment, and conduct used to manufacture methamphetamine and similar controlled substances.",
       "elements": [
         "Accused possessed, transferred, or used listed precursor materials/equipment as charged.",
@@ -681,229 +924,312 @@
       ],
       "keywords": ["meth lab", "meth manufacturing", "pseudoephedrine precursor", "one pot meth", "drug lab materials"],
       "minimum_punishment": "As provided by statute for precursor/manufacturing offenses.",
-      "maximum_punishment": "As provided by statute for precursor/manufacturing offenses."
+      "maximum_punishment": "As provided by statute — felony; enhanced if children present or near school.",
+      "enforcement_notes": "Do not disturb or attempt to dismantle a suspected meth lab — notify hazmat. Document all materials observed, their location, and proximity to children or occupied structures. DEA notification may be required."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-13-49",
       "title": "Drug-Related Civil/Criminal Forfeiture (Operational Reference)",
+      "category": "Controlled Substances",
+      "source_reference": "Official Code of Georgia Annotated § 16-13-49",
       "summary": "Forfeiture framework applicable to property connected to qualifying controlled-substance offenses; operational reference for seizure-related drug cases.",
       "elements": [
         "Property had a qualifying nexus to a covered controlled-substance offense.",
         "Seizure/forfeiture process complied with statutory procedures.",
         "Required notice and filing provisions were followed."
       ],
-      "keywords": ["drug forfeiture", "seize drug money", "narcotics asset seizure", "forfeiture drug case"]
+      "keywords": ["drug forfeiture", "seize drug money", "narcotics asset seizure", "forfeiture drug case"],
+      "minimum_punishment": "N/A — civil/administrative forfeiture reference.",
+      "maximum_punishment": "N/A — civil/administrative forfeiture reference."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-13-57",
       "title": "Schedule I Controlled Substances (Classification Reference)",
+      "category": "Controlled Substances",
+      "source_reference": "Official Code of Georgia Annotated § 16-13-57",
       "summary": "Schedule I controlled-substance classification reference used to identify prohibited substances and support charging decisions under offense statutes.",
       "elements": [
         "Substance is listed or treated as Schedule I under statute.",
         "Classification supports applicable offense section analysis."
       ],
-      "keywords": ["schedule i drug", "heroin schedule", "mdma schedule", "lsd schedule", "controlled schedule reference"]
+      "keywords": ["schedule i drug", "heroin schedule", "mdma schedule", "lsd schedule", "controlled schedule reference"],
+      "minimum_punishment": "N/A — classification reference.",
+      "maximum_punishment": "N/A — classification reference; applies highest penalty tier under offense statutes."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-13-58",
       "title": "Schedule II Controlled Substances (Classification Reference)",
+      "category": "Controlled Substances",
+      "source_reference": "Official Code of Georgia Annotated § 16-13-58",
       "summary": "Schedule II controlled-substance classification reference for charging support under relevant possession/distribution/trafficking statutes.",
       "elements": [
         "Substance is listed or treated as Schedule II under statute.",
         "Classification supports applicable offense section analysis."
       ],
-      "keywords": ["schedule ii drug", "cocaine schedule", "methamphetamine schedule", "fentanyl schedule", "oxycodone schedule"]
+      "keywords": ["schedule ii drug", "cocaine schedule", "methamphetamine schedule", "fentanyl schedule", "oxycodone schedule"],
+      "minimum_punishment": "N/A — classification reference.",
+      "maximum_punishment": "N/A — classification reference; applies high penalty tier under offense statutes."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-13-59",
       "title": "Schedule III Controlled Substances (Classification Reference)",
+      "category": "Controlled Substances",
+      "source_reference": "Official Code of Georgia Annotated § 16-13-59",
       "summary": "Schedule III classification reference to support controlled-substance charging decisions.",
       "elements": [
         "Substance is listed or treated as Schedule III under statute.",
         "Classification supports applicable offense section analysis."
       ],
-      "keywords": ["schedule iii drug", "anabolic steroid controlled", "ketamine schedule", "schedule classification"]
+      "keywords": ["schedule iii drug", "anabolic steroid controlled", "ketamine schedule", "schedule classification"],
+      "minimum_punishment": "N/A — classification reference.",
+      "maximum_punishment": "N/A — classification reference."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-13-60",
       "title": "Schedule IV Controlled Substances (Classification Reference)",
+      "category": "Controlled Substances",
+      "source_reference": "Official Code of Georgia Annotated § 16-13-60",
       "summary": "Schedule IV classification reference to support controlled-substance charging decisions.",
       "elements": [
         "Substance is listed or treated as Schedule IV under statute.",
         "Classification supports applicable offense section analysis."
       ],
-      "keywords": ["schedule iv drug", "alprazolam schedule", "benzodiazepine schedule", "xanax controlled"]
+      "keywords": ["schedule iv drug", "alprazolam schedule", "benzodiazepine schedule", "xanax controlled"],
+      "minimum_punishment": "N/A — classification reference.",
+      "maximum_punishment": "N/A — classification reference."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-13-61",
       "title": "Schedule V Controlled Substances (Classification Reference)",
+      "category": "Controlled Substances",
+      "source_reference": "Official Code of Georgia Annotated § 16-13-61",
       "summary": "Schedule V classification reference to support controlled-substance charging decisions.",
       "elements": [
         "Substance is listed or treated as Schedule V under statute.",
         "Classification supports applicable offense section analysis."
       ],
-      "keywords": ["schedule v drug", "codeine mixture schedule", "controlled schedule v"]
+      "keywords": ["schedule v drug", "codeine mixture schedule", "controlled schedule v"],
+      "minimum_punishment": "N/A — classification reference.",
+      "maximum_punishment": "N/A — classification reference."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 16-13-71",
       "title": "Marijuana and Hashish Offenses (Classification/Handling Reference)",
+      "category": "Controlled Substances",
+      "source_reference": "Official Code of Georgia Annotated § 16-13-71",
       "summary": "Marijuana/hashish statutory treatment reference used with offense sections for possession, transfer, and trafficking analysis.",
       "elements": [
         "Substance involved marijuana, hashish, or derivative covered by statute.",
         "Classification/treatment supports applicable offense section analysis."
       ],
-      "keywords": ["hashish", "thc concentrate", "cannabis derivative", "marijuana classification", "delta products"]
+      "keywords": ["hashish", "thc concentrate", "cannabis derivative", "marijuana classification", "delta products"],
+      "minimum_punishment": "N/A — classification reference.",
+      "maximum_punishment": "N/A — classification reference; applicable penalty set by underlying offense statute."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 40-2-8",
       "title": "Display of License Plate",
+      "category": "Motor Vehicle / Traffic",
+      "source_reference": "Official Code of Georgia Annotated § 40-2-8",
       "summary": "Requires proper display of valid plate/registration.",
       "elements": [
         "Vehicle was required to display plate.",
         "Plate display was missing/improper/noncompliant."
       ],
-      "keywords": ["no plate", "plate display", "tag violation"]
+      "keywords": ["no plate", "plate display", "tag violation"],
+      "minimum_punishment": "As determined by court.",
+      "maximum_punishment": "Fine/misdemeanor."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 40-2-41",
       "title": "Registration Required",
+      "category": "Motor Vehicle / Traffic",
+      "source_reference": "Official Code of Georgia Annotated § 40-2-41",
       "summary": "Motor vehicles must be properly registered as required by Georgia law.",
       "elements": [
         "Vehicle required registration under statute.",
         "Vehicle was unregistered/expired as charged."
       ],
-      "keywords": ["expired registration", "unregistered vehicle", "tag expired"]
+      "keywords": ["expired registration", "unregistered vehicle", "tag expired"],
+      "minimum_punishment": "As determined by court.",
+      "maximum_punishment": "Fine/misdemeanor."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 40-5-20",
       "title": "Driving Without a Valid License",
+      "category": "Motor Vehicle / Traffic",
+      "source_reference": "Official Code of Georgia Annotated § 40-5-20",
       "summary": "Operating a vehicle without required valid license authority.",
       "elements": [
         "Accused operated a motor vehicle.",
         "Accused lacked valid license authority.",
         "No lawful exception applied."
       ],
-      "keywords": ["no license", "unlicensed driver", "never licensed"]
+      "keywords": ["no license", "unlicensed driver", "never licensed"],
+      "minimum_punishment": "As determined by court.",
+      "maximum_punishment": "12 months (misdemeanor).",
+      "enforcement_notes": "Distinguish between never-licensed (higher offense), suspended/revoked (separate charge), and simply not having license on person. Run GCIC/NCIC/DMVS check to confirm license status before charging."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 40-5-67.1",
       "title": "Implied Consent Notice",
+      "category": "Motor Vehicle / Traffic",
+      "source_reference": "Official Code of Georgia Annotated § 40-5-67.1",
       "summary": "Implied consent advisement framework used in DUI investigations.",
       "elements": [
         "Driver was arrested for DUI-related offense.",
         "Required implied consent warning process applied.",
         "Refusal/submission facts were documented."
       ],
-      "keywords": ["implied consent", "dui refusal notice"]
+      "keywords": ["implied consent", "dui refusal notice"],
+      "minimum_punishment": "N/A — procedural framework.",
+      "maximum_punishment": "N/A — administrative license suspension consequences for refusal.",
+      "enforcement_notes": "Read the correct implied consent notice based on the type of test requested (blood, breath, or urine). Document exact wording used, time read, and driver's response. Refusal triggers administrative license suspension proceedings."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 40-5-121",
       "title": "Driving While License Suspended or Revoked",
+      "category": "Motor Vehicle / Traffic",
+      "source_reference": "Official Code of Georgia Annotated § 40-5-121",
       "summary": "Operating motor vehicle while license privilege is suspended/revoked/canceled.",
       "elements": [
         "Accused operated motor vehicle.",
         "Privilege was suspended/revoked/canceled.",
         "Notice/knowledge element was met."
       ],
-      "keywords": ["suspended license", "revoked license", "driving while suspended"]
+      "keywords": ["suspended license", "revoked license", "driving while suspended"],
+      "minimum_punishment": "2 days mandatory (first offense).",
+      "maximum_punishment": "12 months / $1,000 fine (standard misdemeanor); up to 5 years (habitual violator felony).",
+      "enforcement_notes": "Confirm suspension/revocation through GCIC/DMVS and document the reason. Establish that accused received statutory notice of suspension. First offense misdemeanor; DUI suspension violations carry enhanced penalties."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 40-6-20",
       "title": "Obedience to Traffic-Control Devices",
+      "category": "Motor Vehicle / Traffic",
+      "source_reference": "Official Code of Georgia Annotated § 40-6-20",
       "summary": "Drivers must obey official traffic control devices unless lawfully directed otherwise.",
       "elements": [
         "Official traffic control device applied.",
         "Driver failed to obey device."
       ],
-      "keywords": ["red light", "traffic signal", "ignored sign"]
+      "keywords": ["red light", "traffic signal", "ignored sign"],
+      "minimum_punishment": "As determined by court.",
+      "maximum_punishment": "Fine/misdemeanor."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 40-6-221",
       "title": "Unauthorized Use of Disabled Parking",
+      "category": "Motor Vehicle / Traffic",
+      "source_reference": "Official Code of Georgia Annotated § 40-6-221",
       "summary": "Prohibits parking in designated disabled parking spaces without required placard, plate, or authorization.",
       "elements": [
         "Vehicle was parked in a designated disabled parking space.",
         "Vehicle did not display required disabled parking authorization.",
         "No lawful exception applied."
       ],
-      "keywords": ["handicap parking", "parking in handicap without sticker", "disabled parking", "no handicap placard"]
+      "keywords": ["handicap parking", "parking in handicap without sticker", "disabled parking", "no handicap placard"],
+      "minimum_punishment": "As determined by court.",
+      "maximum_punishment": "Fine; enhanced fines for repeat violations."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 40-6-48",
       "title": "Failure to Maintain Lane",
+      "category": "Motor Vehicle / Traffic",
+      "source_reference": "Official Code of Georgia Annotated § 40-6-48",
       "summary": "Driver must maintain lane as nearly as practical.",
       "elements": [
         "Roadway had marked lanes.",
         "Driver failed to remain within lane.",
         "No lawful/safe exception justified movement."
       ],
-      "keywords": ["failure to maintain lane", "weaving", "drifting", "swerving"]
+      "keywords": ["failure to maintain lane", "weaving", "drifting", "swerving"],
+      "minimum_punishment": "As determined by court.",
+      "maximum_punishment": "Fine/misdemeanor."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 40-6-49",
       "title": "Following Too Closely",
+      "category": "Motor Vehicle / Traffic",
+      "source_reference": "Official Code of Georgia Annotated § 40-6-49",
       "summary": "Following distance must be reasonable and prudent.",
       "elements": [
         "Driver followed another vehicle.",
         "Distance was not reasonable/prudent for conditions."
       ],
-      "keywords": ["tailgating", "following too close", "following too closely"]
+      "keywords": ["tailgating", "following too close", "following too closely"],
+      "minimum_punishment": "As determined by court.",
+      "maximum_punishment": "Fine/misdemeanor."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 40-6-72",
       "title": "Stop Signs and Yield Signs",
+      "category": "Motor Vehicle / Traffic",
+      "source_reference": "Official Code of Georgia Annotated § 40-6-72",
       "summary": "Requires proper stop/yield behavior at stop/yield intersections.",
       "elements": [
         "Stop/yield control applied.",
         "Driver failed required stop/yield conduct."
       ],
-      "keywords": ["ran stop sign", "failed to stop", "failed to yield"]
+      "keywords": ["ran stop sign", "failed to stop", "failed to yield"],
+      "minimum_punishment": "As determined by court.",
+      "maximum_punishment": "Fine/misdemeanor."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 40-6-123",
       "title": "Turning Movements and Required Signals",
+      "category": "Motor Vehicle / Traffic",
+      "source_reference": "Official Code of Georgia Annotated § 40-6-123",
       "summary": "Requires proper signaling before turns/lane changes.",
       "elements": [
         "Driver turned/changed lanes/moved laterally.",
         "Signal was required.",
         "Driver failed proper signal timing/use."
       ],
-      "keywords": ["no turn signal", "failed to signal", "lane change no signal"]
+      "keywords": ["no turn signal", "failed to signal", "lane change no signal"],
+      "minimum_punishment": "As determined by court.",
+      "maximum_punishment": "Fine/misdemeanor."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 40-6-181",
       "title": "Speed Restrictions",
+      "category": "Motor Vehicle / Traffic",
+      "source_reference": "Official Code of Georgia Annotated § 40-6-181",
       "summary": "Driving above applicable lawful speed limit.",
       "elements": [
         "Driver operated motor vehicle.",
         "Applicable speed limit existed.",
         "Driver exceeded lawful speed."
       ],
-      "keywords": ["speeding", "65 in a 25", "over limit"]
+      "keywords": ["speeding", "65 in a 25", "over limit"],
+      "minimum_punishment": "As determined by court.",
+      "maximum_punishment": "Fine/misdemeanor; excessive speed (>24 mph over limit) carries higher penalties.",
+      "enforcement_notes": "Document measurement method (radar, lidar, pacing) and calibration/certification. Note posted speed limit at location. Excessive speed (more than 24 mph over the limit) is a separate enhanced charge."
     },
     {
       "source": "GEORGIA",
       "code": "MCLBAO 5560.9G CH3-11",
       "title": "MCLB Albany Base Speed Limits",
+      "category": "Base Order / Installation",
+      "source_reference": "MCLB Albany Base Order 5560.9G, Chapter 3, Paragraph 11",
       "summary": "On MCLB Albany, speed must be reasonable/prudent and not exceed posted limits. Default speed is 35 MPH where not posted; 10 MPH in parking lots; 5 MPH while backing; 10 MPH where troops are in formation; 25 MPH on unimproved/perimeter roads.",
       "elements": [
         "Vehicle operated aboard MCLB Albany installation roadways.",
@@ -912,12 +1238,15 @@
       ],
       "keywords": ["mclb speed limit", "base speed limit", "on base speeding", "parking lot 10 mph", "35 mph on base", "mclb albany traffic"],
       "minimum_punishment": "Administrative points/court handling per MCLBAO 5560.9G and applicable Georgia/Federal assimilation framework.",
-      "maximum_punishment": "Base driving privilege suspension/revocation and mandatory court appearance for higher-speed categories per MCLBAO 5560.9G."
+      "maximum_punishment": "Base driving privilege suspension/revocation and mandatory court appearance for higher-speed categories per MCLBAO 5560.9G.",
+      "enforcement_notes": "Document speed measurement method and posted limit at location. Distinguish between default zone (35 MPH) and specific restricted zones (parking lots, formation areas). Violations may be referred to Base Traffic Court under MCLBAO 5560.9G Ch. 6."
     },
     {
       "source": "GEORGIA",
       "code": "MCLBAO 5560.9G CH3-16/17",
       "title": "MCLB Albany Cell Phone and Texting Restrictions",
+      "category": "Base Order / Installation",
+      "source_reference": "MCLB Albany Base Order 5560.9G, Chapter 3, Paragraphs 16–17",
       "summary": "Cell phone use by drivers aboard MCLB Albany requires hands-free operation; use is not authorized for GOV drivers regardless of hands-free. Text messaging restrictions apply under referenced policy.",
       "elements": [
         "Driver operated a vehicle aboard MCLB Albany.",
@@ -926,12 +1255,15 @@
       ],
       "keywords": ["mclb cell phone", "base texting while driving", "gov no cell phone", "hands free base"],
       "minimum_punishment": "Administrative points/court handling per MCLBAO 5560.9G.",
-      "maximum_punishment": "Enhanced base administrative actions including suspension based on violation history and court disposition."
+      "maximum_punishment": "Enhanced base administrative actions including suspension based on violation history and court disposition.",
+      "enforcement_notes": "GOV (Government-Owned Vehicle) operators are prohibited from all cell phone use regardless of hands-free capability. Document type of device use observed, vehicle type (GOV vs. POV), and location aboard installation."
     },
     {
       "source": "GEORGIA",
       "code": "MCLBAO 5560.9G CH3-18",
       "title": "MCLB Albany Seat Belt Requirements",
+      "category": "Base Order / Installation",
+      "source_reference": "MCLB Albany Base Order 5560.9G, Chapter 3, Paragraph 18",
       "summary": "Seat belt use is mandatory for all occupants in motor vehicles aboard MCLB Albany; operators are responsible for ensuring compliance.",
       "elements": [
         "Vehicle operated aboard MCLB Albany.",
@@ -940,12 +1272,15 @@
       ],
       "keywords": ["mclb seat belt", "base seat belt violation", "operator passenger seat belt", "mclb traffic court seat belt"],
       "minimum_punishment": "Point assessment and remedial measures per MCLBAO 5560.9G traffic code table.",
-      "maximum_punishment": "Higher-point penalties and suspension of base driving privileges for repeat offenses under MCLBAO 5560.9G."
+      "maximum_punishment": "Higher-point penalties and suspension of base driving privileges for repeat offenses under MCLBAO 5560.9G.",
+      "enforcement_notes": "Operator is responsible for all occupants' compliance. Document each individual occupant not wearing a seat belt as a separate violation. Note vehicle type and seating position for each unbelted occupant."
     },
     {
       "source": "GEORGIA",
       "code": "MCLBAO 5560.9G CH6",
       "title": "MCLB Albany Base Traffic Court",
+      "category": "Base Order / Installation",
+      "source_reference": "MCLB Albany Base Order 5560.9G, Chapter 6",
       "summary": "MCLB Albany Base Traffic Court adjudicates installation traffic violations, imposes points and administrative actions, and handles mandatory appearance categories and appeals.",
       "elements": [
         "Traffic citation/violation occurred on MCLB Albany.",
@@ -954,100 +1289,140 @@
       ],
       "keywords": ["mclb traffic court", "base traffic court", "mandatory appearance mclb", "traffic court appeal mclb"],
       "minimum_punishment": "Warning or lower administrative action based on violation type and adjudication outcome.",
-      "maximum_punishment": "Suspension/revocation of installation driving privileges and referral to magistrate for specified offenses."
+      "maximum_punishment": "Suspension/revocation of installation driving privileges and referral to magistrate for specified offenses.",
+      "enforcement_notes": "Verify whether violation falls in mandatory appearance category before issuing citation vs. traffic ticket. Chapter 6 lists offense categories and corresponding administrative action schedules. Retain all citation copies per records requirements."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 40-6-241",
       "title": "Texting While Driving",
+      "category": "Motor Vehicle / Traffic",
+      "source_reference": "Official Code of Georgia Annotated § 40-6-241",
       "summary": "Restrictions on writing/sending/reading text-based communication while driving.",
       "elements": [
         "Accused operated motor vehicle.",
         "Accused used text-based communication device/function unlawfully while driving."
       ],
-      "keywords": ["texting while driving", "phone while driving"]
+      "keywords": ["texting while driving", "phone while driving"],
+      "minimum_punishment": "As determined by court.",
+      "maximum_punishment": "Fine and license points; enhanced for repeat violations.",
+      "enforcement_notes": "Document specific device use observed and manner of operation. Hands-free use is permitted; hand-held phone use for any purpose is prohibited in Georgia under OCGA 40-6-241."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 40-6-270",
       "title": "Duty Upon Striking a Vehicle (Hit and Run)",
+      "category": "Motor Vehicle / Traffic",
+      "source_reference": "Official Code of Georgia Annotated § 40-6-270",
       "summary": "Stopping, exchanging information, and rendering aid duties after collision with attended vehicle/person.",
       "elements": [
         "Driver was involved in qualifying collision.",
         "Driver knew/should have known collision occurred.",
         "Driver failed required stop/information/aid duties."
       ],
-      "keywords": ["hit and run", "left scene", "failed to stop after crash"]
+      "keywords": ["hit and run", "left scene", "failed to stop after crash"],
+      "minimum_punishment": "As determined by court.",
+      "maximum_punishment": "With serious injury/death: 1–5 years (felony); without injury: 12 months (misdemeanor).",
+      "enforcement_notes": "Document evidence that driver knew or should have known about the collision. Identify vehicle through witnesses, surveillance cameras, paint transfer, and debris. Medical documentation of injuries is critical for felony charging."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 40-6-271",
       "title": "Duty Upon Striking Unattended Vehicle or Property",
+      "category": "Motor Vehicle / Traffic",
+      "source_reference": "Official Code of Georgia Annotated § 40-6-271",
       "summary": "Requires stop/notice duties after striking unattended vehicle/property.",
       "elements": [
         "Driver struck unattended vehicle/property.",
         "Driver knew/should have known collision occurred.",
         "Driver failed required notice/information duties."
       ],
-      "keywords": ["struck parked car", "left scene property damage", "unattended hit and run"]
+      "keywords": ["struck parked car", "left scene property damage", "unattended hit and run"],
+      "minimum_punishment": "As determined by court.",
+      "maximum_punishment": "Fine/misdemeanor."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 40-6-390",
       "title": "Reckless Driving",
+      "category": "Motor Vehicle / Traffic",
+      "source_reference": "Official Code of Georgia Annotated § 40-6-390",
       "summary": "Driving with reckless disregard for safety of persons/property.",
       "elements": [
         "Driver operated motor vehicle.",
         "Conduct showed reckless disregard.",
         "Safety of persons/property was affected."
       ],
-      "keywords": ["reckless driving", "unsafe driving", "reckless"]
+      "keywords": ["reckless driving", "unsafe driving", "reckless"],
+      "minimum_punishment": "As determined by court.",
+      "maximum_punishment": "12 months / fine (misdemeanor).",
+      "enforcement_notes": "Document specific acts showing reckless disregard: excessive speed, erratic lane changes, running lights. Can be charged alongside DUI. Consider fleeing/eluding if a pursuit was involved."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 40-6-391",
       "title": "Driving Under the Influence",
+      "category": "Motor Vehicle / Traffic",
+      "source_reference": "Official Code of Georgia Annotated § 40-6-391",
       "summary": "DUI offense for less-safe/per se alcohol, drugs, or toxic substances.",
       "elements": [
         "Driver drove/was in actual physical control of moving vehicle.",
         "Driver was under influence or per se prohibited concentration.",
         "Required DUI theory elements were met."
       ],
-      "keywords": ["dui", "impaired driving", "drunk driving", "dui refusal"]
+      "keywords": ["dui", "impaired driving", "drunk driving", "dui refusal"],
+      "minimum_punishment": "First offense: 24 hours mandatory; 2nd: 72 hours mandatory; 3rd: 15 days mandatory.",
+      "maximum_punishment": "First/second offense: 12 months / $1,000 fine (misdemeanor); 3rd within 10 years: 1–5 years (felony).",
+      "enforcement_notes": "Administer field sobriety tests (HGN, Walk-and-Turn, One-Leg-Stand) properly — any deviation may be challenged. Read implied consent per OCGA 40-5-67.1. 'Actual physical control' applies to stopped vehicles with driver at the wheel. Third offense within 10 years is a felony."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 40-6-392",
       "title": "Chemical Tests / Evidence in DUI Cases",
+      "category": "Motor Vehicle / Traffic",
+      "source_reference": "Official Code of Georgia Annotated § 40-6-392",
       "summary": "Chemical test evidence and admissibility framework for DUI investigations.",
       "elements": [
         "DUI chemical test process occurred or was requested.",
         "Evidence collection/admissibility framework under statute applied."
       ],
-      "keywords": ["chemical test", "breath test", "blood test dui"]
+      "keywords": ["chemical test", "breath test", "blood test dui"],
+      "minimum_punishment": "N/A — evidentiary/procedural reference.",
+      "maximum_punishment": "N/A — evidentiary/procedural reference.",
+      "enforcement_notes": "Ensure breath test operator certification is current. Blood draws require proper chain of custody. Any deviation from statutory testing protocols may affect admissibility. Document all steps in the testing process."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 40-6-395",
       "title": "Fleeing or Attempting to Elude a Police Officer",
+      "category": "Motor Vehicle / Traffic",
+      "source_reference": "Official Code of Georgia Annotated § 40-6-395",
       "summary": "Willful failure/refusal to stop after visual/audible signal from officer.",
       "elements": [
         "Officer gave visual/audible signal to stop.",
         "Accused knew/should have known signal was from law enforcement.",
         "Accused willfully failed/refused to stop or fled/eluded."
       ],
-      "keywords": ["fleeing and eluding", "failed to stop for police", "pursuit"]
+      "keywords": ["fleeing and eluding", "failed to stop for police", "pursuit"],
+      "minimum_punishment": "As determined by court.",
+      "maximum_punishment": "Standard: 12 months (misdemeanor); Aggravated (high speed, injury, property damage, school bus): 1–5 years (felony).",
+      "enforcement_notes": "Document exact signals activated (lights, siren) and driver's response. Aggravated fleeing/eluding is a separate felony charge when high speed, injury, property damage, or passing a stopped school bus occurs. Follow department pursuit policy."
     },
     {
       "source": "GEORGIA",
       "code": "OCGA 40-6-397",
       "title": "Aggressive Driving",
+      "category": "Motor Vehicle / Traffic",
+      "source_reference": "Official Code of Georgia Annotated § 40-6-397",
       "summary": "Committing listed traffic offenses with intent to annoy, harass, molest, intimidate, injure, or obstruct.",
       "elements": [
         "Accused committed listed predicate traffic offense.",
         "Act was done with required aggressive-driving intent."
       ],
-      "keywords": ["aggressive driving", "road rage driving", "intentional hostile driving"]
+      "keywords": ["aggressive driving", "road rage driving", "intentional hostile driving"],
+      "minimum_punishment": "As determined by court.",
+      "maximum_punishment": "Misdemeanor of a high and aggravated nature.",
+      "enforcement_notes": "Requires both a predicate traffic violation AND the specific aggressive intent. Document statements, gestures, or conduct demonstrating intent to annoy/harass/intimidate. Distinguish from reckless driving when intent is directed at another driver."
     }
   ]
 }

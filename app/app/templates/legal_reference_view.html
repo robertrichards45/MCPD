@@ -31,10 +31,27 @@
       {% if match_context and match_context.reasons %}
       <div class="small mb-2"><strong>Why this matched:</strong> {{ match_context.reasons|join('; ') }}</div>
       {% endif %}
-      {% if entry.enforcement_notes %}
-      <div class="small text-muted">{{ entry.enforcement_notes }}</div>
+      {% if entry.source_reference %}
+      <div class="small text-muted">
+        <strong>Citation:</strong>
+        {% if entry.source_reference_url %}
+        <a href="{{ entry.source_reference_url }}" target="_blank" rel="noopener">{{ entry.source_reference }}</a>
+        {% else %}
+        {{ entry.source_reference }}
+        {% endif %}
+      </div>
       {% endif %}
     </div>
+
+    {% if entry.enforcement_notes %}
+    <div class="card p-3 mb-3" style="border-left: 4px solid #f0a500; background: #fffbf0;">
+      <div class="d-flex align-items-center gap-2 mb-2">
+        <strong>Officer Notes</strong>
+        <span class="badge bg-warning text-dark">Field Guidance</span>
+      </div>
+      <p class="mb-0">{{ entry.enforcement_notes }}</p>
+    </div>
+    {% endif %}
 
     <details class="card p-3 collapse-card mb-3" open>
       <summary>Required Elements</summary>

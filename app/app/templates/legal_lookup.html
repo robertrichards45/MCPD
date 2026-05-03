@@ -269,8 +269,9 @@
             <details class="legal-accordion-item {% if loop.first and query and not lead_item %}legal-top-match{% endif %}">
               <summary class="legal-accordion-summary">
                 <span class="legal-accordion-title">{{ item.entry.code }} | {{ item.entry.title }}</span>
-                <div class="d-flex gap-1 align-items-center legal-result-badges">
+                <div class="d-flex gap-1 align-items-center legal-result-badges flex-wrap">
                   <span class="badge {% if item.entry.source == 'GEORGIA' %}bg-primary{% elif item.entry.source == 'FEDERAL_USC' %}bg-info text-dark{% else %}bg-dark{% endif %}">{{ item.entry.source }}</span>
+                  {% if item.entry.category %}<span class="badge bg-light text-dark border">{{ item.entry.category }}</span>{% endif %}
                   <span class="badge {% if item.certainty_bucket == 'strong' %}bg-success{% elif item.certainty_bucket == 'probable' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
                     {{ item.certainty_bucket|title }} {{ item.confidence }}%
                   </span>
@@ -294,6 +295,12 @@
                     {% endfor %}
                   </ol>
                 </div>
+                {% if item.entry.enforcement_notes %}
+                <div class="summary-box mb-2" style="border-left: 3px solid #f0a500;">
+                  <div class="small text-muted mb-1">Officer Notes</div>
+                  <div class="small">{{ item.entry.enforcement_notes }}</div>
+                </div>
+                {% endif %}
                 {% if item.reasons %}<div class="small mb-2"><strong>Why this matched:</strong> {{ item.reasons|join('; ') }}</div>{% endif %}
                 {% if item.entry.penalties or item.entry.minimum_punishment or item.entry.maximum_punishment %}
                 <div class="small legal-penalty-grid">
@@ -301,6 +308,9 @@
                   {% if item.entry.minimum_punishment %}<div><strong>Minimum:</strong> {{ item.entry.minimum_punishment }}</div>{% endif %}
                   {% if item.entry.maximum_punishment %}<div><strong>Maximum:</strong> {{ item.entry.maximum_punishment }}</div>{% endif %}
                 </div>
+                {% endif %}
+                {% if item.entry.source_reference %}
+                <div class="small text-muted mt-2">Source: {{ item.entry.source_reference }}</div>
                 {% endif %}
               </div>
             </details>
