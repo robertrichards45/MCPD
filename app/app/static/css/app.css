@@ -8301,3 +8301,343 @@ textarea.form-control {
   }
 }
 
+/* ============================================================
+   VISUAL POLISH — Pass 3
+   Law-enforcement dark/navy theme, mobile-first sizing.
+   Only additive overrides — no existing rules removed.
+   ============================================================ */
+
+/* ──────────────────────────────────────────────────────────
+   LOGIN PAGE — landing.html (.login-panel--professional)
+   ────────────────────────────────────────────────────────── */
+
+/* Make the login form input taller so it's easy to tap on mobile */
+.login-form .form-control {
+  min-height: 52px;
+  font-size: 16px;
+}
+
+/* Sign In button: taller + slightly more vivid */
+.login-panel .btn-primary {
+  min-height: 54px;
+  font-size: 16px;
+  font-weight: 700;
+  background: #c9a86a;
+  border-color: #b8975c;
+  color: #0d1a2e;
+}
+
+.login-panel .btn-primary:hover {
+  background: #b8975c;
+  border-color: #a78650;
+  color: #0d1a2e;
+}
+
+/* Login badge: ensure it stands out */
+.login-badge {
+  background: rgba(201,168,106,0.12);
+  border-color: rgba(201,168,106,0.45);
+  color: #e7d6a8;
+}
+
+/* On very small phones, compress the brand side */
+@media (max-width: 480px) {
+  .login-panel--professional {
+    border-radius: 0;
+    width: 100%;
+  }
+
+  .login-panel__brand {
+    padding: 20px 18px;
+  }
+
+  .login-panel__brand h1 {
+    font-size: 22px;
+  }
+
+  .login-callout {
+    display: none;
+  }
+
+  .login-panel__auth {
+    padding: 20px 18px;
+  }
+
+  .login-bg {
+    padding: 0;
+    align-items: flex-start;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────
+   DESKTOP DASHBOARD — dashboard.html
+   ────────────────────────────────────────────────────────── */
+
+/* Upgrade button palette to navy-blue; current #123456 is too dark */
+.dash-quick-btn {
+  background: #1a4072;
+  min-height: 48px;
+  font-size: 14px;
+  border-radius: 10px;
+  letter-spacing: 0.01em;
+}
+
+.dash-quick-btn:hover {
+  background: #1e4e8c;
+}
+
+.dash-quick-btn.alt {
+  background: #f0f4f8;
+  color: #1a2a3a;
+  border-color: #c6d0dc;
+}
+
+.dash-quick-btn.alt:hover {
+  background: #ddeaf6;
+  color: #0d1b2a;
+}
+
+/* Panel heads: slightly more spacing */
+.dash-panel {
+  border-radius: 10px;
+}
+
+/* Metric tiles: cleaner navy accent */
+.dash-metric {
+  border-radius: 10px;
+}
+
+.dash-metric strong {
+  color: #1a4072;
+}
+
+/* Notice items: polish */
+.dash-notice-item {
+  border-left-color: #1a4072;
+  background: #f0f5fc;
+}
+
+/* Dashboard header: make it feel more like an ops console */
+.dash-header {
+  background: linear-gradient(90deg, #0d1b2a 0%, #1a3050 100%);
+  border-bottom: 1px solid rgba(26,64,114,0.4);
+}
+
+.dash-header-left h1 {
+  color: #f5f2ea;
+  font-size: 18px;
+  letter-spacing: 0.02em;
+}
+
+.dash-header-left p {
+  color: rgba(245,242,234,0.65);
+}
+
+/* Responsive dashboard: bigger tap targets at tablet */
+@media (max-width: 900px) {
+  .dash-quick-btn {
+    min-height: 56px;
+    font-size: 15px;
+  }
+
+  .dash-body {
+    padding: 0 14px 14px;
+  }
+
+  .dash-metrics {
+    padding: 0 14px 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .dash-header {
+    padding: 12px 14px;
+  }
+
+  .dash-header-left h1 {
+    font-size: 16px;
+  }
+
+  .dash-quick-btn {
+    min-height: 58px;
+    font-size: 15px;
+  }
+
+  .dash-panel {
+    padding: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dash-quick-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .dash-quick-btn {
+    min-height: 62px;
+    font-size: 14px;
+    padding: 8px 6px;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────
+   MOBILE SHELL — mobile_shell.html
+   ────────────────────────────────────────────────────────── */
+
+/* Tighten the mobile header height on small screens */
+@media (max-width: 480px) {
+  .mobile-header {
+    padding-top: max(10px, env(safe-area-inset-top));
+    padding-bottom: 8px;
+  }
+
+  .mobile-header h1 {
+    font-size: 18px;
+  }
+
+  .mobile-main {
+    padding-top: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+}
+
+/* Section blocks inside mobile shell: more breathing room */
+.mobile-section-block {
+  border-radius: 18px;
+  margin-bottom: 10px;
+}
+
+/* Mobile fact cards: cleaner look */
+.mobile-fact-card {
+  border-radius: 16px;
+}
+
+/* ──────────────────────────────────────────────────────────
+   MOBILE TAB BAR — partials/mobile_tab_bar.html
+   ────────────────────────────────────────────────────────── */
+
+.mobile-tab-bar {
+  border-top: 1px solid rgba(255,255,255,0.1) !important;
+  background: rgba(13,26,46,0.97) !important;
+  backdrop-filter: blur(16px) !important;
+}
+
+.mobile-tab-strip {
+  padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+}
+
+.mobile-tab {
+  color: rgba(245,242,234,0.5) !important;
+  font-weight: 600 !important;
+  min-height: 52px !important;
+}
+
+.mobile-tab.is-active {
+  color: #c9a86a !important;
+  background: rgba(201,168,106,0.12) !important;
+}
+
+.mobile-tab-label {
+  font-size: 12px !important;
+  letter-spacing: 0.04em !important;
+}
+
+/* ──────────────────────────────────────────────────────────
+   MOBILE WIZARD BAR — facts capture / incident pages
+   ────────────────────────────────────────────────────────── */
+
+.mobile-wizard-bar {
+  background: rgba(13,26,46,0.97) !important;
+  border-top: 1px solid rgba(201,168,106,0.2) !important;
+  backdrop-filter: blur(16px) !important;
+}
+
+.mobile-wizard-cta {
+  background: #c9a86a !important;
+  color: #0d1a2e !important;
+  border-color: #b8975c !important;
+  font-weight: 700 !important;
+  min-height: 48px !important;
+  border-radius: 10px !important;
+}
+
+.mobile-wizard-link {
+  color: rgba(245,242,234,0.7) !important;
+  background: rgba(255,255,255,0.07) !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  min-height: 44px !important;
+  border-radius: 10px !important;
+}
+
+/* ──────────────────────────────────────────────────────────
+   MOBILE FAST CAPTURE — fallback section before JS loads
+   ────────────────────────────────────────────────────────── */
+
+#facts-fallback {
+  background: rgba(255,255,255,0.96);
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: 0 8px 24px rgba(13,26,46,0.12);
+  border: 1px solid rgba(26,64,114,0.1);
+}
+
+#facts-fallback .mobile-section-head h3 {
+  color: #0d1b2a;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+#facts-fallback .mobile-text-area {
+  border: 1px solid #c6d0dc;
+  border-radius: 12px;
+  background: #fafbfc;
+  color: #0d1b2a;
+  font-size: 16px;
+  padding: 12px 14px;
+  line-height: 1.5;
+}
+
+#facts-fallback .mobile-text-area:focus {
+  border-color: #1a4072;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(26,64,114,0.15);
+}
+
+/* ──────────────────────────────────────────────────────────
+   GENERAL MOBILE POLISH — common patterns
+   ────────────────────────────────────────────────────────── */
+
+/* Prevent buttons from being too small to tap */
+@media (max-width: 768px) {
+  .btn {
+    min-height: 48px;
+  }
+
+  .btn-primary {
+    background: #1a4072;
+    border-color: #1a4072;
+  }
+
+  .btn-primary:hover,
+  .btn-primary:focus {
+    background: #1e4e8c;
+    border-color: #1e4e8c;
+  }
+}
+
+/* Cards on small screens: full-width, better radius */
+@media (max-width: 640px) {
+  .card {
+    border-radius: 12px;
+  }
+}
+
+/* Page wrap on phones: reduce horizontal padding */
+@media (max-width: 480px) {
+  .page-wrap {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
+
