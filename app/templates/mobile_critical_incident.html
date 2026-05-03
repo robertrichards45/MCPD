@@ -1,0 +1,279 @@
+{% extends 'mobile_shell.html' %}
+{% block mobile_content %}
+
+<div class="mci-shell">
+
+  <p class="mci-intro">Select an incident type to view required actions, paperwork, and officer reminders.</p>
+
+  <details class="mci-card">
+    <summary class="mci-card-header">
+      <span class="mci-card-label">Use of Force</span>
+      <span class="mci-chevron">&#8250;</span>
+    </summary>
+    <div class="mci-card-body">
+      <div class="mci-section">
+        <p class="mci-section-label">Required Actions</p>
+        <ul class="mci-list">
+          <li>Render medical aid and secure scene immediately</li>
+          <li>Notify watch commander as soon as practical</li>
+          <li>Preserve all evidence of force used</li>
+          <li>Obtain witness names and contact information</li>
+          <li>Document all injuries to all parties</li>
+        </ul>
+      </div>
+      <div class="mci-section">
+        <p class="mci-section-label">Required Paperwork</p>
+        <ul class="mci-list mci-list-forms">
+          <li>MCPD Stat Sheet</li>
+          <li>Use of Force Report</li>
+          <li>Voluntary Statement (involved officer)</li>
+          <li>Medical documentation if injury occurred</li>
+          <li>DD Form 1920 Alcohol Incident Report (if applicable)</li>
+        </ul>
+      </div>
+      <div class="mci-section mci-reminders">
+        <p class="mci-section-label">Reminders</p>
+        <ul class="mci-list">
+          <li>Supervisor notification required before end of shift</li>
+          <li>Photograph all injuries from all angles</li>
+          <li>Preserve body cam and dash cam footage immediately</li>
+          <li>Involved officer must provide written statement</li>
+        </ul>
+      </div>
+      <a class="mci-cta" href="{{ url_for('mobile.incident_start') }}">Start Incident Report</a>
+    </div>
+  </details>
+
+  <details class="mci-card">
+    <summary class="mci-card-header">
+      <span class="mci-card-label">Domestic Violence</span>
+      <span class="mci-chevron">&#8250;</span>
+    </summary>
+    <div class="mci-card-body">
+      <div class="mci-section">
+        <p class="mci-section-label">Required Actions</p>
+        <ul class="mci-list">
+          <li>Separate parties immediately upon arrival</li>
+          <li>Check for visible injuries on both parties</li>
+          <li>Determine primary aggressor — do not defer to "mutual combat"</li>
+          <li>Advise victim of rights and resources available</li>
+          <li>Notify watch commander</li>
+        </ul>
+      </div>
+      <div class="mci-section">
+        <p class="mci-section-label">Required Paperwork</p>
+        <ul class="mci-list mci-list-forms">
+          <li>MCPD Stat Sheet</li>
+          <li>Domestic Violence Supplemental Checklist</li>
+          <li>Voluntary Statement (victim and suspect separately)</li>
+          <li>Medical documentation if injury present</li>
+        </ul>
+      </div>
+      <div class="mci-section mci-reminders">
+        <p class="mci-section-label">Reminders</p>
+        <ul class="mci-list">
+          <li>Photograph all injuries and the scene</li>
+          <li>Document presence of children even if not witnesses</li>
+          <li>Mandatory reporting requirements apply</li>
+          <li>Check NCIC/command database for prior DV history</li>
+        </ul>
+      </div>
+      <a class="mci-cta" href="{{ url_for('mobile.incident_start') }}">Start Incident Report</a>
+    </div>
+  </details>
+
+  <details class="mci-card">
+    <summary class="mci-card-header">
+      <span class="mci-card-label">DUI / Alcohol / Drugs</span>
+      <span class="mci-chevron">&#8250;</span>
+    </summary>
+    <div class="mci-card-body">
+      <div class="mci-section">
+        <p class="mci-section-label">Required Actions</p>
+        <ul class="mci-list">
+          <li>Conduct standardized field sobriety test if certified</li>
+          <li>Administer breathalyzer if available and legal basis exists</li>
+          <li>Document all observations (odor, slurred speech, unsteady gait)</li>
+          <li>Notify watch commander before arrest</li>
+          <li>Arrange tow for vehicle if driver is incapacitated</li>
+        </ul>
+      </div>
+      <div class="mci-section">
+        <p class="mci-section-label">Required Paperwork</p>
+        <ul class="mci-list mci-list-forms">
+          <li>MCPD Stat Sheet</li>
+          <li>DD Form 1920 Alcohol Incident Report</li>
+          <li>Field Sobriety Test documentation</li>
+          <li>Breathalyzer result documentation</li>
+          <li>Voluntary Statement (if subject agrees)</li>
+        </ul>
+      </div>
+      <div class="mci-section mci-reminders">
+        <p class="mci-section-label">Reminders</p>
+        <ul class="mci-list">
+          <li>Photograph vehicle position and any damage</li>
+          <li>Note time of stop vs. time of test — document gap</li>
+          <li>Preserve any open containers as evidence</li>
+          <li>Check for prescription medications that may interact</li>
+        </ul>
+      </div>
+      <a class="mci-cta" href="{{ url_for('mobile.incident_start') }}">Start Incident Report</a>
+    </div>
+  </details>
+
+  <details class="mci-card">
+    <summary class="mci-card-header">
+      <span class="mci-card-label">Serious Accident</span>
+      <span class="mci-chevron">&#8250;</span>
+    </summary>
+    <div class="mci-card-body">
+      <div class="mci-section">
+        <p class="mci-section-label">Required Actions</p>
+        <ul class="mci-list">
+          <li>Call EMS immediately if any injury suspected</li>
+          <li>Secure and preserve the scene — no vehicles moved until documented</li>
+          <li>Request accident reconstruction team if fatality or serious injury</li>
+          <li>Notify watch commander immediately</li>
+          <li>Conduct alcohol screening on involved drivers</li>
+        </ul>
+      </div>
+      <div class="mci-section">
+        <p class="mci-section-label">Required Paperwork</p>
+        <ul class="mci-list mci-list-forms">
+          <li>MCPD Stat Sheet</li>
+          <li>Traffic Accident Report</li>
+          <li>DD Form 1920 Alcohol Incident Report (if applicable)</li>
+          <li>Voluntary Statement (all drivers and witnesses)</li>
+          <li>Medical documentation for all injured parties</li>
+        </ul>
+      </div>
+      <div class="mci-section mci-reminders">
+        <p class="mci-section-label">Reminders</p>
+        <ul class="mci-list">
+          <li>Photograph scene before any movement occurs</li>
+          <li>Measure skid marks and point of impact</li>
+          <li>Document speed limits, signals, and road conditions</li>
+          <li>Collect insurance and registration from all drivers</li>
+        </ul>
+      </div>
+      <a class="mci-cta" href="{{ url_for('mobile.accident_diagram_entry') }}">Open Accident Diagram Tool</a>
+    </div>
+  </details>
+
+  <details class="mci-card">
+    <summary class="mci-card-header">
+      <span class="mci-card-label">Arrest</span>
+      <span class="mci-chevron">&#8250;</span>
+    </summary>
+    <div class="mci-card-body">
+      <div class="mci-section">
+        <p class="mci-section-label">Required Actions</p>
+        <ul class="mci-list">
+          <li>Advise subject of rights (Miranda) before custodial interrogation</li>
+          <li>Search incident to arrest — document all items found</li>
+          <li>Notify watch commander of arrest</li>
+          <li>Process subject through correct confinement procedures</li>
+          <li>Notify family/command if required by SOP</li>
+        </ul>
+      </div>
+      <div class="mci-section">
+        <p class="mci-section-label">Required Paperwork</p>
+        <ul class="mci-list mci-list-forms">
+          <li>MCPD Stat Sheet</li>
+          <li>Arrest Report / Incident Report</li>
+          <li>Evidence / Property Receipt</li>
+          <li>Voluntary Statement (if subject agrees)</li>
+          <li>Confinement documentation</li>
+        </ul>
+      </div>
+      <div class="mci-section mci-reminders">
+        <p class="mci-section-label">Reminders</p>
+        <ul class="mci-list">
+          <li>Photograph any visible injuries before processing</li>
+          <li>Inventory all property removed — obtain signature if possible</li>
+          <li>Document time of arrest and time of Miranda advisement separately</li>
+        </ul>
+      </div>
+      <a class="mci-cta" href="{{ url_for('mobile.incident_start') }}">Start Incident Report</a>
+    </div>
+  </details>
+
+  <details class="mci-card">
+    <summary class="mci-card-header">
+      <span class="mci-card-label">Search / Consent</span>
+      <span class="mci-chevron">&#8250;</span>
+    </summary>
+    <div class="mci-card-body">
+      <div class="mci-section">
+        <p class="mci-section-label">Required Actions</p>
+        <ul class="mci-list">
+          <li>Obtain clear, voluntary, uncoerced consent before search</li>
+          <li>Inform subject they have the right to refuse</li>
+          <li>Limit search to scope of consent granted</li>
+          <li>Document all items found and their exact location</li>
+          <li>Notify watch commander if controlled substances or weapons found</li>
+        </ul>
+      </div>
+      <div class="mci-section">
+        <p class="mci-section-label">Required Paperwork</p>
+        <ul class="mci-list mci-list-forms">
+          <li>MCPD Stat Sheet</li>
+          <li>Consent to Search Form (if available)</li>
+          <li>Evidence / Property Receipt (if items seized)</li>
+          <li>Voluntary Statement (document consent in narrative)</li>
+        </ul>
+      </div>
+      <div class="mci-section mci-reminders">
+        <p class="mci-section-label">Reminders</p>
+        <ul class="mci-list">
+          <li>Photograph evidence in place before collection</li>
+          <li>Two-officer witness preferred if available</li>
+          <li>Document exact words used to obtain consent</li>
+        </ul>
+      </div>
+      <a class="mci-cta" href="{{ url_for('mobile.incident_start') }}">Start Incident Report</a>
+    </div>
+  </details>
+
+  <details class="mci-card">
+    <summary class="mci-card-header">
+      <span class="mci-card-label">Evidence Seizure</span>
+      <span class="mci-chevron">&#8250;</span>
+    </summary>
+    <div class="mci-card-body">
+      <div class="mci-section">
+        <p class="mci-section-label">Required Actions</p>
+        <ul class="mci-list">
+          <li>Photograph evidence in original position before touching</li>
+          <li>Document exact location, condition, and description</li>
+          <li>Package and seal evidence using proper procedures</li>
+          <li>Maintain chain of custody from point of collection</li>
+          <li>Turn evidence into evidence custodian as soon as practical</li>
+        </ul>
+      </div>
+      <div class="mci-section">
+        <p class="mci-section-label">Required Paperwork</p>
+        <ul class="mci-list mci-list-forms">
+          <li>MCPD Stat Sheet</li>
+          <li>Evidence / Property Receipt (itemized)</li>
+          <li>Chain of Custody documentation</li>
+          <li>Incident Report listing seized items</li>
+        </ul>
+      </div>
+      <div class="mci-section mci-reminders">
+        <p class="mci-section-label">Reminders</p>
+        <ul class="mci-list">
+          <li>Every item gets its own evidence bag and label</li>
+          <li>Biological evidence requires biohazard packaging</li>
+          <li>Digital devices — do not power on; place in Faraday bag if available</li>
+          <li>Request supervisor sign-off on high-value or unusual evidence</li>
+        </ul>
+      </div>
+      <a class="mci-cta" href="{{ url_for('mobile.incident_start') }}">Start Incident Report</a>
+    </div>
+  </details>
+
+  <a class="mci-home-link" href="{{ url_for('mobile.home') }}">&#8592; Back to Field Portal</a>
+
+</div>
+{% endblock %}

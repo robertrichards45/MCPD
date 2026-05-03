@@ -1,0 +1,161 @@
+{% extends 'mobile_shell.html' %}
+{% block mobile_content %}
+<script type="application/json" id="fc-rules-data">{{ mobile_call_type_rules|tojson }}</script>
+
+<div class="mfc-shell">
+
+  <div class="mfc-section">
+    <p class="mfc-label">Incident Type</p>
+    <div class="mfc-type-grid">
+      {% for slug, rule in mobile_call_type_rules.items() %}
+      <button class="mfc-type-btn" data-slug="{{ slug }}" type="button">{{ rule.shortLabel or rule.title }}</button>
+      {% endfor %}
+      <button class="mfc-type-btn" data-slug="other" type="button">Other</button>
+    </div>
+  </div>
+
+  <div class="mfc-section">
+    <p class="mfc-label">Date &amp; Time</p>
+    <div class="mfc-row-2">
+      <input class="mfc-input" type="date" id="mfc-date" />
+      <input class="mfc-input" type="time" id="mfc-time" />
+    </div>
+  </div>
+
+  <div class="mfc-section">
+    <p class="mfc-label">Location</p>
+    <input class="mfc-input" type="text" id="mfc-location" placeholder="Building, gate, road, intersection..." autocomplete="off" />
+  </div>
+
+  <div class="mfc-section">
+    <p class="mfc-label">Involved Person Name</p>
+    <input class="mfc-input" type="text" id="mfc-person" placeholder="Last, First MI  (optional)" autocomplete="off" />
+  </div>
+
+  <div class="mfc-section">
+    <p class="mfc-label">Brief Facts</p>
+    <textarea class="mfc-input" id="mfc-facts" rows="3" placeholder="What happened..."></textarea>
+  </div>
+
+  <div class="mfc-section">
+    <p class="mfc-label">Officer Action</p>
+    <textarea class="mfc-input" id="mfc-action" rows="2" placeholder="Actions taken..."></textarea>
+  </div>
+
+  <div class="mfc-section">
+    <p class="mfc-label">Disposition</p>
+    <input class="mfc-input" type="text" id="mfc-disposition" placeholder="Arrest / Citation / Released / Counseled..." autocomplete="off" />
+  </div>
+
+  <div class="mfc-section">
+    <p class="mfc-label">Vehicle / Property Notes <span class="mfc-optional">(optional)</span></p>
+    <textarea class="mfc-input" id="mfc-vehicle" rows="2" placeholder="Vehicle or property involved..."></textarea>
+  </div>
+
+  <div class="mfc-actions">
+    <button class="mfc-btn-primary" id="mfc-continue" type="button">Continue to Full Incident</button>
+    <button class="mfc-btn-secondary" id="mfc-save" type="button">Save Quick Notes Only</button>
+  </div>
+
+  <div id="mfc-feedback" class="mfc-feedback" aria-live="polite"></div>
+
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var STORAGE_KEY = 'mcpd.mobile.incident.state';
+  var selectedSlug = null;
+
+  /* Pre-fill today's date and current time */
+  var now = new Date();
+  document.getElementById('mfc-date').value = now.toISOString().slice(0, 10);
+  document.getElementById('mfc-time').value = now.toTimeString().slice(0, 5);
+
+  /* Call type selection */
+  document.querySelectorAll('.mfc-type-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.mfc-type-btn').forEach(function (b) { b.classList.remove('is-sel'); });
+      btn.classList.add('is-sel');
+      selectedSlug = btn.getAttribute('data-slug');
+    });
+  });
+
+  function buildState() {
+    var slug = selectedSlug || 'other';
+    var allRules = {};
+    try { allRules = JSON.parse(document.getElementById('fc-rules-data').textContent); } catch (e) {}
+    var rule = allRules[slug] || null;
+    var baseList = rule ? JSON.parse(JSON.stringify(rule.recommendedForms || [])) : [];
+    var selectedForms = ['MCPD Stat Sheet'].concat(
+      baseList.filter(function (f) { return f !== 'MCPD Stat Sheet'; })
+    );
+    var checklist = rule ? rule.checklistItems.map(function (label, i) {
+      return { id: slug + '-check-' + (i + 1), label: label, completed: false };
+    }) : [];
+
+    var date     = document.getElementById('mfc-date').value;
+    var time     = document.getElementById('mfc-time').value;
+    var location = (document.getElementById('mfc-location').value || '').trim();
+    var person   = (document.getElementById('mfc-person').value || '').trim();
+    var facts    = (document.getElementById('mfc-facts').value || '').trim();
+    var action   = (document.getElementById('mfc-action').value || '').trim();
+    var disp     = (document.getElementById('mfc-disposition').value || '').trim();
+    var vehicle  = (document.getElementById('mfc-vehicle').value || '').trim();
+
+    var factsList = [];
+    function pushFact(id, label, val) {
+      if (val) factsList.push({ id: id, label: label, value: val });
+    }
+    pushFact('what_happened',   'Brief Facts',             facts);
+    pushFact('officer_actions', 'Officer Actions',         action);
+    pushFact('disposition',     'Disposition',             disp);
+    pushFact('vehicle_info',    'Vehicle / Property Notes', vehicle);
+
+    var persons = [];
+    if (person) {
+      persons.push({ id: 'fc-person-1', name: person, role: 'Subject', source: 'fast_capture' });
+    }
+
+    return {
+      callType:        slug,
+      incidentBasics:  { occurredDate: date, occurredTime: time, location: location, summary: facts },
+      selectedForms:   selectedForms,
+      checklist:       checklist,
+      statutes:        rule ? JSON.parse(JSON.stringify(rule.statutes || [])) : [],
+      facts:           factsList,
+      persons:         persons,
+      narrative:       '',
+      narrativeApproved: false,
+      statements:      [],
+      formDrafts:      {},
+      packetStatus:    'draft',
+    };
+  }
+
+  function save() {
+    try {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(buildState()));
+      return true;
+    } catch (e) { return false; }
+  }
+
+  function showFeedback(msg) {
+    var el = document.getElementById('mfc-feedback');
+    el.textContent = msg;
+    el.classList.add('is-visible');
+    setTimeout(function () { el.classList.remove('is-visible'); }, 2800);
+  }
+
+  document.getElementById('mfc-continue').addEventListener('click', function () {
+    save();
+    window.location.href = '{{ url_for("mobile.incident_checklist") }}';
+  });
+
+  document.getElementById('mfc-save').addEventListener('click', function () {
+    if (save()) { showFeedback('Notes saved to incident draft.'); }
+    else        { showFeedback('Could not save — storage unavailable.'); }
+  });
+}());
+</script>
+{% endblock %}

@@ -629,9 +629,9 @@ def home():
         },
         {
             'title': 'Fast Capture',
-            'subtitle': 'Coming soon',
-            'href': None,
-            'is_live': False,
+            'subtitle': 'Quick field notes',
+            'href': url_for('mobile.fast_capture'),
+            'is_live': True,
             'is_primary': False,
         },
     ]
@@ -639,9 +639,9 @@ def home():
         {'title': 'Forms', 'href': url_for('forms.list_forms'), 'is_live': True},
         {'title': 'Law Lookup', 'href': url_for('legal.legal_home'), 'is_live': True},
         {'title': 'Reference Library', 'href': url_for('reference.incident_paperwork_guide'), 'is_live': True},
-        {'title': 'Supervisor Review', 'href': None, 'is_live': False},
-        {'title': 'Critical Incident', 'href': None, 'is_live': False},
-        {'title': 'Accident Diagram', 'href': url_for('reconstruction.case_list'), 'is_live': True},
+        {'title': 'Supervisor Review', 'href': url_for('mobile.supervisor_review'), 'is_live': True},
+        {'title': 'Critical Incident', 'href': url_for('mobile.critical_incident'), 'is_live': True},
+        {'title': 'Accident Diagram', 'href': url_for('mobile.accident_diagram_entry'), 'is_live': True},
     ]
     if current_user.can_manage_team():
         feature_cards.append({'title': 'Admin', 'href': url_for('admin.stats_uploads'), 'is_live': True})
@@ -651,6 +651,58 @@ def home():
         feature_cards=feature_cards,
         action_cards=primary_cards + feature_cards,
         **_shell_context('Home', 'home'),
+    )
+
+
+@bp.route('/mobile/fast-capture')
+@login_required
+def fast_capture():
+    return render_template(
+        'mobile_fast_capture.html',
+        mobile_header_kicker='Fast Capture',
+        mobile_header_note='Capture now, refine in full workflow',
+        mobile_incident_boot=False,
+        mobile_incident_page='fast_capture',
+        **_shell_context('Quick Notes', 'incident'),
+    )
+
+
+@bp.route('/mobile/supervisor-review')
+@login_required
+def supervisor_review():
+    return render_template(
+        'mobile_supervisor_review.html',
+        mobile_header_kicker='Supervisor Review',
+        mobile_header_note='Packet readiness check',
+        mobile_incident_boot=False,
+        mobile_incident_page='supervisor_review',
+        **_shell_context('Packet Review', 'home'),
+    )
+
+
+@bp.route('/mobile/critical-incident')
+@login_required
+def critical_incident():
+    return render_template(
+        'mobile_critical_incident.html',
+        mobile_header_kicker='Critical Incident',
+        mobile_header_note='Required actions and paperwork',
+        mobile_incident_boot=False,
+        mobile_incident_page='critical_incident',
+        **_shell_context('Critical Checklists', 'home'),
+    )
+
+
+@bp.route('/mobile/accident-diagram')
+@login_required
+def accident_diagram_entry():
+    return render_template(
+        'mobile_accident_diagram.html',
+        mobile_header_kicker='Accident Diagram',
+        mobile_header_note='Reconstruction tool',
+        mobile_incident_boot=False,
+        mobile_incident_page='accident_diagram',
+        **_shell_context('Accident Diagram', 'home'),
     )
 
 
