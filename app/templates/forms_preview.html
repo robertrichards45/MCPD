@@ -64,7 +64,11 @@
           {% for row in section.rows %}
           <div class="print-field">
             <div class="print-label">{{ row.label }}</div>
-            {% if row.type == 'textarea' %}
+            {% if row.type in ('signature', 'initial') and row.value and row.value[:11] == 'data:image/' %}
+            <div class="print-value print-sig-cell"><img class="print-sig-img" src="{{ row.value }}" alt="{{ row.label }}" /></div>
+            {% elif row.type in ('signature', 'initial') %}
+            <div class="print-value print-value-empty">Not captured</div>
+            {% elif row.type == 'textarea' %}
             <div class="print-value print-value-multiline">{{ row.value }}</div>
             {% else %}
             <div class="print-value">{{ row.value }}</div>

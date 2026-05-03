@@ -278,11 +278,32 @@ def _pdf_field_ui_type(source_item):
     name = str(source_item.get('raw_name') or source_item.get('name') or '').strip().lower()
     label = _pdf_field_label(source_item).lower()
     base_type = _pdf_field_type_to_ui(source_item.get('type'))
-    if any(token in f'{name} {label}' for token in ('describe', 'statement', 'utterance', 'explain', 'details', 'remarks', 'notes')):
+    combined = f'{name} {label}'
+    if any(token in combined for token in ('describe', 'statement', 'utterance', 'explain', 'details', 'remarks', 'notes')):
         return 'textarea'
-    if base_type == 'signature':
-        return 'text'
+    if base_type == 'signature' or 'signature' in combined:
+        return 'signature'
+    if any(token in combined for token in ('initial', 'initials', 'supinit')):
+        return 'initial'
     return base_type
+
+
+def _validate_payload_for_completion(schema, payload):
+    """Return {'errors': [...], 'warnings': [...]} for required and signature fields."""
+    errors = []
+    warnings = []
+    values = payload.get('values', {}) if isinstance(payload.get('values'), dict) else {}
+    for section in schema.get('sections', []):
+        for field in section.get('fields', []):
+            name = str(field.get('name') or '').strip()
+            label = str(field.get('label') or name or 'Field').strip()
+            value = str(values.get(name) or '').strip()
+            field_type = str(field.get('type') or 'text').strip()
+            if field.get('required') and not value:
+                errors.append({'field': label, 'message': f'{label} is required and is missing.'})
+            elif field_type in ('signature', 'initial') and not value:
+                warnings.append({'field': label, 'message': f'{label} has not been captured. Draw a signature before finalizing.'})
+    return {'errors': errors, 'warnings': warnings}
 
 
 def _build_section_fields(source_items):
@@ -2369,6 +2390,41 @@ def fill_form(form_id):
             flash('Completed form saving is disabled by policy for this form.', 'error')
             return redirect(url_for('forms.fill_form', form_id=form.id))
 
+        if action == 'review_before_save':
+            validation = _validate_payload_for_completion(schema, payload)
+            return render_template(
+                'forms_fill.html',
+                user=current_user,
+                form=form,
+                schema=schema,
+                payload=payload,
+                saved_record=saved_record,
+                can_edit=True,
+                policy=policy,
+                fill_state=fill_state,
+                scan_supported=False,
+                scan_result=None,
+                validation_summary=validation,
+            )
+
+        if action == 'save_completed':
+            validation = _validate_payload_for_completion(schema, payload)
+            if validation['errors']:
+                return render_template(
+                    'forms_fill.html',
+                    user=current_user,
+                    form=form,
+                    schema=schema,
+                    payload=payload,
+                    saved_record=saved_record,
+                    can_edit=True,
+                    policy=policy,
+                    fill_state=fill_state,
+                    scan_supported=False,
+                    scan_result=None,
+                    validation_summary=validation,
+                )
+
         target = saved_record
         if target is None:
             target = SavedForm(form_id=form.id, officer_user_id=current_user.id, status='DRAFT', title=form.title)
@@ -2407,6 +2463,7 @@ def fill_form(form_id):
         fill_state=fill_state,
         scan_supported=_scan_supported(schema),
         scan_result=scan_result,
+        validation_summary=None,
     )
 
 
