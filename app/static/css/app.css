@@ -10070,3 +10070,381 @@ body.mobile-foundation .spr-feedback-err {
   border: 1px solid rgba(220,80,80,0.3);
   color: #e07070;
 }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MCPD PHASE 7 — 2026-05-03-phase7-1
+   Incident Assist Module, Supervisor Insights, Training Flags
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Assist Mount Containers ────────────────────────────────────────────── */
+body.mobile-foundation .assist-mount {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0 16px;
+}
+
+/* ── Assist Cards ───────────────────────────────────────────────────────── */
+body.mobile-foundation .assist-card {
+  background: rgba(201,168,106,0.06);
+  border: 1px solid rgba(201,168,106,0.22);
+  border-radius: 13px;
+  margin-top: 12px;
+  overflow: hidden;
+}
+body.mobile-foundation .assist-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 16px;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+body.mobile-foundation .assist-card-header::-webkit-details-marker { display: none; }
+body.mobile-foundation .assist-card-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(201,168,106,0.9);
+}
+body.mobile-foundation .assist-card-chevron {
+  font-size: 18px;
+  color: rgba(201,168,106,0.6);
+  transition: transform 0.2s;
+}
+body.mobile-foundation .assist-card[open] .assist-card-chevron {
+  transform: rotate(90deg);
+}
+body.mobile-foundation .assist-card-body {
+  padding: 0 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+body.mobile-foundation .assist-hint {
+  font-size: 12px;
+  color: rgba(245,242,234,0.55);
+  margin: 0;
+  line-height: 1.5;
+}
+body.mobile-foundation .assist-btn {
+  background: rgba(201,168,106,0.18);
+  border: 1px solid rgba(201,168,106,0.35);
+  border-radius: 10px;
+  color: #c9a86a;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 12px 16px;
+  cursor: pointer;
+  width: 100%;
+  text-align: center;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+body.mobile-foundation .assist-btn:hover,
+body.mobile-foundation .assist-btn:active { background: rgba(201,168,106,0.28); }
+body.mobile-foundation .assist-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+body.mobile-foundation .assist-output {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ── Suggestion Lists ───────────────────────────────────────────────────── */
+body.mobile-foundation .assist-ok {
+  color: #7eda9c;
+  font-size: 14px;
+  margin: 0;
+  font-weight: 600;
+}
+body.mobile-foundation .assist-warn {
+  color: #ffa040;
+  font-size: 13px;
+  margin: 0;
+}
+body.mobile-foundation .assist-error {
+  color: #e07070;
+  font-size: 13px;
+  margin: 0;
+}
+body.mobile-foundation .assist-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+body.mobile-foundation .assist-item {
+  font-size: 13px;
+  line-height: 1.5;
+  padding: 9px 12px;
+  border-radius: 9px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+body.mobile-foundation .assist-item::before {
+  content: '•';
+  flex-shrink: 0;
+  font-size: 10px;
+}
+body.mobile-foundation .assist-item-error {
+  background: rgba(220,80,80,0.09);
+  border: 1px solid rgba(220,80,80,0.22);
+  color: #f0a0a0;
+}
+body.mobile-foundation .assist-item-error::before { color: #e07070; }
+body.mobile-foundation .assist-item-warn {
+  background: rgba(255,165,0,0.08);
+  border: 1px solid rgba(255,165,0,0.22);
+  color: rgba(245,242,234,0.8);
+}
+body.mobile-foundation .assist-item-warn::before { color: #ffa040; }
+body.mobile-foundation .assist-item-info {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(245,242,234,0.65);
+}
+body.mobile-foundation .assist-item-info::before { color: rgba(201,168,106,0.6); }
+body.mobile-foundation .assist-ai-tag {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  background: rgba(201,168,106,0.2);
+  color: #c9a86a;
+  border-radius: 4px;
+  padding: 1px 5px;
+  flex-shrink: 0;
+  align-self: center;
+}
+body.mobile-foundation .assist-ai-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(201,168,106,0.7);
+  margin: 0;
+  letter-spacing: 0.06em;
+}
+body.mobile-foundation .assist-ai-unavail {
+  color: rgba(255,165,0,0.65) !important;
+  font-size: 11px !important;
+}
+
+/* ── Dynamic Checklist ──────────────────────────────────────────────────── */
+body.mobile-foundation .assist-checklist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+body.mobile-foundation .assist-cl-item {
+  padding: 2px 0;
+}
+body.mobile-foundation .assist-cl-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  color: rgba(245,242,234,0.8);
+  line-height: 1.5;
+}
+body.mobile-foundation .assist-cl-check {
+  flex-shrink: 0;
+  margin-top: 3px;
+  width: 16px;
+  height: 16px;
+  accent-color: #c9a86a;
+  cursor: pointer;
+}
+body.mobile-foundation .assist-cl-check:checked + span {
+  text-decoration: line-through;
+  color: rgba(245,242,234,0.35);
+}
+
+/* ── Incident Summary ───────────────────────────────────────────────────── */
+body.mobile-foundation .assist-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+body.mobile-foundation .assist-sumrow {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+body.mobile-foundation .assist-sumrow:last-child { border-bottom: none; }
+body.mobile-foundation .assist-sumkey {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(201,168,106,0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  min-width: 80px;
+  flex-shrink: 0;
+}
+body.mobile-foundation .assist-sumval {
+  font-size: 13px;
+  color: #f5f2ea;
+  word-break: break-word;
+}
+body.mobile-foundation .assist-sum-list {
+  margin: 0;
+  padding-left: 16px;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+/* ── Supervisor Insights Panel ──────────────────────────────────────────── */
+body.mobile-foundation .cmd-insights-card {
+  border-color: rgba(201,168,106,0.3);
+  background: rgba(201,168,106,0.05);
+  gap: 0;
+  padding: 0;
+}
+body.mobile-foundation .cmd-insights-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+body.mobile-foundation .cmd-insights-summary::-webkit-details-marker { display: none; }
+body.mobile-foundation .cmd-insights-chevron {
+  font-size: 18px;
+  color: rgba(201,168,106,0.6);
+  transition: transform 0.2s;
+}
+body.mobile-foundation .cmd-insights-card[open] .cmd-insights-chevron {
+  transform: rotate(90deg);
+}
+body.mobile-foundation .cmd-insights-section {
+  padding: 0 16px 14px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+body.mobile-foundation .cmd-insights-section:first-of-type { padding-top: 10px; }
+body.mobile-foundation .cmd-insights-head {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(245,242,234,0.45);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 0 0 8px;
+}
+body.mobile-foundation .cmd-focus-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+body.mobile-foundation .cmd-focus-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 9px;
+}
+body.mobile-foundation .cmd-focus-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #c9a86a;
+  flex-shrink: 0;
+}
+body.mobile-foundation .cmd-focus-label {
+  flex: 1;
+  font-size: 13px;
+  color: #f5f2ea;
+  font-weight: 600;
+}
+body.mobile-foundation .cmd-focus-count {
+  font-size: 12px;
+  color: rgba(201,168,106,0.75);
+}
+body.mobile-foundation .cmd-officer-flags {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+body.mobile-foundation .cmd-officer-block {
+  background: rgba(255,255,255,0.04);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+body.mobile-foundation .cmd-officer-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #f5f2ea;
+  margin: 0 0 6px;
+}
+body.mobile-foundation .cmd-officer-count {
+  font-weight: 400;
+  font-size: 11px;
+  color: rgba(245,242,234,0.45);
+}
+body.mobile-foundation .cmd-flag-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+body.mobile-foundation .cmd-flag-item {
+  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: 7px;
+  line-height: 1.4;
+}
+body.mobile-foundation .cmd-flag-error {
+  background: rgba(220,80,80,0.1);
+  border: 1px solid rgba(220,80,80,0.22);
+  color: #f0a0a0;
+}
+body.mobile-foundation .cmd-flag-warn {
+  background: rgba(255,165,0,0.08);
+  border: 1px solid rgba(255,165,0,0.2);
+  color: rgba(245,242,234,0.75);
+}
+
+/* ── Training Flags in Packet Review ────────────────────────────────────── */
+body.mobile-foundation .spr-training-card {
+  border-color: rgba(255,165,0,0.3);
+  background: rgba(255,165,0,0.05);
+}
+body.mobile-foundation .spr-training-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+body.mobile-foundation .spr-training-item {
+  font-size: 13px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  line-height: 1.4;
+}
+body.mobile-foundation .spr-training-error {
+  background: rgba(220,80,80,0.1);
+  border: 1px solid rgba(220,80,80,0.22);
+  color: #f0a0a0;
+}
+body.mobile-foundation .spr-training-warn {
+  background: rgba(255,165,0,0.08);
+  border: 1px solid rgba(255,165,0,0.22);
+  color: rgba(245,242,234,0.8);
+}

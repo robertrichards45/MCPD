@@ -5,7 +5,9 @@ from email.message import EmailMessage
 from functools import lru_cache
 from pathlib import Path
 
-from flask import Blueprint, jsonify, render_template, request, url_for
+import re
+
+from flask import Blueprint, current_app, jsonify, render_template, request, url_for
 from flask_login import current_user, login_required
 from werkzeug.utils import secure_filename
 
@@ -18,9 +20,11 @@ from ..models import (
     PACKET_APPROVAL_NEEDS_CORRECTION,
     PACKET_APPROVAL_PENDING,
     SavedForm,
+    User,
     utcnow_naive,
 )
 from ..permissions import can_supervisor_review
+from ..services.ai_client import ask_openai, is_ai_unavailable_message
 from ..services.call_type_rules import load_call_type_rules
 from ..services.forms_pdf_renderer import inspect_xfa_fields, render_form_pdf
 from ..services.mobile_incident_documents import build_narrative_draft, build_packet_pdf
@@ -537,6 +541,330 @@ def _narrative_quality_check(narrative_text: str) -> dict:
         'issues': issues,
         'prompts': prompts,
     }
+
+
+def _rule_based_narrative_suggestions(narrative: str, state: dict) -> list:
+    """Return actionable suggestion dicts for a narrative. Never invents facts."""
+    text = str(narrative or '').strip()
+    tl = text.lower()
+    words = text.split()
+    wc = len(words)
+    suggestions = []
+
+    if not text:
+        return [{'severity': 'error', 'element': 'length', 'text': 'Narrative is empty. Write a narrative before analyzing.'}]
+
+    if wc < 30:
+        suggestions.append({'severity': 'error', 'element': 'length', 'text': f'Narrative is very short ({wc} words). Aim for at least 50 words for a complete report.'})
+    elif wc < 50:
+        suggestions.append({'severity': 'warn', 'element': 'length', 'text': f'Narrative is brief ({wc} words). Consider expanding with more detail.'})
+
+    if not any(w in tl for w in ('officer', 'this officer', 'responding', 'writer', 'reporting')):
+        suggestions.append({'severity': 'warn', 'element': 'who', 'text': 'Identify the responding officer by rank/name or use "This officer" or "The reporting officer".'})
+
+    if not any(w in tl for w in ('suspect', 'victim', 'subject', 'person', 'individual', 'complainant', 'witness')):
+        suggestions.append({'severity': 'warn', 'element': 'who', 'text': 'Identify involved parties by role (suspect, victim, complainant, witness).'})
+
+    if not any(w in tl for w in ('located', 'arrived at', 'responded to', 'observed at', 'building', 'parking', 'street', ' at ', ' near ', ' on ')):
+        suggestions.append({'severity': 'warn', 'element': 'where', 'text': 'Include the exact location of the incident or your response.'})
+
+    if not any(w in tl for w in ('approximately', 'at approx', 'hours', 'at 0', 'at 1', 'at 2')):
+        suggestions.append({'severity': 'warn', 'element': 'when', 'text': 'State the time of occurrence or your response (e.g., "at approximately 1430 hours").'})
+
+    if not any(w in tl for w in ('arrested', 'detained', 'advised', 'responded', 'notified', 'issued', 'transported', 'released', 'cleared', 'secured', 'observed', 'interviewed')):
+        suggestions.append({'severity': 'warn', 'element': 'actions', 'text': 'Document the officer\'s actions taken (detained, interviewed, cleared, arrested, etc.).'})
+
+    if not any(w in tl for w in ('disposition', 'cleared', 'released', 'arrested', 'transported', 'unfounded', 'referred', 'report taken')):
+        suggestions.append({'severity': 'info', 'element': 'disposition', 'text': 'Add a disposition line at the end (cleared, arrested, report taken, unfounded, etc.).'})
+
+    # Repeated sentence check
+    sentences = [s.strip() for s in re.split(r'[.!?]', text) if len(s.strip()) > 10]
+    seen_s: set = set()
+    for s in sentences:
+        norm = ' '.join(s.lower().split())
+        if norm in seen_s:
+            suggestions.append({'severity': 'warn', 'element': 'quality', 'text': 'Narrative contains repeated text. Remove duplicate sentences.'})
+            break
+        seen_s.add(norm)
+
+    # Cross-check persons in state
+    persons = state.get('persons') if isinstance(state.get('persons'), list) else []
+    for person in persons:
+        if not isinstance(person, dict):
+            continue
+        name = str(person.get('name') or '').strip()
+        if not name or len(name) < 4:
+            continue
+        parts = name.lower().split()
+        if not any(part in tl for part in parts if len(part) > 2):
+            suggestions.append({'severity': 'info', 'element': 'persons', 'text': f'Person "{name}" is entered in the incident but not mentioned in the narrative.'})
+
+    return suggestions
+
+
+def _ai_narrative_suggestions(narrative: str, state: dict, api_key: str):
+    """Call OpenAI for narrative improvement suggestions. Returns list of dicts or error string."""
+    basics = state.get('incidentBasics') if isinstance(state.get('incidentBasics'), dict) else {}
+    call_type = str(state.get('callType') or '').replace('-', ' ').strip()
+    location = str(basics.get('location') or '').strip()
+
+    prompt = (
+        'You are a professional police report writing coach for MCPD. '
+        'Review the incident narrative below and return up to 4 specific, actionable improvement suggestions. '
+        'RULES: (1) Do NOT add or invent any facts. Only analyze what is written. '
+        '(2) Suggest improvements to clarity, professional wording, logical flow, and completeness. '
+        '(3) If the narrative is adequate, respond with a JSON array containing one item saying so. '
+        '(4) Return ONLY a JSON array. Each element: {"severity":"warn"|"info","text":"suggestion"}. '
+        f'Call type: {call_type or "unknown"}. Location: {location or "unknown"}.\n\nNarrative:\n{narrative[:1200]}'
+    )
+    result = ask_openai(prompt, api_key)
+    if is_ai_unavailable_message(result):
+        return result  # caller checks with is_ai_unavailable_message
+    match = re.search(r'\[.*?\]', result, re.DOTALL)
+    if not match:
+        return []
+    try:
+        items = json.loads(match.group(0))
+        if not isinstance(items, list):
+            return []
+        out = []
+        for item in items[:5]:
+            if isinstance(item, dict) and str(item.get('text') or '').strip():
+                out.append({'severity': str(item.get('severity') or 'info'), 'text': str(item['text']).strip()[:300], 'ai': True})
+        return out
+    except (ValueError, KeyError):
+        return []
+
+
+def _rule_based_form_suggestions(state: dict) -> list:
+    """Return paperwork suggestion dicts based on incident state. Never auto-adds forms."""
+    suggestions = []
+    call_type = str(state.get('callType') or '').lower()
+    persons = state.get('persons') if isinstance(state.get('persons'), list) else []
+    selected_forms_raw = state.get('selectedForms') if isinstance(state.get('selectedForms'), list) else []
+    selected_lower = [str(f).lower() for f in selected_forms_raw]
+    facts = state.get('facts') if isinstance(state.get('facts'), list) else []
+    statements = state.get('statements') if isinstance(state.get('statements'), list) else []
+    basics = state.get('incidentBasics') if isinstance(state.get('incidentBasics'), dict) else {}
+
+    # Build searchable text corpus from all captured data
+    text_corpus = ' '.join([
+        str(f.get('value') or '') for f in facts if isinstance(f, dict)
+    ] + [
+        str(state.get('narrative') or ''),
+        str(basics.get('summary') or ''),
+    ]).lower()
+
+    has_victim = any(str(p.get('role') or '').lower() in ('victim', 'complainant') for p in persons if isinstance(p, dict))
+    has_witness = any('witness' in str(p.get('role') or '').lower() for p in persons if isinstance(p, dict))
+    has_suspect = any(str(p.get('role') or '').lower() in ('suspect', 'subject') for p in persons if isinstance(p, dict))
+    has_statement_form = any('statement' in f for f in selected_lower)
+    has_evidence_form = any('evidence' in f or 'custody' in f or 'property' in f for f in selected_lower)
+    has_domestic_form = any('domestic' in f for f in selected_lower)
+    has_vwap = any('2701' in f or 'vwap' in f for f in selected_lower)
+    has_force_form = any('force' in f or '11130' in f for f in selected_lower)
+
+    evidence_words = ('evidence', 'seized', 'weapon', 'contraband', 'narcotics', 'drug', 'firearm', 'gun', 'knife', 'exhibit')
+    injury_words = ('injured', 'injury', 'hurt', 'bleeding', 'medical', 'hospital', 'laceration', 'bruise')
+    has_evidence_mention = any(w in text_corpus for w in evidence_words)
+    has_injury_mention = any(w in text_corpus for w in injury_words)
+
+    # Statement form
+    if (has_victim or has_witness or has_suspect) and not has_statement_form and not statements:
+        roles = [str(p.get('role') or '') for p in persons if isinstance(p, dict) and p.get('role')]
+        roles_str = ', '.join(r for r in roles if r)
+        suggestions.append({'severity': 'warn', 'text': f'Parties involved ({roles_str}) — consider adding OPNAV 5580-2 Voluntary Statement form.'})
+
+    # Evidence form
+    if has_evidence_mention and not has_evidence_form:
+        suggestions.append({'severity': 'warn', 'text': 'Evidence or seized items detected in notes. Add OPNAV 5580-22 Evidence Custody Document.'})
+
+    # Domestic supplement
+    if 'domestic' in call_type and not has_domestic_form:
+        suggestions.append({'severity': 'error', 'text': 'Domestic call type requires NAVMAC 11337 Domestic Violence Supplement.'})
+
+    # VWAP for victim
+    if has_victim and not has_vwap:
+        suggestions.append({'severity': 'info', 'text': 'A victim is listed — consider DD Form 2701 (Victim/Witness Assistance Program).'})
+
+    # Use of force
+    force_indicators = ('use-of-force' in call_type, 'force' in text_corpus, 'resistance' in text_corpus)
+    if any(force_indicators) and not has_force_form:
+        suggestions.append({'severity': 'warn', 'text': 'Force indicators detected. NAVMC 11130 Use of Force Report may be required.'})
+
+    # Injury note
+    if has_injury_mention:
+        suggestions.append({'severity': 'info', 'text': 'Injury language detected — document medical aid, injury photos, and medical clearance.'})
+
+    return suggestions
+
+
+def _build_incident_summary(state: dict) -> dict:
+    """Build a structured incident summary dict from state data. Never invents facts."""
+    basics = state.get('incidentBasics') if isinstance(state.get('incidentBasics'), dict) else {}
+    persons = state.get('persons') if isinstance(state.get('persons'), list) else []
+    facts = state.get('facts') if isinstance(state.get('facts'), list) else []
+    statements = state.get('statements') if isinstance(state.get('statements'), list) else []
+
+    parties = []
+    for p in persons:
+        if not isinstance(p, dict):
+            continue
+        role = str(p.get('role') or '').strip()
+        name = str(p.get('name') or '').strip()
+        if role and name:
+            parties.append(f'{name} ({role})')
+        elif name:
+            parties.append(name)
+
+    key_facts = []
+    actions_taken = ''
+    disposition = ''
+    for item in facts:
+        if not isinstance(item, dict):
+            continue
+        fact_id = str(item.get('id') or '').lower()
+        value = str(item.get('value') or '').strip()
+        label = str(item.get('label') or '').strip()
+        if not value:
+            continue
+        if fact_id in ('officer_actions', 'actions_taken', 'actions'):
+            actions_taken = value[:300]
+        elif fact_id == 'disposition':
+            disposition = value[:200]
+        elif label:
+            key_facts.append(f'{label}: {value[:200]}')
+        else:
+            key_facts.append(value[:200])
+
+    date_str = str(basics.get('occurredDate') or '').strip()
+    time_str = str(basics.get('occurredTime') or '').strip()
+
+    return {
+        'incident_type': str(state.get('callType') or '').replace('-', ' ').title() or None,
+        'date_time': f'{date_str} {time_str}'.strip() or None,
+        'location': str(basics.get('location') or '').strip() or None,
+        'parties': parties,
+        'key_facts': key_facts[:6],
+        'actions_taken': actions_taken or None,
+        'disposition': disposition or None,
+        'form_count': len(state.get('selectedForms') or []),
+        'statement_count': len(statements),
+    }
+
+
+def _compute_training_flags(missing_counts: dict, total: int, avg_word_count: int) -> list:
+    """Return training flag dicts for a set of packet statistics."""
+    flags = []
+    if total < 2:
+        return flags
+
+    threshold = max(2, total // 2)
+
+    stat_misses = missing_counts.get('Stat Sheet', 0) + missing_counts.get('Forms', 0)
+    if stat_misses >= threshold:
+        flags.append({'severity': 'error', 'text': f'Frequently missing Stat Sheet ({stat_misses}/{total} packets)'})
+
+    narrative_misses = missing_counts.get('Narrative', 0)
+    if narrative_misses >= threshold:
+        flags.append({'severity': 'error', 'text': f'Narrative often missing or unapproved ({narrative_misses}/{total} packets)'})
+
+    if 0 < avg_word_count < 40:
+        flags.append({'severity': 'warn', 'text': f'Narratives often below minimum length (avg {avg_word_count} words)'})
+
+    person_misses = missing_counts.get('People', 0)
+    if person_misses >= threshold:
+        flags.append({'severity': 'warn', 'text': f'Persons section frequently empty ({person_misses}/{total} packets)'})
+
+    facts_misses = missing_counts.get('Facts Capture', 0)
+    if facts_misses >= threshold:
+        flags.append({'severity': 'warn', 'text': f'Facts section often empty ({facts_misses}/{total} packets)'})
+
+    return flags
+
+
+def _officer_pattern_summary(officer_user_id: int, limit: int = 20) -> dict:
+    """Return pattern stats for an officer based on their recent IncidentPackets."""
+    packets = (
+        IncidentPacket.query
+        .filter_by(officer_user_id=officer_user_id)
+        .order_by(IncidentPacket.submitted_at.desc())
+        .limit(limit)
+        .all()
+    )
+    if not packets:
+        return {'packet_count': 0, 'missing_counts': {}, 'flags': [], 'avg_word_count': 0}
+
+    missing_counts: dict = {}
+    word_counts: list = []
+    for p in packets:
+        try:
+            val = json.loads(p.validation_json or '{}')
+            for err in val.get('errors', []):
+                field = str(err.get('field') or 'Unknown')
+                missing_counts[field] = missing_counts.get(field, 0) + 1
+        except Exception:
+            pass
+        try:
+            st = json.loads(p.packet_json or '{}')
+            narrative = str(st.get('narrative') or '').strip()
+            if narrative:
+                word_counts.append(len(narrative.split()))
+        except Exception:
+            pass
+
+    avg_wc = int(sum(word_counts) / len(word_counts)) if word_counts else 0
+    return {
+        'packet_count': len(packets),
+        'missing_counts': missing_counts,
+        'flags': _compute_training_flags(missing_counts, len(packets), avg_wc),
+        'avg_word_count': avg_wc,
+    }
+
+
+# ── Phase 7 API Endpoints ────────────────────────────────────────────────────
+
+
+@bp.route('/mobile/api/narrative/suggest', methods=['POST'])
+@login_required
+def narrative_suggest():
+    body = request.get_json(silent=True) or {}
+    narrative = str(body.get('narrative') or '').strip()
+    state = body.get('state') if isinstance(body.get('state'), dict) else {}
+
+    suggestions = _rule_based_narrative_suggestions(narrative, state)
+
+    ai_used = False
+    ai_error = None
+    api_key = (current_app.config.get('OPENAI_API_KEY') or '').strip()
+    if api_key and narrative and len(narrative.split()) >= 10:
+        try:
+            ai_result = _ai_narrative_suggestions(narrative, state, api_key)
+            if isinstance(ai_result, list) and ai_result:
+                suggestions.extend(ai_result)
+                ai_used = True
+            elif isinstance(ai_result, str) and is_ai_unavailable_message(ai_result):
+                ai_error = ai_result
+        except Exception:
+            pass
+
+    return jsonify({'ok': True, 'suggestions': suggestions, 'ai_used': ai_used, 'ai_error': ai_error})
+
+
+@bp.route('/mobile/api/forms/smart-suggest', methods=['POST'])
+@login_required
+def forms_smart_suggest():
+    state = request.get_json(silent=True) or {}
+    suggestions = _rule_based_form_suggestions(state if isinstance(state, dict) else {})
+    return jsonify({'ok': True, 'suggestions': suggestions})
+
+
+@bp.route('/mobile/api/incident/summary', methods=['POST'])
+@login_required
+def incident_summary_api():
+    state = request.get_json(silent=True) or {}
+    summary = _build_incident_summary(state if isinstance(state, dict) else {})
+    return jsonify({'ok': True, 'summary': summary})
 
 
 def _build_packet_summary_text(state, form_entries):
@@ -1346,6 +1674,45 @@ def supervisor_dashboard():
             missing_counts[field] = missing_counts.get(field, 0) + 1
     top_missing = sorted(missing_counts.items(), key=lambda x: -x[1])[:6]
 
+    # Insights: focus areas (top 3 error fields → focus area labels)
+    focus_labels = {'Narrative': 'Narrative writing', 'Stat Sheet': 'Stat Sheet inclusion', 'Forms': 'Form completion',
+                    'People': 'Persons documentation', 'Facts Capture': 'Facts capture', 'Statements': 'Statement collection'}
+    focus_areas = [(focus_labels.get(field, field), count) for field, count in top_missing[:3]]
+
+    # Officer-level pattern detection
+    from collections import defaultdict
+    officer_buckets: dict = defaultdict(list)
+    for p in packets:
+        officer_buckets[p.officer_user_id].append(p)
+
+    officer_patterns = []
+    for officer_id, o_packets in officer_buckets.items():
+        if len(o_packets) < 2:
+            continue
+        o_missing: dict = {}
+        o_word_counts: list = []
+        for p in o_packets:
+            try:
+                val = json.loads(p.validation_json or '{}')
+                for err in val.get('errors', []):
+                    f = str(err.get('field') or 'Unknown')
+                    o_missing[f] = o_missing.get(f, 0) + 1
+            except Exception:
+                pass
+            try:
+                st = json.loads(p.packet_json or '{}')
+                n = str(st.get('narrative') or '').strip()
+                if n:
+                    o_word_counts.append(len(n.split()))
+            except Exception:
+                pass
+        avg_wc = int(sum(o_word_counts) / len(o_word_counts)) if o_word_counts else 0
+        flags = _compute_training_flags(o_missing, len(o_packets), avg_wc)
+        if flags:
+            officer = User.query.get(officer_id)
+            if officer:
+                officer_patterns.append({'officer': officer, 'packet_count': len(o_packets), 'flags': flags})
+
     return render_template(
         'mobile_supervisor_dashboard.html',
         mobile_header_kicker='Command Dashboard',
@@ -1357,6 +1724,8 @@ def supervisor_dashboard():
         approved=approved,
         needs_correction=needs_correction,
         top_missing=top_missing,
+        focus_areas=focus_areas,
+        officer_patterns=officer_patterns,
         PACKET_APPROVAL_PENDING=PACKET_APPROVAL_PENDING,
         PACKET_APPROVAL_APPROVED=PACKET_APPROVAL_APPROVED,
         PACKET_APPROVAL_NEEDS_CORRECTION=PACKET_APPROVAL_NEEDS_CORRECTION,
@@ -1372,6 +1741,10 @@ def supervisor_packet_review(packet_id):
     if packet.officer_user_id != current_user.id:
         _supervisor_required_or_403()
     ctx = _packet_review_context(packet)
+    training_flags = []
+    if can_supervisor_review(current_user):
+        patterns = _officer_pattern_summary(packet.officer_user_id)
+        training_flags = patterns.get('flags', [])
     return render_template(
         'mobile_supervisor_packet_review.html',
         mobile_header_kicker='Packet Review',
@@ -1379,6 +1752,7 @@ def supervisor_packet_review(packet_id):
         mobile_incident_boot=False,
         mobile_incident_page='supervisor_packet_review',
         is_supervisor=can_supervisor_review(current_user),
+        training_flags=training_flags,
         **ctx,
         **_shell_context('Packet Review', 'home'),
     )

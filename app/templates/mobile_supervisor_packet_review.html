@@ -122,6 +122,19 @@
   </div>
   {% endif %}
 
+  <!-- Training flags (supervisor-only, based on officer's packet history) -->
+  {% if is_supervisor and training_flags %}
+  <div class="spr-card spr-training-card">
+    <p class="spr-card-label">Officer Training Flags</p>
+    <p class="spr-card-body">Based on this officer's recent packet history. Visible to supervisors only.</p>
+    <ul class="spr-training-list">
+      {% for flag in training_flags %}
+      <li class="spr-training-item spr-training-{{ flag.severity }}">{{ flag.text }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
   <!-- Supervisor notes -->
   {% if packet.supervisor_notes %}
   <div class="spr-card">

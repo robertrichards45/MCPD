@@ -30,19 +30,62 @@
     </div>
   </div>
 
-  <!-- Common missing items -->
-  {% if top_missing %}
-  <div class="cmd-card">
-    <p class="cmd-card-label">Common Deficiencies (All Packets)</p>
-    <div class="cmd-missing-list">
-      {% for field, count in top_missing %}
-      <div class="cmd-missing-item">
-        <span class="cmd-missing-field">{{ field }}</span>
-        <span class="cmd-missing-count">{{ count }}x</span>
+  <!-- Supervisor Insights Panel -->
+  {% if focus_areas or top_missing or officer_patterns %}
+  <details class="cmd-card cmd-insights-card" open>
+    <summary class="cmd-insights-summary">
+      <span class="cmd-card-label">Supervisor Insights</span>
+      <span class="cmd-insights-chevron">&#8250;</span>
+    </summary>
+
+    {% if focus_areas %}
+    <div class="cmd-insights-section">
+      <p class="cmd-insights-head">Focus Areas</p>
+      <div class="cmd-focus-list">
+        {% for label, count in focus_areas %}
+        <div class="cmd-focus-item">
+          <span class="cmd-focus-dot"></span>
+          <span class="cmd-focus-label">{{ label }}</span>
+          <span class="cmd-focus-count">{{ count }} packet{{ 's' if count != 1 else '' }}</span>
+        </div>
+        {% endfor %}
       </div>
-      {% endfor %}
     </div>
-  </div>
+    {% endif %}
+
+    {% if top_missing %}
+    <div class="cmd-insights-section">
+      <p class="cmd-insights-head">Most Missed Items</p>
+      <div class="cmd-missing-list">
+        {% for field, count in top_missing %}
+        <div class="cmd-missing-item">
+          <span class="cmd-missing-field">{{ field }}</span>
+          <span class="cmd-missing-count">{{ count }}×</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if officer_patterns %}
+    <div class="cmd-insights-section">
+      <p class="cmd-insights-head">Training Flags by Officer</p>
+      <div class="cmd-officer-flags">
+        {% for op in officer_patterns %}
+        <div class="cmd-officer-block">
+          <p class="cmd-officer-name">{{ op.officer.display_name }} <span class="cmd-officer-count">({{ op.packet_count }} packets)</span></p>
+          <ul class="cmd-flag-list">
+            {% for flag in op.flags %}
+            <li class="cmd-flag-item cmd-flag-{{ flag.severity }}">{{ flag.text }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+  </details>
   {% endif %}
 
   <!-- Pending review -->

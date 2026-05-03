@@ -17,4 +17,10 @@
   data-mobile-forms-url="{{ url_for('mobile.incident_selected_forms') }}"
   data-mobile-reference-url="{{ url_for('reference.incident_paperwork_guide') }}"
 ></div>
+<div id="checklist-assist-root" class="assist-mount"></div>
+<div id="narrative-assist-root" class="assist-mount"></div>
+{% endblock %}
+{% block scripts %}
+  {{ super() }}
+  <script src="{{ url_for('static', filename='mobile/incident-assist.js', v='2026-05-03-phase7-1') }}"></script>
 {% endblock %}
