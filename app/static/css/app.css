@@ -8313,4 +8313,24 @@ body.mobile-foundation {
   }
 
 }
+
+.mobile-form-rec-card.is-always-required {
+  border: 2px solid #c9a646;
+  background: linear-gradient(135deg, rgba(201,166,70,0.15), rgba(10,25,47,0.95));
+  box-shadow: 0 0 12px rgba(201,166,70,0.25);
+}
+
+.mobile-form-toggle.is-locked {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.mobile-forms-section-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #c9a646;
+  margin: 12px 0 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
 /* end MCPD MOBILE STYLE SYSTEM */
