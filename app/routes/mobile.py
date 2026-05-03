@@ -65,11 +65,17 @@ def _handbook_backup_blob():
 
 @lru_cache(maxsize=1)
 def _domestic_mobile_schema():
-    forms_dir = _repo_root() / 'data' / 'uploads' / 'forms'
-    matches = sorted(forms_dir.glob('*DOMESTIC*CHECKLIST*.pdf'))
+    try:
+        forms_dir = _repo_root() / 'data' / 'uploads' / 'forms'
+        matches = sorted(forms_dir.glob('*DOMESTIC*CHECKLIST*.pdf'))
+    except OSError:
+        return {'sections': []}
     if not matches:
         return {'sections': []}
-    info = inspect_xfa_fields(str(matches[0]))
+    try:
+        info = inspect_xfa_fields(str(matches[0]))
+    except Exception:
+        return {'sections': []}
     fields = info.get('fields', []) if isinstance(info.get('fields'), list) else []
     section_specs = [
         ('Dispatch And Parties', 'SupInitial.1'),
