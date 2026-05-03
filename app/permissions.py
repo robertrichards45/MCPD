@@ -110,6 +110,13 @@ def can_manage_armory(user):
     return can_access_armory(user)
 
 
+def can_supervisor_review(user):
+    """WATCH_COMMANDER, DESK_SGT, and WEBSITE_CONTROLLER can access supervisor review tools."""
+    if not user or not getattr(user, 'is_authenticated', False):
+        return False
+    return effective_role(user) in {ROLE_WEBSITE_CONTROLLER, ROLE_WATCH_COMMANDER, ROLE_DESK_SGT}
+
+
 def can_view_user(user, target_user):
     if not user or not getattr(user, 'is_authenticated', False):
         return False

@@ -679,5 +679,30 @@ class VehicleInspection(db.Model):
     updated_at = db.Column(db.DateTime, default=utcnow_naive, onupdate=utcnow_naive)
 
 
+# Approval statuses for IncidentPacket
+PACKET_APPROVAL_PENDING = 'PENDING'
+PACKET_APPROVAL_APPROVED = 'APPROVED'
+PACKET_APPROVAL_NEEDS_CORRECTION = 'NEEDS_CORRECTION'
 
+
+class IncidentPacket(db.Model):
+    """Lightweight record of a submitted mobile incident packet for supervisor review."""
+    id = db.Column(db.Integer, primary_key=True)
+    officer_user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    submitted_at = db.Column(db.DateTime, default=utcnow_naive, nullable=False, index=True)
+    call_type = db.Column(db.String(80), nullable=True)
+    occurred_date = db.Column(db.String(20), nullable=True)
+    location = db.Column(db.String(255), nullable=True)
+    summary = db.Column(db.String(500), nullable=True)
+    form_count = db.Column(db.Integer, default=0)
+    statement_count = db.Column(db.Integer, default=0)
+    packet_json = db.Column(db.Text, nullable=True)
+    validation_json = db.Column(db.Text, nullable=True)
+    approval_status = db.Column(db.String(20), default=PACKET_APPROVAL_PENDING, nullable=False, index=True)
+    reviewer_user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    reviewed_at = db.Column(db.DateTime, nullable=True)
+    supervisor_notes = db.Column(db.Text, nullable=True)
+
+    officer = db.relationship('User', foreign_keys=[officer_user_id], backref='incident_packets')
+    reviewer = db.relationship('User', foreign_keys=[reviewer_user_id], backref='reviewed_packets')
 

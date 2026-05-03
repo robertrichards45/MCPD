@@ -10,7 +10,17 @@ from flask_login import current_user, login_required
 from werkzeug.utils import secure_filename
 
 from ..extensions import db
-from ..models import AuditLog, Form, SavedForm
+from ..models import (
+    AuditLog,
+    Form,
+    IncidentPacket,
+    PACKET_APPROVAL_APPROVED,
+    PACKET_APPROVAL_NEEDS_CORRECTION,
+    PACKET_APPROVAL_PENDING,
+    SavedForm,
+    utcnow_naive,
+)
+from ..permissions import can_supervisor_review
 from ..services.call_type_rules import load_call_type_rules
 from ..services.forms_pdf_renderer import inspect_xfa_fields, render_form_pdf
 from ..services.mobile_incident_documents import build_narrative_draft, build_packet_pdf
@@ -413,6 +423,10 @@ def _packet_validation(state, form_entries, recipient):
         errors.append({'field': 'Narrative', 'message': 'Narrative review is still blank.'})
     elif not narrative_approved:
         errors.append({'field': 'Narrative', 'message': 'Approve the narrative review before sending the packet.'})
+    else:
+        nq = _narrative_quality_check(narrative)
+        for issue in nq.get('issues', []):
+            warnings.append({'field': 'Narrative Quality', 'message': issue})
     if not form_entries:
         errors.append({'field': 'Forms', 'message': 'Select at least one form for the packet.'})
     if not persons:
@@ -469,6 +483,59 @@ def _packet_validation(state, form_entries, recipient):
         'errors': errors,
         'warnings': warnings,
         'can_send': not errors,
+    }
+
+
+def _narrative_quality_check(narrative_text: str) -> dict:
+    text = str(narrative_text or '').strip()
+    if not text:
+        return {
+            'ok': False,
+            'word_count': 0,
+            'char_count': 0,
+            'issues': ['Narrative is empty.'],
+            'prompts': ['Who was involved?', 'What happened?', 'Where did it occur?', 'When did it happen?', 'What actions did you take?'],
+        }
+
+    words = text.split()
+    word_count = len(words)
+    issues = []
+    prompts = []
+
+    if word_count < 30:
+        issues.append(f'Narrative is very short ({word_count} words). A thorough narrative should have at least 50 words.')
+    elif word_count < 50:
+        issues.append(f'Narrative is brief ({word_count} words). Consider adding more detail.')
+
+    # Detect repeated sentences
+    sentences = [s.strip() for s in text.replace('!', '.').replace('?', '.').split('.') if len(s.strip()) > 10]
+    seen_sentences: set = set()
+    for s in sentences:
+        normalized = ' '.join(s.lower().split())
+        if normalized in seen_sentences:
+            issues.append('Narrative contains repeated text. Check for duplicate sentences.')
+            break
+        seen_sentences.add(normalized)
+
+    # Check for key narrative elements
+    tl = text.lower()
+    if not any(w in tl for w in ('officer', 'this officer', 'i ', 'responding', 'writer', 'reporting')):
+        prompts.append('Who was the responding officer?')
+    if not any(w in tl for w in ('suspect', 'victim', 'subject', 'person', 'individual', 'complainant', 'witness')):
+        prompts.append('Who was involved (suspect/victim/witness)?')
+    if not any(w in tl for w in ('located', 'area', 'building', 'parking', 'lot', 'street', ' at ', ' near ', ' on ')):
+        prompts.append('Where exactly did this occur?')
+    if not any(w in tl for w in ('approximately', 'approx', 'hours', ' at ', ' on ')):
+        prompts.append('When did this occur?')
+    if not any(w in tl for w in ('arrested', 'detained', 'advised', 'responded', 'notified', 'issued', 'transported', 'released', 'reported', 'cleared', 'secured')):
+        prompts.append('What actions were taken?')
+
+    return {
+        'ok': not issues,
+        'word_count': word_count,
+        'char_count': len(text),
+        'issues': issues,
+        'prompts': prompts,
     }
 
 
@@ -1079,6 +1146,22 @@ def send_packet_api():
             details=f'forms={len(form_entries)}|statements={len(state.get("statements") or [])}|recipient={recipient}|attachments={len(attachments)}|packet_pages={packet_meta.get("page_count", 0)}',
         )
     )
+    try:
+        packet_record = IncidentPacket(
+            officer_user_id=current_user.id,
+            call_type=str(state.get('callType') or '')[:80],
+            occurred_date=str(basics.get('occurredDate') or '')[:20],
+            location=str(basics.get('location') or '')[:255],
+            summary=str(basics.get('summary') or '')[:500],
+            form_count=len(form_entries),
+            statement_count=len(state.get('statements') or []),
+            packet_json=json.dumps(state, default=str),
+            validation_json=json.dumps(validation, default=str),
+            approval_status=PACKET_APPROVAL_PENDING,
+        )
+        db.session.add(packet_record)
+    except Exception:
+        pass
     db.session.commit()
     return jsonify(
         {
@@ -1089,4 +1172,243 @@ def send_packet_api():
             'subject': subject,
         }
     )
+
+
+# ── Supervisor / Command Routes ─────────────────────────────────────────────
+
+
+def _supervisor_required_or_403():
+    """Returns a 403 response if current_user cannot do supervisor review, else None."""
+    from flask import abort
+    if not can_supervisor_review(current_user):
+        abort(403)
+
+
+def _packet_review_context(packet: IncidentPacket) -> dict:
+    """Build the full review context dict for a supervisor packet review template."""
+    try:
+        state = json.loads(packet.packet_json or '{}')
+    except Exception:
+        state = {}
+    try:
+        cached_validation = json.loads(packet.validation_json or '{}')
+    except Exception:
+        cached_validation = {}
+
+    basics = state.get('incidentBasics') if isinstance(state.get('incidentBasics'), dict) else {}
+    persons = state.get('persons') if isinstance(state.get('persons'), list) else []
+    facts = state.get('facts') if isinstance(state.get('facts'), list) else []
+    statements = state.get('statements') if isinstance(state.get('statements'), list) else []
+    selected_forms = state.get('selectedForms') if isinstance(state.get('selectedForms'), list) else []
+    narrative_text = str(state.get('narrative') or '').strip()
+    narrative_approved = bool(state.get('narrativeApproved'))
+
+    # Re-run narrative quality check
+    nq = _narrative_quality_check(narrative_text)
+
+    # Stat sheet check
+    stat_sheet_present = any('stat sheet' in str(f).lower() or 'statsheet' in str(f).lower().replace(' ', '') for f in selected_forms)
+
+    # Domestic supplement check
+    domestic_present = any('domestic' in str(f).lower() for f in selected_forms)
+
+    # Evidence check
+    evidence_present = any('evidence' in str(f).lower() or 'property' in str(f).lower() or 'custody' in str(f).lower() for f in selected_forms)
+
+    # Build structured section statuses
+    sections = [
+        {
+            'label': 'Stat Sheet',
+            'status': 'ok' if stat_sheet_present else 'error',
+            'detail': 'Present' if stat_sheet_present else 'Missing — MCPD Stat Sheet is required.',
+        },
+        {
+            'label': 'Incident Type',
+            'status': 'ok' if state.get('callType') else 'error',
+            'detail': str(state.get('callType') or 'Missing — call type not selected.'),
+        },
+        {
+            'label': 'Location',
+            'status': 'ok' if str(basics.get('location') or '').strip() else 'error',
+            'detail': str(basics.get('location') or 'Missing — incident location not entered.'),
+        },
+        {
+            'label': 'Date / Time',
+            'status': 'ok' if (basics.get('occurredDate') and basics.get('occurredTime')) else 'error',
+            'detail': f"{basics.get('occurredDate') or ''} {basics.get('occurredTime') or ''}".strip() or 'Missing — date/time not entered.',
+        },
+        {
+            'label': 'Officer',
+            'status': 'ok',
+            'detail': str(packet.officer.display_name if packet.officer else 'Unknown'),
+        },
+        {
+            'label': 'Narrative',
+            'status': 'ok' if (narrative_text and narrative_approved) else ('warn' if narrative_text else 'error'),
+            'detail': (
+                f'Present and approved — {nq["word_count"]} words.'
+                if (narrative_text and narrative_approved)
+                else ('Written but not approved.' if narrative_text else 'Missing — narrative not written.')
+            ),
+        },
+        {
+            'label': 'Narrative Quality',
+            'status': 'ok' if nq['ok'] else 'warn',
+            'detail': '; '.join(nq['issues']) if nq['issues'] else f'{nq["word_count"]} words — looks adequate.',
+        },
+        {
+            'label': 'Persons',
+            'status': 'ok' if persons else 'error',
+            'detail': f'{len(persons)} person(s) entered.' if persons else 'Missing — no persons entered.',
+        },
+        {
+            'label': 'Statements',
+            'status': 'ok' if (not statements or all(
+                s.get('reviewedDraft') and s.get('signatureDataUrl') and s.get('initialsDataUrl')
+                for s in statements if isinstance(s, dict)
+            )) else 'warn',
+            'detail': (
+                f'{len(statements)} statement(s) — all complete.' if statements
+                else 'No statements collected.'
+            ),
+        },
+        {
+            'label': 'Forms Selected',
+            'status': 'ok' if selected_forms else 'error',
+            'detail': ', '.join(str(f) for f in selected_forms) if selected_forms else 'No forms selected.',
+        },
+    ]
+
+    if domestic_present:
+        domestic_complete = any(
+            'domestic' in str(f).lower() and 'supplement' in str(f).lower()
+            for f in selected_forms
+        )
+        sections.append({
+            'label': 'Domestic Supplement',
+            'status': 'ok' if domestic_present else 'warn',
+            'detail': 'Domestic supplement form is in packet.' if domestic_present else 'Domestic call type detected but supplement form not selected.',
+        })
+
+    if evidence_present:
+        sections.append({
+            'label': 'Evidence/Property',
+            'status': 'ok',
+            'detail': 'Evidence/property documentation is in packet.',
+        })
+
+    error_count = sum(1 for s in sections if s['status'] == 'error')
+    warn_count = sum(1 for s in sections if s['status'] == 'warn')
+    overall_status = 'READY' if error_count == 0 else 'NOT READY'
+
+    return {
+        'packet': packet,
+        'state': state,
+        'basics': basics,
+        'persons': persons,
+        'facts': facts,
+        'statements': statements,
+        'selected_forms': selected_forms,
+        'narrative_text': narrative_text,
+        'narrative_approved': narrative_approved,
+        'narrative_quality': nq,
+        'sections': sections,
+        'error_count': error_count,
+        'warn_count': warn_count,
+        'overall_status': overall_status,
+        'cached_validation': cached_validation,
+    }
+
+
+@bp.route('/mobile/supervisor/dashboard')
+@login_required
+def supervisor_dashboard():
+    _supervisor_required_or_403()
+    packets = (
+        IncidentPacket.query
+        .order_by(IncidentPacket.submitted_at.desc())
+        .limit(60)
+        .all()
+    )
+    pending = [p for p in packets if p.approval_status == PACKET_APPROVAL_PENDING]
+    approved = [p for p in packets if p.approval_status == PACKET_APPROVAL_APPROVED]
+    needs_correction = [p for p in packets if p.approval_status == PACKET_APPROVAL_NEEDS_CORRECTION]
+
+    # Count common missing items from cached validation errors
+    missing_counts: dict = {}
+    for p in packets:
+        try:
+            val = json.loads(p.validation_json or '{}')
+        except Exception:
+            continue
+        for err in val.get('errors', []):
+            field = str(err.get('field') or 'Unknown')
+            missing_counts[field] = missing_counts.get(field, 0) + 1
+    top_missing = sorted(missing_counts.items(), key=lambda x: -x[1])[:6]
+
+    return render_template(
+        'mobile_supervisor_dashboard.html',
+        mobile_header_kicker='Command Dashboard',
+        mobile_header_note='Supervisor tools and packet review',
+        mobile_incident_boot=False,
+        mobile_incident_page='supervisor_dashboard',
+        packets=packets,
+        pending=pending,
+        approved=approved,
+        needs_correction=needs_correction,
+        top_missing=top_missing,
+        PACKET_APPROVAL_PENDING=PACKET_APPROVAL_PENDING,
+        PACKET_APPROVAL_APPROVED=PACKET_APPROVAL_APPROVED,
+        PACKET_APPROVAL_NEEDS_CORRECTION=PACKET_APPROVAL_NEEDS_CORRECTION,
+        **_shell_context('Command Dashboard', 'home'),
+    )
+
+
+@bp.route('/mobile/supervisor/packet/<int:packet_id>')
+@login_required
+def supervisor_packet_review(packet_id):
+    packet = IncidentPacket.query.get_or_404(packet_id)
+    # Officer can view their own packet; supervisors can view any
+    if packet.officer_user_id != current_user.id:
+        _supervisor_required_or_403()
+    ctx = _packet_review_context(packet)
+    return render_template(
+        'mobile_supervisor_packet_review.html',
+        mobile_header_kicker='Packet Review',
+        mobile_header_note='Supervisor deficiency review',
+        mobile_incident_boot=False,
+        mobile_incident_page='supervisor_packet_review',
+        is_supervisor=can_supervisor_review(current_user),
+        **ctx,
+        **_shell_context('Packet Review', 'home'),
+    )
+
+
+@bp.route('/mobile/api/supervisor/packet/<int:packet_id>/action', methods=['POST'])
+@login_required
+def supervisor_packet_action(packet_id):
+    _supervisor_required_or_403()
+    packet = IncidentPacket.query.get_or_404(packet_id)
+    body = request.get_json(silent=True) or {}
+    action = str(body.get('action') or '').strip().lower()
+    notes = str(body.get('notes') or '').strip()[:2000]
+    if action == 'approve':
+        packet.approval_status = PACKET_APPROVAL_APPROVED
+    elif action == 'needs_correction':
+        packet.approval_status = PACKET_APPROVAL_NEEDS_CORRECTION
+    else:
+        return jsonify({'ok': False, 'error': 'Invalid action. Use "approve" or "needs_correction".'}), 400
+    packet.reviewer_user_id = current_user.id
+    packet.reviewed_at = utcnow_naive()
+    if notes:
+        packet.supervisor_notes = notes
+    db.session.add(
+        AuditLog(
+            actor_id=current_user.id,
+            action=f'supervisor_packet_{action}',
+            details=f'packet_id={packet_id}|officer_id={packet.officer_user_id}|notes_len={len(notes)}',
+        )
+    )
+    db.session.commit()
+    return jsonify({'ok': True, 'approval_status': packet.approval_status})
 

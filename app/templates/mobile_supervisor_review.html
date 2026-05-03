@@ -3,6 +3,16 @@
 
 <div class="msr-shell">
 
+  {% if current_user.has_any_role('WATCH_COMMANDER', 'DESK_SGT', 'WEBSITE_CONTROLLER') %}
+  <div class="msr-card msr-command-card">
+    <p class="msr-card-label">Command Tools</p>
+    <p class="msr-card-body">Access the full supervisor dashboard to review submitted packets, approve or return corrections, and track common deficiencies.</p>
+    <div class="msr-action-list">
+      <a class="msr-btn-primary" href="{{ url_for('mobile.supervisor_dashboard') }}">Open Command Dashboard</a>
+    </div>
+  </div>
+  {% endif %}
+
   <div id="msr-no-state" class="msr-card" style="display:none;">
     <p class="msr-card-label">No Active Draft</p>
     <p class="msr-card-body">No incident draft found. Start an incident workflow and the packet readiness check will appear here.</p>
@@ -30,6 +40,11 @@
         <a class="msr-btn-secondary" href="{{ url_for('mobile.incident_start') }}">Start New Incident</a>
         <a class="msr-btn-ghost" href="{{ url_for('mobile.home') }}">Back to Field Portal</a>
       </div>
+    </div>
+
+    <div class="msr-card" id="msr-narrative-quality" style="display:none;">
+      <p class="msr-card-label">Narrative Quality</p>
+      <div id="msr-nq-body"></div>
     </div>
 
   </div>
@@ -146,6 +161,33 @@
         : '<a class="msr-item-label msr-item-fix" href="' + c.fix + '">' + c.label + ' &mdash; tap to fix</a>');
     listEl.appendChild(div);
   });
+
+  /* Narrative quality */
+  var narrative = typeof state.narrative === 'string' ? state.narrative.trim() : '';
+  if (narrative) {
+    var words = narrative.split(/\s+/).filter(Boolean);
+    var wc = words.length;
+    var nqCard = document.getElementById('msr-narrative-quality');
+    var nqBody = document.getElementById('msr-nq-body');
+    nqCard.style.display = '';
+    var nqIssues = [];
+    if (wc < 30) nqIssues.push('Very short (' + wc + ' words). Aim for at least 50 words.');
+    else if (wc < 50) nqIssues.push('Brief (' + wc + ' words). Consider adding more detail.');
+    var tl = narrative.toLowerCase();
+    if (!/(officer|this officer|responding|writer|reporting)/.test(tl)) nqIssues.push('Who was the responding officer?');
+    if (!/(suspect|victim|subject|person|individual|complainant|witness)/.test(tl)) nqIssues.push('Who was involved?');
+    if (!/(located|area|building|parking|street| at | near | on )/.test(tl)) nqIssues.push('Where did this occur?');
+    if (!/(approximately|approx|hours| at | on )/.test(tl)) nqIssues.push('When did this occur?');
+    if (!/(arrested|detained|advised|responded|notified|issued|transported|released|reported|cleared|secured)/.test(tl)) nqIssues.push('What actions were taken?');
+    if (nqIssues.length === 0) {
+      nqBody.innerHTML = '<p class="msr-nq-ok">&#10003; ' + wc + ' words &mdash; narrative looks adequate.</p>';
+    } else {
+      var html = '<p class="msr-nq-warn">&#9888; ' + wc + ' words &mdash; ' + nqIssues.length + ' suggestion(s):</p><ul class="msr-nq-list">';
+      nqIssues.forEach(function(i) { html += '<li>' + i + '</li>'; });
+      html += '</ul>';
+      nqBody.innerHTML = html;
+    }
+  }
 }());
 </script>
 {% endblock %}
