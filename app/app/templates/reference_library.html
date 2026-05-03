@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell">
+  {% include 'partials/nav.html' %}
+  <div class="page-wrap">
+
+    <div class="card p-3 mb-4 page-head">
+      <h2 class="mb-1">Reference Library</h2>
+      <p class="text-muted mb-3">Orders, handbooks, and field guides for MCPD operations.</p>
+      <form method="get" action="{{ url_for('orders.reference_search') }}" class="row g-2">
+        <div class="col">
+          <input class="form-control" name="q" placeholder="Search orders, SOPs, regulations, procedures..." />
+        </div>
+        <div class="col-auto">
+          <button class="btn btn-primary">Search</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="row g-3 mb-3">
+
+      <div class="col-6 col-md-4">
+        <a class="ref-cat-card" href="{{ url_for('orders.reference_search', source_type='USMC_ORDER') }}">
+          <div class="ref-cat-label">USMC</div>
+          <div class="ref-cat-title">USMC Orders</div>
+          <div class="ref-cat-desc">Marine Corps-wide directives and MCOs</div>
+        </a>
+      </div>
+
+      <div class="col-6 col-md-4">
+        <a class="ref-cat-card" href="{{ url_for('orders.reference_search', source_type='MCLB_ALBANY_ORDER') }}">
+          <div class="ref-cat-label">Base</div>
+          <div class="ref-cat-title">Base Orders</div>
+          <div class="ref-cat-desc">MCLB Albany local directives and SOPs</div>
+        </a>
+      </div>
+
+      <div class="col-6 col-md-4">
+        <a class="ref-cat-card" href="{{ url_for('orders.reference_search', source_type='MEMORANDUM') }}">
+          <div class="ref-cat-label">Memo</div>
+          <div class="ref-cat-title">Memorandums</div>
+          <div class="ref-cat-desc">Command memos and policy notices</div>
+        </a>
+      </div>
+
+      <div class="col-6 col-md-4">
+        <a class="ref-cat-card" href="{{ url_for('reference.officer_handbook') }}">
+          <div class="ref-cat-label">Handbook</div>
+          <div class="ref-cat-title">Officer Handbook</div>
+          <div class="ref-cat-desc">Field procedures, policy guidance, and checklists</div>
+        </a>
+      </div>
+
+      <div class="col-6 col-md-4">
+        <a class="ref-cat-card" href="{{ url_for('reference.incident_paperwork_guide') }}">
+          <div class="ref-cat-label">Paperwork</div>
+          <div class="ref-cat-title">Incident Paperwork</div>
+          <div class="ref-cat-desc">Forms required for each incident and call type</div>
+        </a>
+      </div>
+
+      <div class="col-6 col-md-4">
+        <a class="ref-cat-card" href="{{ url_for('legal.legal_home') }}">
+          <div class="ref-cat-label">Law</div>
+          <div class="ref-cat-title">Law Reference</div>
+          <div class="ref-cat-desc">Georgia statutes and applicable federal law</div>
+        </a>
+      </div>
+
+      <div class="col-6 col-md-4">
+        <a class="ref-cat-card" href="{{ url_for('forms.list_forms') }}">
+          <div class="ref-cat-label">Forms</div>
+          <div class="ref-cat-title">Forms Library</div>
+          <div class="ref-cat-desc">MCPD form templates ready to fill, submit, or print</div>
+        </a>
+      </div>
+
+      <div class="col-6 col-md-4">
+        <a class="ref-cat-card" href="{{ url_for('training.training_list') }}">
+          <div class="ref-cat-label">Training</div>
+          <div class="ref-cat-title">Training Records</div>
+          <div class="ref-cat-desc">Rosters, sign-offs, and training history</div>
+        </a>
+      </div>
+
+      <div class="col-6 col-md-4">
+        <a class="ref-cat-card" href="{{ url_for('orders.reference_search') }}">
+          <div class="ref-cat-label">All</div>
+          <div class="ref-cat-title">Browse All Orders</div>
+          <div class="ref-cat-desc">Full-text search across the entire document library</div>
+        </a>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+{% endblock %}

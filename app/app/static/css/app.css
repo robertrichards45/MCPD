@@ -9003,3 +9003,103 @@ body.mobile-foundation {
   }
 }
 
+/* ============================================================
+   REFERENCE LIBRARY — Hub category cards
+   ============================================================ */
+
+.ref-cat-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid #dde3ed;
+  background: #ffffff;
+  color: #0d1b2a;
+  text-decoration: none;
+  transition: box-shadow 0.14s, transform 0.14s, border-color 0.14s;
+}
+
+.ref-cat-card:hover {
+  box-shadow: 0 4px 18px rgba(13,26,46,0.1);
+  border-color: #b8c4d8;
+  transform: translateY(-2px);
+  color: #0d1b2a;
+  text-decoration: none;
+}
+
+.ref-cat-card:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.ref-cat-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #c9a86a;
+  margin-bottom: 4px;
+}
+
+.ref-cat-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0d1b2a;
+  margin-bottom: 4px;
+  line-height: 1.2;
+}
+
+.ref-cat-desc {
+  font-size: 12px;
+  color: #6b7a8e;
+  line-height: 1.45;
+  margin-top: auto;
+}
+
+/* Tighter cards on small phones */
+@media (max-width: 400px) {
+  .ref-cat-card {
+    padding: 10px 12px;
+  }
+  .ref-cat-title {
+    font-size: 13px;
+  }
+}
+
+/* ── Orders quick-type chips ── */
+.orders-type-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 0 4px;
+}
+
+.orders-type-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 14px;
+  border-radius: 999px;
+  border: 1px solid #d0d8e4;
+  background: #f4f6fa;
+  color: #1a3a60;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.1s, border-color 0.1s;
+  white-space: nowrap;
+}
+
+.orders-type-chip:hover {
+  background: #e4eaf4;
+  border-color: #b0bed4;
+  color: #0d1b2a;
+  text-decoration: none;
+}
+
+.orders-type-chip.is-active {
+  background: #1a4072;
+  border-color: #1a4072;
+  color: #ffffff;
+}
+

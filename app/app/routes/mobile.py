@@ -647,7 +647,7 @@ def home():
         },
         {
             'title': 'Reference Library',
-            'href': url_for('reference.incident_paperwork_guide'),
+            'href': url_for('reference.quick_reference'),
             'is_live': True,
         },
         {

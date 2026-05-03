@@ -31,6 +31,20 @@
         <a class="btn btn-outline-secondary flex-fill" href="{{ url_for('orders.library') }}">Reset</a>
         {% endif %}
       </div>
+      <div class="col-12">
+        <div class="orders-type-chips">
+          <a class="orders-type-chip {% if not order_source_type_filter %}is-active{% endif %}"
+             href="{{ url_for('orders.library') }}{% if order_search_term %}?q={{ order_search_term|urlencode }}{% endif %}">All</a>
+          <a class="orders-type-chip {% if order_source_type_filter == 'USMC_ORDER' %}is-active{% endif %}"
+             href="{{ url_for('orders.library', source_type='USMC_ORDER') }}{% if order_search_term %}&q={{ order_search_term|urlencode }}{% endif %}">USMC Orders</a>
+          <a class="orders-type-chip {% if order_source_type_filter == 'MCLB_ALBANY_ORDER' %}is-active{% endif %}"
+             href="{{ url_for('orders.library', source_type='MCLB_ALBANY_ORDER') }}{% if order_search_term %}&q={{ order_search_term|urlencode }}{% endif %}">Base Orders</a>
+          <a class="orders-type-chip {% if order_source_type_filter == 'MEMORANDUM' %}is-active{% endif %}"
+             href="{{ url_for('orders.library', source_type='MEMORANDUM') }}{% if order_search_term %}&q={{ order_search_term|urlencode }}{% endif %}">Memorandums</a>
+          <a class="orders-type-chip {% if order_source_type_filter == 'LOCAL_DOCUMENT' %}is-active{% endif %}"
+             href="{{ url_for('orders.library', source_type='LOCAL_DOCUMENT') }}{% if order_search_term %}&q={{ order_search_term|urlencode }}{% endif %}">Local</a>
+        </div>
+      </div>
       <details class="col-12 collapse-card mt-2">
         <summary>Filters</summary>
         <div class="row g-3 mt-1">
