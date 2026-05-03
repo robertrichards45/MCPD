@@ -9196,3 +9196,91 @@ body.mobile-foundation .mad-tip-body {
   margin: 0;
   line-height: 1.5;
 }
+
+/* =============================================================
+   MCPD PHASE 4 — 2026-05-03-phase4-1
+   Packet review: status banner, review dots, error card variant
+   ============================================================= */
+
+/* Status banner at top of PacketReviewPage */
+body.mobile-foundation .mobile-packet-status-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  margin-bottom: 12px;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+body.mobile-foundation .mobile-packet-status-banner.is-ready {
+  background: #1a4a2e;
+  color: #b4f0c8;
+  border: 1px solid rgba(100,220,140,0.25);
+}
+
+body.mobile-foundation .mobile-packet-status-banner.is-error {
+  background: #4a1a1a;
+  color: #f4b4b4;
+  border: 1px solid rgba(220,100,100,0.25);
+}
+
+body.mobile-foundation .mobile-packet-status-banner.is-warn {
+  background: #4a3a0a;
+  color: #f4d87a;
+  border: 1px solid rgba(220,180,60,0.25);
+}
+
+body.mobile-foundation .mobile-packet-status-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+body.mobile-foundation .mobile-packet-status-text {
+  flex: 1;
+}
+
+/* Per-section status dots on review cards */
+.mobile-review-dot {
+  display: block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  grid-column: 1;
+  grid-row: 1;
+  margin-top: 5px;
+}
+
+.mobile-review-dot.is-ok {
+  background: #3a8c50;
+}
+
+.mobile-review-dot.is-warn {
+  background: #c47a1a;
+}
+
+/* Error variant for review cards (used for stat sheet missing) */
+.mobile-review-card.is-error {
+  border-color: rgba(180, 50, 50, 0.35);
+  background: linear-gradient(180deg, rgba(255, 242, 242, 0.98), rgba(255, 255, 255, 0.98));
+}
+
+/* Adjust review-copy to accommodate the dot */
+.mobile-review-copy {
+  display: grid;
+  grid-template-columns: 14px 1fr;
+  gap: 3px 6px;
+  align-items: start;
+}
+
+.mobile-review-copy strong {
+  grid-column: 2;
+}
+
+.mobile-review-copy p {
+  grid-column: 2;
+  margin: 0;
+  color: #4d5549;
+}
