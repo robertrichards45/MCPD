@@ -1649,6 +1649,31 @@
     });
   }
 
+  function factValueMap(state) {
+    const map = {};
+    (Array.isArray(state.facts) ? state.facts : []).forEach(function(entry) {
+      if (entry && entry.id) {
+        map[entry.id] = String(entry.value || '').trim();
+      }
+    });
+    return map;
+  }
+
+  function narrativeDetailWarnings(state) {
+    const map = factValueMap(state);
+    const items = [];
+    if (!map.what_happened) {
+      items.push({ field: 'What Happened', message: 'Main facts section is empty. Describe what occurred.' });
+    }
+    if (!map.officer_actions) {
+      items.push({ field: 'Officer Actions', message: 'Officer actions section is blank. Document the actions you took.' });
+    }
+    if (!map.disposition) {
+      items.push({ field: 'Disposition', message: 'Incident disposition is not recorded. Document how the call was concluded.' });
+    }
+    return items;
+  }
+
   function buildPacket(state, catalog) {
     const basics = state.incidentBasics || {};
     const statements = Array.isArray(state.statements) ? state.statements : [];
@@ -1766,6 +1791,18 @@
       if (!item || item.completed) return;
       warnings.push({ field: 'Checklist', message: item.label || 'Checklist item is still open.' });
     });
+
+    const hasDisposition = facts.some((entry) => entry && entry.id === 'disposition' && String(entry.value || '').trim());
+    if (!hasDisposition) {
+      warnings.push({ field: 'Disposition', message: 'Incident disposition is not documented. Record how the call concluded (released, arrested, counseled, referred, etc.).' });
+    }
+
+    if (narrative) {
+      const wordCount = narrative.trim().split(/\s+/).filter(Boolean).length;
+      if (wordCount < 40) {
+        warnings.push({ field: 'Narrative', message: `Narrative is brief (${wordCount} word${wordCount === 1 ? '' : 's'}). Supervisors expect sufficient detail before review.` });
+      }
+    }
 
     return {
       callType: state.callType || '',

@@ -7578,3 +7578,233 @@ textarea.form-control {
   }
 }
 
+/* ============================================================
+   MOBILE WORKFLOW — Navy Theme
+   Overrides cream/tan shell with dark navy professional design.
+   All rules use !important to win over earlier cascade layers.
+   ============================================================ */
+
+body.mobile-foundation {
+  background: #0a1525 !important;
+}
+
+.mobile-shell {
+  background: linear-gradient(160deg, #0d1a2e 0%, #0a1322 100%) !important;
+}
+
+.mobile-header {
+  background: linear-gradient(180deg, rgba(9,18,38,0.99) 0%, rgba(14,27,52,0.97) 100%) !important;
+  border-bottom: 1px solid rgba(201,168,106,0.2) !important;
+}
+
+.mobile-header-kicker {
+  color: rgba(201,168,106,0.85) !important;
+}
+
+.mobile-role-pill {
+  background: rgba(201,168,106,0.14) !important;
+  color: #c9a86a !important;
+  border-color: rgba(201,168,106,0.32) !important;
+}
+
+.mobile-user-chip {
+  background: rgba(255,255,255,0.08) !important;
+  border-color: rgba(255,255,255,0.13) !important;
+  color: #f5f2ea !important;
+}
+
+.mobile-shell .mobile-main {
+  padding-top: 12px !important;
+}
+
+/* Tab bar */
+.mobile-tab-bar {
+  background: rgba(9,18,38,0.97) !important;
+  border-top: 1px solid rgba(201,168,106,0.18) !important;
+  backdrop-filter: blur(20px) !important;
+}
+
+.mobile-tab {
+  background: rgba(255,255,255,0.05) !important;
+  color: rgba(245,242,234,0.48) !important;
+  border-color: rgba(255,255,255,0.07) !important;
+}
+
+.mobile-tab.is-active {
+  background: rgba(201,168,106,0.16) !important;
+  color: #c9a86a !important;
+  box-shadow: none !important;
+}
+
+/* Wizard nav bar */
+.mobile-wizard-bar {
+  background: rgba(9,18,38,0.97) !important;
+  border-top: 1px solid rgba(201,168,106,0.15) !important;
+  backdrop-filter: blur(20px) !important;
+}
+
+.mobile-wizard-copy strong {
+  color: #f5f2ea !important;
+}
+
+.mobile-wizard-copy span {
+  color: rgba(245,242,234,0.55) !important;
+}
+
+.mobile-wizard-cta {
+  background: #c9a86a !important;
+  color: #0d1a2e !important;
+  border-color: #b8975c !important;
+}
+
+.mobile-wizard-cta.is-disabled,
+.mobile-wizard-cta[disabled] {
+  background: rgba(201,168,106,0.3) !important;
+  color: rgba(13,26,46,0.5) !important;
+}
+
+.mobile-wizard-link {
+  color: rgba(245,242,234,0.7) !important;
+  border-color: rgba(255,255,255,0.15) !important;
+}
+
+/* Progress chips */
+.mobile-progress-chip {
+  background: rgba(255,255,255,0.08) !important;
+  color: rgba(245,242,234,0.5) !important;
+  border-color: rgba(255,255,255,0.1) !important;
+}
+
+.mobile-progress-chip.is-active {
+  background: #c9a86a !important;
+  color: #0d1a2e !important;
+  border-color: #b8975c !important;
+}
+
+/* Content cards — white on dark for readability */
+.mobile-section-block {
+  background: #ffffff !important;
+  border-radius: 16px !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.32) !important;
+  color: #0d1b2a !important;
+}
+
+.mobile-section-head h3 {
+  color: #0d1b2a !important;
+}
+
+.mobile-step-progress span {
+  color: #6b7a8e !important;
+}
+
+.mobile-step-progress strong {
+  color: #0d1b2a !important;
+}
+
+/* Form inputs */
+.mobile-text-input {
+  border-color: #c8d3df !important;
+  background: #fafbfc !important;
+  color: #0d1b2a !important;
+}
+
+.mobile-text-input:focus {
+  border-color: #1a4072 !important;
+  box-shadow: 0 0 0 3px rgba(26,64,114,0.15) !important;
+  outline: none !important;
+}
+
+/* Fact cards */
+.mobile-fact-card {
+  background: #f4f7fb !important;
+  border-color: #d0daea !important;
+  border-radius: 12px !important;
+}
+
+.mobile-fact-head strong {
+  color: #0d1b2a !important;
+}
+
+/* Call type selection cards */
+.mobile-call-type-card {
+  background: #ffffff !important;
+  border-color: rgba(26,64,114,0.1) !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.28) !important;
+  color: #0d1b2a !important;
+}
+
+.mobile-call-type-card.is-active {
+  border-color: #c9a86a !important;
+  box-shadow: 0 6px 22px rgba(201,168,106,0.28) !important;
+}
+
+/* Checklist items */
+.mobile-checklist-item {
+  background: #ffffff !important;
+  border-color: rgba(26,64,114,0.1) !important;
+  color: #0d1b2a !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+  min-height: 60px !important;
+}
+
+.mobile-checklist-item.is-complete {
+  background: linear-gradient(180deg, #f0f9f0 0%, #e4f4e4 100%) !important;
+}
+
+/* Person cards */
+.mobile-person-card,
+.mobile-empty-card,
+.mobile-id-scan-launcher {
+  background: #ffffff !important;
+  border-color: rgba(26,64,114,0.1) !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25) !important;
+}
+
+.mobile-person-role {
+  color: #1a4072 !important;
+}
+
+.mobile-person-meta span {
+  background: #e8eef7 !important;
+  color: #1a3a60 !important;
+}
+
+.mobile-person-edit-link {
+  background: #1a4072 !important;
+  color: #ffffff !important;
+}
+
+/* Form recommendation cards */
+.mobile-form-rec-card {
+  background: #ffffff !important;
+  border-color: rgba(26,64,114,0.12) !important;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.18) !important;
+  color: #0d1b2a !important;
+}
+
+/* Packet validation cards */
+.mobile-packet-validation-card.is-error {
+  background: #fff5f5 !important;
+  border-color: #f87171 !important;
+}
+
+.mobile-packet-validation-card.is-warning {
+  background: #fffbf0 !important;
+  border-color: #f0a500 !important;
+}
+
+/* Buttons in content cards */
+.mobile-outline-button {
+  border-color: #1a4072 !important;
+  color: #1a4072 !important;
+}
+
+.mobile-send-button {
+  background: #1a4072 !important;
+  color: #ffffff !important;
+}
+
+.mobile-send-button:disabled {
+  background: #8ca3c0 !important;
+}
+
