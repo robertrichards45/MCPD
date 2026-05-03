@@ -6,10 +6,10 @@
     min-height: 100dvh;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
     padding: max(16px, env(safe-area-inset-top)) 16px max(18px, env(safe-area-inset-bottom)) 16px;
     background: linear-gradient(180deg, #efe6d8 0%, #e6dccd 100%) !important;
     color: #172017 !important;
+    gap: 18px;
   }
   .mobile-home-header {
     display: flex;
@@ -20,6 +20,7 @@
   .mobile-home-header h1,
   .mobile-home-prompt {
     color: #172017 !important;
+    margin: 0;
   }
   .mobile-home-menu {
     display: inline-flex;
@@ -36,27 +37,22 @@
     font-weight: 700;
     white-space: nowrap;
   }
-  .mobile-home-main {
-    flex: 1;
-    display: grid;
-    align-content: center;
-    gap: 18px;
-  }
   .mobile-home-prompt {
-    margin: 0;
-    font-size: 28px;
-    line-height: 1.05;
+    font-size: 26px;
+    line-height: 1.1;
   }
-  .mobile-home-actions {
+  /* Primary CTAs — full width stacked */
+  .mobile-home-primary {
     display: grid;
-    gap: 12px;
+    gap: 10px;
   }
   .mobile-home-action {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 64px;
-    padding: 0 18px;
+    min-height: 66px;
+    padding: 12px 18px;
     border-radius: 16px;
     border: 1px solid #d5c7b0;
     background: rgba(255,255,255,0.96) !important;
@@ -65,12 +61,68 @@
     font-size: 17px;
     font-weight: 700;
     text-align: center;
+    line-height: 1.2;
   }
   .mobile-home-action.is-primary {
-    min-height: 76px;
+    min-height: 78px;
     background: linear-gradient(180deg, #253021 0%, #1b2418 100%) !important;
     color: #f8f4ed !important;
     border-color: rgba(27, 36, 24, 0.85);
+  }
+  .mobile-home-action.is-disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .mobile-home-action-sub {
+    font-size: 12px;
+    font-weight: 400;
+    opacity: 0.72;
+    margin-top: 2px;
+  }
+  .mobile-home-action.is-primary .mobile-home-action-sub {
+    opacity: 0.65;
+    color: #d8f0d0;
+  }
+  /* Feature grid — 2 columns */
+  .mobile-home-features-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #6b7569;
+    margin: 0;
+  }
+  .mobile-home-features {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .mobile-home-feature {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 56px;
+    padding: 10px 12px;
+    border-radius: 14px;
+    border: 1px solid #d5c7b0;
+    background: rgba(255,255,255,0.9) !important;
+    color: #1d241c !important;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+  }
+  .mobile-home-feature.is-disabled {
+    opacity: 0.42;
+    cursor: not-allowed;
+    background: rgba(255,255,255,0.55) !important;
+  }
+  .mobile-home-feature .coming-soon-tag {
+    display: block;
+    font-size: 10px;
+    font-weight: 400;
+    color: #8a9088;
+    margin-top: 2px;
   }
 </style>
 <div class="mobile-home-screen">
@@ -79,17 +131,37 @@
     <a class="mobile-home-menu" href="{{ url_for('dashboard.dashboard') }}" aria-label="Full portal">Portal</a>
   </header>
 
-  <main class="mobile-home-main" aria-label="Field home">
-    <h2 class="mobile-home-prompt">Ready to start a call?</h2>
-    <div class="mobile-home-actions">
-      {% for card in action_cards %}
-        {% if card.is_live %}
-        <a class="mobile-home-action {% if loop.first %}is-primary{% endif %}" href="{{ card.href }}">{{ card.title }}</a>
-        {% else %}
-        <span class="mobile-home-action is-disabled {% if loop.first %}is-primary{% endif %}">{{ card.title }}</span>
-        {% endif %}
-      {% endfor %}
-    </div>
-  </main>
+  <h2 class="mobile-home-prompt">Ready to start a call?</h2>
+
+  <div class="mobile-home-primary" aria-label="Primary actions">
+    {% for card in primary_cards %}
+      {% if card.is_live %}
+      <a class="mobile-home-action {% if card.is_primary %}is-primary{% endif %}" href="{{ card.href }}">
+        {{ card.title }}
+        {% if card.subtitle %}<span class="mobile-home-action-sub">{{ card.subtitle }}</span>{% endif %}
+      </a>
+      {% else %}
+      <span class="mobile-home-action is-disabled {% if card.is_primary %}is-primary{% endif %}">
+        {{ card.title }}
+        {% if card.subtitle %}<span class="mobile-home-action-sub">{{ card.subtitle }}</span>{% endif %}
+      </span>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  <p class="mobile-home-features-label">Features</p>
+
+  <div class="mobile-home-features" aria-label="Feature shortcuts">
+    {% for card in feature_cards %}
+      {% if card.is_live %}
+      <a class="mobile-home-feature" href="{{ card.href }}">{{ card.title }}</a>
+      {% else %}
+      <span class="mobile-home-feature is-disabled">
+        {{ card.title }}
+        <span class="coming-soon-tag">Coming soon</span>
+      </span>
+      {% endif %}
+    {% endfor %}
+  </div>
 </div>
 {% endblock %}
