@@ -2377,54 +2377,163 @@
   function FactsCapturePage(root, urls) {
     const state = incidentStore.getState();
     const values = factValueMap(state);
+    const basics = state.incidentBasics || {};
+    const persons = Array.isArray(state.persons) ? state.persons : [];
+    const selectedForms = Array.isArray(state.selectedForms) ? state.selectedForms : [];
     const voiceSupported = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+
+    function readOnlyField(label, value) {
+      return `
+        <div class="mobile-field-block">
+          <span>${escapeHtml(label)}</span>
+          <div style="padding:10px 14px;background:#f8f5ef;border-radius:12px;border:1px solid #e2d9c7;font-size:15px;color:${value ? '#1e251d' : '#aaa'};min-height:40px;line-height:1.4;">
+            ${escapeHtml(value || '—')}
+          </div>
+        </div>`;
+    }
+
+    const personsSummary = persons.length
+      ? persons.map((p) => `
+          <div style="padding:10px 14px;background:#f8f5ef;border-radius:12px;border:1px solid #e2d9c7;margin-bottom:6px;">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+              <strong style="font-size:14px;color:#1e251d;">${escapeHtml(p.name || 'Unnamed')}</strong>
+              <span style="font-size:12px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:#7a6e5a;background:#ede6d6;padding:2px 8px;border-radius:999px;">${escapeHtml(p.role || 'No role')}</span>
+            </div>
+            ${p.dob ? `<div style="font-size:12px;color:#888;margin-top:3px;">DOB: ${escapeHtml(p.dob)}</div>` : ''}
+            ${p.idNumber ? `<div style="font-size:12px;color:#888;">ID: ${escapeHtml(p.idNumber)}</div>` : ''}
+          </div>`).join('')
+      : `<p style="color:#aaa;font-size:14px;margin:0;padding:4px 0;">No persons added — return to Step 4 to add them.</p>`;
+
+    const formsListHtml = selectedForms.length
+      ? selectedForms.map((f) => `<div style="padding:3px 0;font-size:14px;color:#1e251d;">• ${escapeHtml(f)}</div>`).join('')
+      : `<p style="color:#aaa;font-size:14px;margin:0;">No forms selected.</p>`;
 
     root.innerHTML = `
       <section class="mobile-section-block">
         <div class="mobile-section-head">
-          <h3>Facts capture</h3>
+          <h3>Fact Sheet</h3>
         </div>
-        <div class="mobile-step-progress">
-          <span>Main facts</span>
-          <strong>Tell what happened</strong>
-        </div>
+
+        <article class="mobile-fact-card">
+          <div class="mobile-fact-head"><strong>Incident Overview</strong></div>
+          ${readOnlyField('Incident Type', state.callType)}
+          ${readOnlyField('Date', basics.occurredDate)}
+          ${readOnlyField('Time of Incident', basics.occurredTime)}
+          ${readOnlyField('Location', basics.location)}
+          ${readOnlyField('Reporting Officer', basics.reportingOfficer)}
+        </article>
+
+        <article class="mobile-fact-card">
+          <div class="mobile-fact-head"><strong>Case Information</strong></div>
+          <label class="mobile-field-block">
+            <span>Case / Report Number</span>
+            <input class="mobile-text-input" type="text"
+              data-fact-key="case_number"
+              data-fact-label="Case / Report Number"
+              placeholder="e.g. 2026-001234"
+              value="${escapeHtml(values.case_number || '')}">
+          </label>
+        </article>
+
+        <article class="mobile-fact-card">
+          <div class="mobile-fact-head"><strong>Involved Persons</strong></div>
+          ${personsSummary}
+        </article>
+
+        <article class="mobile-fact-card">
+          <div class="mobile-fact-head"><strong>Vehicle Information</strong></div>
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;font-weight:600;color:#30362c;">
+            <input type="checkbox"
+              data-fact-key="vehicle_involved"
+              data-fact-label="Vehicle Involved"
+              style="width:20px;height:20px;flex-shrink:0;accent-color:#c9a86a;"
+              ${values.vehicle_involved === 'yes' ? 'checked' : ''}>
+            <span>Vehicle involved in this incident</span>
+          </label>
+          <label class="mobile-field-block" id="fact-vehicle-block" style="${values.vehicle_involved === 'yes' ? '' : 'display:none'}">
+            <span>Vehicle Details</span>
+            <textarea class="mobile-text-input mobile-text-area" rows="3"
+              data-fact-key="vehicle_info"
+              data-fact-label="Vehicle Details"
+              placeholder="Year, make, model, plate, state, VIN, owner…"
+            >${escapeHtml(values.vehicle_info || '')}</textarea>
+          </label>
+        </article>
+
+        <article class="mobile-fact-card">
+          <div class="mobile-fact-head"><strong>Property / Evidence</strong></div>
+          <label class="mobile-field-block">
+            <span>Property and evidence involved</span>
+            <textarea class="mobile-text-input mobile-text-area" rows="3"
+              data-fact-key="property_evidence"
+              data-fact-label="Property / Evidence"
+              placeholder="Describe property taken, damaged, or evidence collected…"
+            >${escapeHtml(values.property_evidence || '')}</textarea>
+          </label>
+        </article>
+
         <article class="mobile-fact-card is-focused">
           <div class="mobile-fact-head">
-            <strong>Tell what happened</strong>
+            <strong>Brief Facts Summary</strong>
             ${VoiceInputControl('what_happened', voiceSupported)}
           </div>
-          <textarea
-            class="mobile-text-input mobile-text-area"
-            rows="8"
+          <textarea class="mobile-text-input mobile-text-area" rows="6"
             data-fact-key="what_happened"
             data-fact-label="What happened"
-            placeholder="Observed or reported facts only."
+            placeholder="Observed or reported facts only — who, what, when, where, how."
           >${escapeHtml(values.what_happened || '')}</textarea>
         </article>
-        <details class="mobile-disclosure">
-          <summary>Add More Detail</summary>
-          <div class="mobile-disclosure-copy">
-            <div class="mobile-fact-detail-list">
-              ${factSections
-                .filter((entry) => entry.key !== 'what_happened')
-                .map((entry) => `
-                  <label class="mobile-field-block">
-                    <span>${escapeHtml(entry.label)}</span>
-                    <textarea
-                      class="mobile-text-input mobile-text-area"
-                      rows="3"
-                      data-fact-key="${escapeHtml(entry.key)}"
-                      data-fact-label="${escapeHtml(entry.label)}"
-                      placeholder="Optional details."
-                    >${escapeHtml(values[entry.key] || '')}</textarea>
-                  </label>
-                `).join('')}
-            </div>
-          </div>
-        </details>
+
+        <article class="mobile-fact-card">
+          <div class="mobile-fact-head"><strong>Probable Cause Facts</strong></div>
+          <label class="mobile-field-block">
+            <span>Articulable facts establishing probable cause</span>
+            <textarea class="mobile-text-input mobile-text-area" rows="4"
+              data-fact-key="probable_cause"
+              data-fact-label="Probable Cause"
+              placeholder="Specific, articulable facts establishing probable cause…"
+            >${escapeHtml(values.probable_cause || '')}</textarea>
+          </label>
+        </article>
+
+        <article class="mobile-fact-card">
+          <div class="mobile-fact-head"><strong>Officer Actions Taken</strong></div>
+          <textarea class="mobile-text-input mobile-text-area" rows="4"
+            data-fact-key="officer_actions"
+            data-fact-label="Officer actions"
+            placeholder="Detained, arrested, cited, searched, collected evidence…"
+          >${escapeHtml(values.officer_actions || '')}</textarea>
+        </article>
+
+        <article class="mobile-fact-card">
+          <div class="mobile-fact-head"><strong>Disposition</strong></div>
+          <textarea class="mobile-text-input mobile-text-area" rows="3"
+            data-fact-key="disposition"
+            data-fact-label="Disposition"
+            placeholder="How was this call resolved? Arrest, released, referred, counseled…"
+          >${escapeHtml(values.disposition || '')}</textarea>
+        </article>
+
+        <article class="mobile-fact-card">
+          <div class="mobile-fact-head"><strong>Required Forms Checklist</strong></div>
+          ${formsListHtml}
+        </article>
+
+        <article class="mobile-fact-card">
+          <div class="mobile-fact-head"><strong>Supervisor Notes</strong></div>
+          <label class="mobile-field-block">
+            <span>Notes for supervisor review</span>
+            <textarea class="mobile-text-input mobile-text-area" rows="3"
+              data-fact-key="supervisor_notes"
+              data-fact-label="Supervisor Notes"
+              placeholder="Flags, context, or anything the reviewing supervisor should know…"
+            >${escapeHtml(values.supervisor_notes || '')}</textarea>
+          </label>
+        </article>
+
       </section>
       ${StickyWizardBar({
-        title: 'Save the facts and draft the narrative',
+        title: 'Save facts and continue',
         backHref: urls.checklist,
         backLabel: 'Checklist',
         nextHref: urls.narrative,
@@ -2433,8 +2542,18 @@
       })}
     `;
 
+    const vehicleCheckbox = root.querySelector('[data-fact-key="vehicle_involved"]');
+    const vehicleBlock = root.querySelector('#fact-vehicle-block');
+    if (vehicleCheckbox && vehicleBlock) {
+      vehicleCheckbox.addEventListener('change', () => {
+        const checked = vehicleCheckbox.checked;
+        incidentStore.updateFact('vehicle_involved', 'Vehicle Involved', checked ? 'yes' : 'no');
+        vehicleBlock.style.display = checked ? '' : 'none';
+      });
+    }
+
     let activeRecognition = null;
-    root.querySelectorAll('[data-fact-key]').forEach((field) => {
+    root.querySelectorAll('[data-fact-key]:not([type="checkbox"])').forEach((field) => {
       field.addEventListener('input', () => {
         incidentStore.updateFact(field.getAttribute('data-fact-key'), field.getAttribute('data-fact-label'), field.value);
       });
