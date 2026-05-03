@@ -355,10 +355,12 @@
     setCallType(slug) {
       const current = readState();
       const rule = callTypeRules[slug] || null;
+      const baseList = rule ? clone(rule.recommendedForms) : [];
+      const selectedForms = ['MCPD Stat Sheet', ...baseList.filter((f) => f !== 'MCPD Stat Sheet')];
       return writeState(
         Object.assign({}, current, {
           callType: slug,
-          selectedForms: rule ? clone(rule.recommendedForms) : [],
+          selectedForms,
           statutes: rule ? clone(rule.statutes || []) : [],
           checklist: rule
             ? rule.checklistItems.map((label, index) => ({
@@ -527,6 +529,7 @@
       return writeState(Object.assign({}, current, { formDrafts: drafts }));
     },
     toggleSelectedForm(formName) {
+      if (formName === 'MCPD Stat Sheet') return readState();
       const current = readState();
       const forms = Array.isArray(current.selectedForms) ? current.selectedForms.slice() : [];
       const index = forms.indexOf(formName);
@@ -535,6 +538,7 @@
       } else {
         forms.push(formName);
       }
+      if (!forms.includes('MCPD Stat Sheet')) forms.unshift('MCPD Stat Sheet');
       return writeState(
         Object.assign({}, current, {
           selectedForms: forms,
@@ -664,19 +668,25 @@
   }
 
   function FormRecommendationCard(formName, variant, isSelected, record) {
+    const isLocked = variant === 'always-required';
     const metadata = record
       ? record.category
-      : 'Needs review';
+      : isLocked ? 'Required for every incident' : 'Needs review';
+    const labelText = isLocked ? 'Always Required' : variant === 'optional' ? 'Optional' : 'Recommended';
+    const cardClass = isLocked
+      ? 'is-always-required is-selected'
+      : `${variant === 'optional' ? 'is-optional' : 'is-recommended'} ${isSelected ? 'is-selected' : ''}`;
     return `
-      <article class="mobile-form-rec-card ${variant === 'optional' ? 'is-optional' : 'is-recommended'} ${isSelected ? 'is-selected' : ''}">
+      <article class="mobile-form-rec-card ${cardClass}">
         <div class="mobile-form-rec-copy">
-          <span class="mobile-form-rec-label">${variant === 'optional' ? 'Optional' : 'Recommended'}</span>
+          <span class="mobile-form-rec-label">${escapeHtml(labelText)}</span>
           <strong>${escapeHtml(formName)}</strong>
           <p>${escapeHtml(metadata)}</p>
         </div>
-        <button class="mobile-form-toggle" type="button" data-form-name="${escapeHtml(formName)}">
-          ${isSelected ? 'Selected' : 'Add To Packet'}
-        </button>
+        ${isLocked
+          ? `<span class="mobile-form-toggle is-locked">✓ Always Required</span>`
+          : `<button class="mobile-form-toggle" type="button" data-form-name="${escapeHtml(formName)}">${isSelected ? 'Selected' : 'Add To Packet'}</button>`
+        }
       </article>
     `;
   }
@@ -1861,16 +1871,24 @@
     }
     const catalog = readMobileFormCatalog();
     const selectedForms = Array.isArray(state.selectedForms) ? state.selectedForms : [];
-    const recommended = (rule.recommendedForms || []).map((title) => ({
-      title,
-      variant: 'recommended',
-      record: resolveCatalogRecord(catalog, title),
-    }));
+    if (!selectedForms.includes('MCPD Stat Sheet')) {
+      incidentStore.toggleSelectedForm('__ensure_stat_sheet__');
+      selectedForms.unshift('MCPD Stat Sheet');
+    }
+    const statSheetRecord = resolveCatalogRecord(catalog, 'MCPD Stat Sheet');
+    const recommended = (rule.recommendedForms || [])
+      .filter((title) => title !== 'MCPD Stat Sheet')
+      .map((title) => ({
+        title,
+        variant: 'recommended',
+        record: resolveCatalogRecord(catalog, title),
+      }));
     const optional = (rule.optionalForms || []).map((title) => ({
       title,
       variant: 'optional',
       record: resolveCatalogRecord(catalog, title),
     }));
+    const conditionalCount = selectedForms.filter((f) => f !== 'MCPD Stat Sheet').length;
     root.innerHTML = `
       <section class="mobile-section-block">
         <div class="mobile-section-head">
@@ -1880,13 +1898,21 @@
           <span>${escapeHtml(rule.title)}</span>
           <strong>Select only the forms actually used</strong>
         </div>
+        <p class="mobile-forms-section-label">Required Documents</p>
         <div class="mobile-form-rec-grid">
-          ${recommended.map((entry) => FormRecommendationCard(
-            entry.title,
-            entry.variant,
-            selectedForms.includes(entry.title),
-            entry.record
-          )).join('')}
+          ${FormRecommendationCard('MCPD Stat Sheet', 'always-required', true, statSheetRecord)}
+        </div>
+        <p class="mobile-forms-section-label">Conditional Documents</p>
+        <div class="mobile-form-rec-grid">
+          ${recommended.length
+            ? recommended.map((entry) => FormRecommendationCard(
+                entry.title,
+                entry.variant,
+                selectedForms.includes(entry.title),
+                entry.record
+              )).join('')
+            : '<div class="mobile-empty-card">No additional forms required for this call type.</div>'
+          }
         </div>
       </section>
       <details class="mobile-disclosure">
@@ -1905,12 +1931,12 @@
         </div>
       </details>
       ${StickyWizardBar({
-        title: selectedForms.length ? `${selectedForms.length} form${selectedForms.length === 1 ? '' : 's'} selected` : 'Select the forms you used',
+        title: `Stat Sheet + ${conditionalCount} conditional form${conditionalCount === 1 ? '' : 's'} selected`,
         backHref: urls.basics,
         backLabel: 'Basics',
         nextHref: urls.persons,
         nextLabel: 'People',
-        disabled: !selectedForms.length,
+        disabled: false,
       })}
     `;
 
