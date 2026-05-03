@@ -613,37 +613,67 @@ def _smtp_send_packet(recipient, cc_list, subject, body, attachments):
 @bp.route('/mobile/home')
 @login_required
 def home():
-    action_cards = [
+    primary_cards = [
         {
-            'title': 'Start New Incident',
+            'title': 'Start Incident',
+            'subtitle': 'Full intake workflow',
             'href': url_for('mobile.incident_start'),
-            'button_label': 'Start',
             'is_live': True,
+            'is_primary': True,
         },
         {
-            'title': 'Continue Incident',
-            'href': url_for('mobile.incident_start'),
-            'button_label': 'Continue',
+            'title': 'Fast Capture',
+            'subtitle': 'Jump straight to facts',
+            'href': url_for('mobile.incident_facts'),
             'is_live': True,
-        },
-        {
-            'title': 'Laws / Orders',
-            'href': url_for('legal.legal_home'),
-            'button_label': 'Open',
-            'is_live': True,
-        },
-        {
-            'title': 'Quick Reference',
-            'href': url_for('reference.incident_paperwork_guide'),
-            'button_label': 'Open',
-            'is_live': True,
+            'is_primary': False,
         },
     ]
+    feature_cards = [
+        {
+            'title': 'Forms',
+            'href': url_for('forms.list_forms'),
+            'is_live': True,
+        },
+        {
+            'title': 'Law Lookup',
+            'href': url_for('legal.legal_home'),
+            'is_live': True,
+        },
+        {
+            'title': 'Reports',
+            'href': url_for('reports.list_reports'),
+            'is_live': True,
+        },
+        {
+            'title': 'Reference Library',
+            'href': url_for('reference.quick_reference'),
+            'is_live': True,
+        },
+        {
+            'title': 'Reconstruction',
+            'href': url_for('reconstruction.case_list'),
+            'is_live': True,
+        },
+        {
+            'title': 'Supervisor Review',
+            'href': None,
+            'is_live': False,
+        },
+    ]
+    if current_user.can_manage_team():
+        feature_cards.append({
+            'title': 'Admin / Uploads',
+            'href': url_for('admin.stats_uploads'),
+            'is_live': True,
+        })
     return render_template(
         'mobile_home.html',
         mobile_header_kicker='Field Mobile',
         mobile_header_note=None,
-        action_cards=action_cards,
+        primary_cards=primary_cards,
+        feature_cards=feature_cards,
+        action_cards=primary_cards + feature_cards,
         **_shell_context('Home', 'home'),
     )
 

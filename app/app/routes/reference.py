@@ -767,7 +767,7 @@ def _paperwork_guide_form_payload(form):
 @bp.route('/reference', methods=['GET'])
 @login_required
 def quick_reference():
-    return redirect(url_for('reference.officer_handbook'))
+    return render_template('reference_library.html', user=current_user)
 
 
 @bp.route('/officer-handbook', methods=['GET'])

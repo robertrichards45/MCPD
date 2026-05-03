@@ -49,6 +49,18 @@
             <a class="btn btn-outline-secondary w-100" href="{{ url_for('orders.reference_search') }}">Reset</a>
           </div>
           <div class="col-12">
+            <div class="orders-type-chips">
+              <a class="orders-type-chip {% if not source_type_filter %}is-active{% endif %}"
+                 href="{{ url_for('orders.reference_search') }}{% if search_term %}?q={{ search_term|urlencode }}{% endif %}">All</a>
+              <a class="orders-type-chip {% if source_type_filter == 'USMC_ORDER' %}is-active{% endif %}"
+                 href="{{ url_for('orders.reference_search', source_type='USMC_ORDER') }}{% if search_term %}&q={{ search_term|urlencode }}{% endif %}">USMC Orders</a>
+              <a class="orders-type-chip {% if source_type_filter == 'MCLB_ALBANY_ORDER' %}is-active{% endif %}"
+                 href="{{ url_for('orders.reference_search', source_type='MCLB_ALBANY_ORDER') }}{% if search_term %}&q={{ search_term|urlencode }}{% endif %}">Base Orders</a>
+              <a class="orders-type-chip {% if source_type_filter == 'MEMORANDUM' %}is-active{% endif %}"
+                 href="{{ url_for('orders.reference_search', source_type='MEMORANDUM') }}{% if search_term %}&q={{ search_term|urlencode }}{% endif %}">Memorandums</a>
+            </div>
+          </div>
+          <div class="col-12">
             <details class="collapse-card mt-2">
               <summary>Filters</summary>
               <div class="row g-3 mt-1">

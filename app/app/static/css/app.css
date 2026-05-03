@@ -8301,3 +8301,805 @@ textarea.form-control {
   }
 }
 
+/* ============================================================
+   VISUAL POLISH — Pass 3
+   Law-enforcement dark/navy theme, mobile-first sizing.
+   Only additive overrides — no existing rules removed.
+   ============================================================ */
+
+/* ──────────────────────────────────────────────────────────
+   LOGIN PAGE — landing.html (.login-panel--professional)
+   ────────────────────────────────────────────────────────── */
+
+/* Make the login form input taller so it's easy to tap on mobile */
+.login-form .form-control {
+  min-height: 52px;
+  font-size: 16px;
+}
+
+/* Sign In button: taller + slightly more vivid */
+.login-panel .btn-primary {
+  min-height: 54px;
+  font-size: 16px;
+  font-weight: 700;
+  background: #c9a86a;
+  border-color: #b8975c;
+  color: #0d1a2e;
+}
+
+.login-panel .btn-primary:hover {
+  background: #b8975c;
+  border-color: #a78650;
+  color: #0d1a2e;
+}
+
+/* Login badge: ensure it stands out */
+.login-badge {
+  background: rgba(201,168,106,0.12);
+  border-color: rgba(201,168,106,0.45);
+  color: #e7d6a8;
+}
+
+/* On very small phones, compress the brand side */
+@media (max-width: 480px) {
+  .login-panel--professional {
+    border-radius: 0;
+    width: 100%;
+  }
+
+  .login-panel__brand {
+    padding: 20px 18px;
+  }
+
+  .login-panel__brand h1 {
+    font-size: 22px;
+  }
+
+  .login-callout {
+    display: none;
+  }
+
+  .login-panel__auth {
+    padding: 20px 18px;
+  }
+
+  .login-bg {
+    padding: 0;
+    align-items: flex-start;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────
+   DESKTOP DASHBOARD — dashboard.html
+   ────────────────────────────────────────────────────────── */
+
+/* Upgrade button palette to navy-blue; current #123456 is too dark */
+.dash-quick-btn {
+  background: #1a4072;
+  min-height: 48px;
+  font-size: 14px;
+  border-radius: 10px;
+  letter-spacing: 0.01em;
+}
+
+.dash-quick-btn:hover {
+  background: #1e4e8c;
+}
+
+.dash-quick-btn.alt {
+  background: #f0f4f8;
+  color: #1a2a3a;
+  border-color: #c6d0dc;
+}
+
+.dash-quick-btn.alt:hover {
+  background: #ddeaf6;
+  color: #0d1b2a;
+}
+
+/* Panel heads: slightly more spacing */
+.dash-panel {
+  border-radius: 10px;
+}
+
+/* Metric tiles: cleaner navy accent */
+.dash-metric {
+  border-radius: 10px;
+}
+
+.dash-metric strong {
+  color: #1a4072;
+}
+
+/* Notice items: polish */
+.dash-notice-item {
+  border-left-color: #1a4072;
+  background: #f0f5fc;
+}
+
+/* Dashboard header: make it feel more like an ops console */
+.dash-header {
+  background: linear-gradient(90deg, #0d1b2a 0%, #1a3050 100%);
+  border-bottom: 1px solid rgba(26,64,114,0.4);
+}
+
+.dash-header-left h1 {
+  color: #f5f2ea;
+  font-size: 18px;
+  letter-spacing: 0.02em;
+}
+
+.dash-header-left p {
+  color: rgba(245,242,234,0.65);
+}
+
+/* Responsive dashboard: bigger tap targets at tablet */
+@media (max-width: 900px) {
+  .dash-quick-btn {
+    min-height: 56px;
+    font-size: 15px;
+  }
+
+  .dash-body {
+    padding: 0 14px 14px;
+  }
+
+  .dash-metrics {
+    padding: 0 14px 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .dash-header {
+    padding: 12px 14px;
+  }
+
+  .dash-header-left h1 {
+    font-size: 16px;
+  }
+
+  .dash-quick-btn {
+    min-height: 58px;
+    font-size: 15px;
+  }
+
+  .dash-panel {
+    padding: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dash-quick-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .dash-quick-btn {
+    min-height: 62px;
+    font-size: 14px;
+    padding: 8px 6px;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────
+   MOBILE SHELL — mobile_shell.html
+   ────────────────────────────────────────────────────────── */
+
+/* Tighten the mobile header height on small screens */
+@media (max-width: 480px) {
+  .mobile-header {
+    padding-top: max(10px, env(safe-area-inset-top));
+    padding-bottom: 8px;
+  }
+
+  .mobile-header h1 {
+    font-size: 18px;
+  }
+
+  .mobile-main {
+    padding-top: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+}
+
+/* ============================================================
+   MOBILE WORKFLOW — Navy Theme
+   Overrides all cream/tan/green colors in the incident workflow
+   so every mobile_shell.html page matches the new dark navy UI.
+   Append-only; no existing rules removed.
+   ============================================================ */
+
+/* ── 1. Page-level background ── */
+body.mobile-foundation {
+  background: #0a1525 !important;
+}
+
+/* ── 2. Shell container ── */
+.mobile-shell {
+  background: linear-gradient(160deg, #0d1a2e 0%, #0a1322 100%) !important;
+}
+
+/* ── 3. Header: dark green → dark navy ── */
+.mobile-header {
+  background: linear-gradient(180deg, rgba(9,18,38,0.99) 0%, rgba(14,27,52,0.97) 100%) !important;
+  border-bottom: 1px solid rgba(201,168,106,0.2) !important;
+}
+
+/* Kicker (eyebrow text): brown/tan → gold */
+.mobile-header-kicker {
+  color: rgba(201,168,106,0.85) !important;
+}
+
+/* Role pill: brown → gold/translucent */
+.mobile-role-pill {
+  background: rgba(201,168,106,0.14) !important;
+  color: #c9a86a !important;
+  border-color: rgba(201,168,106,0.32) !important;
+}
+
+/* User chip: keeps subtle on dark */
+.mobile-user-chip {
+  background: rgba(255,255,255,0.08) !important;
+  border-color: rgba(255,255,255,0.13) !important;
+  color: #f5f2ea !important;
+}
+
+/* ── 4. Main content area ── */
+.mobile-shell .mobile-main {
+  padding-top: 12px !important;
+}
+
+/* ── 5. Tab bar: cream → dark navy ── */
+.mobile-tab-bar {
+  background: rgba(9,18,38,0.97) !important;
+  border-top: 1px solid rgba(201,168,106,0.18) !important;
+  backdrop-filter: blur(20px) !important;
+}
+
+/* Individual tabs: cream/white → dark translucent */
+.mobile-tab {
+  background: rgba(255,255,255,0.05) !important;
+  color: rgba(245,242,234,0.48) !important;
+  border-color: rgba(255,255,255,0.07) !important;
+}
+
+.mobile-tab.is-active {
+  background: rgba(201,168,106,0.16) !important;
+  color: #c9a86a !important;
+  box-shadow: none !important;
+}
+
+/* ── 6. Wizard / navigation bar: green → navy + gold ── */
+.mobile-wizard-bar {
+  background: rgba(9,18,38,0.97) !important;
+  border-top: 1px solid rgba(201,168,106,0.18) !important;
+  backdrop-filter: blur(20px) !important;
+}
+
+.mobile-wizard-copy strong {
+  color: #f5f2ea !important;
+}
+
+.mobile-wizard-copy span {
+  color: rgba(245,242,234,0.6) !important;
+}
+
+/* Back button */
+.mobile-wizard-link {
+  background: rgba(255,255,255,0.08) !important;
+  color: rgba(245,242,234,0.8) !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  min-height: 48px !important;
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+}
+
+/* Next / CTA button */
+.mobile-wizard-cta {
+  background: #c9a86a !important;
+  color: #0d1a2e !important;
+  border-color: #b8975c !important;
+  min-height: 48px !important;
+  border-radius: 12px !important;
+  font-weight: 700 !important;
+}
+
+.mobile-wizard-cta.is-disabled {
+  background: rgba(201,168,106,0.3) !important;
+  color: rgba(13,26,46,0.5) !important;
+  cursor: not-allowed !important;
+}
+
+/* ── 7. Progress chips: brown → gold/navy ── */
+.mobile-progress-chip {
+  background: rgba(201,168,106,0.14) !important;
+  color: rgba(245,242,234,0.8) !important;
+}
+
+.mobile-progress-chip.is-active {
+  background: #c9a86a !important;
+  color: #0d1a2e !important;
+}
+
+.mobile-progress-chip.is-complete {
+  background: rgba(201,168,106,0.38) !important;
+  color: #0d1a2e !important;
+}
+
+/* ── 8. Prompt chips (call type selection) ── */
+.mobile-prompt-chip {
+  background: rgba(13,26,46,0.88) !important;
+  border-color: rgba(201,168,106,0.2) !important;
+  color: #f5f2ea !important;
+}
+
+.mobile-prompt-chip.is-active {
+  background: #c9a86a !important;
+  color: #0d1a2e !important;
+  border-color: #c9a86a !important;
+}
+
+/* ── 9. Section blocks (white cards on dark bg) ── */
+.mobile-section-block,
+.mobile-hero-card,
+.mobile-action-card,
+.mobile-step-card {
+  background: #ffffff !important;
+  border-color: rgba(26,64,114,0.1) !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.32) !important;
+}
+
+/* Step progress label inside white card */
+.mobile-step-progress span {
+  color: rgba(201,168,106,0.9) !important;
+}
+
+.mobile-step-progress strong {
+  color: #0d1b2a !important;
+}
+
+/* Section head inside white card */
+.mobile-section-head h3,
+.mobile-section-head > strong,
+.mobile-step-title {
+  color: #0d1b2a !important;
+}
+
+.mobile-section-head p {
+  color: #5f6f7a !important;
+}
+
+/* ── 10. Form inputs ── */
+.mobile-text-input {
+  border-color: #c8d3df !important;
+  background: #fafbfc !important;
+  color: #0d1b2a !important;
+  border-radius: 12px !important;
+}
+
+.mobile-text-input:focus {
+  border-color: #1a4072 !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(26,64,114,0.13) !important;
+}
+
+/* Field block labels */
+.mobile-field-block {
+  color: #0d1b2a !important;
+}
+
+.mobile-field-block > span {
+  color: #2a3a4a !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+}
+
+/* ── 11. Call-type cards: white on dark ── */
+.mobile-call-type-card {
+  background: #ffffff !important;
+  border-color: rgba(26,64,114,0.1) !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.28) !important;
+  color: #0d1b2a !important;
+}
+
+.mobile-call-type-kicker {
+  color: rgba(201,168,106,0.9) !important;
+}
+
+.mobile-call-type-card.is-active {
+  border-color: #c9a86a !important;
+  background: linear-gradient(180deg, #fffaf4 0%, #fef3e0 100%) !important;
+  box-shadow: 0 6px 22px rgba(201,168,106,0.28) !important;
+}
+
+/* ── 12. Checklist items: white on dark ── */
+.mobile-checklist-item {
+  background: #ffffff !important;
+  border-color: rgba(26,64,114,0.1) !important;
+  color: #0d1b2a !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+  min-height: 60px !important;
+}
+
+.mobile-checklist-item.is-complete {
+  background: linear-gradient(180deg, #f0f9f0 0%, #e4f4e4 100%) !important;
+  border-color: rgba(56,140,56,0.22) !important;
+}
+
+/* ── 13. Person cards: white on dark ── */
+.mobile-person-card,
+.mobile-empty-card,
+.mobile-id-scan-launcher {
+  background: #ffffff !important;
+  border-color: rgba(26,64,114,0.1) !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25) !important;
+}
+
+/* Person role label */
+.mobile-person-role {
+  color: #1a4072 !important;
+}
+
+/* Person meta chips */
+.mobile-person-meta span {
+  background: #e8eef7 !important;
+  color: #1a3a60 !important;
+}
+
+/* Person card body text */
+.mobile-person-card p,
+.mobile-empty-card {
+  color: #4a5a6a !important;
+}
+
+/* Edit link: dark green → dark navy */
+.mobile-person-edit-link {
+  background: #1a4072 !important;
+  color: #ffffff !important;
+}
+
+.mobile-person-edit-link:hover {
+  background: #1e4e8c !important;
+}
+
+/* ── 14. Form recommendation cards ── */
+.mobile-form-rec-card {
+  background: #ffffff !important;
+  border-color: rgba(26,64,114,0.1) !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.22) !important;
+}
+
+.mobile-form-rec-card.is-recommended {
+  background: linear-gradient(180deg, #fffaf4 0%, #fff5e4 100%) !important;
+  border-color: rgba(201,168,106,0.25) !important;
+}
+
+.mobile-form-rec-card.is-optional {
+  background: #ffffff !important;
+}
+
+.mobile-form-rec-card.is-selected {
+  border-color: rgba(26,64,114,0.4) !important;
+  box-shadow: 0 0 0 2px rgba(26,64,114,0.2) !important;
+}
+
+/* Form toggle button: dark green → navy */
+.mobile-form-toggle {
+  background: #1a4072 !important;
+  border-color: #1a4072 !important;
+  color: #ffffff !important;
+  border-radius: 12px !important;
+}
+
+.mobile-form-toggle:hover {
+  background: #1e4e8c !important;
+}
+
+/* ── 15. Toggle cards (dark surface inside dark shell) ── */
+.mobile-toggle-card {
+  background: rgba(13,26,46,0.85) !important;
+  border-color: rgba(201,168,106,0.15) !important;
+  color: #f5f2ea !important;
+}
+
+/* ── 16. Inline notes (on dark background) ── */
+.mobile-inline-note {
+  background: rgba(201,168,106,0.1) !important;
+  color: rgba(245,242,234,0.85) !important;
+  border: 1px solid rgba(201,168,106,0.18) !important;
+  border-radius: 14px !important;
+}
+
+/* ── 17. Disclosure/detail elements inside white cards ── */
+.mobile-disclosure {
+  background: rgba(248,250,252,0.9) !important;
+  border-color: rgba(26,64,114,0.1) !important;
+}
+
+.mobile-disclosure summary {
+  color: #0d1b2a !important;
+}
+
+/* ── 18. Inline stats ── */
+.mobile-inline-stat {
+  background: #ffffff !important;
+  border-color: rgba(26,64,114,0.1) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+}
+
+.mobile-inline-stat strong {
+  color: #1a4072 !important;
+}
+
+/* ── 19. Scan/barcode launcher ── */
+.mobile-scan-button {
+  background: #1a4072 !important;
+  color: #ffffff !important;
+  border-color: #1a4072 !important;
+  border-radius: 12px !important;
+}
+
+/* ── 20. Fast Capture fallback section ── */
+#facts-fallback {
+  background: #ffffff !important;
+  border-color: rgba(26,64,114,0.1) !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.3) !important;
+}
+
+/* ── Responsive: better tap targets on small phones ── */
+@media (max-width: 390px) {
+  .mobile-wizard-cta,
+  .mobile-wizard-link {
+    min-height: 52px !important;
+    font-size: 15px !important;
+  }
+
+  .mobile-checklist-item {
+    min-height: 64px !important;
+  }
+
+  .mobile-text-input {
+    min-height: 54px !important;
+    font-size: 16px !important;
+  }
+}
+
+/* Section blocks inside mobile shell: more breathing room */
+.mobile-section-block {
+  border-radius: 18px;
+  margin-bottom: 10px;
+}
+
+/* Mobile fact cards: cleaner look */
+.mobile-fact-card {
+  border-radius: 16px;
+}
+
+/* ──────────────────────────────────────────────────────────
+   MOBILE TAB BAR — partials/mobile_tab_bar.html
+   ────────────────────────────────────────────────────────── */
+
+.mobile-tab-bar {
+  border-top: 1px solid rgba(255,255,255,0.1) !important;
+  background: rgba(13,26,46,0.97) !important;
+  backdrop-filter: blur(16px) !important;
+}
+
+.mobile-tab-strip {
+  padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+}
+
+.mobile-tab {
+  color: rgba(245,242,234,0.5) !important;
+  font-weight: 600 !important;
+  min-height: 52px !important;
+}
+
+.mobile-tab.is-active {
+  color: #c9a86a !important;
+  background: rgba(201,168,106,0.12) !important;
+}
+
+.mobile-tab-label {
+  font-size: 12px !important;
+  letter-spacing: 0.04em !important;
+}
+
+/* ──────────────────────────────────────────────────────────
+   MOBILE WIZARD BAR — facts capture / incident pages
+   ────────────────────────────────────────────────────────── */
+
+.mobile-wizard-bar {
+  background: rgba(13,26,46,0.97) !important;
+  border-top: 1px solid rgba(201,168,106,0.2) !important;
+  backdrop-filter: blur(16px) !important;
+}
+
+.mobile-wizard-cta {
+  background: #c9a86a !important;
+  color: #0d1a2e !important;
+  border-color: #b8975c !important;
+  font-weight: 700 !important;
+  min-height: 48px !important;
+  border-radius: 10px !important;
+}
+
+.mobile-wizard-link {
+  color: rgba(245,242,234,0.7) !important;
+  background: rgba(255,255,255,0.07) !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  min-height: 44px !important;
+  border-radius: 10px !important;
+}
+
+/* ──────────────────────────────────────────────────────────
+   MOBILE FAST CAPTURE — fallback section before JS loads
+   ────────────────────────────────────────────────────────── */
+
+#facts-fallback {
+  background: rgba(255,255,255,0.96);
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: 0 8px 24px rgba(13,26,46,0.12);
+  border: 1px solid rgba(26,64,114,0.1);
+}
+
+#facts-fallback .mobile-section-head h3 {
+  color: #0d1b2a;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+#facts-fallback .mobile-text-area {
+  border: 1px solid #c6d0dc;
+  border-radius: 12px;
+  background: #fafbfc;
+  color: #0d1b2a;
+  font-size: 16px;
+  padding: 12px 14px;
+  line-height: 1.5;
+}
+
+#facts-fallback .mobile-text-area:focus {
+  border-color: #1a4072;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(26,64,114,0.15);
+}
+
+/* ──────────────────────────────────────────────────────────
+   GENERAL MOBILE POLISH — common patterns
+   ────────────────────────────────────────────────────────── */
+
+/* Prevent buttons from being too small to tap */
+@media (max-width: 768px) {
+  .btn {
+    min-height: 48px;
+  }
+
+  .btn-primary {
+    background: #1a4072;
+    border-color: #1a4072;
+  }
+
+  .btn-primary:hover,
+  .btn-primary:focus {
+    background: #1e4e8c;
+    border-color: #1e4e8c;
+  }
+}
+
+/* Cards on small screens: full-width, better radius */
+@media (max-width: 640px) {
+  .card {
+    border-radius: 12px;
+  }
+}
+
+/* Page wrap on phones: reduce horizontal padding */
+@media (max-width: 480px) {
+  .page-wrap {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
+
+/* ============================================================
+   REFERENCE LIBRARY — Hub category cards
+   ============================================================ */
+
+.ref-cat-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid #dde3ed;
+  background: #ffffff;
+  color: #0d1b2a;
+  text-decoration: none;
+  transition: box-shadow 0.14s, transform 0.14s, border-color 0.14s;
+}
+
+.ref-cat-card:hover {
+  box-shadow: 0 4px 18px rgba(13,26,46,0.1);
+  border-color: #b8c4d8;
+  transform: translateY(-2px);
+  color: #0d1b2a;
+  text-decoration: none;
+}
+
+.ref-cat-card:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.ref-cat-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #c9a86a;
+  margin-bottom: 4px;
+}
+
+.ref-cat-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0d1b2a;
+  margin-bottom: 4px;
+  line-height: 1.2;
+}
+
+.ref-cat-desc {
+  font-size: 12px;
+  color: #6b7a8e;
+  line-height: 1.45;
+  margin-top: auto;
+}
+
+/* Tighter cards on small phones */
+@media (max-width: 400px) {
+  .ref-cat-card {
+    padding: 10px 12px;
+  }
+  .ref-cat-title {
+    font-size: 13px;
+  }
+}
+
+/* ── Orders quick-type chips ── */
+.orders-type-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 0 4px;
+}
+
+.orders-type-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 14px;
+  border-radius: 999px;
+  border: 1px solid #d0d8e4;
+  background: #f4f6fa;
+  color: #1a3a60;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.1s, border-color 0.1s;
+  white-space: nowrap;
+}
+
+.orders-type-chip:hover {
+  background: #e4eaf4;
+  border-color: #b0bed4;
+  color: #0d1b2a;
+  text-decoration: none;
+}
+
+.orders-type-chip.is-active {
+  background: #1a4072;
+  border-color: #1a4072;
+  color: #ffffff;
+}
+

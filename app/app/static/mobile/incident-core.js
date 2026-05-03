@@ -1651,6 +1651,27 @@
     });
   }
 
+  function narrativeDetailWarnings(state) {
+    const facts = Array.isArray(state.facts) ? state.facts : [];
+    const factMap = {};
+    facts.forEach(function(entry) {
+      if (entry && entry.id && String(entry.value || '').trim()) {
+        factMap[entry.id] = String(entry.value).trim();
+      }
+    });
+    var items = [];
+    if (!factMap.what_happened) {
+      items.push({ field: 'What Happened', message: 'Main facts section is empty. Describe what occurred.' });
+    }
+    if (!factMap.officer_actions) {
+      items.push({ field: 'Officer Actions', message: 'Officer actions section is blank. Document the actions you took.' });
+    }
+    if (!factMap.disposition) {
+      items.push({ field: 'Disposition', message: 'Incident disposition is not recorded. Document how the call was concluded.' });
+    }
+    return items;
+  }
+
   function buildPacket(state, catalog) {
     const basics = state.incidentBasics || {};
     const statements = Array.isArray(state.statements) ? state.statements : [];
@@ -1768,6 +1789,20 @@
       if (!item || item.completed) return;
       warnings.push({ field: 'Checklist', message: item.label || 'Checklist item is still open.' });
     });
+
+    // Disposition — warn if not documented (non-blocking; not every call type requires a formal disposition entry)
+    const hasDisposition = facts.some((entry) => entry && entry.id === 'disposition' && String(entry.value || '').trim());
+    if (!hasDisposition) {
+      warnings.push({ field: 'Disposition', message: 'Incident disposition is not documented. Record how the call concluded (released, arrested, counseled, referred, etc.).' });
+    }
+
+    // Short narrative — warn when the narrative is present but thin
+    if (narrative) {
+      const wordCount = narrative.trim().split(/\s+/).filter(Boolean).length;
+      if (wordCount < 40) {
+        warnings.push({ field: 'Narrative', message: `Narrative is brief (${wordCount} word${wordCount === 1 ? '' : 's'}). Supervisors expect sufficient detail before review.` });
+      }
+    }
 
     return {
       callType: state.callType || '',
