@@ -629,9 +629,9 @@ def home():
         },
         {
             'title': 'Fast Capture',
-            'subtitle': 'Jump straight to facts',
-            'href': url_for('mobile.incident_facts'),
-            'is_live': True,
+            'subtitle': 'Coming soon',
+            'href': None,
+            'is_live': False,
             'is_primary': False,
         },
     ]
@@ -641,7 +641,7 @@ def home():
         {'title': 'Reference Library', 'href': url_for('reference.incident_paperwork_guide'), 'is_live': True},
         {'title': 'Supervisor Review', 'href': None, 'is_live': False},
         {'title': 'Critical Incident', 'href': None, 'is_live': False},
-        {'title': 'Accident Diagram', 'href': None, 'is_live': False},
+        {'title': 'Accident Diagram', 'href': url_for('reconstruction.case_list'), 'is_live': True},
     ]
     if current_user.can_manage_team():
         feature_cards.append({'title': 'Admin', 'href': url_for('admin.stats_uploads'), 'is_live': True})

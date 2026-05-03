@@ -3,6 +3,9 @@
 <div class="app-shell">
   {% include 'partials/nav.html' %}
   <div class="page-wrap forms-library-shell">
+    <div class="mobile-back-bar">
+      <a class="mobile-back-btn" href="{{ url_for('mobile.home') }}">&#8592; Field Portal</a>
+    </div>
     <section class="card p-3 mb-3 page-head ops-head-card">
       <div class="ops-head-grid">
         <div class="ops-head-copy">
@@ -102,6 +105,7 @@
       <div class="card p-3 text-muted">No forms found.</div>
       {% endfor %}
     </div>
+    <div class="mobile-version-marker">MCPD MOBILE FORMS ACTIVE</div>
   </div>
 </div>
 {% endblock %}

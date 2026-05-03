@@ -3,6 +3,9 @@
 <div class="app-shell">
   {% include 'partials/nav.html' %}
   <div class="page-wrap authority-page-wrap">
+    <div class="mobile-back-bar">
+      <a class="mobile-back-btn" href="{{ url_for('mobile.home') }}">&#8592; Field Portal</a>
+    </div>
     {% set lead_item = lead_result if lead_result is defined else (results[0] if results else None) %}
 
     <section class="search-hero legal-hero authority-hero mb-3">
@@ -317,6 +320,7 @@
       {% endif %}
     </div>
   </div>
-  <!-- MCPD MOBILE STYLE SYSTEM ACTIVE -->
+    <div class="mobile-version-marker">MCPD MOBILE LAW ACTIVE</div>
+  </div>
 </div>
 {% endblock %}

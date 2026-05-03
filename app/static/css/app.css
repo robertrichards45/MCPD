@@ -8334,3 +8334,338 @@ body.mobile-foundation {
   letter-spacing: 0.08em;
 }
 /* end MCPD MOBILE STYLE SYSTEM */
+
+/* ═══════════════════════════════════════════════════════════════════════
+   MCPD PHASE 2 — 2026-05-03-phase2-1
+   Mobile back bar, forms / orders / law-lookup dark-navy improvements.
+   All rules scoped to body:not(.mobile-foundation) @media (max-width:820px)
+   so they never touch the incident workflow pages.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Mobile back bar + version markers — hidden on desktop ─────────── */
+.mobile-back-bar   { display: none; }
+.mobile-version-marker { display: none; }
+
+@media (max-width: 820px) {
+
+  body:not(.mobile-foundation) .mobile-back-bar {
+    display: flex;
+    align-items: center;
+    padding: 0 0 10px 0;
+  }
+  body:not(.mobile-foundation) .mobile-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #c9a86a;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    padding: 6px 0;
+  }
+  body:not(.mobile-foundation) .mobile-version-marker {
+    display: block;
+    font-size: 10px;
+    color: rgba(201,166,70,0.5);
+    text-align: center;
+    padding: 14px 8px 6px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  /* ── Forms Library — dark navy touch-friendly ──────────────────────── */
+  body:not(.mobile-foundation) .forms-library-shell .ops-head-card {
+    background: rgba(255,255,255,0.05) !important;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 14px;
+  }
+  body:not(.mobile-foundation) .forms-library-shell .ops-head-copy h2 {
+    color: #f5f2ea;
+    font-size: 22px;
+  }
+  body:not(.mobile-foundation) .forms-library-shell .ops-head-copy p {
+    color: rgba(245,242,234,0.65);
+  }
+  body:not(.mobile-foundation) .forms-library-shell .ops-stat-pill {
+    background: rgba(201,166,70,0.12);
+    border: 1px solid rgba(201,166,70,0.25);
+    border-radius: 10px;
+    padding: 8px 12px;
+    color: #f5f2ea;
+  }
+  body:not(.mobile-foundation) .forms-library-shell .forms-toolbar {
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 14px;
+  }
+  body:not(.mobile-foundation) .forms-library-shell .forms-toolbar .btn {
+    width: 100%;
+    min-height: 48px;
+    font-size: 15px;
+    border-radius: 10px;
+  }
+  body:not(.mobile-foundation) .forms-filter-panel {
+    background: rgba(255,255,255,0.05) !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+    border-radius: 14px !important;
+  }
+  body:not(.mobile-foundation) .forms-filter-label {
+    color: rgba(245,242,234,0.6) !important;
+  }
+  body:not(.mobile-foundation) .forms-results-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px;
+  }
+  body:not(.mobile-foundation) .forms-result-card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 14px;
+    padding: 16px;
+    gap: 12px;
+  }
+  body:not(.mobile-foundation) .forms-card-kicker {
+    color: #c9a646 !important;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+  }
+  body:not(.mobile-foundation) .forms-card-date {
+    color: rgba(245,242,234,0.4) !important;
+  }
+  body:not(.mobile-foundation) .forms-card-head h4 {
+    color: #f5f2ea;
+    font-size: 17px;
+    font-weight: 700;
+    max-width: none;
+  }
+  body:not(.mobile-foundation) .forms-card-sub {
+    color: rgba(245,242,234,0.6);
+    font-size: 13px;
+  }
+  body:not(.mobile-foundation) .forms-card-actions {
+    grid-template-columns: 1fr !important;
+    gap: 8px;
+  }
+  body:not(.mobile-foundation) .forms-card-actions .btn {
+    min-height: 52px;
+    font-size: 15px;
+    border-radius: 10px;
+    width: 100%;
+  }
+  body:not(.mobile-foundation) .forms-card-actions .btn-primary {
+    background: #c9a646;
+    border-color: #b8953a;
+    color: #0d1a2e;
+    font-weight: 700;
+  }
+  body:not(.mobile-foundation) .forms-card-actions .btn-outline-secondary {
+    border-color: rgba(245,242,234,0.25);
+    color: #f5f2ea;
+    background: rgba(255,255,255,0.06);
+  }
+
+  /* ── Orders / Reference Library — dark navy touch-friendly ─────────── */
+  body:not(.mobile-foundation) .legal-search-card {
+    background: rgba(255,255,255,0.05) !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+    border-radius: 14px !important;
+  }
+  body:not(.mobile-foundation) .legal-search-card h2 {
+    color: #f5f2ea;
+    font-size: 20px;
+  }
+  body:not(.mobile-foundation) .legal-search-card .text-muted {
+    color: rgba(245,242,234,0.6) !important;
+  }
+  body:not(.mobile-foundation) #orders-results {
+    background: rgba(255,255,255,0.04) !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+    border-radius: 14px !important;
+  }
+  body:not(.mobile-foundation) #orders-results h5 {
+    color: #f5f2ea;
+  }
+  body:not(.mobile-foundation) #orders-results .text-muted {
+    color: rgba(245,242,234,0.5) !important;
+  }
+  body:not(.mobile-foundation) .legal-accordion-item {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    margin-bottom: 8px;
+    overflow: hidden;
+  }
+  body:not(.mobile-foundation) .legal-accordion-summary {
+    padding: 14px 16px;
+    min-height: 56px;
+    color: #f5f2ea;
+  }
+  body:not(.mobile-foundation) .legal-accordion-title {
+    color: #f5f2ea !important;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  body:not(.mobile-foundation) .legal-accordion-body {
+    padding: 14px 16px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    color: rgba(245,242,234,0.85);
+  }
+  body:not(.mobile-foundation) .legal-accordion-body .btn-outline-dark {
+    border-color: rgba(245,242,234,0.3);
+    color: #f5f2ea;
+    min-height: 44px;
+    border-radius: 8px;
+  }
+  body:not(.mobile-foundation) .legal-accordion-body .btn-primary {
+    background: #c9a646;
+    border-color: #b8953a;
+    color: #0d1a2e;
+    min-height: 44px;
+    border-radius: 8px;
+  }
+
+  /* ── Law Lookup — result cards and search improvements ─────────────── */
+  body:not(.mobile-foundation) .legal-hero .eyebrow {
+    color: #c9a646;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  body:not(.mobile-foundation) .legal-hero h1 {
+    color: #f5f2ea;
+    font-size: 22px;
+  }
+  body:not(.mobile-foundation) .hero-chip {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px;
+    padding: 6px 12px;
+  }
+  body:not(.mobile-foundation) .hero-chip .hero-chip-label {
+    color: rgba(245,242,234,0.5);
+    font-size: 10px;
+    display: block;
+  }
+  body:not(.mobile-foundation) .hero-chip strong {
+    color: #f5f2ea;
+  }
+  body:not(.mobile-foundation) .authority-search-shell .btn-primary {
+    min-height: 52px;
+    background: #c9a646;
+    border-color: #b8953a;
+    color: #0d1a2e;
+    font-weight: 700;
+    font-size: 16px;
+    border-radius: 10px;
+  }
+  body:not(.mobile-foundation) .lead-match-card {
+    background: rgba(255,255,255,0.06) !important;
+    border: 1px solid rgba(201,166,70,0.3) !important;
+    border-radius: 14px !important;
+  }
+  body:not(.mobile-foundation) .lead-match-head h3 {
+    color: #f5f2ea;
+    font-size: 18px;
+  }
+  body:not(.mobile-foundation) .lead-match-head .text-muted {
+    color: rgba(245,242,234,0.6) !important;
+  }
+  body:not(.mobile-foundation) .action-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  body:not(.mobile-foundation) .action-row .btn-primary {
+    background: #c9a646;
+    border-color: #b8953a;
+    color: #0d1a2e;
+    font-weight: 700;
+    min-height: 48px;
+    border-radius: 10px;
+    flex: 1;
+  }
+  body:not(.mobile-foundation) .action-row .btn-outline-dark {
+    border-color: rgba(245,242,234,0.3);
+    color: #f5f2ea;
+    min-height: 48px;
+    border-radius: 10px;
+    flex: 1;
+  }
+  body:not(.mobile-foundation) .summary-box {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 12px;
+  }
+  body:not(.mobile-foundation) .summary-box .small.text-muted {
+    color: rgba(245,242,234,0.5) !important;
+  }
+  body:not(.mobile-foundation) .summary-box li {
+    color: rgba(245,242,234,0.85);
+  }
+  body:not(.mobile-foundation) .result-group h6 {
+    color: #c9a646;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  body:not(.mobile-foundation) .tier-label {
+    color: rgba(245,242,234,0.5);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin: 8px 0 6px;
+  }
+  body:not(.mobile-foundation) .intel-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 14px;
+  }
+  body:not(.mobile-foundation) .intel-kicker {
+    color: #c9a646;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 6px;
+  }
+  body:not(.mobile-foundation) .query-chip {
+    background: rgba(201,166,70,0.15);
+    border: 1px solid rgba(201,166,70,0.3);
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-size: 12px;
+    color: #f5f2ea;
+  }
+  body:not(.mobile-foundation) .notice-panel {
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: rgba(245,242,234,0.85);
+  }
+  body:not(.mobile-foundation) .notice-panel-soft {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  body:not(.mobile-foundation) .notice-panel-info {
+    background: rgba(100,170,255,0.1);
+    border: 1px solid rgba(100,170,255,0.25);
+  }
+  body:not(.mobile-foundation) .ai-law-candidates {
+    background: rgba(255,255,255,0.04) !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+    border-radius: 14px !important;
+  }
+  body:not(.mobile-foundation) .ai-law-candidates .eyebrow {
+    color: #c9a646;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+  }
+
+}
