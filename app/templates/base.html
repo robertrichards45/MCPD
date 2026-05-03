@@ -8,7 +8,7 @@
   {% endif %}
   <title>{{ title if title else 'MCPD Portal' }}</title>
   <link rel="icon" type="image/svg+xml" href="{{ url_for('usmc_emblem') }}" />
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css', v='2026-05-03-navy-mobile-1') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css', v='2026-05-03-mobile-system-1') }}" />
 </head>
 <body class="{{ body_class|default('') }}">
   {% with messages = get_flashed_messages(with_categories=true) %}
