@@ -1,10 +1,10 @@
 import hmac
 import os
 
-from flask import Blueprint, Response, g, jsonify, request, session
+from flask import Blueprint, Response, g, jsonify, request, session, url_for
 from flask_login import login_required
 
-from ..services.ai_client import _ALLOWED_VOICES, ask_openai_with_system, openai_tts
+from ..services.ai_client import _ALLOWED_VOICES, ask_openai_with_system, is_ai_unavailable_message, openai_tts
 
 bp = Blueprint('assistant', __name__)
 
@@ -15,6 +15,58 @@ _SYSTEM_PROMPT = (
     "Be concise, direct, and professional. When you don't know something with confidence, say so clearly. "
     "Avoid unnecessary filler phrases. Speak plainly as if briefing another officer."
 )
+
+
+def _local_assistant_reply(message: str) -> str:
+    """Reliable MCPD fallback when premium AI is not configured or unavailable."""
+    text = (message or '').strip().lower()
+    if not text:
+        return 'Tell me what you need help with, such as starting a report, finding paperwork, searching law, or opening forms.'
+
+    if any(term in text for term in ('start report', 'start a report', 'new report', 'incident report', 'write report', 'start a call')):
+        return (
+            'To start a report, open Start Report and work through Parties, Facts, Narrative, Paperwork, and Review. '
+            f'Start here: {url_for("reports.new_report")}. On mobile, use {url_for("mobile.incident_start")}.'
+        )
+    if any(term in text for term in ('law', 'charge', 'statute', 'ucmj', 'federal', 'georgia', 'order applies')):
+        return (
+            'Use Law Lookup in plain language. Describe what happened, who was involved, where it happened, and whether it was on base. '
+            f'Open Law Lookup: {url_for("legal.legal_lookup")}. Verify final charge selection with supervisor/legal review.'
+        )
+    if any(term in text for term in ('paperwork', 'forms needed', 'what forms', 'navigator', 'packet')):
+        return (
+            'Use the Paperwork Navigator for required and likely paperwork. Select the call type, confirm the facts, then add only the forms actually used. '
+            f'Open Navigator: {url_for("reference.incident_paperwork_guide")}.'
+        )
+    if any(term in text for term in ('form', 'pdf', 'statement', 'domestic supplemental', 'stat sheet')):
+        return (
+            'Open Forms Library, choose the official form, fill only fields shown on the source PDF, then preview before download or email. '
+            f'Open Forms: {url_for("forms.list_forms")}.'
+        )
+    if any(term in text for term in ('training', 'roster', 'sign training', 'qualification')):
+        return (
+            'Open Training to view assigned rosters, sign your own line, and track completions. '
+            f'Open Training: {url_for("training.training_menu")}.'
+        )
+    if any(term in text for term in ('personnel', 'officer', 'watch', 'shift', 'role', 'installation')):
+        return (
+            'Personnel tools let authorized users edit officer profiles, roles, installation, shift, and watch assignments. '
+            f'Open Personnel: {url_for("auth.manage_users")}.'
+        )
+    if any(term in text for term in ('scanner', 'scan id', 'license', 'driver license', 'camera')):
+        return (
+            'For ID scanning, use the mobile person editor. Live camera scanning requires browser camera support and HTTPS on phones; '
+            'manual entry and paste/photo fallback should remain available so the report flow is not blocked.'
+        )
+    if any(term in text for term in ('accident', 'crash', 'diagram', 'reconstruction')):
+        return (
+            'Use Accident Reconstruction under Reports for crash diagrams, measurements, vehicles, media, timeline, and export. '
+            f'Open Accident Reconstruction: {url_for("reports.accident_reconstruction_list")}.'
+        )
+    return (
+        'I can help with report workflow, Law Lookup, paperwork guidance, forms, training, personnel, scanner fallback, and accident reconstruction. '
+        'Tell me the task or describe the incident in plain language.'
+    )
 
 
 def _check_csrf():
@@ -42,6 +94,8 @@ def assistant_ask():
 
     api_key = os.environ.get('OPENAI_API_KEY', '')
     answer = ask_openai_with_system(message, _SYSTEM_PROMPT, api_key, history=history)
+    if is_ai_unavailable_message(answer):
+        answer = _local_assistant_reply(message)
     return jsonify({'ok': True, 'reply': answer})
 
 

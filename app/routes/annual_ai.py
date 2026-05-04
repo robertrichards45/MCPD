@@ -1,16 +1,13 @@
-﻿from flask import Blueprint, render_template, request, current_app
-from flask_login import login_required, current_user
+from flask import Blueprint, render_template, request
+from flask_login import current_user, login_required
+
 from ..extensions import db
 from ..models import AuditLog
-import os
+from ..services.ai_client import ask_openai_with_system, is_ai_unavailable_message
 
-# Import OpenAI correctly
-from openai import OpenAI
 
 bp = Blueprint('annual_ai', __name__)
 
-# Initialize client using Railway environment variable
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 @bp.route('/annual-training-ai', methods=['GET'])
 @login_required
@@ -27,38 +24,27 @@ def ask():
         return render_template(
             'annual_ai.html',
             user=current_user,
-            answer="No question provided.",
-            question=question
+            answer='No question provided.',
+            question=question,
         )
 
-    try:
-        # 🔥 ACTUAL AI CALL
-        response = client.chat.completions.create(
-            model="gpt-4.1-mini",
-            messages=[
-                {
-                    "role": "system",
-                    "content": "You are an MCPD law enforcement assistant helping with reports, training, and procedures."
-                },
-                {
-                    "role": "user",
-                    "content": question
-                }
-            ]
+    answer = ask_openai_with_system(
+        question,
+        'You are an MCPD law enforcement assistant helping with reports, training, and procedures.',
+        api_key='',
+    )
+    if is_ai_unavailable_message(answer):
+        answer = (
+            'AI assist is not configured right now. You can still use Law Lookup, Orders, Forms, '
+            'and the Paperwork Navigator from the command sidebar.'
         )
 
-        answer = response.choices[0].message.content
-
-    except Exception as e:
-        answer = f"AI ERROR: {str(e)}"
-
-    # Log usage
     try:
         db.session.add(
             AuditLog(
                 actor_id=current_user.id,
                 action='annual_ai',
-                details=question[:200]
+                details=question[:200],
             )
         )
         db.session.commit()
@@ -69,5 +55,5 @@ def ask():
         'annual_ai.html',
         user=current_user,
         answer=answer,
-        question=question
+        question=question,
     )
