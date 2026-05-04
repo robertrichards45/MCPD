@@ -585,8 +585,10 @@ def create_app():
             can_access_rfi,
             can_access_truck_gate,
             effective_role,
+            is_site_controller,
             watch_commander_scope_id,
         )
+        from .models import INSTALLATION_LABELS
 
         watch_commanders = (
             [
@@ -596,6 +598,18 @@ def create_app():
             ]
         )
         active_role = effective_role(current_user)
+
+        # Pending approval count — scoped by installation for non-site-controllers
+        pending_approvals_count = 0
+        if current_user.can_manage_team():
+            try:
+                q = User.query.filter_by(pending_approval=True, active=False)
+                if not is_site_controller(current_user):
+                    q = q.filter_by(installation=current_user.installation)
+                pending_approvals_count = q.count()
+            except Exception:
+                pending_approvals_count = 0
+
         return {
             'role_labels': ROLE_LABELS,
             'portal_origin_label': host_display,
@@ -611,6 +625,7 @@ def create_app():
             'portal_can_access_armory': can_access_armory(current_user),
             'portal_can_access_truck_gate': can_access_truck_gate(current_user),
             'portal_can_access_rfi': can_access_rfi(current_user),
+            'portal_pending_approvals': pending_approvals_count,
         }
 
     db.init_app(app)

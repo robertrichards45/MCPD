@@ -11492,3 +11492,25 @@ body.mobile-foundation .spr-training-warn {
   margin-bottom: 8px;
 }
 .personnel-section-label:first-child { border-top: none; padding-top: 0; }
+
+/* Pending approval badge on Personnel nav link */
+.nav-personnel-link { position: relative; display: inline-flex; align-items: center; gap: 6px; }
+.nav-pending-badge {
+  background: #ef4444;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+  line-height: 1;
+  animation: badge-pulse 2s ease-in-out infinite;
+}
+@keyframes badge-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .6; }
+}

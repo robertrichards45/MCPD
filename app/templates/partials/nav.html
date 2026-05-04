@@ -56,7 +56,12 @@
         </div>
       </details>
       {% if user.can_manage_team() %}
-      <a class="{% if endpoint == 'auth.manage_users' %}is-active{% endif %}" href="{{ url_for('auth.manage_users') }}">Personnel</a>
+      <a class="{% if endpoint == 'auth.manage_users' %}is-active{% endif %} nav-personnel-link" href="{{ url_for('auth.manage_users') }}">
+        Personnel
+        {% if portal_pending_approvals %}
+          <span class="nav-pending-badge">{{ portal_pending_approvals }}</span>
+        {% endif %}
+      </a>
       {% endif %}
       {% if portal_effective_role == 'WEBSITE_CONTROLLER' %}
       <details class="nav-more {% if endpoint.startswith('admin.') or endpoint in ['forms.call_type_rules_manager', 'forms.forms_manager'] or endpoint == 'reference.incident_paperwork_guide_manage' %}has-active{% endif %}">
