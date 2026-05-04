@@ -22,6 +22,7 @@ from ..services.call_type_rules import load_call_type_rules, normalize_call_type
 from ..services.form_metadata_ai import category_options, choose_latest_form, detect_form_metadata_from_uploads, heuristic_metadata, normalize_form_family
 from ..services.form_source_updates import check_and_update_form_source
 from ..services.forms_pdf_renderer import (
+    TEMPLATE_DIR,
     get_template_payload,
     inspect_pdf_fields,
     inspect_xfa_fields,
@@ -30,6 +31,7 @@ from ..services.forms_pdf_renderer import (
     source_pdf_has_adobe_wait_shell,
     visible_input_keys_for_pdf,
 )
+from ..services.form_field_registry import get_registry_entry
 
 bp = Blueprint('forms', __name__)
 
@@ -128,6 +130,40 @@ GENERIC_SCHEMA = {
     ]}],
     'role_entry': {'title': 'People by Role', 'fields': [], 'role_options': PERSON_ROLE_OPTIONS},
 }
+
+
+def _registry_schema_id(pattern: str) -> str:
+    return re.sub(r'[^a-z0-9]+', '_', (pattern or '').lower().strip()).strip('_') + '_v1'
+
+
+def _ensure_registry_template(entry: dict, schema_id: str) -> None:
+    """Write a template JSON file from a registry entry if one does not already exist."""
+    template_path = TEMPLATE_DIR / f'{schema_id}.json'
+    if template_path.exists():
+        return
+    ui_fields = []
+    field_map = {}
+    for field in entry.get('fields', []):
+        name = str(field.get('name') or '').strip()
+        if not name:
+            continue
+        label = str(field.get('label') or name).strip()
+        ftype = str(field.get('type') or 'text').strip() or 'text'
+        required = bool(field.get('required'))
+        pdf_target = str(field.get('pdf_field_name') or '').strip() or name
+        ui_fields.append({'name': name, 'label': label, 'type': ftype,
+                          'required': required, 'section': 'Form Fields', 'placeholder': ''})
+        field_map[name] = pdf_target
+    template = {
+        'template_id': schema_id,
+        'description': f'Auto-generated from form_field_registry — {entry.get("form_title_pattern", "")}',
+        'field_map': field_map,
+        'ui_fields': ui_fields,
+    }
+    try:
+        save_template_payload(schema_id, template)
+    except Exception:
+        pass
 
 
 def _humanize_field_name(name):
@@ -419,8 +455,12 @@ def _schema_from_pdf_fields(form, base_schema, source_pdf):
         if isinstance(item, dict) and str(item.get('name') or '').strip()
     }
     matched_targets = {name for name in mapped_targets if name in pdf_field_names}
+    # Registry-backed schemas intentionally expose a curated subset of PDF fields;
+    # don't fall back to raw PDF extraction just because the PDF has extra fields.
+    registry_backed = bool(base_schema.get('_registry_backed'))
     prefer_exact_pdf_schema = bool(
-        source_exists
+        not registry_backed
+        and source_exists
         and pdf_field_names
         and (
             not ui_fields
@@ -640,7 +680,15 @@ def _schema_for_form(form):
     if 'stat' in title and ('sheet' in title or 'mcpd' in title):
         base = copy.deepcopy(MCPD_STAT_SHEET_SCHEMA)
     else:
-        base = copy.deepcopy(GENERIC_SCHEMA)
+        entry = get_registry_entry(form.title or '')
+        if entry:
+            schema_id = _registry_schema_id(entry.get('form_title_pattern', ''))
+            _ensure_registry_template(entry, schema_id)
+            base = {'id': schema_id, 'title': str(form.title or '').strip(),
+                    'description': '', 'sections': [], 'role_entry': None,
+                    '_registry_backed': True}
+        else:
+            base = copy.deepcopy(GENERIC_SCHEMA)
     if getattr(form, 'title', None):
         base['title'] = str(form.title).strip()
 
