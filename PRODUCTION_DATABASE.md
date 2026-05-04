@@ -14,6 +14,18 @@ REQUIRE_PERSISTENT_DATABASE=1
 
 The app accepts both `postgresql://...` and Railway-style `postgres://...` database URLs.
 
+The app checks these environment variables in order:
+
+```text
+DATABASE_URL
+DATABASE_PRIVATE_URL
+POSTGRES_URL
+POSTGRES_PRIVATE_URL
+RAILWAY_DATABASE_URL
+```
+
+Use `DATABASE_URL` when possible. The fallback names are only there so Railway private database variables can still be used safely.
+
 Do not use the default local SQLite path on Railway:
 
 ```text

@@ -28,7 +28,7 @@ warnings.filterwarnings(
 # settings (like DATABASE_URL and PORT) can safely differ from older handoff values.
 load_dotenv(override=False)
 
-from .config import Config, _normalize_database_uri
+from .config import Config, _database_url_from_env, _normalize_database_uri
 from .extensions import db, login_manager
 from .models import ALL_PORTAL_ROLES, ROLE_LABELS, ROLE_WEBSITE_CONTROLLER, ROLE_WATCH_COMMANDER, Role, User
 
@@ -60,17 +60,31 @@ def _enforce_persistent_database_config(app):
     database_uri = app.config.get('SQLALCHEMY_DATABASE_URI')
     if not _database_uri_is_ephemeral(database_uri):
         return
+    configured_db_vars = [
+        key for key in (
+            'DATABASE_URL',
+            'DATABASE_PRIVATE_URL',
+            'POSTGRES_URL',
+            'POSTGRES_PRIVATE_URL',
+            'RAILWAY_DATABASE_URL',
+        )
+        if os.environ.get(key)
+    ]
+    details = (
+        f" Detected database environment variables: {', '.join(configured_db_vars) or 'none'}."
+    )
     message = (
         'Unsafe production database configuration: this deployment is using SQLite on the app filesystem. '
         'That can wipe officer accounts on rebuild/update. Set DATABASE_URL to Railway Postgres, or mount a '
         'persistent volume and use sqlite:////data/app.db. Set REQUIRE_PERSISTENT_DATABASE=0 only for throwaway testing.'
+        + details
     )
     logging.getLogger(__name__).critical(message)
     raise RuntimeError(message)
 
 
 def _refresh_runtime_environment_config(app):
-    database_url = os.environ.get('DATABASE_URL')
+    database_url = _database_url_from_env()
     if database_url is not None:
         app.config['SQLALCHEMY_DATABASE_URI'] = _normalize_database_uri(database_url)
     require_persistent = os.environ.get('REQUIRE_PERSISTENT_DATABASE')

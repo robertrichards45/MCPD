@@ -9,6 +9,20 @@ DEFAULT_DATABASE_URI = f"sqlite:///{os.path.join(DATA_DIR, 'app.db').replace(os.
 RAILWAY_VOLUME_MOUNT_PATH = os.environ.get('RAILWAY_VOLUME_MOUNT_PATH', '/data')
 
 
+def _database_url_from_env():
+    for key in (
+        'DATABASE_URL',
+        'DATABASE_PRIVATE_URL',
+        'POSTGRES_URL',
+        'POSTGRES_PRIVATE_URL',
+        'RAILWAY_DATABASE_URL',
+    ):
+        value = os.environ.get(key)
+        if value and value.strip():
+            return value
+    return ''
+
+
 def _header_list(value):
     return [item.strip() for item in (value or '').split(',') if item.strip()]
 
@@ -41,7 +55,7 @@ def _normalize_database_uri(value):
 
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY', 'change-me')
-    SQLALCHEMY_DATABASE_URI = _normalize_database_uri(os.environ.get('DATABASE_URL'))
+    SQLALCHEMY_DATABASE_URI = _normalize_database_uri(_database_url_from_env())
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     REMEMBER_COOKIE_DURATION = timedelta(days=7)
     UPLOAD_ROOT = UPLOAD_ROOT

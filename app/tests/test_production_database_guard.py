@@ -1,7 +1,7 @@
 import pytest
 
 from app import _database_uri_is_ephemeral, create_app
-from app.config import _normalize_database_uri
+from app.config import _database_url_from_env, _normalize_database_uri
 
 
 def test_railway_blocks_ephemeral_sqlite_database(monkeypatch):
@@ -21,6 +21,13 @@ def test_railway_postgres_url_is_normalized_for_sqlalchemy():
         _normalize_database_uri("postgres://user:pass@example.test:5432/mcpd")
         == "postgresql://user:pass@example.test:5432/mcpd"
     )
+
+
+def test_database_url_can_use_private_railway_fallback(monkeypatch):
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+    monkeypatch.setenv("DATABASE_PRIVATE_URL", "postgres://user:pass@private:5432/mcpd")
+    assert _database_url_from_env() == "postgres://user:pass@private:5432/mcpd"
+    assert _normalize_database_uri(_database_url_from_env()) == "postgresql://user:pass@private:5432/mcpd"
 
 
 def test_railway_allows_sqlite_on_mounted_volume(monkeypatch):
