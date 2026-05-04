@@ -197,7 +197,7 @@
                 {% for profile_row, user_row in profiles %}
                 <tr>
                   <td>
-                    {% if user.can_manage_team() %}
+                    {% if user_row.id in editable_user_ids %}
                       <a class="personnel-name-link" href="{{ url_for('auth.edit_user', user_id=user_row.id) }}">{{ user_row.display_name }}</a>
                     {% else %}
                       {{ user_row.display_name }}
@@ -208,7 +208,9 @@
                   <td>{{ profile_row.emergency_contact_name or '' }}</td>
                   <td class="d-flex gap-1">
                     <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('officers.officer_profile_export_csv', user_id=user_row.id) }}">CSV</a>
-                    <a class="btn btn-primary btn-sm" href="{{ url_for('auth.edit_user', user_id=user_row.id) }}">Edit</a>
+                    {% if user_row.id in editable_user_ids %}
+                      <a class="btn btn-primary btn-sm" href="{{ url_for('auth.edit_user', user_id=user_row.id) }}">Edit</a>
+                    {% endif %}
                   </td>
                 </tr>
                 {% endfor %}
