@@ -668,6 +668,21 @@ _NARRATIVE_CONNECTORS = frozenset({
     'this', 'that', 'these', 'those', 'so', 'if', 'also', 'no',
 })
 
+# Words that describe the physical setting of an incident but are NOT offense
+# elements themselves.  When these appear in a multi-word query the keyword
+# engine pulls in traffic/property laws purely because of the location word,
+# not because the described incident is traffic-related.
+# Conservative list: only words that almost never double as offense elements.
+# (road, street, lane, parking, yard, vehicle, school, store are deliberately
+# excluded because they also appear in compound offense names.)
+_LOCATION_ONLY_WORDS = frozenset({
+    'roadway', 'freeway', 'expressway', 'interstate',
+    'intersection', 'crosswalk', 'sidewalk', 'median',
+    'overpass', 'underpass', 'curb', 'curbside', 'pavement',
+    'hallway', 'corridor', 'stairwell', 'lobby',
+    'vicinity', 'scene',
+})
+
 
 def _is_narrative_query(query: str) -> bool:
     words = (query or '').strip().split()
@@ -675,6 +690,13 @@ def _is_narrative_query(query: str) -> bool:
         return False
     lower_words = {re.sub(r"[^a-z']", '', w.lower()) for w in words}
     return len(lower_words & _NARRATIVE_CONNECTORS) >= 2
+
+
+def _strip_location_context_words(query: str) -> str:
+    """Remove pure-setting words so they don't drive keyword offense matching."""
+    words = (query or '').split()
+    filtered = [w for w in words if re.sub(r"[^a-z]", '', w.lower()) not in _LOCATION_ONLY_WORDS]
+    return ' '.join(filtered)
 
 
 def _ai_interpret_narrative_query(query: str, source: str) -> dict:
@@ -986,12 +1008,28 @@ def _render_legal_lookup(default_source='ALL'):
     ai_hints = {'terms': [], 'query_variants': [], 'related_policy_terms': [], 'source_hint': source, 'officer_brief': ''}
     ai_interpretation_note = ''
 
-    # Run the baseline keyword search first (always)
-    raw_results = _search_entries_for_scope(query, source, state)
+    # --- Baseline keyword search ---
+    # For queries of ≥3 words that contain pure location/setting words (roadway,
+    # sidewalk, etc.), strip those words before the keyword pass so the engine
+    # matches on the actual offense terms, not the physical location described.
+    search_query = query
+    if (
+        query
+        and not deterministic_lookup
+        and not code_lookup_like
+        and len(query.split()) >= 3
+    ):
+        stripped = _strip_location_context_words(query)
+        if stripped and len(stripped.split()) >= 2 and stripped.lower() != query.lower():
+            search_query = stripped
 
-    # Narrative pre-processing: for full natural-language sentences, ask AI to read
-    # the entire statement and extract legal concepts BEFORE the keyword results are
-    # filtered, so the search reflects the meaning, not just surviving tokens.
+    raw_results = _search_entries_for_scope(search_query, source, state)
+
+    # --- AI narrative interpretation ---
+    # For full natural-language sentences, read the ENTIRE statement semantically
+    # and use AI-interpreted legal terms as the PRIMARY result set.  The AI results
+    # REPLACE (not augment) the keyword results for narrative queries so that
+    # location words in the original query never re-introduce mismatched law hits.
     allow_narrative_interp = bool(
         ai_expansion_enabled
         and query
@@ -1002,15 +1040,19 @@ def _render_legal_lookup(default_source='ALL'):
     if allow_narrative_interp:
         interp = _ai_interpret_narrative_query(query, source)
         primary_search = (interp.get('primary_search') or '').strip()
-        if primary_search and primary_search.lower() != query.lower():
+        if primary_search and primary_search.lower() not in (query.lower(), search_query.lower()):
             ai_interpretation_note = interp.get('interpretation_note', '')
             interp_results = _search_entries_for_scope(primary_search, source, state)
-            raw_results = _merge_ai_results(interp_results, raw_results)
             for extra_term in (interp.get('additional_terms') or [])[:3]:
                 extra_term = (extra_term or '').strip()
                 if extra_term and extra_term.lower() != primary_search.lower():
                     extra_results = _search_entries_for_scope(extra_term, source, state)
-                    raw_results = _merge_ai_results(raw_results, extra_results)
+                    interp_results = _merge_ai_results(interp_results, extra_results)
+            # AI results are the authority for narrative queries; keyword results
+            # supplement only if they already appear in the AI result set
+            ai_codes = {item.entry.code for item in interp_results}
+            keyword_supplement = [r for r in raw_results if r.entry.code in ai_codes]
+            raw_results = _merge_ai_results(interp_results, keyword_supplement)
 
     results = _filter_results_for_display(query, source, raw_results, include_possible=include_possible)
 
