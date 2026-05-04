@@ -24,4 +24,9 @@
 {% if mobile_forms_catalog is defined %}
 <script id="mobile-form-catalog-data" type="application/json">{{ mobile_forms_catalog|tojson }}</script>
 {% endif %}
+<div id="packet-assist-root" class="assist-mount"></div>
+{% endblock %}
+{% block scripts %}
+  {{ super() }}
+  <script src="{{ url_for('static', filename='mobile/incident-assist.js', v='2026-05-03-phase7-1') }}"></script>
 {% endblock %}

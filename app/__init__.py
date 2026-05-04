@@ -1,9 +1,12 @@
-from flask import Flask, Response, redirect, render_template, request, send_file, url_for
+from flask import Flask, Response, g, redirect, render_template, request, send_file, session, url_for
 from flask_login import current_user
 from dotenv import load_dotenv
 from datetime import datetime, timezone
+import hmac
+import logging
 import os
 import json
+import secrets
 import weakref
 import warnings
 from sqlalchemy import inspect, text
@@ -288,6 +291,18 @@ def create_app():
             x_host=int(app.config.get("PROXY_FIX_X_HOST", 1) or 1),
         )
 
+    if app.config.get('APP_ENV') == 'prod' and app.config.get('SECRET_KEY') == 'change-me':
+        logging.getLogger(__name__).critical(
+            'SECURITY: SECRET_KEY is set to the default value "change-me" in production. '
+            'Set a strong random SECRET_KEY environment variable before going live.'
+        )
+
+    @app.before_request
+    def _csrf_token_setup():
+        if '_csrf_token' not in session:
+            session['_csrf_token'] = secrets.token_hex(32)
+        g.csrf_token = session['_csrf_token']
+
     @app.get("/favicon.ico")
     def favicon():
         return send_file(
@@ -535,6 +550,15 @@ def create_app():
         message = getattr(error, 'description', None) or 'You do not have access to this section.'
         return render_template('forbidden.html', error_message=message), 403
 
+    @app.errorhandler(404)
+    def not_found(error):
+        return render_template('404.html'), 404
+
+    @app.errorhandler(500)
+    def server_error(error):
+        logging.getLogger(__name__).error('Internal server error: %s', error, exc_info=True)
+        return render_template('500.html'), 500
+
     @app.context_processor
     def inject_portal_context():
         host_display = (request.host or '').strip()
@@ -587,8 +611,9 @@ def create_app():
     db.init_app(app)
     login_manager.init_app(app)
 
-    from .routes import auth, dashboard, forms, training, stats, annual_ai, admin, cleo_api, reports, reconstruction, officers, ops_modules, legal, orders, reference, announcements, mobile
+    from .routes import auth, assistant, dashboard, forms, training, stats, annual_ai, admin, cleo_api, reports, reconstruction, officers, ops_modules, legal, orders, reference, announcements, mobile
     app.register_blueprint(auth.bp)
+    app.register_blueprint(assistant.bp)
     app.register_blueprint(dashboard.bp)
     app.register_blueprint(forms.bp)
     app.register_blueprint(training.bp)

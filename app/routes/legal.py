@@ -22,6 +22,7 @@ from ..services.ai_client import ask_openai, is_ai_unavailable_message
 
 bp = Blueprint('legal', __name__)
 AI_HINT_CACHE_PATH = Path(__file__).resolve().parents[1] / 'data' / 'legal' / 'ai_query_hints.json'
+NARRATIVE_INTERP_CACHE_PATH = Path(__file__).resolve().parents[1] / 'data' / 'legal' / 'ai_narrative_interp_cache.json'
 LEGAL_QUERY_LOG_PATH = Path(__file__).resolve().parents[1] / 'data' / 'legal' / 'legal_query_log.jsonl'
 LEGAL_TUNING_CASES_PATH = Path(__file__).resolve().parents[1] / 'data' / 'legal' / 'legal_tuning_cases.jsonl'
 LEGAL_SEARCH_FAILURE_LOG_PATH = Path(__file__).resolve().parents[1] / 'data' / 'legal' / 'legal_search_failures.jsonl'
@@ -657,6 +658,107 @@ def _merge_ai_results(base_results: list[LegalMatch], ai_results: list[LegalMatc
     return ordered[:25]
 
 
+_NARRATIVE_CONNECTORS = frozenset({
+    'was', 'were', 'is', 'are', 'be', 'been', 'the', 'a', 'an',
+    'he', 'she', 'they', 'we', 'i', 'it', 'his', 'her', 'their',
+    'and', 'then', 'while', 'when', 'that', 'which', 'who', 'whom',
+    'in', 'on', 'at', 'to', 'of', 'for', 'with', 'by', 'from',
+    'after', 'before', 'but', 'because', 'not', 'did', 'had', 'has',
+    'my', 'me', 'him', 'us', 'them', 'into', 'over', 'out', 'up',
+    'this', 'that', 'these', 'those', 'so', 'if', 'also', 'no',
+})
+
+# Words that describe the physical setting of an incident but are NOT offense
+# elements themselves.  When these appear in a multi-word query the keyword
+# engine pulls in traffic/property laws purely because of the location word,
+# not because the described incident is traffic-related.
+# Conservative list: only words that almost never double as offense elements.
+# (road, street, lane, parking, yard, vehicle, school, store are deliberately
+# excluded because they also appear in compound offense names.)
+_LOCATION_ONLY_WORDS = frozenset({
+    'roadway', 'freeway', 'expressway', 'interstate',
+    'intersection', 'crosswalk', 'sidewalk', 'median',
+    'overpass', 'underpass', 'curb', 'curbside', 'pavement',
+    'hallway', 'corridor', 'stairwell', 'lobby',
+    'vicinity', 'scene',
+})
+
+
+def _is_narrative_query(query: str) -> bool:
+    words = (query or '').strip().split()
+    if len(words) < 5:
+        return False
+    lower_words = {re.sub(r"[^a-z']", '', w.lower()) for w in words}
+    return len(lower_words & _NARRATIVE_CONNECTORS) >= 2
+
+
+def _strip_location_context_words(query: str) -> str:
+    """Remove pure-setting words so they don't drive keyword offense matching."""
+    words = (query or '').split()
+    filtered = [w for w in words if re.sub(r"[^a-z]", '', w.lower()) not in _LOCATION_ONLY_WORDS]
+    return ' '.join(filtered)
+
+
+def _ai_interpret_narrative_query(query: str, source: str) -> dict:
+    clean_key = _normalize_query_key(query)
+    if not clean_key:
+        return {}
+    cache_key = f"narr|{clean_key}|{(source or 'ALL').upper()}"
+    try:
+        if NARRATIVE_INTERP_CACHE_PATH.exists():
+            cached_data = json.loads(NARRATIVE_INTERP_CACHE_PATH.read_text(encoding='utf-8'))
+            if isinstance(cached_data, dict) and cache_key in cached_data:
+                return cached_data[cache_key]
+    except Exception:
+        pass
+    prompt = (
+        "You are a law enforcement legal reference assistant. "
+        "An officer described an incident in plain language. "
+        "Read the ENTIRE statement and identify the legal concepts it describes. "
+        "Do NOT invent statute numbers or cite specific codes. "
+        "Return STRICT JSON only, no other text:\n"
+        "{\n"
+        '  "primary_search": "<3-7 word legal search phrase capturing the core offense>",\n'
+        '  "additional_terms": ["<secondary offense or element>", "<another term if applicable>"],\n'
+        '  "interpretation_note": "<one sentence describing the legal scenario you understood>"\n'
+        "}\n\n"
+        f"Incident description: {clean_key}\n"
+        f"Jurisdiction focus: {source}"
+    )
+    answer = _safe_ai_guidance(prompt)
+    if not answer:
+        return {}
+    parsed = _extract_json_object(answer)
+    if not isinstance(parsed, dict):
+        return {}
+    primary_search = str(parsed.get('primary_search') or '').strip()
+    if not primary_search or len(primary_search.split()) < 2:
+        return {}
+    result = {
+        'primary_search': primary_search,
+        'additional_terms': _dedupe_phrases(
+            parsed.get('additional_terms') if isinstance(parsed.get('additional_terms'), list) else [],
+            limit=4,
+        ),
+        'interpretation_note': str(parsed.get('interpretation_note') or '').strip(),
+    }
+    try:
+        NARRATIVE_INTERP_CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
+        existing_cache = {}
+        if NARRATIVE_INTERP_CACHE_PATH.exists():
+            try:
+                existing_cache = json.loads(NARRATIVE_INTERP_CACHE_PATH.read_text(encoding='utf-8'))
+            except Exception:
+                pass
+        if not isinstance(existing_cache, dict):
+            existing_cache = {}
+        existing_cache[cache_key] = result
+        NARRATIVE_INTERP_CACHE_PATH.write_text(json.dumps(existing_cache, indent=2), encoding='utf-8')
+    except Exception:
+        pass
+    return result
+
+
 def _normalize_source_label(value: str, fallback: str = 'ALL') -> str:
     raw = (value or '').strip().upper()
     if raw in {'GA', 'GEORGIA', 'GEORGIA_CODE'}:
@@ -898,14 +1000,62 @@ def _render_legal_lookup(default_source='ALL'):
     state = _normalize_state(request.args.get('state') or session.get('legal_last_state') or 'GA')
     source = _normalize_lookup_source(request.args.get('source') or default_source or 'ALL')
     include_possible = (request.args.get('show_possible') or '').strip().lower() in {'1', 'true', 'yes', 'on'}
-    raw_results = _search_entries_for_scope(query, source, state)
-    results = _filter_results_for_display(query, source, raw_results, include_possible=include_possible)
     normalized_query = query.lower()
     speed_phrase = bool(re.search(r'\b\d{1,3}\s*(?:in|/)\s*(?:a\s*)?\d{1,3}\b', normalized_query))
     deterministic_lookup = speed_phrase
-    ai_hints = {'terms': [], 'query_variants': [], 'related_policy_terms': [], 'source_hint': source, 'officer_brief': ''}
     ai_expansion_enabled = bool(current_app.config.get('LEGAL_AI_EXPANSION_ENABLED', False))
     code_lookup_like = bool(re.search(r'\b(?:ocga\s*)?\d{1,2}-\d{1,2}(?:-\d{1,3}(?:\.\d+)?)?\b', query.lower()))
+    ai_hints = {'terms': [], 'query_variants': [], 'related_policy_terms': [], 'source_hint': source, 'officer_brief': ''}
+    ai_interpretation_note = ''
+
+    # --- Baseline keyword search ---
+    # For queries of ≥3 words that contain pure location/setting words (roadway,
+    # sidewalk, etc.), strip those words before the keyword pass so the engine
+    # matches on the actual offense terms, not the physical location described.
+    search_query = query
+    if (
+        query
+        and not deterministic_lookup
+        and not code_lookup_like
+        and len(query.split()) >= 3
+    ):
+        stripped = _strip_location_context_words(query)
+        if stripped and len(stripped.split()) >= 2 and stripped.lower() != query.lower():
+            search_query = stripped
+
+    raw_results = _search_entries_for_scope(search_query, source, state)
+
+    # --- AI narrative interpretation ---
+    # For full natural-language sentences, read the ENTIRE statement semantically
+    # and use AI-interpreted legal terms as the PRIMARY result set.  The AI results
+    # REPLACE (not augment) the keyword results for narrative queries so that
+    # location words in the original query never re-introduce mismatched law hits.
+    allow_narrative_interp = bool(
+        ai_expansion_enabled
+        and query
+        and not deterministic_lookup
+        and not code_lookup_like
+        and _is_narrative_query(query)
+    )
+    if allow_narrative_interp:
+        interp = _ai_interpret_narrative_query(query, source)
+        primary_search = (interp.get('primary_search') or '').strip()
+        if primary_search and primary_search.lower() not in (query.lower(), search_query.lower()):
+            ai_interpretation_note = interp.get('interpretation_note', '')
+            interp_results = _search_entries_for_scope(primary_search, source, state)
+            for extra_term in (interp.get('additional_terms') or [])[:3]:
+                extra_term = (extra_term or '').strip()
+                if extra_term and extra_term.lower() != primary_search.lower():
+                    extra_results = _search_entries_for_scope(extra_term, source, state)
+                    interp_results = _merge_ai_results(interp_results, extra_results)
+            # AI results are the authority for narrative queries; keyword results
+            # supplement only if they already appear in the AI result set
+            ai_codes = {item.entry.code for item in interp_results}
+            keyword_supplement = [r for r in raw_results if r.entry.code in ai_codes]
+            raw_results = _merge_ai_results(interp_results, keyword_supplement)
+
+    results = _filter_results_for_display(query, source, raw_results, include_possible=include_possible)
+
     allow_ai_expansion = bool(
         ai_expansion_enabled
         and query
@@ -1013,6 +1163,7 @@ def _render_legal_lookup(default_source='ALL'):
             ai_related_policy_terms=ai_hints.get('related_policy_terms', ()),
             ai_candidates=ai_candidates,
             ai_brief=ai_brief,
+            ai_interpretation_note=ai_interpretation_note,
             state_corpus_available=(state == 'GA'),
             code_lookup_like=code_lookup_like,
             show_possible=include_possible,

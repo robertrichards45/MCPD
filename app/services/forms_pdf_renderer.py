@@ -860,6 +860,27 @@ def _write_fillable_pdf(source_pdf: str, target_pdf: str, schema: dict, payload:
                 truncations.append({'field': field_name, **trunc_info})
         else:
             coerced[field_name] = str(value or '').strip()
+
+    # Collect DataURL signature values for image stamping; strip them from text fill.
+    try:
+        annot_list = _annotation_fields(reader)
+    except Exception:
+        annot_list = []
+    annot_by_name = {item.get('name'): item for item in annot_list}
+    sig_stamps = []
+    if not blank_mode:
+        for pdf_field_name, value in list(coerced.items()):
+            if _is_dataurl(value):
+                info = annot_by_name.get(pdf_field_name) or {}
+                rect = info.get('rect') or []
+                if rect:
+                    sig_stamps.append({
+                        'page': int(info.get('page_index') or 0),
+                        'rect': rect,
+                        'dataurl': value,
+                    })
+                coerced[pdf_field_name] = ''
+
     used_manual_fallback = False
     for page in writer.pages:
         try:
@@ -875,6 +896,10 @@ def _write_fillable_pdf(source_pdf: str, target_pdf: str, schema: dict, payload:
         pass
     with open(target_pdf, 'wb') as handle:
         writer.write(handle)
+
+    if sig_stamps:
+        _stamp_dataurl_signatures_on_pdf(target_pdf, sig_stamps)
+
     return {
         'mode': 'fillable',
         'mapped_count': len(coerced),
@@ -882,6 +907,7 @@ def _write_fillable_pdf(source_pdf: str, target_pdf: str, schema: dict, payload:
         'truncations': truncations,
         'template_id': template.get('template_id') or '',
         'manual_widget_fallback': used_manual_fallback,
+        'signature_stamps': len(sig_stamps),
         'unmapped_input_keys': sorted([key for key in flat_values.keys() if key and flat_values.get(key) and key not in (template.get('field_map') or {})]),
     }
 
@@ -955,6 +981,94 @@ def _wrap_overlay_text(value: str, width_points: float, field_height: float, fon
         lines.append(current)
     max_lines = max(1, int(max(field_height - 2, font_size + 2) / max(font_size + 1, 1)))
     return lines[:max_lines]
+
+
+def _is_dataurl(value: str) -> bool:
+    return str(value or '').strip().startswith('data:image/')
+
+
+def _decode_dataurl_image(dataurl: str):
+    """Decode a data:image/… URL into a BytesIO buffer. Returns None on failure."""
+    import base64
+    try:
+        _, b64 = str(dataurl).split(',', 1)
+        return BytesIO(base64.b64decode(b64))
+    except Exception:
+        return None
+
+
+def _draw_sig_placeholder(draw, x: float, y: float, w: float, h: float) -> None:
+    draw.setStrokeColorRGB(0.72, 0.76, 0.82)
+    draw.setFillColorRGB(0.96, 0.97, 0.99)
+    draw.rect(x, y, max(w, 20), max(h, 12), stroke=1, fill=1)
+    draw.setFillColorRGB(0.55, 0.60, 0.68)
+    draw.setFont('Helvetica-Oblique', 7)
+    draw.drawString(x + 3, y + max(h, 12) / 2 - 3, '[Signature field]')
+
+
+def _stamp_dataurl_signatures_on_pdf(out_path: str, stamps: list[dict]) -> None:
+    """Overlay signature DataURL images onto a completed PDF at field rect coordinates.
+
+    stamps: list of {'page': int, 'rect': [x1,y1,x2,y2], 'dataurl': str}
+    Silently no-ops if stamps is empty or any error occurs so PDF delivery is never broken.
+    """
+    if not stamps:
+        return
+    try:
+        from reportlab.lib.utils import ImageReader
+        PdfReader, PdfWriter = _pdf_classes()
+        reader = PdfReader(out_path)
+        page_count = len(reader.pages)
+        if not page_count:
+            return
+
+        page_sizes = []
+        for page in reader.pages:
+            mb = page.mediabox
+            page_sizes.append((float(mb.width), float(mb.height)))
+
+        overlay_buffer = BytesIO()
+        c = canvas.Canvas(overlay_buffer, pagesize=page_sizes[0])
+
+        stamps_by_page: dict[int, list] = {}
+        for stamp in stamps:
+            stamps_by_page.setdefault(int(stamp.get('page') or 0), []).append(stamp)
+
+        for pg in range(page_count):
+            if pg > 0:
+                c.showPage()
+            for stamp in stamps_by_page.get(pg, []):
+                rect = stamp.get('rect') or []
+                if len(rect) < 4:
+                    continue
+                img_buf = _decode_dataurl_image(stamp.get('dataurl', ''))
+                if not img_buf:
+                    continue
+                try:
+                    x1, y1, x2, y2 = [float(v) for v in rect[:4]]
+                    x, y = min(x1, x2), min(y1, y2)
+                    w, h = max(abs(x2 - x1), 20), max(abs(y2 - y1), 12)
+                    c.drawImage(
+                        ImageReader(img_buf), x, y + 1,
+                        width=w, height=h - 2,
+                        preserveAspectRatio=True, anchor='sw', mask='auto',
+                    )
+                except Exception:
+                    pass
+
+        c.save()
+        overlay_buffer.seek(0)
+
+        overlay_reader = PdfReader(overlay_buffer)
+        writer = PdfWriter()
+        for i, page in enumerate(reader.pages):
+            if i < len(overlay_reader.pages):
+                page.merge_page(overlay_reader.pages[i])
+            writer.add_page(page)
+        with open(out_path, 'wb') as fh:
+            writer.write(fh)
+    except Exception:
+        pass  # never break PDF delivery due to signature stamping
 
 
 def _draw_xfa_value(draw, page_height: float, field: dict, value: str) -> None:
@@ -1143,7 +1257,24 @@ def _draw_sectioned_text_field(
     draw.rect(box_x, box_y, box_w, field_height, stroke=1, fill=0)
 
     text_value = str(value or '').strip()
-    if text_value:
+    if _is_dataurl(text_value):
+        img_buf = _decode_dataurl_image(text_value)
+        if img_buf:
+            try:
+                from reportlab.lib.utils import ImageReader
+                pad = 3
+                draw.drawImage(
+                    ImageReader(img_buf),
+                    box_x + pad, box_y + pad,
+                    width=max(box_w - pad * 2, 12),
+                    height=max(field_height - pad * 2, 8),
+                    preserveAspectRatio=True, anchor='sw', mask='auto',
+                )
+            except Exception:
+                _draw_sig_placeholder(draw, box_x, box_y, box_w, field_height)
+        else:
+            _draw_sig_placeholder(draw, box_x, box_y, box_w, field_height)
+    elif text_value:
         draw.setFillColorRGB(0.03, 0.06, 0.09)
         draw.setFont('Helvetica', 8)
         max_lines = 3 if field_height >= 28 else 1

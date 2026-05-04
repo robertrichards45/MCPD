@@ -1,0 +1,34 @@
+{% extends 'mobile_shell.html' %}
+{% block mobile_content %}
+
+<div class="mad-shell">
+
+  <div class="mad-notice">
+    <p class="mad-notice-label">Desktop / Tablet Recommended</p>
+    <p class="mad-notice-body">The Accident Reconstruction tool uses an interactive drag-and-drop diagram canvas. It works best on a desktop computer or tablet. You can create a case here on mobile and complete the diagram later on a larger screen.</p>
+  </div>
+
+  <div class="mad-card">
+    <p class="mad-card-label">What This Tool Does</p>
+    <ul class="mad-feature-list">
+      <li>Create accident reconstruction cases with date and location</li>
+      <li>Add involved vehicles with directions and notes</li>
+      <li>Record measurements (skid marks, distances, impact points)</li>
+      <li>Upload scene photographs and diagrams</li>
+      <li>Generate a reconstruction packet PDF for the case file</li>
+    </ul>
+  </div>
+
+  <div class="mad-actions">
+    <a class="mad-btn-primary" href="{{ url_for('reconstruction.case_list') }}">Open Full Diagram Tool</a>
+    <a class="mad-btn-secondary" href="{{ url_for('mobile.incident_start') }}">Start Incident Report Instead</a>
+    <a class="mad-btn-ghost" href="{{ url_for('mobile.home') }}">&#8592; Back to Field Portal</a>
+  </div>
+
+  <div class="mad-tip">
+    <p class="mad-tip-label">Field Tip</p>
+    <p class="mad-tip-body">At the scene: photograph vehicle positions, skid marks, and road conditions before vehicles are moved. Note exact measurements. You can enter these into the diagram tool later from a desk terminal.</p>
+  </div>
+
+</div>
+{% endblock %}

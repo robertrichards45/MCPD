@@ -1,0 +1,193 @@
+{% extends 'mobile_shell.html' %}
+{% block mobile_content %}
+
+<div class="msr-shell">
+
+  {% if current_user.has_any_role('WATCH_COMMANDER', 'DESK_SGT', 'WEBSITE_CONTROLLER') %}
+  <div class="msr-card msr-command-card">
+    <p class="msr-card-label">Command Tools</p>
+    <p class="msr-card-body">Access the full supervisor dashboard to review submitted packets, approve or return corrections, and track common deficiencies.</p>
+    <div class="msr-action-list">
+      <a class="msr-btn-primary" href="{{ url_for('mobile.supervisor_dashboard') }}">Open Command Dashboard</a>
+    </div>
+  </div>
+  {% endif %}
+
+  <div id="msr-no-state" class="msr-card" style="display:none;">
+    <p class="msr-card-label">No Active Draft</p>
+    <p class="msr-card-body">No incident draft found. Start an incident workflow and the packet readiness check will appear here.</p>
+    <a class="msr-btn-primary" href="{{ url_for('mobile.incident_start') }}">Start Incident</a>
+  </div>
+
+  <div id="msr-content" style="display:none;">
+
+    <div class="msr-status-row" id="msr-status-row"></div>
+
+    <div class="msr-card">
+      <p class="msr-card-label">Call Type</p>
+      <p class="msr-call-type-display" id="msr-call-type"></p>
+    </div>
+
+    <div class="msr-card">
+      <p class="msr-card-label">Packet Checklist</p>
+      <div class="msr-checklist" id="msr-checklist"></div>
+    </div>
+
+    <div class="msr-card">
+      <p class="msr-card-label">Quick Actions</p>
+      <div class="msr-action-list">
+        <a class="msr-btn-primary" href="{{ url_for('mobile.packet_review') }}">Open Packet Review</a>
+        <a class="msr-btn-secondary" href="{{ url_for('mobile.incident_start') }}">Start New Incident</a>
+        <a class="msr-btn-ghost" href="{{ url_for('mobile.home') }}">Back to Field Portal</a>
+      </div>
+    </div>
+
+    <div class="msr-card" id="msr-narrative-quality" style="display:none;">
+      <p class="msr-card-label">Narrative Quality</p>
+      <div id="msr-nq-body"></div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var STORAGE_KEY = 'mcpd.mobile.incident.state';
+  var raw = null;
+  try { raw = sessionStorage.getItem(STORAGE_KEY); } catch (e) {}
+
+  if (!raw) {
+    document.getElementById('msr-no-state').style.display = '';
+    return;
+  }
+
+  var state;
+  try { state = JSON.parse(raw); } catch (e) {
+    document.getElementById('msr-no-state').style.display = '';
+    return;
+  }
+
+  document.getElementById('msr-content').style.display = '';
+
+  /* Call type */
+  var ctLabel = state.callType
+    ? state.callType.replace(/-/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); })
+    : 'Not selected';
+  var ctEl = document.getElementById('msr-call-type');
+  ctEl.textContent = ctLabel;
+  ctEl.style.color = state.callType ? '#f5f2ea' : '#e05c5c';
+
+  /* Validation checks */
+  var basics = state.incidentBasics || {};
+  var persons = Array.isArray(state.persons) ? state.persons : [];
+  var forms   = Array.isArray(state.selectedForms) ? state.selectedForms : [];
+  var facts   = Array.isArray(state.facts) ? state.facts : [];
+  var stmts   = Array.isArray(state.statements) ? state.statements : [];
+
+  var checks = [
+    {
+      label: 'Call type selected',
+      ok: !!state.callType,
+      fix: '{{ url_for("mobile.incident_start") }}',
+    },
+    {
+      label: 'Incident date and time entered',
+      ok: !!(basics.occurredDate && basics.occurredTime),
+      fix: '{{ url_for("mobile.incident_basics") }}',
+    },
+    {
+      label: 'Incident location entered',
+      ok: !!(basics.location && basics.location.trim()),
+      fix: '{{ url_for("mobile.incident_basics") }}',
+    },
+    {
+      label: 'At least one person added',
+      ok: persons.length > 0,
+      fix: '{{ url_for("mobile.incident_persons") }}',
+    },
+    {
+      label: 'All persons have name and role',
+      ok: persons.length > 0 && persons.every(function (p) { return p.name && p.role; }),
+      fix: '{{ url_for("mobile.incident_persons") }}',
+    },
+    {
+      label: 'MCPD Stat Sheet in packet',
+      ok: forms.includes('MCPD Stat Sheet'),
+      fix: '{{ url_for("mobile.incident_selected_forms") }}',
+    },
+    {
+      label: 'Facts captured (at least one entry)',
+      ok: facts.length > 0 && facts.some(function (f) { return f.value; }),
+      fix: '{{ url_for("mobile.incident_facts") }}',
+    },
+    {
+      label: 'Narrative written',
+      ok: !!(state.narrative && state.narrative.trim()),
+      fix: '{{ url_for("mobile.incident_narrative_review") }}',
+    },
+    {
+      label: 'Narrative approved',
+      ok: !!state.narrativeApproved,
+      fix: '{{ url_for("mobile.incident_narrative_review") }}',
+    },
+    {
+      label: 'Statements complete (if any collected)',
+      ok: stmts.length === 0 || stmts.every(function (s) {
+        return !!(s.reviewedDraft && s.signatureDataUrl && s.initialsDataUrl);
+      }),
+      fix: '{{ url_for("mobile.statement_launcher") }}',
+    },
+  ];
+
+  var allOk = checks.every(function (c) { return c.ok; });
+  var passCount = checks.filter(function (c) { return c.ok; }).length;
+
+  /* Status row */
+  var statusRow = document.getElementById('msr-status-row');
+  statusRow.innerHTML = '<span class="msr-badge ' + (allOk ? 'is-ready' : 'is-warn') + '">'
+    + (allOk ? '&#10003; Packet Ready to Send' : '&#9888; ' + (checks.length - passCount) + ' item' + (checks.length - passCount === 1 ? '' : 's') + ' need attention')
+    + '</span>';
+
+  /* Checklist */
+  var listEl = document.getElementById('msr-checklist');
+  checks.forEach(function (c) {
+    var div = document.createElement('div');
+    div.className = 'msr-item ' + (c.ok ? 'is-ok' : 'is-fail');
+    div.innerHTML = '<span class="msr-item-icon">' + (c.ok ? '&#10003;' : '&#10007;') + '</span>'
+      + (c.ok
+        ? '<span class="msr-item-label">' + c.label + '</span>'
+        : '<a class="msr-item-label msr-item-fix" href="' + c.fix + '">' + c.label + ' &mdash; tap to fix</a>');
+    listEl.appendChild(div);
+  });
+
+  /* Narrative quality */
+  var narrative = typeof state.narrative === 'string' ? state.narrative.trim() : '';
+  if (narrative) {
+    var words = narrative.split(/\s+/).filter(Boolean);
+    var wc = words.length;
+    var nqCard = document.getElementById('msr-narrative-quality');
+    var nqBody = document.getElementById('msr-nq-body');
+    nqCard.style.display = '';
+    var nqIssues = [];
+    if (wc < 30) nqIssues.push('Very short (' + wc + ' words). Aim for at least 50 words.');
+    else if (wc < 50) nqIssues.push('Brief (' + wc + ' words). Consider adding more detail.');
+    var tl = narrative.toLowerCase();
+    if (!/(officer|this officer|responding|writer|reporting)/.test(tl)) nqIssues.push('Who was the responding officer?');
+    if (!/(suspect|victim|subject|person|individual|complainant|witness)/.test(tl)) nqIssues.push('Who was involved?');
+    if (!/(located|area|building|parking|street| at | near | on )/.test(tl)) nqIssues.push('Where did this occur?');
+    if (!/(approximately|approx|hours| at | on )/.test(tl)) nqIssues.push('When did this occur?');
+    if (!/(arrested|detained|advised|responded|notified|issued|transported|released|reported|cleared|secured)/.test(tl)) nqIssues.push('What actions were taken?');
+    if (nqIssues.length === 0) {
+      nqBody.innerHTML = '<p class="msr-nq-ok">&#10003; ' + wc + ' words &mdash; narrative looks adequate.</p>';
+    } else {
+      var html = '<p class="msr-nq-warn">&#9888; ' + wc + ' words &mdash; ' + nqIssues.length + ' suggestion(s):</p><ul class="msr-nq-list">';
+      nqIssues.forEach(function(i) { html += '<li>' + i + '</li>'; });
+      html += '</ul>';
+      nqBody.innerHTML = html;
+    }
+  }
+}());
+</script>
+{% endblock %}

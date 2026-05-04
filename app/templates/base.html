@@ -7,8 +7,9 @@
   <meta name="google-site-verification" content="{{ config.GOOGLE_SITE_VERIFICATION }}" />
   {% endif %}
   <title>{{ title if title else 'MCPD Portal' }}</title>
+  <meta name="csrf-token" content="{{ g.csrf_token }}" />
   <link rel="icon" type="image/svg+xml" href="{{ url_for('usmc_emblem') }}" />
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css', v='2026-05-03-mobile-system-1') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css', v='2026-05-04-assistant-2') }}" />
 </head>
 <body class="{{ body_class|default('') }}">
   {% with messages = get_flashed_messages(with_categories=true) %}
@@ -22,6 +23,28 @@
   {% endwith %}
   {% block body %}{% endblock %}
   <script src="{{ url_for('static', filename='js/app.js', v='2026-04-11-ops-refresh-1') }}"></script>
+  <script src="{{ url_for('static', filename='js/assistant.js', v='2026-05-04-assistant-2') }}"></script>
+  <script>
+  (function () {
+    var meta = document.querySelector('meta[name="csrf-token"]');
+    if (!meta) return;
+    var csrfToken = meta.getAttribute('content') || '';
+    var _origFetch = window.fetch;
+    window.fetch = function (input, init) {
+      init = init || {};
+      var method = (init.method || 'GET').toUpperCase();
+      if (['POST', 'PUT', 'PATCH', 'DELETE'].indexOf(method) !== -1) {
+        init.headers = init.headers || {};
+        if (typeof init.headers.set === 'function') {
+          init.headers.set('X-CSRFToken', csrfToken);
+        } else {
+          init.headers['X-CSRFToken'] = csrfToken;
+        }
+      }
+      return _origFetch.call(this, input, init);
+    };
+  }());
+  </script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

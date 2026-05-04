@@ -87,6 +87,115 @@
         'Capture suspect opportunity and access',
       ],
     },
+    'traffic-stop': {
+      slug: 'traffic-stop',
+      title: 'Traffic Stop',
+      shortLabel: 'Traffic Stop',
+      description: 'Vehicle stop, driver contact, citation or warning workflow.',
+      statutes: ['Traffic enforcement review', 'Installation roadway policy'],
+      recommendedForms: ['OPNAV 5580 21Field Interview Card', 'OPNAV 5580 2 Voluntary Statement'],
+      optionalForms: ['DD Form 2701 VWAP', 'OPNAV 5580 22Evidence Custody Document'],
+      checklistItems: [
+        'Document reason for stop',
+        'Record driver license, registration, and insurance',
+        'Document all occupants',
+        'Record outcome — citation, warning, or arrest',
+      ],
+    },
+    'use-of-force': {
+      slug: 'use-of-force',
+      title: 'Use of Force',
+      shortLabel: 'Use of Force',
+      description: 'Physical force application with supervisor notification and full documentation requirements.',
+      statutes: ['Use of force authority review', 'Detention authority review'],
+      recommendedForms: [
+        'NAVMC 11130 Statement of Force Use of Detention',
+        'OPNAV 5580 2 Voluntary Statement',
+      ],
+      optionalForms: ['DD Form 1920 ALCOHOL INCIDENT REPORT', 'OPNAV 5580 22Evidence Custody Document'],
+      checklistItems: [
+        'Render medical aid immediately if needed',
+        'Notify watch commander before end of shift',
+        'Photograph all injuries from all angles',
+        'Submit officer written statement',
+        'Preserve body cam and all recording evidence',
+      ],
+    },
+    'general-incident': {
+      slug: 'general-incident',
+      title: 'General Incident',
+      shortLabel: 'General',
+      description: 'Catch-all incident type for situations not covered by a specific call type.',
+      statutes: ['Review applicable statute or regulation for specific violation'],
+      recommendedForms: ['OPNAV 5580 2 Voluntary Statement'],
+      optionalForms: [
+        'OPNAV 5580 21Field Interview Card',
+        'OPNAV 5580 22Evidence Custody Document',
+        'DD Form 2701 VWAP',
+      ],
+      checklistItems: [
+        'Document incident type and circumstances',
+        'Capture all involved parties',
+        'Document resolution and disposition',
+      ],
+    },
+    'arrest': {
+      slug: 'arrest',
+      title: 'Arrest',
+      shortLabel: 'Arrest',
+      description: 'Formal apprehension workflow with rights advisement, search, and confinement steps.',
+      statutes: ['Arrest authority review', 'Detention authority review'],
+      recommendedForms: [
+        'OPNAV 5580 2 Voluntary Statement',
+        'OPNAV 5580 22Evidence Custody Document',
+      ],
+      optionalForms: ['NAVMC 11130 Statement of Force Use of Detention', 'DD Form 2701 VWAP'],
+      checklistItems: [
+        'Advise subject of rights (Miranda) before custodial interrogation',
+        'Search incident to arrest — document all items seized',
+        'Notify watch commander of arrest',
+        'Process through confinement per SOP',
+        'Complete property inventory — obtain signature if possible',
+      ],
+    },
+    'search-consent': {
+      slug: 'search-consent',
+      title: 'Search / Consent',
+      shortLabel: 'Search',
+      description: 'Consent-based search with scope documentation and evidence handling.',
+      statutes: ['Search authority review', 'Consent requirements review'],
+      recommendedForms: [
+        'OPNAV 5580 2 Voluntary Statement',
+        'OPNAV 5580 22Evidence Custody Document',
+      ],
+      optionalForms: ['OPNAV 5580 21Field Interview Card'],
+      checklistItems: [
+        'Obtain clear, voluntary, uncoerced consent',
+        'Inform subject of right to refuse',
+        'Limit search to scope of consent granted',
+        'Document all items found and exact location',
+        'Notify watch commander if controlled substances or weapons found',
+      ],
+    },
+    'evidence-seizure': {
+      slug: 'evidence-seizure',
+      title: 'Evidence Seizure',
+      shortLabel: 'Evidence',
+      description: 'Evidence collection, packaging, and chain of custody initiation.',
+      statutes: ['Evidence handling authority review', 'Property seizure review'],
+      recommendedForms: [
+        'OPNAV 5580 22Evidence Custody Document',
+        'OPNAV 5580 2 Voluntary Statement',
+      ],
+      optionalForms: ['OPNAV 5580 21Field Interview Card'],
+      checklistItems: [
+        'Photograph evidence in place before collection',
+        'Document exact location, condition, and description',
+        'Package and seal with proper evidence procedures',
+        'Maintain chain of custody from point of collection',
+        'Turn in to evidence custodian as soon as practical',
+      ],
+    },
   };
 
   const defaultState = {
@@ -355,10 +464,12 @@
     setCallType(slug) {
       const current = readState();
       const rule = callTypeRules[slug] || null;
+      const baseList = rule ? clone(rule.recommendedForms) : [];
+      const selectedForms = ['MCPD Stat Sheet', ...baseList.filter((f) => f !== 'MCPD Stat Sheet')];
       return writeState(
         Object.assign({}, current, {
           callType: slug,
-          selectedForms: rule ? clone(rule.recommendedForms) : [],
+          selectedForms,
           statutes: rule ? clone(rule.statutes || []) : [],
           checklist: rule
             ? rule.checklistItems.map((label, index) => ({
@@ -527,6 +638,7 @@
       return writeState(Object.assign({}, current, { formDrafts: drafts }));
     },
     toggleSelectedForm(formName) {
+      if (formName === 'MCPD Stat Sheet') return readState();
       const current = readState();
       const forms = Array.isArray(current.selectedForms) ? current.selectedForms.slice() : [];
       const index = forms.indexOf(formName);
@@ -535,6 +647,7 @@
       } else {
         forms.push(formName);
       }
+      if (!forms.includes('MCPD Stat Sheet')) forms.unshift('MCPD Stat Sheet');
       return writeState(
         Object.assign({}, current, {
           selectedForms: forms,
@@ -664,19 +777,25 @@
   }
 
   function FormRecommendationCard(formName, variant, isSelected, record) {
+    const isLocked = variant === 'always-required';
     const metadata = record
       ? record.category
-      : 'Needs review';
+      : isLocked ? 'Required for every incident' : 'Needs review';
+    const labelText = isLocked ? 'Always Required' : variant === 'optional' ? 'Optional' : 'Recommended';
+    const cardClass = isLocked
+      ? 'is-always-required is-selected'
+      : `${variant === 'optional' ? 'is-optional' : 'is-recommended'} ${isSelected ? 'is-selected' : ''}`;
     return `
-      <article class="mobile-form-rec-card ${variant === 'optional' ? 'is-optional' : 'is-recommended'} ${isSelected ? 'is-selected' : ''}">
+      <article class="mobile-form-rec-card ${cardClass}">
         <div class="mobile-form-rec-copy">
-          <span class="mobile-form-rec-label">${variant === 'optional' ? 'Optional' : 'Recommended'}</span>
+          <span class="mobile-form-rec-label">${escapeHtml(labelText)}</span>
           <strong>${escapeHtml(formName)}</strong>
           <p>${escapeHtml(metadata)}</p>
         </div>
-        <button class="mobile-form-toggle" type="button" data-form-name="${escapeHtml(formName)}">
-          ${isSelected ? 'Selected' : 'Add To Packet'}
-        </button>
+        ${isLocked
+          ? `<span class="mobile-form-toggle is-locked">✓ Always Required</span>`
+          : `<button class="mobile-form-toggle" type="button" data-form-name="${escapeHtml(formName)}">${isSelected ? 'Selected' : 'Add To Packet'}</button>`
+        }
       </article>
     `;
   }
@@ -1595,9 +1714,11 @@
     }
 
   function ReviewEditCard(title, summary, href, actionLabel, variant) {
+    const dotOk = !variant || variant === '';
     return `
       <article class="mobile-review-card ${variant ? `is-${escapeHtml(variant)}` : ''}">
         <div class="mobile-review-copy">
+          <span class="mobile-review-dot ${dotOk ? 'is-ok' : 'is-warn'}"></span>
           <strong>${escapeHtml(title)}</strong>
           <p>${escapeHtml(summary || 'Needs review')}</p>
         </div>
@@ -1697,13 +1818,13 @@
       errors.push({ field: 'Incident Date', message: 'Incident date is missing.' });
     }
     if (!String(basics.dispatchTime || '').trim()) {
-      errors.push({ field: 'Dispatch Time', message: 'Dispatch time is missing.' });
+      warnings.push({ field: 'Dispatch Time', message: 'Dispatch time is missing.' });
     }
     if (!String(basics.location || '').trim()) {
       errors.push({ field: 'Location', message: 'Incident location is missing.' });
     }
     if (!String(basics.arrivalTime || '').trim()) {
-      errors.push({ field: 'Arrival Time', message: 'Arrival time is missing.' });
+      warnings.push({ field: 'Arrival Time', message: 'Arrival time is missing.' });
     }
     if (!String(basics.reportingOfficer || '').trim()) {
       errors.push({ field: 'Reporting Officer', message: 'Reporting officer is missing.' });
@@ -1718,6 +1839,10 @@
     }
     if (!formEntries.length) {
       errors.push({ field: 'Forms', message: 'Select at least one form for the packet.' });
+    }
+    const selectedFormTitles = Array.isArray(state.selectedForms) ? state.selectedForms : [];
+    if (!selectedFormTitles.includes('MCPD Stat Sheet')) {
+      errors.push({ field: 'MCPD Stat Sheet', message: 'The MCPD Stat Sheet is required for every incident packet and is missing.' });
     }
     if (!persons.length) {
       errors.push({ field: 'People', message: 'Add the involved people before sending.' });
@@ -1861,16 +1986,24 @@
     }
     const catalog = readMobileFormCatalog();
     const selectedForms = Array.isArray(state.selectedForms) ? state.selectedForms : [];
-    const recommended = (rule.recommendedForms || []).map((title) => ({
-      title,
-      variant: 'recommended',
-      record: resolveCatalogRecord(catalog, title),
-    }));
+    if (!selectedForms.includes('MCPD Stat Sheet')) {
+      incidentStore.toggleSelectedForm('__ensure_stat_sheet__');
+      selectedForms.unshift('MCPD Stat Sheet');
+    }
+    const statSheetRecord = resolveCatalogRecord(catalog, 'MCPD Stat Sheet');
+    const recommended = (rule.recommendedForms || [])
+      .filter((title) => title !== 'MCPD Stat Sheet')
+      .map((title) => ({
+        title,
+        variant: 'recommended',
+        record: resolveCatalogRecord(catalog, title),
+      }));
     const optional = (rule.optionalForms || []).map((title) => ({
       title,
       variant: 'optional',
       record: resolveCatalogRecord(catalog, title),
     }));
+    const conditionalCount = selectedForms.filter((f) => f !== 'MCPD Stat Sheet').length;
     root.innerHTML = `
       <section class="mobile-section-block">
         <div class="mobile-section-head">
@@ -1880,13 +2013,21 @@
           <span>${escapeHtml(rule.title)}</span>
           <strong>Select only the forms actually used</strong>
         </div>
+        <p class="mobile-forms-section-label">Required Documents</p>
         <div class="mobile-form-rec-grid">
-          ${recommended.map((entry) => FormRecommendationCard(
-            entry.title,
-            entry.variant,
-            selectedForms.includes(entry.title),
-            entry.record
-          )).join('')}
+          ${FormRecommendationCard('MCPD Stat Sheet', 'always-required', true, statSheetRecord)}
+        </div>
+        <p class="mobile-forms-section-label">Recommended Documents</p>
+        <div class="mobile-form-rec-grid">
+          ${recommended.length
+            ? recommended.map((entry) => FormRecommendationCard(
+                entry.title,
+                entry.variant,
+                selectedForms.includes(entry.title),
+                entry.record
+              )).join('')
+            : '<div class="mobile-empty-card">No additional forms required for this call type.</div>'
+          }
         </div>
       </section>
       <details class="mobile-disclosure">
@@ -1905,12 +2046,12 @@
         </div>
       </details>
       ${StickyWizardBar({
-        title: selectedForms.length ? `${selectedForms.length} form${selectedForms.length === 1 ? '' : 's'} selected` : 'Select the forms you used',
+        title: `Stat Sheet + ${conditionalCount} conditional form${conditionalCount === 1 ? '' : 's'} selected`,
         backHref: urls.basics,
         backLabel: 'Basics',
         nextHref: urls.persons,
         nextLabel: 'People',
-        disabled: !selectedForms.length,
+        disabled: false,
       })}
     `;
 
@@ -3061,32 +3202,72 @@
     });
   }
 
+  function _reviewDot(ok) {
+    return `<span class="mobile-review-dot ${ok ? 'is-ok' : 'is-warn'}"></span>`;
+  }
+
   function PacketReviewPage(root, urls) {
     const state = incidentStore.getState();
     const packet = buildPacket(state, readMobileFormCatalog());
     incidentStore.updatePacketStatus(packet.canSend ? 'packet_ready' : 'forms_reviewed');
+
+    const errorFields = new Set((packet.errors || []).map((e) => e.field));
+    const warnFields = new Set((packet.warnings || []).map((w) => w.field));
+
+    const basicsOk = !errorFields.has('Incident Date') && !errorFields.has('Location') && !errorFields.has('Reporting Officer');
+    const formsOk = !errorFields.has('Forms') && !errorFields.has('MCPD Stat Sheet');
+    const peopleOk = !errorFields.has('People');
+    const factsOk = !errorFields.has('Facts Capture');
+    const narrativeOk = !errorFields.has('Narrative');
+    const statementsOk = !errorFields.has('Statements');
+
+    const statSheetOk = !errorFields.has('MCPD Stat Sheet');
+    const statSheetSummary = statSheetOk ? 'Included in packet' : 'Missing — required for all packets';
+
     const basicsSummary = [
       packet.basics.occurredDate || 'Date missing',
       packet.basics.location || 'Location missing',
       packet.basics.reportingOfficer || 'Officer missing',
-    ].join(' | ');
-    const formsSummary = packet.formEntries.length ? `${packet.formEntries.length} selected` : 'No forms selected';
-    const statementsSummary = packet.statements.length ? `${packet.statements.length} attached` : 'No statements attached';
+    ].join(' · ');
+    const formsSummary = packet.formEntries.length ? `${packet.formEntries.length} form${packet.formEntries.length === 1 ? '' : 's'} selected` : 'No forms selected';
+    const statementsSummary = packet.statements.length ? `${packet.statements.length} statement${packet.statements.length === 1 ? '' : 's'} attached` : 'No statements attached';
     const domesticSelected = packet.formEntries.some((entry) => normalizeLookupKey(entry.requestedTitle).includes('domesticviolence'));
+    const personCount = (state.persons || []).length;
+    const primaryFact = incidentPrimaryFact(state);
+
+    const bannerClass = packet.canSend ? 'is-ready' : (packet.errors.length ? 'is-error' : 'is-warn');
+    const bannerText = packet.canSend
+      ? 'Packet is complete — ready to send'
+      : packet.errors.length
+        ? `${packet.errors.length} item${packet.errors.length === 1 ? '' : 's'} must be resolved before sending`
+        : `${packet.warnings.length} reminder${packet.warnings.length === 1 ? '' : 's'} — packet can still be sent`;
+
     root.innerHTML = `
-      ${packet.errors.length ? packetValidationCard('Missing Before Send', packet.errors, 'error') : ''}
-      ${packet.warnings.length ? packetValidationCard('Open Reminders', packet.warnings, 'warning') : ''}
+      <div class="mobile-packet-status-banner ${bannerClass}">
+        <span class="mobile-packet-status-icon">${packet.canSend ? '✓' : packet.errors.length ? '⚠' : '●'}</span>
+        <span class="mobile-packet-status-text">${escapeHtml(bannerText)}</span>
+      </div>
+      ${packet.errors.length ? packetValidationCard('Required — Resolve Before Send', packet.errors, 'error') : ''}
+      ${packet.warnings.length ? packetValidationCard('Reminders — Review Before Send', packet.warnings, 'warning') : ''}
       <section class="mobile-section-block">
         <div class="mobile-section-head">
           <h3>Packet review</h3>
         </div>
         <div class="mobile-packet-summary-grid">
-          ${ReviewEditCard('Incident', basicsSummary, urls.basics, 'Edit')}
-          ${ReviewEditCard('Forms', formsSummary, urls.forms, 'Edit')}
-          ${ReviewEditCard('People', `${(state.persons || []).length} attached`, urls.persons, 'Edit')}
-          ${ReviewEditCard('Facts', shortText(incidentPrimaryFact(state), 96) || 'Main facts missing', urls.facts, 'Edit', incidentPrimaryFact(state) ? '' : 'warning')}
-          ${ReviewEditCard('Narrative', shortText(packet.narrative, 96) || 'Narrative missing', urls.narrative, 'Edit', packet.narrative ? '' : 'warning')}
-          ${ReviewEditCard('Statements', statementsSummary, urls.statements, 'Open')}
+          <article class="mobile-review-card ${statSheetOk ? '' : 'is-error'}">
+            <div class="mobile-review-copy">
+              ${_reviewDot(statSheetOk)}
+              <strong>Stat Sheet</strong>
+              <p>${escapeHtml(statSheetSummary)}</p>
+            </div>
+            <a class="mobile-review-link" href="${escapeHtml(urls.forms)}">Forms</a>
+          </article>
+          ${ReviewEditCard('Incident', basicsSummary, urls.basics, 'Edit', basicsOk ? '' : 'warning')}
+          ${ReviewEditCard('Forms', formsSummary, urls.forms, 'Edit', formsOk ? '' : 'warning')}
+          ${ReviewEditCard('People', `${personCount} ${personCount === 1 ? 'person' : 'people'} attached`, urls.persons, 'Edit', peopleOk ? '' : 'warning')}
+          ${ReviewEditCard('Facts', shortText(primaryFact, 96) || 'Main facts missing', urls.facts, 'Edit', factsOk ? '' : 'warning')}
+          ${ReviewEditCard('Narrative', shortText(packet.narrative, 96) || 'Narrative missing', urls.narrative, 'Edit', narrativeOk ? '' : 'warning')}
+          ${ReviewEditCard('Statements', statementsSummary, urls.statements, 'Open', statementsOk ? '' : 'warning')}
           ${ReviewEditCard('Domestic', domesticSelected ? 'Review domestic supplemental' : 'Not selected for this packet', urls.domestic, domesticSelected ? 'Open' : 'Skip')}
         </div>
       </section>

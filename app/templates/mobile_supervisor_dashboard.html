@@ -1,0 +1,171 @@
+{% extends 'mobile_shell.html' %}
+{% block mobile_content %}
+
+<div class="cmd-shell">
+
+  <!-- Overall counts row -->
+  <div class="cmd-counts-row">
+    <div class="cmd-count-card cmd-count-pending">
+      <span class="cmd-count-num">{{ pending|length }}</span>
+      <span class="cmd-count-label">Pending</span>
+    </div>
+    <div class="cmd-count-card cmd-count-approved">
+      <span class="cmd-count-num">{{ approved|length }}</span>
+      <span class="cmd-count-label">Approved</span>
+    </div>
+    <div class="cmd-count-card cmd-count-correction">
+      <span class="cmd-count-num">{{ needs_correction|length }}</span>
+      <span class="cmd-count-label">Needs Correction</span>
+    </div>
+  </div>
+
+  <!-- Quick Links -->
+  <div class="cmd-card">
+    <p class="cmd-card-label">Quick Links</p>
+    <div class="cmd-link-grid">
+      <a class="cmd-link-btn" href="{{ url_for('mobile.supervisor_review') }}">Self-Check</a>
+      <a class="cmd-link-btn" href="{{ url_for('mobile.incident_start') }}">New Incident</a>
+      <a class="cmd-link-btn" href="{{ url_for('forms.list_forms') }}">Forms</a>
+      <a class="cmd-link-btn" href="{{ url_for('legal.legal_home') }}">Law Lookup</a>
+    </div>
+  </div>
+
+  <!-- Supervisor Insights Panel -->
+  {% if focus_areas or top_missing or officer_patterns %}
+  <details class="cmd-card cmd-insights-card" open>
+    <summary class="cmd-insights-summary">
+      <span class="cmd-card-label">Supervisor Insights</span>
+      <span class="cmd-insights-chevron">&#8250;</span>
+    </summary>
+
+    {% if focus_areas %}
+    <div class="cmd-insights-section">
+      <p class="cmd-insights-head">Focus Areas</p>
+      <div class="cmd-focus-list">
+        {% for label, count in focus_areas %}
+        <div class="cmd-focus-item">
+          <span class="cmd-focus-dot"></span>
+          <span class="cmd-focus-label">{{ label }}</span>
+          <span class="cmd-focus-count">{{ count }} packet{{ 's' if count != 1 else '' }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if top_missing %}
+    <div class="cmd-insights-section">
+      <p class="cmd-insights-head">Most Missed Items</p>
+      <div class="cmd-missing-list">
+        {% for field, count in top_missing %}
+        <div class="cmd-missing-item">
+          <span class="cmd-missing-field">{{ field }}</span>
+          <span class="cmd-missing-count">{{ count }}×</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if officer_patterns %}
+    <div class="cmd-insights-section">
+      <p class="cmd-insights-head">Training Flags by Officer</p>
+      <div class="cmd-officer-flags">
+        {% for op in officer_patterns %}
+        <div class="cmd-officer-block">
+          <p class="cmd-officer-name">{{ op.officer.display_name }} <span class="cmd-officer-count">({{ op.packet_count }} packets)</span></p>
+          <ul class="cmd-flag-list">
+            {% for flag in op.flags %}
+            <li class="cmd-flag-item cmd-flag-{{ flag.severity }}">{{ flag.text }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+  </details>
+  {% endif %}
+
+  <!-- Pending review -->
+  {% if pending %}
+  <div class="cmd-card">
+    <p class="cmd-card-label">Pending Review ({{ pending|length }})</p>
+    <div class="cmd-packet-list">
+      {% for p in pending %}
+      <a class="cmd-packet-row cmd-packet-pending" href="{{ url_for('mobile.supervisor_packet_review', packet_id=p.id) }}">
+        <div class="cmd-packet-main">
+          <span class="cmd-packet-type">{{ p.call_type or 'Unknown Type' }}</span>
+          <span class="cmd-packet-officer">{{ p.officer.display_name if p.officer else 'Unknown Officer' }}</span>
+        </div>
+        <div class="cmd-packet-meta">
+          <span class="cmd-packet-date">{{ p.submitted_at.strftime('%m/%d %H:%M') if p.submitted_at else '' }}</span>
+          <span class="cmd-packet-loc">{{ (p.location or '')[:35] }}{% if p.location and p.location|length > 35 %}…{% endif %}</span>
+        </div>
+        <span class="cmd-packet-arrow">&#8250;</span>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Needs correction -->
+  {% if needs_correction %}
+  <div class="cmd-card">
+    <p class="cmd-card-label">Needs Correction ({{ needs_correction|length }})</p>
+    <div class="cmd-packet-list">
+      {% for p in needs_correction %}
+      <a class="cmd-packet-row cmd-packet-correction" href="{{ url_for('mobile.supervisor_packet_review', packet_id=p.id) }}">
+        <div class="cmd-packet-main">
+          <span class="cmd-packet-type">{{ p.call_type or 'Unknown Type' }}</span>
+          <span class="cmd-packet-officer">{{ p.officer.display_name if p.officer else 'Unknown Officer' }}</span>
+        </div>
+        <div class="cmd-packet-meta">
+          <span class="cmd-packet-date">{{ p.submitted_at.strftime('%m/%d %H:%M') if p.submitted_at else '' }}</span>
+          <span class="cmd-packet-loc">{{ (p.location or '')[:35] }}{% if p.location and p.location|length > 35 %}…{% endif %}</span>
+        </div>
+        <span class="cmd-packet-arrow">&#8250;</span>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Approved -->
+  {% if approved %}
+  <div class="cmd-card">
+    <p class="cmd-card-label">Approved ({{ approved|length }})</p>
+    <div class="cmd-packet-list">
+      {% for p in approved %}
+      <a class="cmd-packet-row cmd-packet-approved" href="{{ url_for('mobile.supervisor_packet_review', packet_id=p.id) }}">
+        <div class="cmd-packet-main">
+          <span class="cmd-packet-type">{{ p.call_type or 'Unknown Type' }}</span>
+          <span class="cmd-packet-officer">{{ p.officer.display_name if p.officer else 'Unknown Officer' }}</span>
+        </div>
+        <div class="cmd-packet-meta">
+          <span class="cmd-packet-date">{{ p.submitted_at.strftime('%m/%d %H:%M') if p.submitted_at else '' }}</span>
+          {% if p.reviewer %}
+          <span class="cmd-packet-reviewer">Reviewed by {{ p.reviewer.display_name }}</span>
+          {% endif %}
+        </div>
+        <span class="cmd-packet-arrow">&#8250;</span>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if not packets %}
+  <div class="cmd-card">
+    <p class="cmd-card-label">No Packets Yet</p>
+    <p class="cmd-card-body">No submitted incident packets found. Packets appear here after officers complete the full incident workflow and send a packet.</p>
+  </div>
+  {% endif %}
+
+  <div class="cmd-card">
+    <a class="msr-btn-ghost" href="{{ url_for('mobile.home') }}">Back to Field Portal</a>
+  </div>
+
+</div>
+{% endblock %}
