@@ -781,6 +781,7 @@ def manage_users():
         'supervisors': _available_supervisors(),
         'role_labels': ROLE_LABELS,
         'installation_labels': INSTALLATION_LABELS,
+        'installations': USMC_INSTALLATIONS,
         'database_write_notice': 'This server is currently running with limited database write capability. Some save actions may be blocked until the primary app process is restarted.' if current_app.config.get('APP_ENV') == 'prod' else '',
         **extra,
     }
@@ -856,12 +857,36 @@ def manage_users():
                 supervisor = None
             if is_watch_commander(current_user):
                 supervisor = db.session.get(User, watch_commander_scope_id(current_user))
+            new_section_unit = request.form.get('section_unit', '').strip() or None
+            new_installation = request.form.get('installation', '').strip() or None
+            valid_keys = {k for k, _ in USMC_INSTALLATIONS}
+            if new_installation and new_installation not in valid_keys:
+                new_installation = None
             target.role = role
             target.supervisor_id = supervisor.id if supervisor else None
             target.can_grade_cleoc_reports = request.form.get('can_grade_cleoc_reports') == '1'
+            if new_section_unit is not None:
+                target.section_unit = new_section_unit
+            if new_installation:
+                target.installation = new_installation
             if not _commit_or_rollback():
                 return render_template('admin_users.html', **context_kwargs(error='Unable to update that user right now. Try again later.'))
             _safe_audit(actor_id=current_user.id, action='user_update_role', details=f'{username}:{role}')
+        elif action == 'delete':
+            target = _user_by_username(username)
+            if not target:
+                return render_template('admin_users.html', **context_kwargs(error='User not found.'))
+            if not can_manage_user(current_user, target):
+                abort(403)
+            # Site controllers cannot be deleted by non-site-controllers (enforced by can_manage_user),
+            # but also prevent deleting yourself
+            if target.id == current_user.id:
+                return render_template('admin_users.html', **context_kwargs(error='You cannot delete your own account.'))
+            deleted_name = target.display_name
+            db.session.delete(target)
+            if not _commit_or_rollback():
+                return render_template('admin_users.html', **context_kwargs(error='Unable to delete that user right now. Try again later.'))
+            _safe_audit(actor_id=current_user.id, action='user_delete', details=f'{username} ({deleted_name})')
         elif action == 'approve':
             pending_id = request.form.get('pending_id', '').strip()
             if not pending_id:
