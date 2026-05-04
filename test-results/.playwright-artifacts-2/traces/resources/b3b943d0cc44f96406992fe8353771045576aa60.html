@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  
+  <meta name="google-site-verification" content="lbYJO4OgpLEcoRJ5edmnn2APVfmoeyaLFFTMgYQZd_k" />
+  
+  <title>MCPD Portal</title>
+  <link rel="icon" type="image/svg+xml" href="/assets/usmc-emblem.svg" />
+  <link rel="stylesheet" href="/static/css/app.css?v=2026-04-30-command-rms-1" />
+</head>
+<body class="">
+  
+    
+  
+  
+<div class="app-shell">
+  <nav class="top-nav">
+  
+  
+  
+  
+  
+  
+  <div class="brand">
+    <img src="/assets/usmc-emblem.svg" alt="USMC" />
+    <div class="brand-copy">
+      <span class="brand-kicker">Operations</span>
+      <span class="brand-title">MCPD Portal</span>
+    </div>
+  </div>
+  <button
+    class="nav-toggle"
+    type="button"
+    aria-expanded="false"
+    aria-controls="portal-nav-menu"
+    data-nav-toggle
+  >
+    Menu
+  </button>
+  <div class="nav-menu" id="portal-nav-menu" data-nav-menu>
+    <div class="nav-links">
+      <a class="" href="/dashboard">Dashboard</a>
+      <a class="" href="/incident-paperwork-guide">Navigator</a>
+      <a class="" href="/forms">Forms</a>
+      <a class="" href="/forms/saved">Saved Work</a>
+      <a class="is-active" href="/reports">Reports</a>
+      <details class="nav-more nav-menu-group ">
+        <summary>Authority</summary>
+        <div class="nav-more-menu">
+          <a class="" href="/legal">Law Lookup</a>
+          <a class="" href="/orders/reference">Orders Desk</a>
+          <a class="" href="/officer-handbook">Officer Handbook</a>
+        </div>
+      </details>
+      <details class="nav-more nav-menu-group ">
+        <summary>Operations</summary>
+        <div class="nav-more-menu">
+          <a class="" href="/vehicle-inspections">Inspections</a>
+          <a class="" href="/training/menu">Training</a>
+          <a class="" href="/announcements">Notices</a>
+          <a class="" href="/stats">Stats</a>
+          <a class="" href="/profile">Profile</a>
+          <a class="" href="/annual-training-ai">Assistant</a>
+          <a class="" href="/reconstruction">Reconstruction</a>
+          
+        </div>
+      </details>
+      
+      <a class="" href="/admin/users">Personnel</a>
+      
+      
+      <details class="nav-more ">
+        <summary>Admin</summary>
+        <div class="nav-more-menu">
+          <a class="" href="/admin/stats/categories">Targets</a>
+          <a class="" href="/admin/stats/targets-upload">Upload</a>
+          <a class="" href="/admin/stats/uploads">Uploads</a>
+          <a class="" href="/forms/call-types">Scenario Builder</a>
+          <a class="" href="/forms/manage">Forms Manager</a>
+          <a class="" href="/incident-paperwork-guide/manage">Navigator Editor</a>
+          <a class="" href="/admin/legal-corpus">Legal QA</a>
+          <a class="" href="/admin/legal-analytics">Legal Analytics</a>
+        </div>
+      </details>
+      
+    </div>
+    <div class="nav-right">
+      <div class="nav-user-panel">
+        <div class="nav-user-identity">
+          <span class="nav-user-label">Signed in as</span>
+          <span class="user-name">robertrichards</span>
+        </div>
+        <div class="nav-user-badges">
+          <span class="badge bg-dark">Website Controller</span>
+        
+          <span class="badge bg-warning text-dark">127.0.0.1:8092</span>
+        
+        
+          <small class="text-light">Role: Website Controller</small>
+        
+        </div>
+      </div>
+      
+      <details class="nav-more nav-role-switch">
+        <summary>Scope</summary>
+        <div class="nav-more-menu nav-scope-menu">
+          <form method="post" action="/role/switch/WEBSITE_CONTROLLER">
+            <input type="hidden" name="next" value="/reports/new" />
+            <button class="btn btn-outline-light btn-sm w-100">Controller View</button>
+          </form>
+          <form method="post" action="/role/switch/WATCH_COMMANDER">
+            <input type="hidden" name="next" value="/reports/new" />
+            <button class="btn btn-outline-light btn-sm w-100">Watch Commander View</button>
+          </form>
+          <form method="post" action="/role/scope">
+            <input type="hidden" name="next" value="/reports/new" />
+            <select class="form-select form-select-sm" name="watch_commander_id" onchange="this.form.submit()">
+              <option value="">My Scope</option>
+              
+            </select>
+          </form>
+        </div>
+      </details>
+      
+      <form method="post" action="/logout" class="nav-logout-form">
+        <button class="btn btn-outline-light btn-sm">Logout</button>
+      </form>
+    </div>
+  </div>
+</nav>
+  <div class="page-wrap desktop-intake-page">
+    <section class="desktop-intake-hero">
+      <div>
+        <div class="eyebrow">Desktop Incident Intake</div>
+        <h1>Start a report from the same scenarios officers use on mobile.</h1>
+        <p>Select a call type to seed the report shell. The mobile scenario builder controls what appears here.</p>
+      </div>
+      <a class="btn btn-light" href="/forms/call-types">Manage Scenarios</a>
+    </section>
+
+    <form method="post" class="desktop-intake-card" data-desktop-report-intake>
+      <div class="desktop-intake-section">
+        <h2>1. Choose scenario</h2>
+        <div class="desktop-scenario-grid">
+          
+          <label class="desktop-scenario-card">
+            <input type="radio" name="call_type" value="domestic-disturbance" data-scenario-title="Domestic Disturbance" data-scenario-description="Primary domestic response, scene control, initial statements, and follow-up paperwork prep.">
+            <span>Domestic</span>
+            <strong>Domestic Disturbance</strong>
+            <small>Primary domestic response, scene control, initial statements, and follow-up paperwork prep.</small>
+          </label>
+          
+          <label class="desktop-scenario-card">
+            <input type="radio" name="call_type" value="suspicious-person" data-scenario-title="Suspicious Person" data-scenario-description="Field contact and articulable-facts workflow for suspicious behavior and security concerns.">
+            <span>Suspicious</span>
+            <strong>Suspicious Person</strong>
+            <small>Field contact and articulable-facts workflow for suspicious behavior and security concerns.</small>
+          </label>
+          
+          <label class="desktop-scenario-card">
+            <input type="radio" name="call_type" value="theft" data-scenario-title="Theft" data-scenario-description="Property crime workflow focused on ownership, recovered items, and evidence trail.">
+            <span>Theft</span>
+            <strong>Theft</strong>
+            <small>Property crime workflow focused on ownership, recovered items, and evidence trail.</small>
+          </label>
+          
+          <label class="desktop-scenario-card">
+            <input type="radio" name="call_type" value="traffic-accident" data-scenario-title="Traffic Accident" data-scenario-description="Collision response, roadway safety, vehicle data capture, and tow/impound preparation.">
+            <span>Traffic</span>
+            <strong>Traffic Accident</strong>
+            <small>Collision response, roadway safety, vehicle data capture, and tow/impound preparation.</small>
+          </label>
+          
+          <label class="desktop-scenario-card">
+            <input type="radio" name="call_type" value="trespass-after-warning" data-scenario-title="Trespass After Warning" data-scenario-description="Return-after-warning workflow with authority review and citation/notice support.">
+            <span>Trespass</span>
+            <strong>Trespass After Warning</strong>
+            <small>Return-after-warning workflow with authority review and citation/notice support.</small>
+          </label>
+          
+        </div>
+      </div>
+
+      <div class="desktop-intake-section">
+        <h2>2. Name the report</h2>
+        <label class="scenario-field">
+          <span>Report title</span>
+          <input class="form-control form-control-lg" name="title" data-report-title placeholder="Example: Shoplifting at PX" />
+        </label>
+        <div class="desktop-intake-preview" data-scenario-preview>
+          Choose a scenario or type a report title to begin.
+        </div>
+      </div>
+
+      <div class="desktop-intake-save">
+        <a class="btn btn-outline-secondary" href="/reports">Cancel</a>
+        <button class="btn btn-primary btn-lg">Create Report</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+  <script src="/static/js/app.js?v=2026-04-30-report-workspace-1"></script>
+  
+
+<script>
+  (function () {
+    var root = document.querySelector('[data-desktop-report-intake]');
+    if (!root) return;
+    var title = root.querySelector('[data-report-title]');
+    var preview = root.querySelector('[data-scenario-preview]');
+    root.querySelectorAll('input[name="call_type"]').forEach(function (radio) {
+      radio.addEventListener('change', function () {
+        var scenarioTitle = radio.getAttribute('data-scenario-title') || '';
+        var description = radio.getAttribute('data-scenario-description') || '';
+        if (title && !title.value.trim()) title.value = scenarioTitle;
+        if (preview) preview.textContent = description || 'This report will use the selected incident scenario.';
+      });
+    });
+  })();
+</script>
+
+</body>
+</html>

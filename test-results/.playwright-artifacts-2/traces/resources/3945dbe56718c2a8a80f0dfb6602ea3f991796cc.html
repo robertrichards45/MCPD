@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  
+  <meta name="google-site-verification" content="lbYJO4OgpLEcoRJ5edmnn2APVfmoeyaLFFTMgYQZd_k" />
+  
+  <title>MCPD Portal</title>
+  <link rel="icon" type="image/svg+xml" href="/assets/usmc-emblem.svg" />
+  <link rel="stylesheet" href="/static/css/app.css?v=2026-04-30-command-rms-1" />
+</head>
+<body class="landing">
+  
+    
+  
+  
+<div class="login-bg">
+  <div class="login-panel login-panel--professional">
+    <section class="login-panel__brand">
+      <div class="login-badge">MCPD Secure Access</div>
+      <img src="/assets/usmc-emblem.svg" alt="USMC Emblem" class="login-emblem" />
+      <h1>MCPD Portal</h1>
+      <p class="subtitle">Operations, reporting, and field support for authorized personnel.</p>
+      <div class="login-status-row" aria-label="Portal status">
+        <span class="login-status-pill">
+          Mode
+          <strong>Development</strong>
+        </span>
+        <span class="login-status-pill">
+          CAC
+          <strong>Disabled</strong>
+        </span>
+      </div>
+      <div class="login-callout">
+        <h2>Authorized Use Only</h2>
+        <p>Use your MCPD account to access reporting, references, and command workflows.</p>
+      </div>
+    </section>
+    <section class="login-panel__auth">
+      <div class="login-auth-header">
+        <h2>Sign In</h2>
+        <p>Use your assigned MCPD username and password.</p>
+      </div>
+      
+      
+      <form method="post" action="/admin/login" class="login-form">
+        
+        <div class="mb-2">
+          <label class="form-label">Username</label>
+          <input type="text" name="username" class="form-control" autocomplete="username" required />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Password</label>
+          <input type="password" name="password" class="form-control" autocomplete="current-password" required />
+        </div>
+        <button class="btn btn-primary w-100">Sign In</button>
+      </form>
+      <div class="login-help-note">
+        <strong>Need access?</strong>
+        Contact your supervisor or site administrator. Alternate account setup stays off the main sign-in screen to keep this page simple.
+      </div>
+    </section>
+  </div>
+</div>
+
+  <script src="/static/js/app.js?v=2026-04-30-report-workspace-1"></script>
+  
+</body>
+</html>

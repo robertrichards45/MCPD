@@ -1,0 +1,1326 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  
+  <meta name="google-site-verification" content="lbYJO4OgpLEcoRJ5edmnn2APVfmoeyaLFFTMgYQZd_k" />
+  
+  <title>MCPD Portal</title>
+  <link rel="icon" type="image/svg+xml" href="/assets/usmc-emblem.svg" />
+  <link rel="stylesheet" href="/static/css/app.css?v=2026-04-30-command-rms-1" />
+</head>
+<body class="">
+  
+    
+  
+  
+<div class="app-shell">
+  <nav class="top-nav">
+  
+  
+  
+  
+  
+  
+  <div class="brand">
+    <img src="/assets/usmc-emblem.svg" alt="USMC" />
+    <div class="brand-copy">
+      <span class="brand-kicker">Operations</span>
+      <span class="brand-title">MCPD Portal</span>
+    </div>
+  </div>
+  <button
+    class="nav-toggle"
+    type="button"
+    aria-expanded="false"
+    aria-controls="portal-nav-menu"
+    data-nav-toggle
+  >
+    Menu
+  </button>
+  <div class="nav-menu" id="portal-nav-menu" data-nav-menu>
+    <div class="nav-links">
+      <a class="" href="/dashboard">Dashboard</a>
+      <a class="" href="/incident-paperwork-guide">Navigator</a>
+      <a class="is-active" href="/forms">Forms</a>
+      <a class="" href="/forms/saved">Saved Work</a>
+      <a class="" href="/reports">Reports</a>
+      <details class="nav-more nav-menu-group ">
+        <summary>Authority</summary>
+        <div class="nav-more-menu">
+          <a class="" href="/legal">Law Lookup</a>
+          <a class="" href="/orders/reference">Orders Desk</a>
+          <a class="" href="/officer-handbook">Officer Handbook</a>
+        </div>
+      </details>
+      <details class="nav-more nav-menu-group ">
+        <summary>Operations</summary>
+        <div class="nav-more-menu">
+          <a class="" href="/vehicle-inspections">Inspections</a>
+          <a class="" href="/training/menu">Training</a>
+          <a class="" href="/announcements">Notices</a>
+          <a class="" href="/stats">Stats</a>
+          <a class="" href="/profile">Profile</a>
+          <a class="" href="/annual-training-ai">Assistant</a>
+          <a class="" href="/reconstruction">Reconstruction</a>
+          
+        </div>
+      </details>
+      
+      <a class="" href="/admin/users">Personnel</a>
+      
+      
+      <details class="nav-more has-active">
+        <summary>Admin</summary>
+        <div class="nav-more-menu">
+          <a class="" href="/admin/stats/categories">Targets</a>
+          <a class="" href="/admin/stats/targets-upload">Upload</a>
+          <a class="" href="/admin/stats/uploads">Uploads</a>
+          <a class="is-active" href="/forms/call-types">Scenario Builder</a>
+          <a class="" href="/forms/manage">Forms Manager</a>
+          <a class="" href="/incident-paperwork-guide/manage">Navigator Editor</a>
+          <a class="" href="/admin/legal-corpus">Legal QA</a>
+          <a class="" href="/admin/legal-analytics">Legal Analytics</a>
+        </div>
+      </details>
+      
+    </div>
+    <div class="nav-right">
+      <div class="nav-user-panel">
+        <div class="nav-user-identity">
+          <span class="nav-user-label">Signed in as</span>
+          <span class="user-name">robertrichards</span>
+        </div>
+        <div class="nav-user-badges">
+          <span class="badge bg-dark">Website Controller</span>
+        
+          <span class="badge bg-warning text-dark">127.0.0.1:8092</span>
+        
+        
+          <small class="text-light">Role: Website Controller</small>
+        
+        </div>
+      </div>
+      
+      <details class="nav-more nav-role-switch">
+        <summary>Scope</summary>
+        <div class="nav-more-menu nav-scope-menu">
+          <form method="post" action="/role/switch/WEBSITE_CONTROLLER">
+            <input type="hidden" name="next" value="/forms/call-types" />
+            <button class="btn btn-outline-light btn-sm w-100">Controller View</button>
+          </form>
+          <form method="post" action="/role/switch/WATCH_COMMANDER">
+            <input type="hidden" name="next" value="/forms/call-types" />
+            <button class="btn btn-outline-light btn-sm w-100">Watch Commander View</button>
+          </form>
+          <form method="post" action="/role/scope">
+            <input type="hidden" name="next" value="/forms/call-types" />
+            <select class="form-select form-select-sm" name="watch_commander_id" onchange="this.form.submit()">
+              <option value="">My Scope</option>
+              
+            </select>
+          </form>
+        </div>
+      </details>
+      
+      <form method="post" action="/logout" class="nav-logout-form">
+        <button class="btn btn-outline-light btn-sm">Logout</button>
+      </form>
+    </div>
+  </div>
+</nav>
+  <div class="page-wrap scenario-builder-page">
+    <section class="scenario-builder-hero">
+      <div>
+        <div class="eyebrow">Incident Intake Builder</div>
+        <h1>Build the call types officers see in the field.</h1>
+        <p>Pick the forms, checklist prompts, and offense areas for each scenario. Officers only see active, approved call types in the mobile intake flow.</p>
+      </div>
+      <div class="scenario-builder-actions">
+        <a class="btn btn-light" href="/mobile/incident/start">Preview Mobile Intake</a>
+        <a class="btn btn-outline-light" href="/reports/new">Desktop Report Intake</a>
+      </div>
+    </section>
+
+    <div class="scenario-builder-layout">
+      <aside class="scenario-builder-list">
+        <div class="scenario-list-head">
+          <div>
+            <h2>Scenarios</h2>
+            <p>5 configured</p>
+          </div>
+          <a class="btn btn-sm btn-primary" href="/forms/call-types">New</a>
+        </div>
+        <div class="scenario-list-stack">
+          
+          <a class="scenario-list-card " href="/forms/call-types?edit=domestic-disturbance">
+            <span>Domestic</span>
+            <strong>Domestic Disturbance</strong>
+            <small>4 required / 2 optional</small>
+            
+            <em>Active</em>
+            
+          </a>
+          
+          <a class="scenario-list-card " href="/forms/call-types?edit=suspicious-person">
+            <span>Suspicious</span>
+            <strong>Suspicious Person</strong>
+            <small>2 required / 1 optional</small>
+            
+            <em>Active</em>
+            
+          </a>
+          
+          <a class="scenario-list-card " href="/forms/call-types?edit=theft">
+            <span>Theft</span>
+            <strong>Theft</strong>
+            <small>2 required / 2 optional</small>
+            
+            <em>Active</em>
+            
+          </a>
+          
+          <a class="scenario-list-card " href="/forms/call-types?edit=traffic-accident">
+            <span>Traffic</span>
+            <strong>Traffic Accident</strong>
+            <small>4 required / 2 optional</small>
+            
+            <em>Active</em>
+            
+          </a>
+          
+          <a class="scenario-list-card " href="/forms/call-types?edit=trespass-after-warning">
+            <span>Trespass</span>
+            <strong>Trespass After Warning</strong>
+            <small>2 required / 1 optional</small>
+            
+            <em>Active</em>
+            
+          </a>
+          
+        </div>
+      </aside>
+
+      <section class="scenario-builder-editor">
+        <form class="scenario-editor-card" method="post" data-call-type-builder>
+          <input type="hidden" name="old_slug" value="">
+          <div class="scenario-editor-head">
+            <div>
+              <div class="eyebrow">New Scenario</div>
+              <h2>Create a field-ready call type</h2>
+            </div>
+            <label class="scenario-active-toggle">
+              <input type="checkbox" name="active" checked>
+              <span>Show to officers</span>
+            </label>
+          </div>
+
+          
+          <div class="scenario-starter-row" aria-label="Quick scenario starters">
+            <button class="scenario-starter" type="button" data-starter="larceny">Larceny / Theft</button>
+            <button class="scenario-starter" type="button" data-starter="shoplifting">Shoplifting</button>
+            <button class="scenario-starter" type="button" data-starter="traffic">Traffic Accident</button>
+            <button class="scenario-starter" type="button" data-starter="domestic">Domestic</button>
+          </div>
+          
+
+          <div class="scenario-form-grid">
+            <label class="scenario-field">
+              <span>Call type name</span>
+              <input class="form-control" id="call-type-title" name="title" required value="" placeholder="Example: Shoplifting">
+            </label>
+            <label class="scenario-field">
+              <span>Short mobile label</span>
+              <input class="form-control" id="call-type-short-label" name="short_label" value="" placeholder="Shoplifting">
+            </label>
+            <label class="scenario-field">
+              <span>Short ID</span>
+              <input class="form-control" id="call-type-slug" name="slug" value="" placeholder="auto-created if blank">
+            </label>
+            <label class="scenario-field scenario-field-wide">
+              <span>Officer-facing reminder</span>
+              <input class="form-control" id="call-type-description" name="description" value="" placeholder="One sentence explaining when to use this scenario.">
+            </label>
+          </div>
+
+          <div class="scenario-card-section">
+            <div class="scenario-section-head">
+              <div>
+                <h3>Paperwork</h3>
+                <p>Click cards instead of hunting through a long select box. Recommended forms are preselected for officers; optional forms are visible but not forced.</p>
+              </div>
+              <input class="form-control" type="search" placeholder="Filter forms..." data-form-filter>
+            </div>
+            <div class="scenario-paperwork-columns">
+              <div>
+                <h4>Recommended / likely</h4>
+                <div class="scenario-form-card-grid">
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="dd form 1920 alcohol incident report" data-category="cleoc">
+                    <input type="checkbox" name="recommended_forms" value="DD FORM 1920 ALCOHOL INCIDENT REPORT" >
+                    <span>
+                      <strong>DD FORM 1920 ALCOHOL INCIDENT REPORT</strong>
+                      <small>CLEOC</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="dd form 2341 report of animal bite potential rabies exposure" data-category="cleoc">
+                    <input type="checkbox" name="recommended_forms" value="DD Form 2341 Report of Animal Bite Potential Rabies Exposure" >
+                    <span>
+                      <strong>DD Form 2341 Report of Animal Bite Potential Rabies Exposure</strong>
+                      <small>CLEOC</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="dd form 2506vehicle impoundment report" data-category="cleoc">
+                    <input type="checkbox" name="recommended_forms" value="DD Form 2506Vehicle Impoundment Report" >
+                    <span>
+                      <strong>DD Form 2506Vehicle Impoundment Report</strong>
+                      <small>CLEOC</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="navmac 11337 military police domestic violence sipplement report and checklist" data-category="cleoc">
+                    <input type="checkbox" name="recommended_forms" value="NAVMAC 11337 MILITARY POLICE DOMESTIC VIOLENCE SIPPLEMENT REPORT AND CHECKLIST" >
+                    <span>
+                      <strong>NAVMAC 11337 MILITARY POLICE DOMESTIC VIOLENCE SIPPLEMENT REPORT AND CHECKLIST</strong>
+                      <small>CLEOC</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="opnav 5580 12 don vehicle report" data-category="cleoc">
+                    <input type="checkbox" name="recommended_forms" value="OPNAV 5580 12 DON VEHICLE REPORT" >
+                    <span>
+                      <strong>OPNAV 5580 12 DON VEHICLE REPORT</strong>
+                      <small>CLEOC</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="sf 91 motor vehicle accident crash report" data-category="cleoc">
+                    <input type="checkbox" name="recommended_forms" value="SF 91 MOTOR VEHICLE ACCIDENT CRASH REPORT" >
+                    <span>
+                      <strong>SF 91 MOTOR VEHICLE ACCIDENT CRASH REPORT</strong>
+                      <small>CLEOC</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="manager test form updated" data-category="field test">
+                    <input type="checkbox" name="recommended_forms" value="Manager Test Form Updated" >
+                    <span>
+                      <strong>Manager Test Form Updated</strong>
+                      <small>Field Test</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="manager test form updated" data-category="field test">
+                    <input type="checkbox" name="recommended_forms" value="Manager Test Form Updated" >
+                    <span>
+                      <strong>Manager Test Form Updated</strong>
+                      <small>Field Test</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="manager test form updated" data-category="field test">
+                    <input type="checkbox" name="recommended_forms" value="Manager Test Form Updated" >
+                    <span>
+                      <strong>Manager Test Form Updated</strong>
+                      <small>Field Test</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="manager test form updated" data-category="field test">
+                    <input type="checkbox" name="recommended_forms" value="Manager Test Form Updated" >
+                    <span>
+                      <strong>Manager Test Form Updated</strong>
+                      <small>Field Test</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="manager test form updated" data-category="field test">
+                    <input type="checkbox" name="recommended_forms" value="Manager Test Form Updated" >
+                    <span>
+                      <strong>Manager Test Form Updated</strong>
+                      <small>Field Test</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="manager test form updated" data-category="field test">
+                    <input type="checkbox" name="recommended_forms" value="Manager Test Form Updated" >
+                    <span>
+                      <strong>Manager Test Form Updated</strong>
+                      <small>Field Test</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="manager test form updated" data-category="field test">
+                    <input type="checkbox" name="recommended_forms" value="Manager Test Form Updated" >
+                    <span>
+                      <strong>Manager Test Form Updated</strong>
+                      <small>Field Test</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="manager test form updated" data-category="field test">
+                    <input type="checkbox" name="recommended_forms" value="Manager Test Form Updated" >
+                    <span>
+                      <strong>Manager Test Form Updated</strong>
+                      <small>Field Test</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="manager test form updated" data-category="field test">
+                    <input type="checkbox" name="recommended_forms" value="Manager Test Form Updated" >
+                    <span>
+                      <strong>Manager Test Form Updated</strong>
+                      <small>Field Test</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="manager test form updated" data-category="field test">
+                    <input type="checkbox" name="recommended_forms" value="Manager Test Form Updated" >
+                    <span>
+                      <strong>Manager Test Form Updated</strong>
+                      <small>Field Test</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="manager test form updated" data-category="field test">
+                    <input type="checkbox" name="recommended_forms" value="Manager Test Form Updated" >
+                    <span>
+                      <strong>Manager Test Form Updated</strong>
+                      <small>Field Test</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="manager test form updated" data-category="field test">
+                    <input type="checkbox" name="recommended_forms" value="Manager Test Form Updated" >
+                    <span>
+                      <strong>Manager Test Form Updated</strong>
+                      <small>Field Test</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="manager test form updated" data-category="field test">
+                    <input type="checkbox" name="recommended_forms" value="Manager Test Form Updated" >
+                    <span>
+                      <strong>Manager Test Form Updated</strong>
+                      <small>Field Test</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="manager test form updated" data-category="field test">
+                    <input type="checkbox" name="recommended_forms" value="Manager Test Form Updated" >
+                    <span>
+                      <strong>Manager Test Form Updated</strong>
+                      <small>Field Test</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="manager test form updated" data-category="field test">
+                    <input type="checkbox" name="recommended_forms" value="Manager Test Form Updated" >
+                    <span>
+                      <strong>Manager Test Form Updated</strong>
+                      <small>Field Test</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="manager test form updated" data-category="field test">
+                    <input type="checkbox" name="recommended_forms" value="Manager Test Form Updated" >
+                    <span>
+                      <strong>Manager Test Form Updated</strong>
+                      <small>Field Test</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="manager test form updated" data-category="field test">
+                    <input type="checkbox" name="recommended_forms" value="Manager Test Form Updated" >
+                    <span>
+                      <strong>Manager Test Form Updated</strong>
+                      <small>Field Test</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="manager test form updated" data-category="field test">
+                    <input type="checkbox" name="recommended_forms" value="Manager Test Form Updated" >
+                    <span>
+                      <strong>Manager Test Form Updated</strong>
+                      <small>Field Test</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="manager test form updated" data-category="field test">
+                    <input type="checkbox" name="recommended_forms" value="Manager Test Form Updated" >
+                    <span>
+                      <strong>Manager Test Form Updated</strong>
+                      <small>Field Test</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="manager test form updated" data-category="field test">
+                    <input type="checkbox" name="recommended_forms" value="Manager Test Form Updated" >
+                    <span>
+                      <strong>Manager Test Form Updated</strong>
+                      <small>Field Test</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="manager test form updated" data-category="field test">
+                    <input type="checkbox" name="recommended_forms" value="Manager Test Form Updated" >
+                    <span>
+                      <strong>Manager Test Form Updated</strong>
+                      <small>Field Test</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="5580 16 permissive authorization for search and seizure" data-category="general">
+                    <input type="checkbox" name="recommended_forms" value="5580 16 PERMISSIVE AUTHORIZATION FOR SEARCH AND SEIZURE" >
+                    <span>
+                      <strong>5580 16 PERMISSIVE AUTHORIZATION FOR SEARCH AND SEIZURE</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="5580 9 command search authorization" data-category="general">
+                    <input type="checkbox" name="recommended_forms" value="5580 9 Command search authorization" >
+                    <span>
+                      <strong>5580 9 Command search authorization</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="affidavit for seach and seizure" data-category="general">
+                    <input type="checkbox" name="recommended_forms" value="Affidavit for Seach and Seizure" >
+                    <span>
+                      <strong>Affidavit for Seach and Seizure</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="dd form 2504abandoned vehicle notice" data-category="general">
+                    <input type="checkbox" name="recommended_forms" value="DD Form 2504Abandoned Vehicle Notice" >
+                    <span>
+                      <strong>DD Form 2504Abandoned Vehicle Notice</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="dd form 2505abandoned vehicle removal authorization" data-category="general">
+                    <input type="checkbox" name="recommended_forms" value="DD Form 2505Abandoned Vehicle Removal Authorization" >
+                    <span>
+                      <strong>DD Form 2505Abandoned Vehicle Removal Authorization</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="dd form 2507notice of vehicle impoundment" data-category="general">
+                    <input type="checkbox" name="recommended_forms" value="DD Form 2507Notice of Vehicle Impoundment" >
+                    <span>
+                      <strong>DD Form 2507Notice of Vehicle Impoundment</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="dd form 2701 vwap" data-category="general">
+                    <input type="checkbox" name="recommended_forms" value="DD Form 2701 VWAP" >
+                    <span>
+                      <strong>DD Form 2701 VWAP</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="dd form 2708receipt for inmate or detained person" data-category="general">
+                    <input type="checkbox" name="recommended_forms" value="DD Form 2708Receipt for Inmate or Detained Person" >
+                    <span>
+                      <strong>DD Form 2708Receipt for Inmate or Detained Person</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="enclosure checklist fillable" data-category="general">
+                    <input type="checkbox" name="recommended_forms" value="ENCLOSURE CHECKLIST FILLABLE" >
+                    <span>
+                      <strong>ENCLOSURE CHECKLIST FILLABLE</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="field test results" data-category="general">
+                    <input type="checkbox" name="recommended_forms" value="Field test results" >
+                    <span>
+                      <strong>Field test results</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="opnav 5580 10 affidavit for seach and seizure" data-category="general">
+                    <input type="checkbox" name="recommended_forms" value="OPNAV 5580 10 Affidavit for Seach and Seizure" >
+                    <span>
+                      <strong>OPNAV 5580 10 Affidavit for Seach and Seizure</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="opnav 5580 11 complaint of stolen motor vehicle" data-category="general">
+                    <input type="checkbox" name="recommended_forms" value="OPNAV 5580 11 COMPLAINT OF STOLEN MOTOR VEHICLE" >
+                    <span>
+                      <strong>OPNAV 5580 11 COMPLAINT OF STOLEN MOTOR VEHICLE</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="opnav 5580 16 permissive authorization for search and seizure" data-category="general">
+                    <input type="checkbox" name="recommended_forms" value="OPNAV 5580 16 PERMISSIVE AUTHORIZATION FOR SEARCH AND SEIZURE" >
+                    <span>
+                      <strong>OPNAV 5580 16 PERMISSIVE AUTHORIZATION FOR SEARCH AND SEIZURE</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="opnav 5580 20 field test results" data-category="general">
+                    <input type="checkbox" name="recommended_forms" value="OPNAV 5580 20 Field test results" >
+                    <span>
+                      <strong>OPNAV 5580 20 Field test results</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="opnav 5580 21field interview card" data-category="general">
+                    <input type="checkbox" name="recommended_forms" value="OPNAV 5580 21Field Interview Card" >
+                    <span>
+                      <strong>OPNAV 5580 21Field Interview Card</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="opnav 5580 22evidence custody document" data-category="general">
+                    <input type="checkbox" name="recommended_forms" value="OPNAV 5580 22Evidence Custody Document" >
+                    <span>
+                      <strong>OPNAV 5580 22Evidence Custody Document</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="opnav 5580 3 military suspects rights" data-category="general">
+                    <input type="checkbox" name="recommended_forms" value="OPNAV 5580 3 Military Suspects Rights" >
+                    <span>
+                      <strong>OPNAV 5580 3 Military Suspects Rights</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="opnav 5580 4 civilian suspects rights" data-category="general">
+                    <input type="checkbox" name="recommended_forms" value="OPNAV 5580 4 Civilian Suspects Rights" >
+                    <span>
+                      <strong>OPNAV 5580 4 Civilian Suspects Rights</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="opnav 5580 8 telephonic threat complaint" data-category="general">
+                    <input type="checkbox" name="recommended_forms" value="OPNAV 5580 8 TELEPHONIC THREAT COMPLAINT" >
+                    <span>
+                      <strong>OPNAV 5580 8 TELEPHONIC THREAT COMPLAINT</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="opnav 5580 9 command search authorization" data-category="general">
+                    <input type="checkbox" name="recommended_forms" value="OPNAV 5580 9 Command search authorization" >
+                    <span>
+                      <strong>OPNAV 5580 9 Command search authorization</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="ta field sketch new" data-category="general">
+                    <input type="checkbox" name="recommended_forms" value="TA FIELD SKETCH NEW" >
+                    <span>
+                      <strong>TA FIELD SKETCH NEW</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="unsecured building notice" data-category="general">
+                    <input type="checkbox" name="recommended_forms" value="UNSECURED BUILDING NOTICE" >
+                    <span>
+                      <strong>UNSECURED BUILDING NOTICE</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="usacil dna database collection eform v2 re" data-category="general">
+                    <input type="checkbox" name="recommended_forms" value="USACIL DNA Database Collection Eform v2 RE" >
+                    <span>
+                      <strong>USACIL DNA Database Collection Eform v2 RE</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="mcpd stat sheet revision 20240711" data-category="statistics">
+                    <input type="checkbox" name="recommended_forms" value="MCPD Stat Sheet Revision 20240711" >
+                    <span>
+                      <strong>MCPD Stat Sheet Revision 20240711</strong>
+                      <small>Statistics</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="navmc 11130 statement of force use of detention" data-category="statistics">
+                    <input type="checkbox" name="recommended_forms" value="NAVMC 11130 Statement of Force Use of Detention" >
+                    <span>
+                      <strong>NAVMC 11130 Statement of Force Use of Detention</strong>
+                      <small>Statistics</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="opnav 5580 2 voluntary statement" data-category="statistics">
+                    <input type="checkbox" name="recommended_forms" value="OPNAV 5580 2 Voluntary Statement" >
+                    <span>
+                      <strong>OPNAV 5580 2 Voluntary Statement</strong>
+                      <small>Statistics</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="opnav 5580 2 voluntary statement traffic" data-category="statistics">
+                    <input type="checkbox" name="recommended_forms" value="OPNAV 5580 2 Voluntary Statement Traffic" >
+                    <span>
+                      <strong>OPNAV 5580 2 Voluntary Statement Traffic</strong>
+                      <small>Statistics</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="test required form" data-category="test">
+                    <input type="checkbox" name="recommended_forms" value="Test Required Form" >
+                    <span>
+                      <strong>Test Required Form</strong>
+                      <small>Test</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick" data-form-card data-title="navigator pickable test form" data-category="testing">
+                    <input type="checkbox" name="recommended_forms" value="Navigator Pickable Test Form" >
+                    <span>
+                      <strong>Navigator Pickable Test Form</strong>
+                      <small>Testing</small>
+                    </span>
+                  </label>
+                  
+                </div>
+                <label class="scenario-field mt-3">
+                  <span>Other recommended paperwork</span>
+                  <textarea class="form-control" name="recommended_forms_extra" rows="2" placeholder="One per line"></textarea>
+                </label>
+              </div>
+              <div>
+                <h4>Optional / use if needed</h4>
+                <div class="scenario-form-card-grid">
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="dd form 1920 alcohol incident report" data-category="cleoc">
+                    <input type="checkbox" name="optional_forms" value="DD FORM 1920 ALCOHOL INCIDENT REPORT" >
+                    <span>
+                      <strong>DD FORM 1920 ALCOHOL INCIDENT REPORT</strong>
+                      <small>CLEOC</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="dd form 2341 report of animal bite potential rabies exposure" data-category="cleoc">
+                    <input type="checkbox" name="optional_forms" value="DD Form 2341 Report of Animal Bite Potential Rabies Exposure" >
+                    <span>
+                      <strong>DD Form 2341 Report of Animal Bite Potential Rabies Exposure</strong>
+                      <small>CLEOC</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="dd form 2506vehicle impoundment report" data-category="cleoc">
+                    <input type="checkbox" name="optional_forms" value="DD Form 2506Vehicle Impoundment Report" >
+                    <span>
+                      <strong>DD Form 2506Vehicle Impoundment Report</strong>
+                      <small>CLEOC</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="navmac 11337 military police domestic violence sipplement report and checklist" data-category="cleoc">
+                    <input type="checkbox" name="optional_forms" value="NAVMAC 11337 MILITARY POLICE DOMESTIC VIOLENCE SIPPLEMENT REPORT AND CHECKLIST" >
+                    <span>
+                      <strong>NAVMAC 11337 MILITARY POLICE DOMESTIC VIOLENCE SIPPLEMENT REPORT AND CHECKLIST</strong>
+                      <small>CLEOC</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="opnav 5580 12 don vehicle report" data-category="cleoc">
+                    <input type="checkbox" name="optional_forms" value="OPNAV 5580 12 DON VEHICLE REPORT" >
+                    <span>
+                      <strong>OPNAV 5580 12 DON VEHICLE REPORT</strong>
+                      <small>CLEOC</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="sf 91 motor vehicle accident crash report" data-category="cleoc">
+                    <input type="checkbox" name="optional_forms" value="SF 91 MOTOR VEHICLE ACCIDENT CRASH REPORT" >
+                    <span>
+                      <strong>SF 91 MOTOR VEHICLE ACCIDENT CRASH REPORT</strong>
+                      <small>CLEOC</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="manager test form updated" data-category="field test">
+                    <input type="checkbox" name="optional_forms" value="Manager Test Form Updated" >
+                    <span>
+                      <strong>Manager Test Form Updated</strong>
+                      <small>Field Test</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="manager test form updated" data-category="field test">
+                    <input type="checkbox" name="optional_forms" value="Manager Test Form Updated" >
+                    <span>
+                      <strong>Manager Test Form Updated</strong>
+                      <small>Field Test</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="manager test form updated" data-category="field test">
+                    <input type="checkbox" name="optional_forms" value="Manager Test Form Updated" >
+                    <span>
+                      <strong>Manager Test Form Updated</strong>
+                      <small>Field Test</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="manager test form updated" data-category="field test">
+                    <input type="checkbox" name="optional_forms" value="Manager Test Form Updated" >
+                    <span>
+                      <strong>Manager Test Form Updated</strong>
+                      <small>Field Test</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="manager test form updated" data-category="field test">
+                    <input type="checkbox" name="optional_forms" value="Manager Test Form Updated" >
+                    <span>
+                      <strong>Manager Test Form Updated</strong>
+                      <small>Field Test</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="manager test form updated" data-category="field test">
+                    <input type="checkbox" name="optional_forms" value="Manager Test Form Updated" >
+                    <span>
+                      <strong>Manager Test Form Updated</strong>
+                      <small>Field Test</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="manager test form updated" data-category="field test">
+                    <input type="checkbox" name="optional_forms" value="Manager Test Form Updated" >
+                    <span>
+                      <strong>Manager Test Form Updated</strong>
+                      <small>Field Test</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="manager test form updated" data-category="field test">
+                    <input type="checkbox" name="optional_forms" value="Manager Test Form Updated" >
+                    <span>
+                      <strong>Manager Test Form Updated</strong>
+                      <small>Field Test</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="manager test form updated" data-category="field test">
+                    <input type="checkbox" name="optional_forms" value="Manager Test Form Updated" >
+                    <span>
+                      <strong>Manager Test Form Updated</strong>
+                      <small>Field Test</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="manager test form updated" data-category="field test">
+                    <input type="checkbox" name="optional_forms" value="Manager Test Form Updated" >
+                    <span>
+                      <strong>Manager Test Form Updated</strong>
+                      <small>Field Test</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="manager test form updated" data-category="field test">
+                    <input type="checkbox" name="optional_forms" value="Manager Test Form Updated" >
+                    <span>
+                      <strong>Manager Test Form Updated</strong>
+                      <small>Field Test</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="manager test form updated" data-category="field test">
+                    <input type="checkbox" name="optional_forms" value="Manager Test Form Updated" >
+                    <span>
+                      <strong>Manager Test Form Updated</strong>
+                      <small>Field Test</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="manager test form updated" data-category="field test">
+                    <input type="checkbox" name="optional_forms" value="Manager Test Form Updated" >
+                    <span>
+                      <strong>Manager Test Form Updated</strong>
+                      <small>Field Test</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="manager test form updated" data-category="field test">
+                    <input type="checkbox" name="optional_forms" value="Manager Test Form Updated" >
+                    <span>
+                      <strong>Manager Test Form Updated</strong>
+                      <small>Field Test</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="manager test form updated" data-category="field test">
+                    <input type="checkbox" name="optional_forms" value="Manager Test Form Updated" >
+                    <span>
+                      <strong>Manager Test Form Updated</strong>
+                      <small>Field Test</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="manager test form updated" data-category="field test">
+                    <input type="checkbox" name="optional_forms" value="Manager Test Form Updated" >
+                    <span>
+                      <strong>Manager Test Form Updated</strong>
+                      <small>Field Test</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="manager test form updated" data-category="field test">
+                    <input type="checkbox" name="optional_forms" value="Manager Test Form Updated" >
+                    <span>
+                      <strong>Manager Test Form Updated</strong>
+                      <small>Field Test</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="manager test form updated" data-category="field test">
+                    <input type="checkbox" name="optional_forms" value="Manager Test Form Updated" >
+                    <span>
+                      <strong>Manager Test Form Updated</strong>
+                      <small>Field Test</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="manager test form updated" data-category="field test">
+                    <input type="checkbox" name="optional_forms" value="Manager Test Form Updated" >
+                    <span>
+                      <strong>Manager Test Form Updated</strong>
+                      <small>Field Test</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="manager test form updated" data-category="field test">
+                    <input type="checkbox" name="optional_forms" value="Manager Test Form Updated" >
+                    <span>
+                      <strong>Manager Test Form Updated</strong>
+                      <small>Field Test</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="manager test form updated" data-category="field test">
+                    <input type="checkbox" name="optional_forms" value="Manager Test Form Updated" >
+                    <span>
+                      <strong>Manager Test Form Updated</strong>
+                      <small>Field Test</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="5580 16 permissive authorization for search and seizure" data-category="general">
+                    <input type="checkbox" name="optional_forms" value="5580 16 PERMISSIVE AUTHORIZATION FOR SEARCH AND SEIZURE" >
+                    <span>
+                      <strong>5580 16 PERMISSIVE AUTHORIZATION FOR SEARCH AND SEIZURE</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="5580 9 command search authorization" data-category="general">
+                    <input type="checkbox" name="optional_forms" value="5580 9 Command search authorization" >
+                    <span>
+                      <strong>5580 9 Command search authorization</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="affidavit for seach and seizure" data-category="general">
+                    <input type="checkbox" name="optional_forms" value="Affidavit for Seach and Seizure" >
+                    <span>
+                      <strong>Affidavit for Seach and Seizure</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="dd form 2504abandoned vehicle notice" data-category="general">
+                    <input type="checkbox" name="optional_forms" value="DD Form 2504Abandoned Vehicle Notice" >
+                    <span>
+                      <strong>DD Form 2504Abandoned Vehicle Notice</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="dd form 2505abandoned vehicle removal authorization" data-category="general">
+                    <input type="checkbox" name="optional_forms" value="DD Form 2505Abandoned Vehicle Removal Authorization" >
+                    <span>
+                      <strong>DD Form 2505Abandoned Vehicle Removal Authorization</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="dd form 2507notice of vehicle impoundment" data-category="general">
+                    <input type="checkbox" name="optional_forms" value="DD Form 2507Notice of Vehicle Impoundment" >
+                    <span>
+                      <strong>DD Form 2507Notice of Vehicle Impoundment</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="dd form 2701 vwap" data-category="general">
+                    <input type="checkbox" name="optional_forms" value="DD Form 2701 VWAP" >
+                    <span>
+                      <strong>DD Form 2701 VWAP</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="dd form 2708receipt for inmate or detained person" data-category="general">
+                    <input type="checkbox" name="optional_forms" value="DD Form 2708Receipt for Inmate or Detained Person" >
+                    <span>
+                      <strong>DD Form 2708Receipt for Inmate or Detained Person</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="enclosure checklist fillable" data-category="general">
+                    <input type="checkbox" name="optional_forms" value="ENCLOSURE CHECKLIST FILLABLE" >
+                    <span>
+                      <strong>ENCLOSURE CHECKLIST FILLABLE</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="field test results" data-category="general">
+                    <input type="checkbox" name="optional_forms" value="Field test results" >
+                    <span>
+                      <strong>Field test results</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="opnav 5580 10 affidavit for seach and seizure" data-category="general">
+                    <input type="checkbox" name="optional_forms" value="OPNAV 5580 10 Affidavit for Seach and Seizure" >
+                    <span>
+                      <strong>OPNAV 5580 10 Affidavit for Seach and Seizure</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="opnav 5580 11 complaint of stolen motor vehicle" data-category="general">
+                    <input type="checkbox" name="optional_forms" value="OPNAV 5580 11 COMPLAINT OF STOLEN MOTOR VEHICLE" >
+                    <span>
+                      <strong>OPNAV 5580 11 COMPLAINT OF STOLEN MOTOR VEHICLE</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="opnav 5580 16 permissive authorization for search and seizure" data-category="general">
+                    <input type="checkbox" name="optional_forms" value="OPNAV 5580 16 PERMISSIVE AUTHORIZATION FOR SEARCH AND SEIZURE" >
+                    <span>
+                      <strong>OPNAV 5580 16 PERMISSIVE AUTHORIZATION FOR SEARCH AND SEIZURE</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="opnav 5580 20 field test results" data-category="general">
+                    <input type="checkbox" name="optional_forms" value="OPNAV 5580 20 Field test results" >
+                    <span>
+                      <strong>OPNAV 5580 20 Field test results</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="opnav 5580 21field interview card" data-category="general">
+                    <input type="checkbox" name="optional_forms" value="OPNAV 5580 21Field Interview Card" >
+                    <span>
+                      <strong>OPNAV 5580 21Field Interview Card</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="opnav 5580 22evidence custody document" data-category="general">
+                    <input type="checkbox" name="optional_forms" value="OPNAV 5580 22Evidence Custody Document" >
+                    <span>
+                      <strong>OPNAV 5580 22Evidence Custody Document</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="opnav 5580 3 military suspects rights" data-category="general">
+                    <input type="checkbox" name="optional_forms" value="OPNAV 5580 3 Military Suspects Rights" >
+                    <span>
+                      <strong>OPNAV 5580 3 Military Suspects Rights</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="opnav 5580 4 civilian suspects rights" data-category="general">
+                    <input type="checkbox" name="optional_forms" value="OPNAV 5580 4 Civilian Suspects Rights" >
+                    <span>
+                      <strong>OPNAV 5580 4 Civilian Suspects Rights</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="opnav 5580 8 telephonic threat complaint" data-category="general">
+                    <input type="checkbox" name="optional_forms" value="OPNAV 5580 8 TELEPHONIC THREAT COMPLAINT" >
+                    <span>
+                      <strong>OPNAV 5580 8 TELEPHONIC THREAT COMPLAINT</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="opnav 5580 9 command search authorization" data-category="general">
+                    <input type="checkbox" name="optional_forms" value="OPNAV 5580 9 Command search authorization" >
+                    <span>
+                      <strong>OPNAV 5580 9 Command search authorization</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="ta field sketch new" data-category="general">
+                    <input type="checkbox" name="optional_forms" value="TA FIELD SKETCH NEW" >
+                    <span>
+                      <strong>TA FIELD SKETCH NEW</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="unsecured building notice" data-category="general">
+                    <input type="checkbox" name="optional_forms" value="UNSECURED BUILDING NOTICE" >
+                    <span>
+                      <strong>UNSECURED BUILDING NOTICE</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="usacil dna database collection eform v2 re" data-category="general">
+                    <input type="checkbox" name="optional_forms" value="USACIL DNA Database Collection Eform v2 RE" >
+                    <span>
+                      <strong>USACIL DNA Database Collection Eform v2 RE</strong>
+                      <small>General</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="mcpd stat sheet revision 20240711" data-category="statistics">
+                    <input type="checkbox" name="optional_forms" value="MCPD Stat Sheet Revision 20240711" >
+                    <span>
+                      <strong>MCPD Stat Sheet Revision 20240711</strong>
+                      <small>Statistics</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="navmc 11130 statement of force use of detention" data-category="statistics">
+                    <input type="checkbox" name="optional_forms" value="NAVMC 11130 Statement of Force Use of Detention" >
+                    <span>
+                      <strong>NAVMC 11130 Statement of Force Use of Detention</strong>
+                      <small>Statistics</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="opnav 5580 2 voluntary statement" data-category="statistics">
+                    <input type="checkbox" name="optional_forms" value="OPNAV 5580 2 Voluntary Statement" >
+                    <span>
+                      <strong>OPNAV 5580 2 Voluntary Statement</strong>
+                      <small>Statistics</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="opnav 5580 2 voluntary statement traffic" data-category="statistics">
+                    <input type="checkbox" name="optional_forms" value="OPNAV 5580 2 Voluntary Statement Traffic" >
+                    <span>
+                      <strong>OPNAV 5580 2 Voluntary Statement Traffic</strong>
+                      <small>Statistics</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="test required form" data-category="test">
+                    <input type="checkbox" name="optional_forms" value="Test Required Form" >
+                    <span>
+                      <strong>Test Required Form</strong>
+                      <small>Test</small>
+                    </span>
+                  </label>
+                  
+                  <label class="scenario-form-pick is-optional" data-form-card data-title="navigator pickable test form" data-category="testing">
+                    <input type="checkbox" name="optional_forms" value="Navigator Pickable Test Form" >
+                    <span>
+                      <strong>Navigator Pickable Test Form</strong>
+                      <small>Testing</small>
+                    </span>
+                  </label>
+                  
+                </div>
+                <label class="scenario-field mt-3">
+                  <span>Other optional paperwork</span>
+                  <textarea class="form-control" name="optional_forms_extra" rows="2" placeholder="One per line"></textarea>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="scenario-card-section">
+            <div class="scenario-section-head">
+              <div>
+                <h3>Scene Diagram</h3>
+                <p>Enable this for accidents, DUI crashes, hit and run, pedestrian strike, property damage crashes, and other vehicle-related reports.</p>
+              </div>
+            </div>
+            <div class="scenario-prompt-grid">
+              <label class="scenario-active-toggle">
+                <input type="checkbox" name="diagram_allowed" >
+                <span>Allow scene diagram in report workflow</span>
+              </label>
+              <label class="scenario-active-toggle">
+                <input type="checkbox" name="diagram_required" >
+                <span>Require diagram before final packet review</span>
+              </label>
+            </div>
+            <div class="scenario-paperwork-columns">
+              <div>
+                <h4>Enabled modes</h4>
+                
+                <label class="scenario-form-pick"><input type="checkbox" name="diagram_modes" value="report" checked><span><strong>Report / Courtroom</strong><small>Clean black and white schematic</small></span></label>
+                <label class="scenario-form-pick"><input type="checkbox" name="diagram_modes" value="scene_control" checked><span><strong>Scene Control</strong><small>Cones, patrol unit, perimeter, lane closure</small></span></label>
+                <label class="scenario-form-pick"><input type="checkbox" name="diagram_modes" value="enhanced" checked><span><strong>Enhanced Visual</strong><small>Professional road/vehicle visuals</small></span></label>
+              </div>
+              <div>
+                <h4>Available templates</h4>
+                
+                
+                <label class="scenario-form-pick is-optional"><input type="checkbox" name="diagram_scenarios" value="rear_end" checked><span><strong>Rear-End Collision</strong><small>Template</small></span></label>
+                
+                <label class="scenario-form-pick is-optional"><input type="checkbox" name="diagram_scenarios" value="intersection" checked><span><strong>Intersection Crash</strong><small>Template</small></span></label>
+                
+                <label class="scenario-form-pick is-optional"><input type="checkbox" name="diagram_scenarios" value="side_impact" checked><span><strong>Side-Impact Collision</strong><small>Template</small></span></label>
+                
+                <label class="scenario-form-pick is-optional"><input type="checkbox" name="diagram_scenarios" value="head_on" checked><span><strong>Head-On Collision</strong><small>Template</small></span></label>
+                
+                <label class="scenario-form-pick is-optional"><input type="checkbox" name="diagram_scenarios" value="single_vehicle" checked><span><strong>Single Vehicle Crash</strong><small>Template</small></span></label>
+                
+                <label class="scenario-form-pick is-optional"><input type="checkbox" name="diagram_scenarios" value="pedestrian_strike" checked><span><strong>Pedestrian Strike</strong><small>Template</small></span></label>
+                
+                <label class="scenario-form-pick is-optional"><input type="checkbox" name="diagram_scenarios" value="parking_lot" checked><span><strong>Parking Lot Crash</strong><small>Template</small></span></label>
+                
+                <label class="scenario-form-pick is-optional"><input type="checkbox" name="diagram_scenarios" value="hit_and_run" checked><span><strong>Hit and Run</strong><small>Template</small></span></label>
+                
+                <label class="scenario-form-pick is-optional"><input type="checkbox" name="diagram_scenarios" value="fixed_object" checked><span><strong>Vehicle vs Fixed Object</strong><small>Template</small></span></label>
+                
+                <label class="scenario-form-pick is-optional"><input type="checkbox" name="diagram_scenarios" value="dui_crash" checked><span><strong>DUI Crash Scene</strong><small>Template</small></span></label>
+                
+                <label class="scenario-form-pick is-optional"><input type="checkbox" name="diagram_scenarios" value="traffic_control" checked><span><strong>Traffic Control / Lane Closure</strong><small>Template</small></span></label>
+                
+                <label class="scenario-form-pick is-optional"><input type="checkbox" name="diagram_scenarios" value="general_scene" checked><span><strong>General Scene Diagram</strong><small>Template</small></span></label>
+                
+              </div>
+            </div>
+          </div>
+
+          <div class="scenario-card-section">
+            <div class="scenario-prompt-grid">
+              <label class="scenario-field">
+                <span>Statutes / offense areas</span>
+                <textarea class="form-control" id="statutes" name="statutes" rows="6" placeholder="One per line"></textarea>
+              </label>
+              <label class="scenario-field">
+                <span>Officer checklist</span>
+                <textarea class="form-control" id="checklist-items" name="checklist_items" rows="6" placeholder="One per line"></textarea>
+              </label>
+            </div>
+          </div>
+
+          <div class="scenario-save-bar">
+            
+            <button class="btn btn-primary btn-lg" type="submit" name="action" value="save">Save Scenario</button>
+          </div>
+        </form>
+      </section>
+    </div>
+  </div>
+</div>
+
+  <script src="/static/js/app.js?v=2026-04-30-report-workspace-1"></script>
+  
+
+<script>
+  (function () {
+    var root = document.querySelector('[data-call-type-builder]');
+    if (!root) return;
+    var title = root.querySelector('#call-type-title');
+    var shortLabel = root.querySelector('#call-type-short-label');
+    var slug = root.querySelector('#call-type-slug');
+    var description = root.querySelector('#call-type-description');
+    var statutes = root.querySelector('#statutes');
+    var checklist = root.querySelector('#checklist-items');
+    var starters = {
+      larceny: {
+        title: 'Larceny / Theft',
+        shortLabel: 'Larceny',
+        description: 'Property crime intake for stolen or missing property.',
+        statutes: 'Georgia theft review\nFederal property review if government property is involved\nUCMJ Article 121 review if service member involved',
+        checklist: 'Identify owner and value\nDocument suspect access and opportunity\nPhotograph or recover property if available\nPreserve evidence chain'
+      },
+      shoplifting: {
+        title: 'Shoplifting',
+        shortLabel: 'Shoplift',
+        description: 'Retail theft workflow for PX/exchange or store loss.',
+        statutes: 'Shoplifting / theft review\nFederal property review for PX/exchange property\nUCMJ Article 121 review if service member involved',
+        checklist: 'Confirm item selection and point of sale\nIdentify reporting employee and witnesses\nDocument value and recovered property\nCollect video or receipt evidence when available'
+      },
+      traffic: {
+        title: 'Traffic Accident',
+        shortLabel: 'Crash',
+        description: 'Collision response, driver data, measurements, statements, and reconstruction packet prep.',
+        statutes: 'Traffic enforcement review\nInstallation roadway policy\nDUI / reckless driving review when facts support it',
+        checklist: 'Stabilize roadway hazards\nCapture driver, vehicle, and insurance data\nDocument injuries and medical response\nCollect measurements, photos, and diagram'
+      },
+      domestic: {
+        title: 'Domestic Disturbance',
+        shortLabel: 'Domestic',
+        description: 'Domestic response workflow with separation, injuries, statements, and supplemental checklist.',
+        statutes: 'Family violence / assault review\nProtective-order review\nUCMJ domestic violence review if service member involved',
+        checklist: 'Separate involved parties\nDocument injuries and scene condition\nCapture victim, suspect, and witness statements\nNotify supervisor if escalation or arrest is involved'
+      }
+    };
+
+    root.querySelectorAll('[data-starter]').forEach(function (button) {
+      button.addEventListener('click', function () {
+        var preset = starters[button.getAttribute('data-starter')];
+        if (!preset) return;
+        title.value = preset.title;
+        shortLabel.value = preset.shortLabel;
+        description.value = preset.description;
+        statutes.value = preset.statutes;
+        checklist.value = preset.checklist;
+        if (!slug.value) slug.value = preset.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      });
+    });
+
+    var filter = root.querySelector('[data-form-filter]');
+    if (filter) {
+      filter.addEventListener('input', function () {
+        var term = filter.value.trim().toLowerCase();
+        root.querySelectorAll('[data-form-card]').forEach(function (card) {
+          var haystack = (card.getAttribute('data-title') || '') + ' ' + (card.getAttribute('data-category') || '');
+          card.hidden = term && haystack.indexOf(term) === -1;
+        });
+      });
+    }
+  })();
+</script>
+
+</body>
+</html>

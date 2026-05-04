@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  
+  <meta name="google-site-verification" content="lbYJO4OgpLEcoRJ5edmnn2APVfmoeyaLFFTMgYQZd_k" />
+  
+  <title>MCPD Portal</title>
+  <link rel="icon" type="image/svg+xml" href="/assets/usmc-emblem.svg" />
+  <link rel="stylesheet" href="/static/css/app.css?v=2026-04-30-command-rms-1" />
+</head>
+<body class="">
+  
+    
+  
+  
+<div class="app-shell">
+  <nav class="top-nav">
+  
+  
+  
+  
+  
+  
+  <div class="brand">
+    <img src="/assets/usmc-emblem.svg" alt="USMC" />
+    <div class="brand-copy">
+      <span class="brand-kicker">Operations</span>
+      <span class="brand-title">MCPD Portal</span>
+    </div>
+  </div>
+  <button
+    class="nav-toggle"
+    type="button"
+    aria-expanded="false"
+    aria-controls="portal-nav-menu"
+    data-nav-toggle
+  >
+    Menu
+  </button>
+  <div class="nav-menu" id="portal-nav-menu" data-nav-menu>
+    <div class="nav-links">
+      <a class="" href="/dashboard">Dashboard</a>
+      <a class="" href="/incident-paperwork-guide">Navigator</a>
+      <a class="" href="/forms">Forms</a>
+      <a class="" href="/forms/saved">Saved Work</a>
+      <a class="" href="/reports">Reports</a>
+      <details class="nav-more nav-menu-group ">
+        <summary>Authority</summary>
+        <div class="nav-more-menu">
+          <a class="" href="/legal">Law Lookup</a>
+          <a class="" href="/orders/reference">Orders Desk</a>
+          <a class="" href="/officer-handbook">Officer Handbook</a>
+        </div>
+      </details>
+      <details class="nav-more nav-menu-group has-active">
+        <summary>Operations</summary>
+        <div class="nav-more-menu">
+          <a class="" href="/vehicle-inspections">Inspections</a>
+          <a class="is-active" href="/training/menu">Training</a>
+          <a class="" href="/announcements">Notices</a>
+          <a class="" href="/stats">Stats</a>
+          <a class="" href="/profile">Profile</a>
+          <a class="" href="/annual-training-ai">Assistant</a>
+          <a class="" href="/reconstruction">Reconstruction</a>
+          
+        </div>
+      </details>
+      
+      <a class="" href="/admin/users">Personnel</a>
+      
+      
+      <details class="nav-more ">
+        <summary>Admin</summary>
+        <div class="nav-more-menu">
+          <a class="" href="/admin/stats/categories">Targets</a>
+          <a class="" href="/admin/stats/targets-upload">Upload</a>
+          <a class="" href="/admin/stats/uploads">Uploads</a>
+          <a class="" href="/forms/call-types">Scenario Builder</a>
+          <a class="" href="/forms/manage">Forms Manager</a>
+          <a class="" href="/incident-paperwork-guide/manage">Navigator Editor</a>
+          <a class="" href="/admin/legal-corpus">Legal QA</a>
+          <a class="" href="/admin/legal-analytics">Legal Analytics</a>
+        </div>
+      </details>
+      
+    </div>
+    <div class="nav-right">
+      <div class="nav-user-panel">
+        <div class="nav-user-identity">
+          <span class="nav-user-label">Signed in as</span>
+          <span class="user-name">robertrichards</span>
+        </div>
+        <div class="nav-user-badges">
+          <span class="badge bg-dark">Website Controller</span>
+        
+          <span class="badge bg-warning text-dark">127.0.0.1:8092</span>
+        
+        
+          <small class="text-light">Role: Website Controller</small>
+        
+        </div>
+      </div>
+      
+      <details class="nav-more nav-role-switch">
+        <summary>Scope</summary>
+        <div class="nav-more-menu nav-scope-menu">
+          <form method="post" action="/role/switch/WEBSITE_CONTROLLER">
+            <input type="hidden" name="next" value="/training/menu" />
+            <button class="btn btn-outline-light btn-sm w-100">Controller View</button>
+          </form>
+          <form method="post" action="/role/switch/WATCH_COMMANDER">
+            <input type="hidden" name="next" value="/training/menu" />
+            <button class="btn btn-outline-light btn-sm w-100">Watch Commander View</button>
+          </form>
+          <form method="post" action="/role/scope">
+            <input type="hidden" name="next" value="/training/menu" />
+            <select class="form-select form-select-sm" name="watch_commander_id" onchange="this.form.submit()">
+              <option value="">My Scope</option>
+              
+            </select>
+          </form>
+        </div>
+      </details>
+      
+      <form method="post" action="/logout" class="nav-logout-form">
+        <button class="btn btn-outline-light btn-sm">Logout</button>
+      </form>
+    </div>
+  </div>
+</nav>
+  <div class="page-wrap">
+    <div class="card p-3 mb-3 page-head">
+      <h2 class="mb-1">Training</h2>
+      <p class="text-muted mb-0">Browse, search, and sign rosters.</p>
+    </div>
+    <div class="card p-3">
+      <div class="quick-actions-grid">
+        <a class="quick-action-btn subtle" href="/training">Training Rosters</a>
+        <a class="quick-action-btn subtle" href="/training/search">Search Rosters</a>
+        
+          <a class="quick-action-btn" href="/training/upload">Upload Roster</a>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+  <script src="/static/js/app.js?v=2026-04-30-report-workspace-1"></script>
+  
+</body>
+</html>

@@ -1,0 +1,594 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  
+  <meta name="google-site-verification" content="lbYJO4OgpLEcoRJ5edmnn2APVfmoeyaLFFTMgYQZd_k" />
+  
+  <title>MCPD Portal</title>
+  <link rel="icon" type="image/svg+xml" href="/assets/usmc-emblem.svg" />
+  <link rel="stylesheet" href="/static/css/app.css?v=2026-04-30-command-rms-1" />
+</head>
+<body class="">
+  
+    
+  
+  
+<div class="app-shell">
+  <nav class="top-nav">
+  
+  
+  
+  
+  
+  
+  <div class="brand">
+    <img src="/assets/usmc-emblem.svg" alt="USMC" />
+    <div class="brand-copy">
+      <span class="brand-kicker">Operations</span>
+      <span class="brand-title">MCPD Portal</span>
+    </div>
+  </div>
+  <button
+    class="nav-toggle"
+    type="button"
+    aria-expanded="false"
+    aria-controls="portal-nav-menu"
+    data-nav-toggle
+  >
+    Menu
+  </button>
+  <div class="nav-menu" id="portal-nav-menu" data-nav-menu>
+    <div class="nav-links">
+      <a class="" href="/dashboard">Dashboard</a>
+      <a class="" href="/incident-paperwork-guide">Navigator</a>
+      <a class="" href="/forms">Forms</a>
+      <a class="" href="/forms/saved">Saved Work</a>
+      <a class="is-active" href="/reports">Reports</a>
+      <details class="nav-more nav-menu-group ">
+        <summary>Authority</summary>
+        <div class="nav-more-menu">
+          <a class="" href="/legal">Law Lookup</a>
+          <a class="" href="/orders/reference">Orders Desk</a>
+          <a class="" href="/officer-handbook">Officer Handbook</a>
+        </div>
+      </details>
+      <details class="nav-more nav-menu-group ">
+        <summary>Operations</summary>
+        <div class="nav-more-menu">
+          <a class="" href="/vehicle-inspections">Inspections</a>
+          <a class="" href="/training/menu">Training</a>
+          <a class="" href="/announcements">Notices</a>
+          <a class="" href="/stats">Stats</a>
+          <a class="" href="/profile">Profile</a>
+          <a class="" href="/annual-training-ai">Assistant</a>
+          <a class="" href="/reconstruction">Reconstruction</a>
+          
+        </div>
+      </details>
+      
+      <a class="" href="/admin/users">Personnel</a>
+      
+      
+      <details class="nav-more ">
+        <summary>Admin</summary>
+        <div class="nav-more-menu">
+          <a class="" href="/admin/stats/categories">Targets</a>
+          <a class="" href="/admin/stats/targets-upload">Upload</a>
+          <a class="" href="/admin/stats/uploads">Uploads</a>
+          <a class="" href="/forms/call-types">Scenario Builder</a>
+          <a class="" href="/forms/manage">Forms Manager</a>
+          <a class="" href="/incident-paperwork-guide/manage">Navigator Editor</a>
+          <a class="" href="/admin/legal-corpus">Legal QA</a>
+          <a class="" href="/admin/legal-analytics">Legal Analytics</a>
+        </div>
+      </details>
+      
+    </div>
+    <div class="nav-right">
+      <div class="nav-user-panel">
+        <div class="nav-user-identity">
+          <span class="nav-user-label">Signed in as</span>
+          <span class="user-name">robertrichards</span>
+        </div>
+        <div class="nav-user-badges">
+          <span class="badge bg-dark">Website Controller</span>
+        
+          <span class="badge bg-warning text-dark">127.0.0.1:8092</span>
+        
+        
+          <small class="text-light">Role: Website Controller</small>
+        
+        </div>
+      </div>
+      
+      <details class="nav-more nav-role-switch">
+        <summary>Scope</summary>
+        <div class="nav-more-menu nav-scope-menu">
+          <form method="post" action="/role/switch/WEBSITE_CONTROLLER">
+            <input type="hidden" name="next" value="/reports" />
+            <button class="btn btn-outline-light btn-sm w-100">Controller View</button>
+          </form>
+          <form method="post" action="/role/switch/WATCH_COMMANDER">
+            <input type="hidden" name="next" value="/reports" />
+            <button class="btn btn-outline-light btn-sm w-100">Watch Commander View</button>
+          </form>
+          <form method="post" action="/role/scope">
+            <input type="hidden" name="next" value="/reports" />
+            <select class="form-select form-select-sm" name="watch_commander_id" onchange="this.form.submit()">
+              <option value="">My Scope</option>
+              
+            </select>
+          </form>
+        </div>
+      </details>
+      
+      <form method="post" action="/logout" class="nav-logout-form">
+        <button class="btn btn-outline-light btn-sm">Logout</button>
+      </form>
+    </div>
+  </div>
+</nav>
+  <div class="page-wrap reports-center-shell">
+    <section class="card p-3 mb-3 page-head ops-head-card">
+      <div class="ops-head-grid">
+        <div class="ops-head-copy">
+          <div class="eyebrow forms-library-eyebrow">Reporting Hub</div>
+          <h2 class="mb-1">Reports Center</h2>
+          <p class="text-muted mb-0">Standard reports and mock report packets now live in one reporting center so mobile navigation stays cleaner and the workflow reads as one system.</p>
+        </div>
+        <div class="ops-head-stats">
+          <article class="ops-stat-pill">
+            <span>Standard Reports</span>
+            <strong>32</strong>
+          </article>
+          <article class="ops-stat-pill">
+            <span>Mock Reports</span>
+            <strong>1</strong>
+          </article>
+          <article class="ops-stat-pill">
+            <span>Review Queue</span>
+            <strong>0</strong>
+          </article>
+        </div>
+      </div>
+
+      <div class="forms-toolbar">
+        <a class="btn btn-primary" href="/reports/new">New Standard Report</a>
+        <button class="btn btn-outline-secondary" type="button" onclick="createCleoReport()">New Mock Report</button>
+          <a class="btn btn-outline-secondary" href="/incident-paperwork-guide">Paperwork Navigator</a>
+      </div>
+    </section>
+
+    <div class="report-center-grid">
+      <section class="card p-3 report-center-panel">
+        <div class="report-panel-head">
+          <div>
+            <h3 class="mb-1">Standard Reports</h3>
+            <p class="text-muted mb-0">Case shells, attachments, involved people, and co-author workflow.</p>
+          </div>
+          <span class="badge bg-dark">32</span>
+        </div>
+        <div class="report-hub-list">
+          
+          <article class="result-card report-hub-card">
+            <div class="result-head">
+              <h4>#1164 Domestic disturbance test</h4>
+              <span class="badge bg-dark">DRAFT</span>
+            </div>
+            <p class="result-sub">Updated 2026-05-04 14:19</p>
+            <div class="report-hub-actions">
+              <a class="btn btn-sm btn-primary" href="/reports/1164">Open Report</a>
+            </div>
+          </article>
+          
+          <article class="result-card report-hub-card">
+            <div class="result-head">
+              <h4>#1163 Required Diagram Test</h4>
+              <span class="badge bg-dark">DRAFT</span>
+            </div>
+            <p class="result-sub">Updated 2026-05-04 14:19</p>
+            <div class="report-hub-actions">
+              <a class="btn btn-sm btn-primary" href="/reports/1163">Open Report</a>
+            </div>
+          </article>
+          
+          <article class="result-card report-hub-card">
+            <div class="result-head">
+              <h4>#1162 Traffic Accident Diagram Test</h4>
+              <span class="badge bg-dark">DRAFT</span>
+            </div>
+            <p class="result-sub">Updated 2026-05-04 14:19</p>
+            <div class="report-hub-actions">
+              <a class="btn btn-sm btn-primary" href="/reports/1162">Open Report</a>
+            </div>
+          </article>
+          
+          <article class="result-card report-hub-card">
+            <div class="result-head">
+              <h4>#1161 Domestic disturbance test</h4>
+              <span class="badge bg-dark">DRAFT</span>
+            </div>
+            <p class="result-sub">Updated 2026-05-01 12:05</p>
+            <div class="report-hub-actions">
+              <a class="btn btn-sm btn-primary" href="/reports/1161">Open Report</a>
+            </div>
+          </article>
+          
+          <article class="result-card report-hub-card">
+            <div class="result-head">
+              <h4>#1160 Required Diagram Test</h4>
+              <span class="badge bg-dark">DRAFT</span>
+            </div>
+            <p class="result-sub">Updated 2026-05-01 12:05</p>
+            <div class="report-hub-actions">
+              <a class="btn btn-sm btn-primary" href="/reports/1160">Open Report</a>
+            </div>
+          </article>
+          
+          <article class="result-card report-hub-card">
+            <div class="result-head">
+              <h4>#1159 Traffic Accident Diagram Test</h4>
+              <span class="badge bg-dark">DRAFT</span>
+            </div>
+            <p class="result-sub">Updated 2026-05-01 12:05</p>
+            <div class="report-hub-actions">
+              <a class="btn btn-sm btn-primary" href="/reports/1159">Open Report</a>
+            </div>
+          </article>
+          
+          <article class="result-card report-hub-card">
+            <div class="result-head">
+              <h4>#1150 Domestic disturbance test</h4>
+              <span class="badge bg-dark">DRAFT</span>
+            </div>
+            <p class="result-sub">Updated 2026-05-01 11:52</p>
+            <div class="report-hub-actions">
+              <a class="btn btn-sm btn-primary" href="/reports/1150">Open Report</a>
+            </div>
+          </article>
+          
+          <article class="result-card report-hub-card">
+            <div class="result-head">
+              <h4>#1149 Required Diagram Test</h4>
+              <span class="badge bg-dark">DRAFT</span>
+            </div>
+            <p class="result-sub">Updated 2026-05-01 11:52</p>
+            <div class="report-hub-actions">
+              <a class="btn btn-sm btn-primary" href="/reports/1149">Open Report</a>
+            </div>
+          </article>
+          
+          <article class="result-card report-hub-card">
+            <div class="result-head">
+              <h4>#1148 Traffic Accident Diagram Test</h4>
+              <span class="badge bg-dark">DRAFT</span>
+            </div>
+            <p class="result-sub">Updated 2026-05-01 11:52</p>
+            <div class="report-hub-actions">
+              <a class="btn btn-sm btn-primary" href="/reports/1148">Open Report</a>
+            </div>
+          </article>
+          
+          <article class="result-card report-hub-card">
+            <div class="result-head">
+              <h4>#1143 Domestic disturbance test</h4>
+              <span class="badge bg-dark">DRAFT</span>
+            </div>
+            <p class="result-sub">Updated 2026-05-01 11:46</p>
+            <div class="report-hub-actions">
+              <a class="btn btn-sm btn-primary" href="/reports/1143">Open Report</a>
+            </div>
+          </article>
+          
+          <article class="result-card report-hub-card">
+            <div class="result-head">
+              <h4>#1142 Required Diagram Test</h4>
+              <span class="badge bg-dark">DRAFT</span>
+            </div>
+            <p class="result-sub">Updated 2026-05-01 11:46</p>
+            <div class="report-hub-actions">
+              <a class="btn btn-sm btn-primary" href="/reports/1142">Open Report</a>
+            </div>
+          </article>
+          
+          <article class="result-card report-hub-card">
+            <div class="result-head">
+              <h4>#1141 Traffic Accident Diagram Test</h4>
+              <span class="badge bg-dark">DRAFT</span>
+            </div>
+            <p class="result-sub">Updated 2026-05-01 11:46</p>
+            <div class="report-hub-actions">
+              <a class="btn btn-sm btn-primary" href="/reports/1141">Open Report</a>
+            </div>
+          </article>
+          
+          <article class="result-card report-hub-card">
+            <div class="result-head">
+              <h4>#1140 Required Diagram Test</h4>
+              <span class="badge bg-dark">DRAFT</span>
+            </div>
+            <p class="result-sub">Updated 2026-05-01 11:44</p>
+            <div class="report-hub-actions">
+              <a class="btn btn-sm btn-primary" href="/reports/1140">Open Report</a>
+            </div>
+          </article>
+          
+          <article class="result-card report-hub-card">
+            <div class="result-head">
+              <h4>#1139 Traffic Accident Diagram Test</h4>
+              <span class="badge bg-dark">DRAFT</span>
+            </div>
+            <p class="result-sub">Updated 2026-05-01 11:44</p>
+            <div class="report-hub-actions">
+              <a class="btn btn-sm btn-primary" href="/reports/1139">Open Report</a>
+            </div>
+          </article>
+          
+          <article class="result-card report-hub-card">
+            <div class="result-head">
+              <h4>#1138 Domestic disturbance test</h4>
+              <span class="badge bg-dark">DRAFT</span>
+            </div>
+            <p class="result-sub">Updated 2026-05-01 11:44</p>
+            <div class="report-hub-actions">
+              <a class="btn btn-sm btn-primary" href="/reports/1138">Open Report</a>
+            </div>
+          </article>
+          
+          <article class="result-card report-hub-card">
+            <div class="result-head">
+              <h4>#1137 Required Diagram Test</h4>
+              <span class="badge bg-dark">DRAFT</span>
+            </div>
+            <p class="result-sub">Updated 2026-05-01 11:44</p>
+            <div class="report-hub-actions">
+              <a class="btn btn-sm btn-primary" href="/reports/1137">Open Report</a>
+            </div>
+          </article>
+          
+          <article class="result-card report-hub-card">
+            <div class="result-head">
+              <h4>#1136 Traffic Accident Diagram Test</h4>
+              <span class="badge bg-dark">DRAFT</span>
+            </div>
+            <p class="result-sub">Updated 2026-05-01 11:44</p>
+            <div class="report-hub-actions">
+              <a class="btn btn-sm btn-primary" href="/reports/1136">Open Report</a>
+            </div>
+          </article>
+          
+          <article class="result-card report-hub-card">
+            <div class="result-head">
+              <h4>#1135 Required Diagram Test</h4>
+              <span class="badge bg-dark">DRAFT</span>
+            </div>
+            <p class="result-sub">Updated 2026-05-01 11:41</p>
+            <div class="report-hub-actions">
+              <a class="btn btn-sm btn-primary" href="/reports/1135">Open Report</a>
+            </div>
+          </article>
+          
+          <article class="result-card report-hub-card">
+            <div class="result-head">
+              <h4>#1134 Traffic Accident Diagram Test</h4>
+              <span class="badge bg-dark">DRAFT</span>
+            </div>
+            <p class="result-sub">Updated 2026-05-01 11:41</p>
+            <div class="report-hub-actions">
+              <a class="btn btn-sm btn-primary" href="/reports/1134">Open Report</a>
+            </div>
+          </article>
+          
+          <article class="result-card report-hub-card">
+            <div class="result-head">
+              <h4>#1133 Domestic disturbance test</h4>
+              <span class="badge bg-dark">DRAFT</span>
+            </div>
+            <p class="result-sub">Updated 2026-05-01 02:20</p>
+            <div class="report-hub-actions">
+              <a class="btn btn-sm btn-primary" href="/reports/1133">Open Report</a>
+            </div>
+          </article>
+          
+          <article class="result-card report-hub-card">
+            <div class="result-head">
+              <h4>#1132 Traffic Accident Diagram Test</h4>
+              <span class="badge bg-dark">DRAFT</span>
+            </div>
+            <p class="result-sub">Updated 2026-05-01 02:20</p>
+            <div class="report-hub-actions">
+              <a class="btn btn-sm btn-primary" href="/reports/1132">Open Report</a>
+            </div>
+          </article>
+          
+          <article class="result-card report-hub-card">
+            <div class="result-head">
+              <h4>#1131 Traffic Accident Diagram Test</h4>
+              <span class="badge bg-dark">DRAFT</span>
+            </div>
+            <p class="result-sub">Updated 2026-05-01 02:18</p>
+            <div class="report-hub-actions">
+              <a class="btn btn-sm btn-primary" href="/reports/1131">Open Report</a>
+            </div>
+          </article>
+          
+          <article class="result-card report-hub-card">
+            <div class="result-head">
+              <h4>#1130 Domestic disturbance test</h4>
+              <span class="badge bg-dark">DRAFT</span>
+            </div>
+            <p class="result-sub">Updated 2026-05-01 02:18</p>
+            <div class="report-hub-actions">
+              <a class="btn btn-sm btn-primary" href="/reports/1130">Open Report</a>
+            </div>
+          </article>
+          
+          <article class="result-card report-hub-card">
+            <div class="result-head">
+              <h4>#1129 Traffic Accident Diagram Test</h4>
+              <span class="badge bg-dark">DRAFT</span>
+            </div>
+            <p class="result-sub">Updated 2026-05-01 02:18</p>
+            <div class="report-hub-actions">
+              <a class="btn btn-sm btn-primary" href="/reports/1129">Open Report</a>
+            </div>
+          </article>
+          
+          <article class="result-card report-hub-card">
+            <div class="result-head">
+              <h4>#1128 Traffic Accident Diagram Test</h4>
+              <span class="badge bg-dark">DRAFT</span>
+            </div>
+            <p class="result-sub">Updated 2026-05-01 02:16</p>
+            <div class="report-hub-actions">
+              <a class="btn btn-sm btn-primary" href="/reports/1128">Open Report</a>
+            </div>
+          </article>
+          
+          <article class="result-card report-hub-card">
+            <div class="result-head">
+              <h4>#1127 Domestic disturbance test</h4>
+              <span class="badge bg-dark">DRAFT</span>
+            </div>
+            <p class="result-sub">Updated 2026-05-01 01:40</p>
+            <div class="report-hub-actions">
+              <a class="btn btn-sm btn-primary" href="/reports/1127">Open Report</a>
+            </div>
+          </article>
+          
+          <article class="result-card report-hub-card">
+            <div class="result-head">
+              <h4>#1126 Domestic disturbance test</h4>
+              <span class="badge bg-dark">DRAFT</span>
+            </div>
+            <p class="result-sub">Updated 2026-04-30 21:21</p>
+            <div class="report-hub-actions">
+              <a class="btn btn-sm btn-primary" href="/reports/1126">Open Report</a>
+            </div>
+          </article>
+          
+          <article class="result-card report-hub-card">
+            <div class="result-head">
+              <h4>#1125 Domestic disturbance test</h4>
+              <span class="badge bg-dark">DRAFT</span>
+            </div>
+            <p class="result-sub">Updated 2026-04-30 21:12</p>
+            <div class="report-hub-actions">
+              <a class="btn btn-sm btn-primary" href="/reports/1125">Open Report</a>
+            </div>
+          </article>
+          
+          <article class="result-card report-hub-card">
+            <div class="result-head">
+              <h4>#1054 Domestic disturbance test</h4>
+              <span class="badge bg-dark">DRAFT</span>
+            </div>
+            <p class="result-sub">Updated 2026-04-30 20:51</p>
+            <div class="report-hub-actions">
+              <a class="btn btn-sm btn-primary" href="/reports/1054">Open Report</a>
+            </div>
+          </article>
+          
+          <article class="result-card report-hub-card">
+            <div class="result-head">
+              <h4>#703 Untitled Report</h4>
+              <span class="badge bg-dark">DRAFT</span>
+            </div>
+            <p class="result-sub">Updated 2026-04-30 14:49</p>
+            <div class="report-hub-actions">
+              <a class="btn btn-sm btn-primary" href="/reports/703">Open Report</a>
+            </div>
+          </article>
+          
+          <article class="result-card report-hub-card">
+            <div class="result-head">
+              <h4>#2 Stress Test Report</h4>
+              <span class="badge bg-dark">GRADED</span>
+            </div>
+            <p class="result-sub">Updated 2026-04-27 14:02</p>
+            <div class="report-hub-actions">
+              <a class="btn btn-sm btn-primary" href="/reports/2">Open Report</a>
+            </div>
+          </article>
+          
+          <article class="result-card report-hub-card">
+            <div class="result-head">
+              <h4>#1 Untitled Report</h4>
+              <span class="badge bg-dark">DRAFT</span>
+            </div>
+            <p class="result-sub">Updated 2026-04-11 00:11</p>
+            <div class="report-hub-actions">
+              <a class="btn btn-sm btn-primary" href="/reports/1">Open Report</a>
+            </div>
+          </article>
+          
+        </div>
+      </section>
+
+      <section class="card p-3 report-center-panel">
+        <div class="report-panel-head">
+          <div>
+            <h3 class="mb-1">Mock Reports</h3>
+            <p class="text-muted mb-0">Incident-admin packets, narrative pages, enclosure uploads, and graded mock report review.</p>
+          </div>
+          <span class="badge bg-dark">1</span>
+        </div>
+        <div class="report-hub-list">
+          
+          <article class="result-card report-hub-card">
+            <div class="result-head">
+              <h4>Report #1</h4>
+              <span class="badge bg-dark">DRAFT</span>
+            </div>
+            <p class="result-sub">Updated 2026-04-11 00:29</p>
+            <div class="report-hub-actions">
+              <a class="btn btn-sm btn-primary" href="/cleo/report/1">Open Mock Report</a>
+              
+                <a class="btn btn-sm btn-outline-secondary" href="/static/cleo/incident-admin.html?report_id=1">Continue Editing</a>
+              
+            </div>
+          </article>
+          
+        </div>
+      </section>
+    </div>
+
+    <section class="card p-3 report-center-panel mt-3">
+      <div class="report-panel-head">
+        <div>
+          <h3 class="mb-1">Mock Review Queue</h3>
+          <p class="text-muted mb-0">Submitted, returned, and graded packets that still need command attention or follow-up review.</p>
+        </div>
+        <span class="badge bg-dark">0</span>
+      </div>
+      <div class="report-hub-list">
+        
+        <div class="report-empty-state">No mock reports are waiting in the review queue.</div>
+        
+      </div>
+    </section>
+  </div>
+</div>
+<script>
+  async function createCleoReport() {
+    const response = await fetch('/api/cleo-reports', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({})
+    });
+    const data = await response.json();
+    if (!response.ok || !data.id) {
+      alert(data.error || 'Unable to create a mock report right now.');
+      return;
+    }
+    localStorage.setItem('cleo_report_id', data.id);
+    window.location.href = `/static/cleo/incident-admin.html?report_id=${data.id}`;
+  }
+</script>
+
+  <script src="/static/js/app.js?v=2026-04-30-report-workspace-1"></script>
+  
+</body>
+</html>
