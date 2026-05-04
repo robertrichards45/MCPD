@@ -360,3 +360,115 @@ def test_mobile_incident_draft_sync_api_round_trip():
             IncidentDraft.query.delete()
             db.session.commit()
         _dispose_app(client.application)
+
+
+def test_watch_commander_can_approve_and_assign_officer_from_mobile():
+    app = create_app()
+    app.config["TESTING"] = True
+    wc_username = "pytest_mobile_wc"
+    officer_username = "pytest_mobile_pending"
+    try:
+        with app.app_context():
+            _delete_user(officer_username)
+            _delete_user(wc_username)
+            commander = User(
+                username=wc_username,
+                first_name="Mobile",
+                last_name="Commander",
+                role=ROLE_WATCH_COMMANDER,
+                active=True,
+                installation="MCLB_ALBANY",
+                section_unit="Bravo Shift",
+            )
+            commander.set_password("TempPass123!")
+            officer = User(
+                username=officer_username,
+                first_name="Mobile",
+                last_name="Pending",
+                role=ROLE_PATROL_OFFICER,
+                active=False,
+                pending_approval=True,
+                installation="MCLB_ALBANY",
+            )
+            officer.set_password("TempPass123!")
+            db.session.add_all([commander, officer])
+            db.session.commit()
+            commander_id = commander.id
+            officer_id = officer.id
+
+        client = app.test_client()
+        with client.session_transaction() as session:
+            session["_user_id"] = str(commander_id)
+            session["_fresh"] = True
+
+        page = client.get("/mobile/supervisor/officers")
+        html = page.get_data(as_text=True)
+        assert page.status_code == 200
+        assert "Approve First" in html
+        assert f"/mobile/supervisor/officers/{officer_id}" in html
+        assert "Mobile Pending" in html
+
+        with client.session_transaction() as session:
+            csrf = session["_csrf_token"]
+
+        response = client.post(
+            f"/mobile/supervisor/officers/{officer_id}",
+            data={
+                "_csrf_token": csrf,
+                "role": ROLE_PATROL_OFFICER,
+                "section_unit": "Bravo Shift",
+                "active": "1",
+            },
+            follow_redirects=False,
+        )
+        assert response.status_code in {302, 303}
+
+        with app.app_context():
+            officer = db.session.get(User, officer_id)
+            assert officer.active is True
+            assert officer.pending_approval is False
+            assert officer.supervisor_id == commander_id
+            assert officer.section_unit == "Bravo Shift"
+            assert officer.installation == "MCLB_ALBANY"
+    finally:
+        with app.app_context():
+            _delete_user(officer_username)
+            _delete_user(wc_username)
+        _dispose_app(app)
+
+
+def test_mobile_more_links_watch_commander_to_officer_approval():
+    app = create_app()
+    app.config["TESTING"] = True
+    wc_username = "pytest_mobile_more_wc"
+    try:
+        with app.app_context():
+            _delete_user(wc_username)
+            commander = User(
+                username=wc_username,
+                first_name="More",
+                last_name="Commander",
+                role=ROLE_WATCH_COMMANDER,
+                active=True,
+                installation="MCLB_ALBANY",
+                section_unit="Charlie Shift",
+            )
+            commander.set_password("TempPass123!")
+            db.session.add(commander)
+            db.session.commit()
+            commander_id = commander.id
+
+        client = app.test_client()
+        with client.session_transaction() as session:
+            session["_user_id"] = str(commander_id)
+            session["_fresh"] = True
+
+        response = client.get("/mobile/more")
+        html = response.get_data(as_text=True)
+        assert response.status_code == 200
+        assert "/mobile/supervisor/officers" in html
+        assert "Approve / Assign Officers" in html
+    finally:
+        with app.app_context():
+            _delete_user(wc_username)
+        _dispose_app(app)
