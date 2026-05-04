@@ -8998,12 +8998,15 @@ body.mobile-foundation {
   background: #c9a86a !important;
   color: #0d1a2e !important;
   border-color: #b8975c !important;
+  cursor: pointer;
+  font: inherit;
 }
 
 .mobile-wizard-cta.is-disabled,
 .mobile-wizard-cta[disabled] {
   background: rgba(201,168,106,0.3) !important;
   color: rgba(13,26,46,0.5) !important;
+  cursor: not-allowed;
 }
 
 .mobile-wizard-link {

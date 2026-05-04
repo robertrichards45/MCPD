@@ -3,7 +3,9 @@ from types import SimpleNamespace
 
 from flask import Flask
 
+from app import create_app
 from app.services.legal_lookup import LegalEntry, reference_download_info, search_entries
+from app.routes.legal import _order_reference_matches
 
 
 def test_federal_installation_queries_rank_18_usc_1382_first():
@@ -60,6 +62,14 @@ def test_federal_installation_search_keeps_federal_reference_ahead_of_base_order
     assert results[0].entry.code == '18 USC 1382'
     if len(results) > 1:
         assert results[0].entry.source == 'FEDERAL_USC'
+
+
+def test_public_defecation_query_does_not_surface_unrelated_shoplifting_order():
+    app = create_app()
+    with app.app_context():
+        matches = _order_reference_matches('pooping in the street')
+    titles = [item['title'] for item in matches]
+    assert not any('shoplifting' in title.lower() for title in titles)
 
 
 def test_dui_refusal_scenario_keeps_core_charge_path_results():

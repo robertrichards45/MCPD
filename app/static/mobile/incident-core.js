@@ -1337,7 +1337,9 @@
         </div>
         <div class="mobile-wizard-actions">
           ${options.backHref ? `<a class="mobile-wizard-link" href="${escapeHtml(options.backHref)}">${escapeHtml(options.backLabel || 'Back')}</a>` : ''}
-          ${options.nextHref ? `<a class="mobile-wizard-cta ${options.disabled ? 'is-disabled' : ''}" href="${options.disabled ? '#' : escapeHtml(options.nextHref)}">${escapeHtml(options.nextLabel || 'Next')}</a>` : ''}
+          ${options.disabled ? `<button class="mobile-wizard-cta is-disabled" type="button" disabled>${escapeHtml(options.nextLabel || 'Next')}</button>` : ''}
+          ${!options.disabled && options.nextHref && options.nextHref !== '#' ? `<a class="mobile-wizard-cta" href="${escapeHtml(options.nextHref)}">${escapeHtml(options.nextLabel || 'Next')}</a>` : ''}
+          ${!options.disabled && options.nextHref === '#' ? `<button class="mobile-wizard-cta" type="button">${escapeHtml(options.nextLabel || 'Next')}</button>` : ''}
         </div>
       </div>
     `;
