@@ -25,9 +25,10 @@ warnings.filterwarnings(
     category=CryptographyDeprecationWarning,
 )
 
-# Let the active shell or launcher override .env so machine-local startup
-# settings (like DATABASE_URL and PORT) can safely differ from older handoff values.
-load_dotenv(override=False)
+# Let local shells use .env, but never let committed machine-local .env values
+# override Railway service variables or accidentally point production at SQLite.
+if not (os.environ.get('RAILWAY_ENVIRONMENT') or os.environ.get('RAILWAY_PROJECT_ID')):
+    load_dotenv(override=False)
 
 from .config import Config, _database_url_from_env, _normalize_database_uri
 from .extensions import db, login_manager
