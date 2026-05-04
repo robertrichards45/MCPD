@@ -14,7 +14,7 @@
         <div class="card p-3 mb-3">
         <h5 class="mb-3">Upload Required PDFs</h5>
         <form method="post" action="{{ url_for('reports.report_upload', report_id=report.id) }}" enctype="multipart/form-data">
-          <div class="mb-2">
+          <div class="mb-3">
             <label>PDF Type</label>
             <select class="form-control" name="page_key">
               <option value="incident-admin">Incident Admin</option>
@@ -32,7 +32,7 @@
               <option value="enclosure">Enclosure</option>
             </select>
           </div>
-          <div class="mb-2"><input type="file" class="form-control" name="file" accept="application/pdf" required /></div>
+          <div class="mb-3"><input type="file" class="form-control" name="file" accept="application/pdf" required /></div>
           <button class="btn btn-primary">Upload PDF</button>
         </form>
 
@@ -51,8 +51,8 @@
         <div class="card p-3 mb-3">
         <h5 class="mb-3">Involved Persons</h5>
         <form method="post" action="{{ url_for('reports.report_add_person', report_id=report.id) }}">
-          <div class="mb-2"><input class="form-control" name="name" placeholder="Name" /></div>
-          <div class="mb-2"><input class="form-control" name="role" placeholder="Role (victim/suspect/witness)" /></div>
+          <div class="mb-3"><input class="form-control" name="name" placeholder="Name" /></div>
+          <div class="mb-3"><input class="form-control" name="role" placeholder="Role (victim/suspect/witness)" /></div>
           <button class="btn btn-secondary">Add Person</button>
         </form>
         <ul class="list-group mt-2">
@@ -63,7 +63,7 @@
 
         <h5 class="mt-4">Co-Authors</h5>
         <form method="post" action="{{ url_for('reports.report_add_coauthor', report_id=report.id) }}">
-          <div class="mb-2"><input class="form-control" name="username" placeholder="Username" /></div>
+          <div class="mb-3"><input class="form-control" name="username" placeholder="Username" /></div>
           <button class="btn btn-secondary">Add Co-Author</button>
         </form>
         <ul class="list-group mt-2">
@@ -88,9 +88,9 @@
         <summary>Grade Report (Admin)</summary>
         <div class="mt-2">
         <form method="post" action="{{ url_for('reports.report_grade', report_id=report.id) }}">
-          <div class="mb-2"><input class="form-control" name="score" placeholder="Score (0-100)" /></div>
-          <div class="mb-2"><textarea class="form-control" name="comments" placeholder="Comments"></textarea></div>
-          <div class="mb-2"><textarea class="form-control" name="required_fixes" placeholder="Required fixes"></textarea></div>
+          <div class="mb-3"><input class="form-control" name="score" placeholder="Score (0-100)" /></div>
+          <div class="mb-3"><textarea class="form-control" name="comments" placeholder="Comments"></textarea></div>
+          <div class="mb-3"><textarea class="form-control" name="required_fixes" placeholder="Required fixes"></textarea></div>
           <button class="btn btn-primary">Submit Grade</button>
         </form>
         <form method="post" action="{{ url_for('reports.report_return', report_id=report.id) }}" class="mt-2">

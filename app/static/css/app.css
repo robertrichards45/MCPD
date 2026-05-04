@@ -2869,7 +2869,7 @@ textarea {
   }
 
   .legal-search-card .row.g-2 {
-    gap: 6px !important;
+    gap: 8px !important;
   }
 
   .legal-examples-wrap {
@@ -3523,7 +3523,7 @@ textarea.form-control {
   .legal-search-card .form-label,
   .search-panel .form-label {
     font-size: 11px;
-    margin-bottom: 3px;
+    margin-bottom: 6px;
   }
 
   #legal-results .small.text-muted.mb-3 {
@@ -3783,7 +3783,7 @@ body {
 .form-section-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: 14px;
 }
 
 .form-field-type-textarea {
@@ -3798,7 +3798,7 @@ body {
 .role-entry-card {
   border: 1px solid var(--ui-border);
   border-radius: 6px;
-  padding: 8px;
+  padding: 12px;
   background: #f9fbfd;
 }
 
@@ -6386,7 +6386,7 @@ h1, h2, h3, h4, h5, h6,
 
 .form-field-block {
   display: grid;
-  gap: 6px;
+  gap: 8px;
   align-content: start;
 }
 
@@ -6424,7 +6424,7 @@ h1, h2, h3, h4, h5, h6,
 
 .scan-upload-card {
   display: grid;
-  gap: 10px;
+  gap: 12px;
   align-content: start;
 }
 

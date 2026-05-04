@@ -16,7 +16,7 @@
         <div class="card p-3 mb-4">
           <h5 class="mb-3">Personal Information</h5>
           <form method="post">
-            <div class="row g-2 mb-2">
+            <div class="row g-2 mb-3">
               <div class="col-6">
                 <label class="form-label text-dark">First Name</label>
                 <input class="form-control" name="first_name" value="{{ user.first_name or '' }}" required />
@@ -26,28 +26,28 @@
                 <input class="form-control" name="last_name" value="{{ user.last_name or '' }}" required />
               </div>
             </div>
-            <div class="mb-2">
+            <div class="mb-3">
               <label class="form-label text-dark">Display Name <span class="form-text">(optional override)</span></label>
               <input class="form-control" name="display_name" value="{{ user.display_name_override or '' }}" placeholder="Leave blank to use first + last name" />
             </div>
-            <div class="mb-2">
+            <div class="mb-3">
               <label class="form-label text-dark">Contact Number</label>
               <input class="form-control" name="phone_number" value="{{ user.phone_number or '' }}" />
             </div>
-            <div class="mb-2">
+            <div class="mb-3">
               <label class="form-label text-dark">Home Address</label>
               <textarea class="form-control" name="address" rows="2">{{ user.address or '' }}</textarea>
             </div>
-            <div class="mb-2">
+            <div class="mb-3">
               <label class="form-label text-dark">Installation</label>
               <input class="form-control" value="{{ installation_label or 'Not set' }}" readonly />
               <div class="form-text">Contact your Watch Commander to update your installation assignment.</div>
             </div>
-            <div class="mb-2">
+            <div class="mb-3">
               <label class="form-label text-dark">Email</label>
               <input class="form-control" name="email" value="{{ user.email or '' }}" />
             </div>
-            <div class="mb-2">
+            <div class="mb-3">
               <label class="form-label text-dark">Role</label>
               <input class="form-control" value="{{ user.role_label }}" readonly />
             </div>
@@ -55,36 +55,36 @@
             <details class="collapse-card mt-3">
               <summary>Additional Officer Details</summary>
               <div class="mt-2">
-                <div class="mb-2">
+                <div class="mb-3">
                   <label class="form-label text-dark">Badge / Employee ID</label>
                   <input class="form-control" name="badge_employee_id" value="{{ user.badge_employee_id or '' }}" />
                 </div>
-                <div class="mb-2">
+                <div class="mb-3">
                   <label class="form-label text-dark">Section / Unit</label>
                   <input class="form-control" name="section_unit" value="{{ user.section_unit or '' }}" />
                 </div>
-                <div class="mb-2">
+                <div class="mb-3">
                   <label class="form-label text-dark">EDIPI</label>
                   <input class="form-control" name="edipi" value="{{ user.edipi or '' }}" inputmode="numeric" maxlength="10" {% if not user.can_manage_site() %}readonly{% endif %} />
                   {% if not user.can_manage_site() %}<div class="form-text">Only the Website Controller can change EDIPI.</div>{% endif %}
                 </div>
-                <div class="mb-2">
+                <div class="mb-3">
                   <label class="form-label text-dark">Rank</label>
                   <input class="form-control" name="rank" value="{{ profile.rank or '' }}" />
                 </div>
-                <div class="mb-2">
+                <div class="mb-3">
                   <label class="form-label text-dark">Unit</label>
                   <input class="form-control" name="unit" value="{{ profile.unit or '' }}" />
                 </div>
-                <div class="mb-2">
+                <div class="mb-3">
                   <label class="form-label text-dark">Duty Phone</label>
                   <input class="form-control" name="duty_phone" value="{{ profile.duty_phone or '' }}" />
                 </div>
-                <div class="mb-2">
+                <div class="mb-3">
                   <label class="form-label text-dark">Personal Phone</label>
                   <input class="form-control" name="personal_phone" value="{{ profile.personal_phone or '' }}" />
                 </div>
-                <div class="mb-2">
+                <div class="mb-3">
                   <label class="form-label text-dark">Personal Email</label>
                   <input class="form-control" name="personal_email" value="{{ profile.personal_email or '' }}" />
                 </div>
@@ -130,7 +130,7 @@
             <summary>Add Emergency Contact</summary>
             <div class="mt-2">
             <form method="post" action="{{ url_for('officers.add_emergency_contact') }}">
-              <div class="row g-2 mb-2">
+              <div class="row g-2 mb-3">
                 <div class="col-sm-6">
                   <label class="form-label text-dark">Name <span class="text-danger">*</span></label>
                   <input class="form-control" name="name" required />
@@ -140,7 +140,7 @@
                   <input class="form-control" name="relationship" placeholder="e.g. Spouse, Parent" />
                 </div>
               </div>
-              <div class="row g-2 mb-2">
+              <div class="row g-2 mb-3">
                 <div class="col-sm-6">
                   <label class="form-label text-dark">Primary Phone</label>
                   <input class="form-control" name="phone" />
@@ -150,7 +150,7 @@
                   <input class="form-control" name="secondary_phone" />
                 </div>
               </div>
-              <div class="mb-2">
+              <div class="mb-3">
                 <label class="form-label text-dark">Email</label>
                 <input class="form-control" name="email" type="email" />
               </div>
