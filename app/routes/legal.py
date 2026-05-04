@@ -997,7 +997,13 @@ def _filter_results_for_display(query: str, source: str, results: list[LegalMatc
 
 def _render_legal_lookup(default_source='ALL'):
     query = (request.args.get('q') or '').strip()
-    state = _normalize_state(request.args.get('state') or session.get('legal_last_state') or 'GA')
+    user_preferred_state = getattr(current_user, 'preferred_legal_state', None) or ''
+    state = _normalize_state(
+        request.args.get('state')
+        or session.get('legal_last_state')
+        or user_preferred_state
+        or 'GA'
+    )
     source = _normalize_lookup_source(request.args.get('source') or default_source or 'ALL')
     include_possible = (request.args.get('show_possible') or '').strip().lower() in {'1', 'true', 'yes', 'on'}
     normalized_query = query.lower()
@@ -1131,6 +1137,12 @@ def _render_legal_lookup(default_source='ALL'):
     if query:
         session['legal_last_query'] = query
         session['legal_last_state'] = state
+        if getattr(current_user, 'is_authenticated', False) and getattr(current_user, 'preferred_legal_state', None) != state:
+            try:
+                current_user.preferred_legal_state = state
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
     lead_result = results[0] if results else None
     grouped_results = _group_results(results[1:] if len(results) > 1 else [])
     order_reference_matches = _order_reference_matches(query, ai_hints.get('related_policy_terms', ()))
@@ -1178,7 +1190,13 @@ def _render_legal_lookup(default_source='ALL'):
 
 def _current_search(default_source='ALL'):
     query = (request.args.get('q') or '').strip()
-    state = _normalize_state(request.args.get('state') or session.get('legal_last_state') or 'GA')
+    user_preferred_state = getattr(current_user, 'preferred_legal_state', None) or ''
+    state = _normalize_state(
+        request.args.get('state')
+        or session.get('legal_last_state')
+        or user_preferred_state
+        or 'GA'
+    )
     source = _normalize_lookup_source(request.args.get('source') or default_source or 'ALL')
     return query, source, _search_entries_for_scope(query, source, state)
 
