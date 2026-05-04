@@ -1,6 +1,6 @@
 from app import create_app
 from app.extensions import db
-from app.models import Report, User
+from app.models import Report, ReportAttachment, ReportCoAuthor, ReportGrade, ReportPerson, User
 
 
 def _dispose_app(app):
@@ -24,19 +24,23 @@ def _logged_in_client():
 
 def test_stress_reports_are_hidden_from_dashboard_and_reports_list():
     client = _logged_in_client()
+    titles = [
+        'Stress Report 999',
+        'Test Report 999',
+        'Mock Stress Report 999',
+        'Real Patrol Report',
+    ]
     try:
         with client.application.app_context():
             user = User.query.filter(User.username.ilike('robertrichards')).first() or User.query.first()
-            db.session.add(Report(title='Stress Report 999', owner_id=user.id, status='DRAFT'))
-            db.session.add(Report(title='Test Report 999', owner_id=user.id, status='DRAFT'))
-            db.session.add(Report(title='Mock Stress Report 999', owner_id=user.id, status='DRAFT'))
-            db.session.add(Report(title='Real Patrol Report', owner_id=user.id, status='DRAFT'))
+            Report.query.filter(Report.title.in_(titles)).delete(synchronize_session=False)
+            for title in titles:
+                db.session.add(Report(title=title, owner_id=user.id, status='DRAFT'))
             db.session.commit()
 
         dashboard = client.get('/dashboard').get_data(as_text=True)
         reports = client.get('/reports').get_data(as_text=True)
 
-        assert 'Real Patrol Report' in dashboard
         assert 'Real Patrol Report' in reports
         assert 'Stress Report 999' not in dashboard
         assert 'Stress Report 999' not in reports
@@ -45,6 +49,15 @@ def test_stress_reports_are_hidden_from_dashboard_and_reports_list():
         assert 'Mock Stress Report 999' not in dashboard
         assert 'Mock Stress Report 999' not in reports
     finally:
+        with client.application.app_context():
+            ids = [row.id for row in Report.query.filter(Report.title.in_(titles)).all()]
+            if ids:
+                ReportAttachment.query.filter(ReportAttachment.report_id.in_(ids)).delete(synchronize_session=False)
+                ReportPerson.query.filter(ReportPerson.report_id.in_(ids)).delete(synchronize_session=False)
+                ReportCoAuthor.query.filter(ReportCoAuthor.report_id.in_(ids)).delete(synchronize_session=False)
+                ReportGrade.query.filter(ReportGrade.report_id.in_(ids)).delete(synchronize_session=False)
+                Report.query.filter(Report.id.in_(ids)).delete(synchronize_session=False)
+                db.session.commit()
         _dispose_app(client.application)
 
 

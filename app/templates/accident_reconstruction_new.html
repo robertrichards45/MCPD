@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell reconstruction-command-shell">
+  {% include 'partials/nav.html' %}
+  <div class="recon-layout">
+    {% include 'partials/reports_sidebar.html' %}
+    <main class="recon-workspace">
+      <section class="recon-page-head">
+        <div>
+          <div class="recon-breadcrumb">Reports / Accident Reconstruction / New</div>
+          <h1>New Accident Reconstruction</h1>
+          <p>Start with the case basics. Diagram, measurements, media, and timeline can be added after creation.</p>
+        </div>
+      </section>
+
+      <form class="recon-card recon-form-grid" method="post">
+        <label>Incident Number
+          <input class="form-control" name="incident_number" placeholder="25-000123">
+        </label>
+        <label>Title
+          <input class="form-control" name="title" required placeholder="Two-vehicle collision">
+        </label>
+        <label>Location
+          <input class="form-control" name="location" placeholder="Main Gate / Exchange Ave">
+        </label>
+        <label>Date / Time
+          <input class="form-control" type="datetime-local" name="date_time">
+        </label>
+        <label>Weather
+          <input class="form-control" name="weather" placeholder="Clear">
+        </label>
+        <label>Road Surface
+          <input class="form-control" name="road_surface" placeholder="Dry">
+        </label>
+        <label class="recon-form-wide">Initial Notes
+          <textarea class="form-control" name="notes" rows="4" placeholder="Initial scene notes, roadway condition, and reconstruction scope."></textarea>
+        </label>
+        <div class="recon-form-actions">
+          <a class="btn btn-outline-secondary" href="{{ url_for('reports.accident_reconstruction_list') }}">Cancel</a>
+          <button class="btn btn-primary">Create Reconstruction</button>
+        </div>
+      </form>
+    </main>
+  </div>
+</div>
+{% endblock %}

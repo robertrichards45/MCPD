@@ -14,6 +14,18 @@ from ..models import (
 bp = Blueprint('dashboard', __name__)
 
 
+def _is_test_report_title(title: str) -> bool:
+    return str(title or '').strip().lower().startswith(('stress report', 'test report ', 'mock stress report'))
+
+
+def _production_report_query():
+    return Report.query.filter(
+        ~Report.title.ilike('Stress Report%'),
+        ~Report.title.ilike('Test Report %'),
+        ~Report.title.ilike('Mock Stress Report%'),
+    )
+
+
 def _request_prefers_mobile_home() -> bool:
     user_agent = str(getattr(request, 'user_agent', '') or '')
     blob = ' '.join(
@@ -47,7 +59,7 @@ def _visible_announcements_query():
 def _dashboard_snapshot():
     visible_announcements = _visible_announcements_query()
     saved_forms_count = SavedForm.query.filter_by(officer_user_id=current_user.id).count()
-    report_count = Report.query.filter_by(owner_id=current_user.id).count()
+    report_count = _production_report_query().filter_by(owner_id=current_user.id).count()
     cleo_report_count = CleoReport.query.filter_by(user_id=current_user.id).count()
     orders_count = OrderDocument.query.filter(OrderDocument.is_active.is_(True)).count()
     training_count = TrainingRoster.query.filter_by(status='ACTIVE').count()

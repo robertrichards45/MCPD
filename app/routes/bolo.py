@@ -115,6 +115,7 @@ def bolo_board():
         BOLO_THREAT_HIGH=BOLO_THREAT_HIGH,
         BOLO_THREAT_MODERATE=BOLO_THREAT_MODERATE,
         BOLO_THREAT_LOW=BOLO_THREAT_LOW,
+        user=current_user,
     )
 
 
@@ -134,6 +135,7 @@ def bolo_detail(entry_id):
         BOLO_THREAT_HIGH=BOLO_THREAT_HIGH,
         BOLO_THREAT_MODERATE=BOLO_THREAT_MODERATE,
         BOLO_THREAT_LOW=BOLO_THREAT_LOW,
+        user=current_user,
     )
 
 

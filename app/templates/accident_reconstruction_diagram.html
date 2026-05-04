@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell reconstruction-command-shell">
+  {% include 'partials/nav.html' %}
+  <div class="recon-layout">
+    {% include 'partials/reports_sidebar.html' %}
+    <main class="recon-workspace">
+      <section class="recon-page-head">
+        <div>
+          <div class="recon-breadcrumb">Reports / Accident Reconstruction / Diagram</div>
+          <h1>Accident Reconstruction #{{ reconstruction.incident_number or reconstruction.id }}</h1>
+        </div>
+        <div class="recon-action-row">
+          <button class="btn btn-outline-secondary" type="button" data-recon-save>Save</button>
+          <a class="btn btn-outline-secondary" href="{{ url_for('reports.accident_reconstruction_export', reconstruction_id=reconstruction.id) }}">Export</a>
+          <a class="btn btn-primary" href="{{ url_for('reports.accident_reconstruction_export', reconstruction_id=reconstruction.id) }}">Generate Report</a>
+        </div>
+      </section>
+
+      <nav class="recon-tabs">
+        <a class="is-active" href="{{ url_for('reports.accident_reconstruction_diagram', reconstruction_id=reconstruction.id) }}">Scene Diagram</a>
+        <a href="{{ url_for('reports.accident_reconstruction_detail', reconstruction_id=reconstruction.id) }}#measurements">Measurements</a>
+        <a href="{{ url_for('reports.accident_reconstruction_detail', reconstruction_id=reconstruction.id) }}#dynamics">Vehicle Dynamics</a>
+        <a href="{{ url_for('reports.accident_reconstruction_detail', reconstruction_id=reconstruction.id) }}#view3d">3D View</a>
+        <a href="{{ url_for('reports.accident_reconstruction_export', reconstruction_id=reconstruction.id) }}">Reports</a>
+      </nav>
+
+      <section
+        class="recon-builder"
+        data-accident-recon
+        data-save-url="{{ url_for('reports.accident_reconstruction_diagram', reconstruction_id=reconstruction.id) }}"
+        data-vehicles='{{ vehicles|map(attribute="id")|list|tojson }}'
+      >
+        <aside class="recon-tools-panel">
+          <strong>Tools</strong>
+          {% for tool in ['Select','Vehicle','Pedestrian','Bicycle','Object','Point','Measure','Text','Arrow','Zone','Camera','Clear All'] %}
+          <button type="button" data-tool="{{ tool|lower|replace(' ', '-') }}">{{ tool }}</button>
+          {% endfor %}
+        </aside>
+
+        <div class="recon-canvas-panel">
+          <div class="recon-canvas-toolbar">
+            <button type="button" data-recon-undo>Undo</button>
+            <button type="button" data-recon-redraw>Reset View</button>
+            <label><input type="checkbox" data-grid-toggle checked> Grid On</label>
+            <label><input type="checkbox" data-snap-toggle checked> Snap</label>
+            <select data-units-select><option value="ft">Units: ft</option><option value="m">Units: m</option></select>
+            <select data-zoom-select><option value="1">100%</option><option value="0.75">75%</option><option value="1.25">125%</option></select>
+          </div>
+          <canvas class="accident-recon-canvas" width="980" height="580" data-recon-canvas></canvas>
+        </div>
+
+        <aside class="recon-inspector-panel">
+          <div class="recon-inspector-tabs"><span>Vehicles</span><span>Objects</span><span>Notes</span><span>Layers</span></div>
+          <h3>Vehicles</h3>
+          <div class="recon-vehicle-stack" data-recon-vehicle-list>
+            {% for vehicle in vehicles %}
+            <article data-vehicle-id="{{ vehicle.id }}">
+              <strong>{{ vehicle.label or vehicle.unit or 'V' ~ loop.index }}</strong>
+              <span>{{ vehicle.type or vehicle.make_model or 'Vehicle' }}</span>
+              <small>Direction: {{ vehicle.direction or 'pending' }} / Impact: {{ vehicle.impact_speed or 'n/a' }} mph</small>
+            </article>
+            {% else %}<div class="recon-empty">Add vehicles from the detail screen or canvas.</div>{% endfor %}
+          </div>
+          <h3>Collision Point</h3>
+          <div class="recon-summary-list compact">
+            <dt>Impact Type</dt><dd>Officer entry</dd>
+            <dt>Delta-V</dt><dd>Estimate only</dd>
+            <dt>Collision Angle</dt><dd>Verify</dd>
+          </div>
+          <h3>Scene Summary</h3>
+          <p>{{ reconstruction.notes or 'Add reconstruction notes on the report tab.' }}</p>
+        </aside>
+
+        <script type="application/json" data-recon-state>
+          {
+            "vehicles": [
+              {% for vehicle in vehicles %}
+              {"id": {{ vehicle.id }}, "label": {{ (vehicle.label or vehicle.unit or ('V' ~ loop.index))|tojson }}, "type": "vehicle", "x": {{ vehicle.x_position or (160 + loop.index * 40) }}, "y": {{ vehicle.y_position or (190 + loop.index * 20) }}, "rotation": {{ vehicle.rotation or 0 }}}{% if not loop.last %},{% endif %}
+              {% endfor %}
+            ],
+            "objects": [
+              {% for object in objects %}
+              {"id": {{ object.id }}, "label": {{ (object.label or object.object_type)|tojson }}, "type": {{ object.object_type|tojson }}, "x": {{ object.x_position or 240 }}, "y": {{ object.y_position or 220 }}, "rotation": {{ object.rotation or 0 }}}{% if not loop.last %},{% endif %}
+              {% endfor %}
+            ],
+            "measurements": [
+              {% for measurement in measurements %}
+              {"id": {{ measurement.id }}, "label": {{ measurement.label|tojson }}, "value": {{ (measurement.value or '')|tojson }}, "units": {{ (measurement.units or 'ft')|tojson }}, "startX": {{ measurement.start_x or 120 }}, "startY": {{ measurement.start_y or 120 }}, "endX": {{ measurement.end_x or 260 }}, "endY": {{ measurement.end_y or 140 }}}{% if not loop.last %},{% endif %}
+              {% endfor %}
+            ],
+            "units": "ft"
+          }
+        </script>
+      </section>
+    </main>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+  {{ super() }}
+  <script src="{{ url_for('static', filename='js/accident_reconstruction.js', v='2026-05-04-accident-1') }}"></script>
+{% endblock %}

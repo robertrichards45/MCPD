@@ -1,0 +1,9 @@
+<aside class="reports-command-sidebar" aria-label="Reports Center navigation">
+  <div class="reports-sidebar-title">Reports Center</div>
+  <a href="{{ url_for('reports.list_reports') }}">All Reports</a>
+  <a href="{{ url_for('reports.list_reports') }}">My Reports</a>
+  <a href="{{ url_for('reports.accident_reconstruction_list') }}">Accident Reports</a>
+  <a href="{{ url_for('reports.list_reports') }}">Traffic Stops</a>
+  <a href="{{ url_for('reports.list_reports') }}">Incidents</a>
+  <a class="{% if request.endpoint and request.endpoint.startswith('reports.accident_reconstruction') %}is-active{% endif %}" href="{{ url_for('reports.accident_reconstruction_list') }}">Accident Reconstruction</a>
+</aside>

@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell reconstruction-command-shell">
+  {% include 'partials/nav.html' %}
+  <div class="recon-layout">
+    {% include 'partials/reports_sidebar.html' %}
+    <main class="recon-workspace">
+      <section class="recon-page-head">
+        <div>
+          <div class="recon-breadcrumb">Reports / Accident Reconstruction / {{ reconstruction.incident_number or reconstruction.id }}</div>
+          <h1>Accident Reconstruction #{{ reconstruction.incident_number or reconstruction.id }}</h1>
+          <p>{{ reconstruction.location or 'Location pending' }} / {{ reconstruction.status }}</p>
+        </div>
+        <div class="recon-action-row">
+          <a class="btn btn-outline-secondary" href="{{ url_for('reports.accident_reconstruction_export', reconstruction_id=reconstruction.id) }}">Export</a>
+          <a class="btn btn-primary" href="{{ url_for('reports.accident_reconstruction_export', reconstruction_id=reconstruction.id) }}">Generate Report</a>
+        </div>
+      </section>
+
+      <nav class="recon-tabs">
+        <a href="{{ url_for('reports.accident_reconstruction_diagram', reconstruction_id=reconstruction.id) }}">Scene Diagram</a>
+        <a href="#measurements">Measurements</a>
+        <a href="#dynamics">Vehicle Dynamics</a>
+        <a href="#view3d">3D View</a>
+        <a href="#reports">Reports</a>
+      </nav>
+
+      <section class="recon-dashboard-grid">
+        <form class="recon-card recon-form-grid" method="post">
+          <h2 class="recon-form-wide">Case Summary</h2>
+          <label>Incident Number
+            <input class="form-control" name="incident_number" value="{{ reconstruction.incident_number or '' }}">
+          </label>
+          <label>Title
+            <input class="form-control" name="title" value="{{ reconstruction.title }}">
+          </label>
+          <label>Location
+            <input class="form-control" name="location" value="{{ reconstruction.location or '' }}">
+          </label>
+          <label>Date / Time
+            <input class="form-control" type="datetime-local" name="date_time" value="{{ reconstruction.date_time.strftime('%Y-%m-%dT%H:%M') if reconstruction.date_time else '' }}">
+          </label>
+          <label>Weather
+            <input class="form-control" name="weather" value="{{ reconstruction.weather or '' }}">
+          </label>
+          <label>Road Surface
+            <input class="form-control" name="road_surface" value="{{ reconstruction.road_surface or '' }}">
+          </label>
+          <label class="recon-form-wide">Reconstruction Notes / Conclusion
+            <textarea class="form-control" name="notes" rows="5">{{ reconstruction.notes or '' }}</textarea>
+          </label>
+          <div class="recon-form-actions recon-form-wide">
+            <button class="btn btn-primary">Save</button>
+            <a class="btn btn-outline-secondary" href="{{ url_for('reports.accident_reconstruction_diagram', reconstruction_id=reconstruction.id) }}">Open Diagram Builder</a>
+          </div>
+        </form>
+
+        <aside class="recon-card">
+          <h2>Scene Summary</h2>
+          <dl class="recon-summary-list">
+            <dt>Vehicles</dt><dd>{{ vehicles|length }}</dd>
+            <dt>Objects</dt><dd>{{ objects|length }}</dd>
+            <dt>Measurements</dt><dd>{{ measurements|length }}</dd>
+            <dt>Media</dt><dd>{{ media|length }}</dd>
+            <dt>Timeline Events</dt><dd>{{ timeline|length }}</dd>
+          </dl>
+          <div class="recon-warning">Calculations are estimates and must be verified by trained personnel.</div>
+        </aside>
+      </section>
+
+      <section class="recon-card" id="measurements">
+        <div class="recon-section-head"><h2>Measurements</h2><span>Distances, angles, lanes, skid marks, and fixed-point references.</span></div>
+        <form class="recon-inline-form" method="post" action="{{ url_for('reports.accident_reconstruction_add_measurement', reconstruction_id=reconstruction.id) }}">
+          <select class="form-control" name="measurement_type"><option>distance</option><option>angle</option><option>roadway width</option><option>lane width</option><option>skid mark length</option><option>final rest position</option><option>impact point reference</option></select>
+          <input class="form-control" name="label" placeholder="Label">
+          <input class="form-control" name="value" placeholder="Value">
+          <select class="form-control" name="units"><option>ft</option><option>m</option><option>deg</option><option>mph</option></select>
+          <button class="btn btn-secondary">Add</button>
+        </form>
+        <div class="recon-chip-list">
+          {% for item in measurements %}<span>{{ item.label }}: {{ item.value }} {{ item.units }}</span>{% else %}<span>No measurements saved.</span>{% endfor %}
+        </div>
+      </section>
+
+      <section class="recon-card" id="dynamics">
+        <div class="recon-section-head"><h2>Vehicle Dynamics</h2><span>Speed, drag factor, braking efficiency, delta-v, and path notes.</span></div>
+        <form class="recon-inline-form" method="post" action="{{ url_for('reports.accident_reconstruction_add_vehicle', reconstruction_id=reconstruction.id) }}">
+          <input class="form-control" name="label" placeholder="V1">
+          <input class="form-control" name="type" placeholder="Sedan / SUV">
+          <input class="form-control" name="direction" placeholder="Eastbound">
+          <input class="form-control" name="pre_crash_speed" placeholder="Pre mph">
+          <input class="form-control" name="impact_speed" placeholder="Impact mph">
+          <input class="form-control" name="post_crash_speed" placeholder="Post mph">
+          <button class="btn btn-secondary">Add Vehicle</button>
+        </form>
+        <div class="recon-vehicle-stack">
+          {% for vehicle in vehicles %}
+          <article><strong>{{ vehicle.label or vehicle.unit or 'Vehicle' }}</strong><span>{{ vehicle.type or vehicle.make_model or 'Vehicle' }} / {{ vehicle.direction or 'direction pending' }}</span><small>Pre {{ vehicle.pre_crash_speed or 'n/a' }} / Impact {{ vehicle.impact_speed or 'n/a' }} / Post {{ vehicle.post_crash_speed or 'n/a' }} mph</small></article>
+          {% else %}<div class="recon-empty">No vehicles added.</div>{% endfor %}
+        </div>
+      </section>
+
+      <section class="recon-card">
+        <div class="recon-section-head"><h2>Photo / Evidence Integration</h2><span>Scene photos, vehicle damage, roadway/skid photos, bodycam/video references.</span></div>
+        <form class="recon-inline-form" method="post" enctype="multipart/form-data" action="{{ url_for('reports.accident_reconstruction_add_media', reconstruction_id=reconstruction.id) }}">
+          <select class="form-control" name="media_type"><option>scene photo</option><option>vehicle photo</option><option>damage photo</option><option>roadway/skid photo</option><option>bodycam/video reference</option><option>uploaded diagram</option></select>
+          <input class="form-control" type="file" name="file" required>
+          <input class="form-control" name="description" placeholder="Description">
+          <button class="btn btn-secondary">Add Media</button>
+        </form>
+        <div class="recon-media-strip">
+          {% for item in media %}<div><strong>{{ item.file_name }}</strong><span>{{ item.media_type }}</span><small>{{ item.description or '' }}</small></div>{% else %}<div>No media added.</div>{% endfor %}
+        </div>
+      </section>
+
+      <section class="recon-card">
+        <div class="recon-section-head"><h2>Timeline Builder</h2><span>Pre-crash, braking/skid, impact, post-impact movement, final rest, arrival, evidence collected.</span></div>
+        <form class="recon-inline-form" method="post" action="{{ url_for('reports.accident_reconstruction_add_timeline', reconstruction_id=reconstruction.id) }}">
+          <input class="form-control" name="event_time" placeholder="14:32:18">
+          <select class="form-control" name="event_type"><option>pre-crash event</option><option>braking/skid</option><option>impact</option><option>post-impact movement</option><option>final rest</option><option>officer arrival</option><option>evidence collected</option></select>
+          <input class="form-control" name="description" placeholder="Event description">
+          <button class="btn btn-secondary">Add Event</button>
+        </form>
+        <div class="recon-timeline-list">
+          {% for item in timeline %}<div><strong>{{ item.event_time or '--' }}</strong><span>{{ item.event_type }}</span><p>{{ item.description }}</p></div>{% else %}<div>No timeline events added.</div>{% endfor %}
+        </div>
+      </section>
+
+      <section class="recon-card" id="view3d">
+        <div class="recon-section-head"><h2>3D View</h2><span>Professional 3D visualization placeholder for future certified reconstruction integration.</span></div>
+        <div class="recon-warning">3D output is not used for final findings until validated by trained personnel.</div>
+      </section>
+    </main>
+  </div>
+</div>
+{% endblock %}

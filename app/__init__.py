@@ -263,6 +263,44 @@ def ensure_schema():
             "UPDATE cleo_report SET status = 'SUBMITTED' WHERE status = 'LEVEL_2'"
         )
 
+    if 'accident_reconstruction' in table_names:
+        accident_columns = {column['name'] for column in inspector.get_columns('accident_reconstruction')}
+        if 'diagram_data_json' not in accident_columns:
+            _safe_schema_execute("ALTER TABLE accident_reconstruction ADD COLUMN diagram_data_json TEXT")
+
+    if 'reconstruction_vehicle' in table_names:
+        recon_vehicle_columns = {column['name'] for column in inspector.get_columns('reconstruction_vehicle')}
+        vehicle_additions = {
+            'reconstruction_id': 'INTEGER',
+            'label': 'VARCHAR(40)',
+            'type': 'VARCHAR(80)',
+            'pre_crash_speed': 'FLOAT',
+            'impact_speed': 'FLOAT',
+            'post_crash_speed': 'FLOAT',
+            'x_position': 'FLOAT',
+            'y_position': 'FLOAT',
+            'rotation': 'FLOAT',
+            'driver': 'VARCHAR(120)',
+            'damage_notes': 'TEXT',
+        }
+        for column_name, column_type in vehicle_additions.items():
+            if column_name not in recon_vehicle_columns:
+                _safe_schema_execute(f"ALTER TABLE reconstruction_vehicle ADD COLUMN {column_name} {column_type}")
+
+    if 'reconstruction_measurement' in table_names:
+        recon_measurement_columns = {column['name'] for column in inspector.get_columns('reconstruction_measurement')}
+        measurement_additions = {
+            'reconstruction_id': 'INTEGER',
+            'measurement_type': 'VARCHAR(60)',
+            'start_x': 'FLOAT',
+            'start_y': 'FLOAT',
+            'end_x': 'FLOAT',
+            'end_y': 'FLOAT',
+        }
+        for column_name, column_type in measurement_additions.items():
+            if column_name not in recon_measurement_columns:
+                _safe_schema_execute(f"ALTER TABLE reconstruction_measurement ADD COLUMN {column_name} {column_type}")
+
 
 def create_app():
     app = Flask(__name__)

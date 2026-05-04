@@ -2178,6 +2178,461 @@ body.mobile-foundation {
   height: 100%;
 }
 
+/* Professional Accident Reconstruction module */
+.reconstruction-command-shell {
+  --recon-navy: #071827;
+  --recon-navy-2: #0b2238;
+  --recon-border: #d8e0ea;
+  --recon-muted: #667085;
+  --recon-bg: #eef3f8;
+  background: var(--recon-bg);
+  color: #0f172a;
+  min-height: 100vh;
+}
+
+.recon-layout {
+  display: grid;
+  grid-template-columns: 228px minmax(0, 1fr);
+  min-height: calc(100vh - 72px);
+}
+
+.reports-command-sidebar {
+  background: linear-gradient(180deg, var(--recon-navy), var(--recon-navy-2));
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  color: #dbeafe;
+  padding: 18px 14px;
+  position: sticky;
+  top: 0;
+  align-self: start;
+  min-height: calc(100vh - 72px);
+}
+
+.reports-sidebar-title {
+  color: #7dd3fc;
+  font-size: 0.73rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  margin: 8px 8px 14px;
+  text-transform: uppercase;
+}
+
+.reports-command-sidebar a {
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: #e5eef8;
+  display: flex;
+  font-weight: 700;
+  gap: 8px;
+  min-height: 42px;
+  padding: 10px 12px;
+  text-decoration: none;
+}
+
+.reports-command-sidebar a:hover,
+.reports-command-sidebar a.is-active {
+  background: rgba(59, 130, 246, 0.18);
+  border-color: rgba(147, 197, 253, 0.28);
+  color: #ffffff;
+}
+
+.recon-workspace {
+  max-width: 1480px;
+  padding: 22px 24px 34px;
+  width: 100%;
+}
+
+.recon-page-head {
+  align-items: flex-start;
+  display: flex;
+  gap: 18px;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.recon-breadcrumb {
+  color: #475569;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  margin-bottom: 8px;
+}
+
+.recon-page-head h1 {
+  color: #0f172a;
+  font-size: clamp(1.35rem, 2vw, 2rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  margin: 0 0 6px;
+}
+
+.recon-page-head p {
+  color: var(--recon-muted);
+  margin: 0;
+  max-width: 760px;
+}
+
+.recon-action-row,
+.recon-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.recon-tabs {
+  background: #ffffff;
+  border: 1px solid var(--recon-border);
+  border-radius: 10px;
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+  padding: 5px;
+}
+
+.recon-tabs a {
+  border-radius: 8px;
+  color: #344054;
+  flex: 0 0 auto;
+  font-weight: 800;
+  padding: 12px 16px;
+  text-decoration: none;
+}
+
+.recon-tabs a:hover,
+.recon-tabs a.is-active {
+  background: #e8f1ff;
+  color: #0b55b7;
+}
+
+.recon-card {
+  background: #ffffff;
+  border: 1px solid var(--recon-border);
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.07);
+  margin-bottom: 16px;
+  padding: 18px;
+}
+
+.recon-card h2 {
+  color: #0f172a;
+  font-size: 1rem;
+  font-weight: 900;
+  margin: 0 0 12px;
+}
+
+.recon-dashboard-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1fr) 310px;
+}
+
+.recon-form-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.recon-form-grid label {
+  color: #334155;
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.recon-form-wide {
+  grid-column: 1 / -1;
+}
+
+.recon-form-grid .form-control,
+.recon-inline-form .form-control {
+  border-color: #cbd5e1;
+  border-radius: 8px;
+  min-height: 42px;
+}
+
+.recon-section-head,
+.recon-table-head {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.recon-section-head span,
+.recon-table-head span {
+  color: var(--recon-muted);
+  font-size: 0.88rem;
+}
+
+.recon-inline-form {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) auto;
+}
+
+.recon-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.recon-chip-list span {
+  background: #eef4ff;
+  border: 1px solid #c7d7fe;
+  border-radius: 999px;
+  color: #173b7a;
+  font-size: 0.82rem;
+  font-weight: 800;
+  padding: 8px 12px;
+}
+
+.recon-summary-list {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 1fr auto;
+  margin: 0;
+}
+
+.recon-summary-list dt {
+  color: #475569;
+  font-weight: 800;
+}
+
+.recon-summary-list dd {
+  font-weight: 900;
+  margin: 0;
+}
+
+.recon-summary-list.compact {
+  font-size: 0.84rem;
+}
+
+.recon-warning {
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 10px;
+  color: #9a3412;
+  font-weight: 800;
+  margin-top: 14px;
+  padding: 12px;
+}
+
+.recon-vehicle-stack,
+.recon-list,
+.recon-media-strip,
+.recon-timeline-list {
+  display: grid;
+  gap: 10px;
+}
+
+.recon-vehicle-stack article,
+.recon-media-strip > div,
+.recon-timeline-list > div,
+.recon-list-row {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+}
+
+.recon-list-row {
+  align-items: center;
+  color: inherit;
+  grid-template-columns: minmax(0, 1fr) auto;
+  text-decoration: none;
+}
+
+.recon-list-row:hover {
+  border-color: #93c5fd;
+  box-shadow: 0 10px 24px rgba(20, 87, 168, 0.12);
+}
+
+.recon-list-row span,
+.recon-vehicle-stack span,
+.recon-media-strip span,
+.recon-timeline-list span,
+.recon-list-row small,
+.recon-vehicle-stack small,
+.recon-media-strip small {
+  color: var(--recon-muted);
+}
+
+.recon-empty {
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 10px;
+  color: #64748b;
+  font-weight: 800;
+  padding: 16px;
+}
+
+.recon-builder {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 116px minmax(0, 1fr) 300px;
+}
+
+.recon-tools-panel,
+.recon-canvas-panel,
+.recon-inspector-panel {
+  background: #ffffff;
+  border: 1px solid var(--recon-border);
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.06);
+}
+
+.recon-tools-panel {
+  align-self: start;
+  display: grid;
+  gap: 5px;
+  padding: 12px;
+  position: sticky;
+  top: 14px;
+}
+
+.recon-tools-panel strong {
+  color: #0f172a;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+.recon-tools-panel button {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: #1e293b;
+  cursor: pointer;
+  font-weight: 800;
+  min-height: 36px;
+  text-align: left;
+}
+
+.recon-tools-panel button:hover,
+.recon-tools-panel button.is-active {
+  background: #e8f1ff;
+  border-color: #bfdbfe;
+  color: #0b55b7;
+}
+
+.recon-canvas-toolbar {
+  align-items: center;
+  border-bottom: 1px solid var(--recon-border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px 12px;
+}
+
+.recon-canvas-toolbar button,
+.recon-canvas-toolbar select,
+.recon-canvas-toolbar label {
+  background: #f8fafc;
+  border: 1px solid #d8e0ea;
+  border-radius: 8px;
+  color: #1e293b;
+  font-size: 0.86rem;
+  font-weight: 800;
+  min-height: 36px;
+  padding: 7px 10px;
+}
+
+.accident-recon-canvas {
+  background: #ffffff;
+  display: block;
+  height: auto;
+  max-height: 68vh;
+  width: 100%;
+}
+
+.recon-inspector-panel {
+  align-self: start;
+  padding: 12px;
+}
+
+.recon-inspector-tabs {
+  border-bottom: 1px solid var(--recon-border);
+  display: flex;
+  gap: 12px;
+  margin: -2px -2px 12px;
+  overflow-x: auto;
+  padding: 0 0 8px;
+}
+
+.recon-inspector-tabs span {
+  color: #334155;
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.recon-inspector-panel h3 {
+  color: #0f172a;
+  font-size: 0.86rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  margin: 14px 0 8px;
+  text-transform: uppercase;
+}
+
+body.dark .reconstruction-command-shell,
+.dark .reconstruction-command-shell {
+  --recon-bg: #0b1220;
+  --recon-border: #243349;
+  color: #e5edf7;
+}
+
+body.dark .recon-card,
+body.dark .recon-tabs,
+body.dark .recon-tools-panel,
+body.dark .recon-canvas-panel,
+body.dark .recon-inspector-panel,
+.dark .recon-card,
+.dark .recon-tabs,
+.dark .recon-tools-panel,
+.dark .recon-canvas-panel,
+.dark .recon-inspector-panel {
+  background: #111c2d;
+  border-color: #243349;
+  color: #e5edf7;
+}
+
+body.dark .recon-page-head h1,
+body.dark .recon-card h2,
+body.dark .recon-inspector-panel h3,
+body.dark .recon-tools-panel strong,
+.dark .recon-page-head h1,
+.dark .recon-card h2,
+.dark .recon-inspector-panel h3,
+.dark .recon-tools-panel strong {
+  color: #f8fafc;
+}
+
+body.dark .recon-list-row,
+body.dark .recon-vehicle-stack article,
+body.dark .recon-media-strip > div,
+body.dark .recon-timeline-list > div,
+.dark .recon-list-row,
+.dark .recon-vehicle-stack article,
+.dark .recon-media-strip > div,
+.dark .recon-timeline-list > div {
+  background: #0f172a;
+  border-color: #243349;
+}
+
+body.dark .recon-breadcrumb,
+body.dark .recon-page-head p,
+body.dark .recon-section-head span,
+.dark .recon-breadcrumb,
+.dark .recon-page-head p,
+.dark .recon-section-head span {
+  color: #94a3b8;
+}
+
 @media (max-width: 900px) {
   .recon-body {
     grid-template-columns: 1fr;
@@ -2185,6 +2640,102 @@ body.mobile-foundation {
   .recon-canvas {
     height: 65vh;
     min-height: 440px;
+  }
+}
+
+@media (max-width: 1100px) {
+  .recon-layout,
+  .recon-dashboard-grid,
+  .recon-builder {
+    grid-template-columns: 1fr;
+  }
+
+  .reports-command-sidebar {
+    display: flex;
+    gap: 8px;
+    min-height: 0;
+    overflow-x: auto;
+    padding: 10px;
+    position: static;
+  }
+
+  .reports-sidebar-title {
+    display: none;
+  }
+
+  .reports-command-sidebar a {
+    flex: 0 0 auto;
+    min-height: 44px;
+  }
+
+  .recon-tools-panel {
+    display: flex;
+    overflow-x: auto;
+    position: static;
+  }
+
+  .recon-tools-panel strong {
+    align-self: center;
+    flex: 0 0 auto;
+  }
+
+  .recon-tools-panel button {
+    flex: 0 0 auto;
+    min-width: 92px;
+    text-align: center;
+  }
+}
+
+@media (max-width: 720px) {
+  .recon-workspace {
+    padding: 14px 10px 92px;
+  }
+
+  .recon-page-head {
+    display: grid;
+  }
+
+  .recon-action-row,
+  .recon-form-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  .recon-action-row .btn,
+  .recon-form-actions .btn {
+    min-height: 48px;
+    width: 100%;
+  }
+
+  .recon-form-grid,
+  .recon-inline-form,
+  .recon-list-row {
+    grid-template-columns: 1fr;
+  }
+
+  .recon-tabs {
+    margin-left: -2px;
+    margin-right: -2px;
+  }
+
+  .recon-tabs a {
+    min-height: 46px;
+    padding: 13px 14px;
+  }
+
+  .recon-card {
+    border-radius: 10px;
+    padding: 14px;
+  }
+
+  .accident-recon-canvas {
+    min-height: 420px;
+  }
+
+  .recon-canvas-toolbar {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
