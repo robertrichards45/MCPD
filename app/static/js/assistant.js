@@ -4,25 +4,34 @@
   // Don't inject on mobile-foundation pages (field incident shell)
   if (document.body.classList.contains('mobile-foundation')) return;
 
-  var CSRF_TOKEN = '';
   var history = [];
   var isOpen = false;
   var isListening = false;
   var isThinking = false;
+  var voiceMode = false;   // true = hands-free loop active
   var audioQueue = null;
+  var recognition = null;
+  var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
   // ── Build DOM ──────────────────────────────────────────────────────────────
 
   function buildUI() {
-    var meta = document.querySelector('meta[name="csrf-token"]');
-    CSRF_TOKEN = meta ? (meta.getAttribute('content') || '') : '';
-
-    // Floating button
+    // Floating action button
     var btn = document.createElement('button');
     btn.id = 'ai-fab';
     btn.className = 'ai-fab';
     btn.setAttribute('aria-label', 'Open MCPD AI Assistant');
-    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
+    btn.innerHTML = [
+      '<svg class="ai-fab-icon ai-fab-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">',
+      '  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+      '</svg>',
+      '<svg class="ai-fab-icon ai-fab-mic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">',
+      '  <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>',
+      '  <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>',
+      '  <line x1="12" y1="19" x2="12" y2="23"/>',
+      '  <line x1="8" y1="23" x2="16" y2="23"/>',
+      '</svg>',
+    ].join('');
     document.body.appendChild(btn);
 
     // Panel
@@ -34,8 +43,9 @@
     panel.innerHTML = [
       '<div class="ai-panel-header">',
       '  <div class="ai-panel-title">',
-      '    <span class="ai-panel-dot"></span>',
+      '    <span class="ai-panel-dot" id="ai-status-dot"></span>',
       '    <strong>MCPD Assistant</strong>',
+      '    <span id="ai-status-label" class="ai-status-label"></span>',
       '  </div>',
       '  <div class="ai-panel-actions">',
       '    <button id="ai-clear-btn" class="ai-icon-btn" title="Clear conversation" aria-label="Clear conversation">',
@@ -48,7 +58,7 @@
       '</div>',
       '<div id="ai-messages" class="ai-messages" aria-live="polite"></div>',
       '<div class="ai-input-row">',
-      '  <button id="ai-mic-btn" class="ai-mic-btn" title="Hold to speak" aria-label="Voice input">',
+      '  <button id="ai-mic-btn" class="ai-mic-btn" title="Click to speak" aria-label="Voice input">',
       '    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>',
       '  </button>',
       '  <input id="ai-text-input" class="ai-text-input" type="text" placeholder="Ask anything..." autocomplete="off" />',
@@ -60,51 +70,98 @@
     document.body.appendChild(panel);
 
     // Wire events
-    btn.addEventListener('click', togglePanel);
+    btn.addEventListener('click', onFabClick);
     document.getElementById('ai-close-btn').addEventListener('click', closePanel);
     document.getElementById('ai-clear-btn').addEventListener('click', clearHistory);
     document.getElementById('ai-send-btn').addEventListener('click', sendText);
     document.getElementById('ai-text-input').addEventListener('keydown', function (e) {
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendText(); }
     });
+    // Typing disables voice loop so the user can switch to keyboard
+    document.getElementById('ai-text-input').addEventListener('input', function () {
+      if (isListening) stopListening();
+      voiceMode = false;
+      updateUI();
+    });
+
     setupMic();
 
-    // Show welcome after slight delay
     setTimeout(function () {
-      appendMessage('assistant', 'Hello. I\'m the MCPD AI Assistant. Ask me about law, policy, report writing, or any field question.');
+      appendMessage('assistant', 'Hello. I\'m the MCPD AI Assistant. Tap the button to speak, or type your question below.');
     }, 300);
+  }
+
+  // ── FAB click: open + start voice ─────────────────────────────────────────
+
+  function onFabClick() {
+    if (!isOpen) {
+      openPanel();
+      if (SpeechRecognition && !isThinking) {
+        voiceMode = true;
+        startListening();
+      }
+    } else {
+      // Second click: stop listening / close
+      if (isListening) {
+        voiceMode = false;
+        stopListening();
+      } else {
+        closePanel();
+      }
+    }
   }
 
   // ── Panel open/close ───────────────────────────────────────────────────────
 
-  function togglePanel() {
-    isOpen ? closePanel() : openPanel();
-  }
-
   function openPanel() {
     isOpen = true;
-    var panel = document.getElementById('ai-panel');
-    var btn = document.getElementById('ai-fab');
-    panel.classList.remove('ai-panel-hidden');
-    panel.classList.add('ai-panel-open');
-    btn.classList.add('ai-fab-active');
-    document.getElementById('ai-text-input').focus();
+    document.getElementById('ai-panel').classList.remove('ai-panel-hidden');
+    document.getElementById('ai-panel').classList.add('ai-panel-open');
+    document.getElementById('ai-fab').classList.add('ai-fab-active');
   }
 
   function closePanel() {
+    voiceMode = false;
+    stopListening();
+    stopAudio();
     isOpen = false;
-    var panel = document.getElementById('ai-panel');
-    var btn = document.getElementById('ai-fab');
-    panel.classList.remove('ai-panel-open');
-    panel.classList.add('ai-panel-hidden');
-    btn.classList.remove('ai-fab-active');
+    document.getElementById('ai-panel').classList.remove('ai-panel-open');
+    document.getElementById('ai-panel').classList.add('ai-panel-hidden');
+    document.getElementById('ai-fab').classList.remove('ai-fab-active', 'ai-fab-listening');
+    updateUI();
   }
 
   function clearHistory() {
     history = [];
-    var msgs = document.getElementById('ai-messages');
-    msgs.innerHTML = '';
+    document.getElementById('ai-messages').innerHTML = '';
     appendMessage('assistant', 'Conversation cleared. How can I help you?');
+    if (voiceMode && !isThinking) startListening();
+  }
+
+  // ── Status UI ──────────────────────────────────────────────────────────────
+
+  function updateUI() {
+    var fab = document.getElementById('ai-fab');
+    var dot = document.getElementById('ai-status-dot');
+    var label = document.getElementById('ai-status-label');
+    var micBtn = document.getElementById('ai-mic-btn');
+
+    if (isListening) {
+      fab.classList.add('ai-fab-listening');
+      if (dot) dot.classList.add('ai-dot-listening');
+      if (label) label.textContent = 'Listening…';
+      if (micBtn) micBtn.classList.add('ai-mic-active');
+    } else if (isThinking) {
+      fab.classList.remove('ai-fab-listening');
+      if (dot) dot.classList.remove('ai-dot-listening');
+      if (label) label.textContent = 'Thinking…';
+      if (micBtn) micBtn.classList.remove('ai-mic-active');
+    } else {
+      fab.classList.remove('ai-fab-listening');
+      if (dot) dot.classList.remove('ai-dot-listening');
+      if (label) label.textContent = voiceMode ? 'Voice on' : '';
+      if (micBtn) micBtn.classList.remove('ai-mic-active');
+    }
   }
 
   // ── Messages ───────────────────────────────────────────────────────────────
@@ -141,21 +198,22 @@
     var text = (input.value || '').trim();
     if (!text || isThinking) return;
     input.value = '';
+    voiceMode = false;  // switched to keyboard mode
     submitMessage(text);
   }
 
   function submitMessage(text) {
     if (!isOpen) openPanel();
+    stopListening();
     appendMessage('user', text);
     isThinking = true;
+    updateUI();
     showTyping();
-
-    var payload = { message: text, history: history.slice() };
 
     fetch('/api/assistant/ask', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ message: text, history: history.slice() }),
     })
       .then(function (r) { return r.json(); })
       .then(function (data) {
@@ -166,24 +224,23 @@
         history.push({ role: 'user', content: text });
         history.push({ role: 'assistant', content: reply });
         if (history.length > 20) history = history.slice(history.length - 20);
+        updateUI();
         speakText(reply);
       })
       .catch(function () {
         hideTyping();
         isThinking = false;
+        updateUI();
         appendMessage('assistant', 'Connection error. Please try again.');
+        if (voiceMode) scheduleAutoListen();
       });
   }
 
   // ── TTS ────────────────────────────────────────────────────────────────────
 
   function speakText(text) {
-    if (!text) return;
-    // Stop any prior audio
-    if (audioQueue) {
-      try { audioQueue.pause(); } catch (e) {}
-      audioQueue = null;
-    }
+    if (!text) { if (voiceMode) scheduleAutoListen(); return; }
+    stopAudio();
 
     fetch('/api/assistant/speak', {
       method: 'POST',
@@ -198,85 +255,119 @@
         var url = URL.createObjectURL(blob);
         var audio = new Audio(url);
         audioQueue = audio;
-        audio.onended = function () { URL.revokeObjectURL(url); audioQueue = null; };
-        audio.play().catch(function () {});
+        audio.onended = function () {
+          URL.revokeObjectURL(url);
+          audioQueue = null;
+          if (voiceMode) scheduleAutoListen();
+        };
+        audio.onerror = function () {
+          audioQueue = null;
+          if (voiceMode) scheduleAutoListen();
+        };
+        audio.play().catch(function () {
+          if (voiceMode) scheduleAutoListen();
+        });
       })
       .catch(function () {
-        // Fallback to browser speechSynthesis
-        browserSpeak(text);
+        browserSpeak(text, function () {
+          if (voiceMode) scheduleAutoListen();
+        });
       });
   }
 
-  function browserSpeak(text) {
-    if (!window.speechSynthesis) return;
+  function stopAudio() {
+    if (audioQueue) {
+      try { audioQueue.pause(); } catch (e) {}
+      audioQueue = null;
+    }
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+  }
+
+  function browserSpeak(text, onDone) {
+    if (!window.speechSynthesis) { if (onDone) onDone(); return; }
     window.speechSynthesis.cancel();
     var utt = new SpeechSynthesisUtterance(text);
     utt.rate = 1.0;
     utt.pitch = 1.0;
-
-    // Prefer a natural-sounding English voice if available
     var voices = window.speechSynthesis.getVoices();
     var preferred = voices.find(function (v) {
       return /en[-_]US/i.test(v.lang) && /natural|samantha|alex|karen|daniel|zira/i.test(v.name);
-    }) || voices.find(function (v) {
-      return /en/i.test(v.lang);
-    });
+    }) || voices.find(function (v) { return /en/i.test(v.lang); });
     if (preferred) utt.voice = preferred;
+    utt.onend = function () { if (onDone) onDone(); };
+    utt.onerror = function () { if (onDone) onDone(); };
     window.speechSynthesis.speak(utt);
   }
 
-  // ── Voice input ────────────────────────────────────────────────────────────
+  // ── Auto-listen after response ─────────────────────────────────────────────
+
+  function scheduleAutoListen() {
+    if (!voiceMode || !isOpen || isThinking) return;
+    setTimeout(function () {
+      if (voiceMode && isOpen && !isThinking && !isListening) startListening();
+    }, 700);
+  }
+
+  // ── Voice recognition ──────────────────────────────────────────────────────
 
   function setupMic() {
     var micBtn = document.getElementById('ai-mic-btn');
-    var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
       micBtn.style.display = 'none';
       return;
     }
 
-    var recognition = new SpeechRecognition();
+    recognition = new SpeechRecognition();
     recognition.lang = 'en-US';
+    recognition.continuous = false;
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
 
     recognition.onresult = function (event) {
-      var transcript = event.results[0][0].transcript;
+      var transcript = (event.results[0][0].transcript || '').trim();
       var input = document.getElementById('ai-text-input');
       input.value = transcript;
-      stopListening();
-      submitMessage(transcript);
+      isListening = false;
+      updateUI();
+      if (transcript) submitMessage(transcript);
     };
 
-    recognition.onerror = function () { stopListening(); };
-    recognition.onend = function () { if (isListening) stopListening(); };
+    recognition.onerror = function (e) {
+      isListening = false;
+      updateUI();
+      // 'no-speech' is normal — re-listen if voice mode is still on
+      if (voiceMode && e.error === 'no-speech') scheduleAutoListen();
+    };
 
-    micBtn.addEventListener('mousedown', function (e) { e.preventDefault(); startListening(recognition); });
-    micBtn.addEventListener('touchstart', function (e) { e.preventDefault(); startListening(recognition); }, { passive: false });
-    micBtn.addEventListener('mouseup', function () { stopRecognition(recognition); });
-    micBtn.addEventListener('touchend', function () { stopRecognition(recognition); });
-    micBtn.addEventListener('click', function (e) {
-      // Toggle on desktop click (in case mousedown/mouseup already fired submit)
-      if (!isListening) startListening(recognition);
+    recognition.onend = function () {
+      isListening = false;
+      updateUI();
+    };
+
+    // Mic button = click toggle
+    micBtn.addEventListener('click', function () {
+      if (isListening) {
+        voiceMode = false;
+        stopListening();
+      } else {
+        voiceMode = true;
+        startListening();
+      }
     });
   }
 
-  function startListening(recognition) {
-    if (isListening) return;
+  function startListening() {
+    if (isListening || !recognition || isThinking) return;
     isListening = true;
-    document.getElementById('ai-mic-btn').classList.add('ai-mic-active');
-    try { recognition.start(); } catch (e) {}
+    updateUI();
+    try { recognition.start(); } catch (e) { isListening = false; updateUI(); }
   }
 
   function stopListening() {
+    if (!isListening || !recognition) return;
     isListening = false;
-    var btn = document.getElementById('ai-mic-btn');
-    if (btn) btn.classList.remove('ai-mic-active');
-  }
-
-  function stopRecognition(recognition) {
-    if (!isListening) return;
+    updateUI();
     try { recognition.stop(); } catch (e) {}
   }
 

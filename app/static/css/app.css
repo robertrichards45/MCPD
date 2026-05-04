@@ -10489,7 +10489,23 @@ body.mobile-foundation .spr-training-warn {
 .ai-fab:hover { background: #243660; transform: scale(1.07); box-shadow: 0 6px 24px rgba(0,0,0,0.4); }
 .ai-fab:focus-visible { outline: 2px solid #6ea6f5; outline-offset: 2px; }
 .ai-fab-active { background: #243660; }
-.ai-fab svg { width: 26px; height: 26px; }
+
+/* FAB icon switching: show chat icon by default, mic icon when listening */
+.ai-fab-icon { width: 26px; height: 26px; position: absolute; transition: opacity 0.18s, transform 0.18s; }
+.ai-fab-chat { opacity: 1; transform: scale(1); }
+.ai-fab-mic  { opacity: 0; transform: scale(0.7); }
+.ai-fab-listening .ai-fab-chat { opacity: 0; transform: scale(0.7); }
+.ai-fab-listening .ai-fab-mic  { opacity: 1; transform: scale(1); }
+
+/* Pulsing ring when listening */
+.ai-fab-listening {
+  background: #ef4444 !important;
+  animation: ai-fab-ring 1.2s infinite;
+}
+@keyframes ai-fab-ring {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.55), 0 4px 18px rgba(0,0,0,0.35); }
+  50%       { box-shadow: 0 0 0 12px rgba(239,68,68,0), 0 4px 18px rgba(0,0,0,0.35); }
+}
 
 /* Panel */
 .ai-panel {
@@ -10544,6 +10560,22 @@ body.mobile-foundation .spr-training-warn {
   border-radius: 50%;
   background: #4ade80;
   flex-shrink: 0;
+  transition: background 0.2s;
+}
+.ai-dot-listening {
+  background: #ef4444 !important;
+  animation: ai-dot-blink 0.9s infinite;
+}
+@keyframes ai-dot-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.35; }
+}
+.ai-status-label {
+  font-size: 12px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.65);
+  letter-spacing: 0.02em;
+  min-width: 0;
 }
 .ai-panel-actions {
   display: flex;
