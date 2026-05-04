@@ -479,6 +479,7 @@ class AccidentReconstruction(db.Model):
     title = db.Column(db.String(200), nullable=False)
     location = db.Column(db.String(255), nullable=True)
     date_time = db.Column(db.DateTime, nullable=True)
+    report_id = db.Column(db.Integer, db.ForeignKey('report.id'), nullable=True, index=True)
     officer_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
     status = db.Column(db.String(30), default='DRAFT', nullable=False, index=True)
     weather = db.Column(db.String(120), nullable=True)
@@ -489,6 +490,7 @@ class AccidentReconstruction(db.Model):
     updated_at = db.Column(db.DateTime, default=utcnow_naive, onupdate=utcnow_naive)
 
     officer = db.relationship('User', foreign_keys=[officer_id], backref='accident_reconstructions')
+    report = db.relationship('Report', foreign_keys=[report_id], backref='accident_reconstructions')
 
 
 class ReconstructionCase(db.Model):

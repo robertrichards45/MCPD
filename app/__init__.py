@@ -265,6 +265,8 @@ def ensure_schema():
 
     if 'accident_reconstruction' in table_names:
         accident_columns = {column['name'] for column in inspector.get_columns('accident_reconstruction')}
+        if 'report_id' not in accident_columns:
+            _safe_schema_execute("ALTER TABLE accident_reconstruction ADD COLUMN report_id INTEGER")
         if 'diagram_data_json' not in accident_columns:
             _safe_schema_execute("ALTER TABLE accident_reconstruction ADD COLUMN diagram_data_json TEXT")
 

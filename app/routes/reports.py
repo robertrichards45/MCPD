@@ -263,6 +263,7 @@ def accident_reconstruction_new():
             title=title,
             location=(request.form.get('location') or '').strip() or None,
             date_time=_parse_datetime_local(request.form.get('date_time')),
+            report_id=request.form.get('report_id', type=int),
             weather=(request.form.get('weather') or '').strip() or None,
             road_surface=(request.form.get('road_surface') or '').strip() or None,
             notes=(request.form.get('notes') or '').strip() or None,
@@ -273,6 +274,33 @@ def accident_reconstruction_new():
         db.session.commit()
         return redirect(url_for('reports.accident_reconstruction_detail', reconstruction_id=row.id))
     return render_template('accident_reconstruction_new.html', user=current_user)
+
+
+@bp.route('/reports/<int:report_id>/scene-diagram')
+@login_required
+def report_scene_diagram(report_id):
+    report = _get_or_404(Report, report_id)
+    owner = _get_or_404(User, report.owner_id)
+    if not can_view_user(current_user, owner):
+        abort(403)
+    row = (
+        AccidentReconstruction.query
+        .filter_by(report_id=report.id)
+        .order_by(AccidentReconstruction.updated_at.desc())
+        .first()
+    )
+    if row is None:
+        row = AccidentReconstruction(
+            report_id=report.id,
+            incident_number=f'RPT-{report.id}',
+            title=report.title or f'Report #{report.id} accident reconstruction',
+            officer_id=current_user.id,
+            status='DRAFT',
+        )
+        db.session.add(row)
+        db.session.add(AuditLog(actor_id=current_user.id, action='accident_reconstruction_from_report', details=str(report.id)))
+        db.session.commit()
+    return redirect(url_for('reports.accident_reconstruction_diagram', reconstruction_id=row.id))
 
 
 @bp.route('/reports/accident-reconstruction/<int:reconstruction_id>', methods=['GET', 'POST'])
@@ -518,8 +546,20 @@ def report_detail(report_id):
     persons = ReportPerson.query.filter_by(report_id=r.id).all()
     coauthors = ReportCoAuthor.query.filter_by(report_id=r.id).all()
     grades = ReportGrade.query.filter_by(report_id=r.id).order_by(ReportGrade.graded_at.desc()).all()
+    accident_reconstructions = AccidentReconstruction.query.filter_by(report_id=r.id).order_by(AccidentReconstruction.updated_at.desc()).all()
     users = {u.id: u for u in User.query.all()}
-    return render_template('reports_detail.html', report=r, report_owner=owner, attachments=attachments, persons=persons, coauthors=coauthors, grades=grades, users=users, user=current_user)
+    return render_template(
+        'reports_detail.html',
+        report=r,
+        report_owner=owner,
+        attachments=attachments,
+        persons=persons,
+        coauthors=coauthors,
+        grades=grades,
+        accident_reconstructions=accident_reconstructions,
+        users=users,
+        user=current_user,
+    )
 
 
 @bp.route('/reports/<int:report_id>/upload', methods=['POST'])
