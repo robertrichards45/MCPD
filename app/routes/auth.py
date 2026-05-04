@@ -291,13 +291,20 @@ def _apply_personnel_edit(target):
     last_name = request.form.get('last_name', '').strip()
     if first_name or last_name:
         _sync_user_name_fields(target, first_name, last_name)
-    target.display_name_override = request.form.get('display_name', '').strip() or None
-    target.email = request.form.get('email', '').strip().lower() or None
-    target.phone_number = request.form.get('phone_number', '').strip() or None
-    target.address = request.form.get('address', '').strip() or None
-    target.officer_number = _normalize_officer_number(request.form.get('officer_number', '')) or None
-    target.badge_employee_id = request.form.get('badge_employee_id', '').strip() or None
-    target.section_unit = request.form.get('section_unit', '').strip() or None
+    if 'display_name' in request.form:
+        target.display_name_override = request.form.get('display_name', '').strip() or None
+    if 'email' in request.form:
+        target.email = request.form.get('email', '').strip().lower() or None
+    if 'phone_number' in request.form:
+        target.phone_number = request.form.get('phone_number', '').strip() or None
+    if 'address' in request.form:
+        target.address = request.form.get('address', '').strip() or None
+    if 'officer_number' in request.form:
+        target.officer_number = _normalize_officer_number(request.form.get('officer_number', '')) or None
+    if 'badge_employee_id' in request.form:
+        target.badge_employee_id = request.form.get('badge_employee_id', '').strip() or None
+    if 'section_unit' in request.form:
+        target.section_unit = request.form.get('section_unit', '').strip() or None
     target.role = role
     target.supervisor_id = supervisor.id if supervisor else None
     target.can_grade_cleoc_reports = request.form.get('can_grade_cleoc_reports') == '1'
@@ -844,6 +851,7 @@ def manage_users():
     context_kwargs = lambda **extra: {
         'users': _visible_users_query().order_by(User.first_name, User.last_name, User.username).all(),
         'pending_accounts': _pending_accounts_query().order_by(User.created_at).all(),
+        'editable_user_ids': {u.id for u in _visible_users_query().all() if can_manage_user(current_user, u)},
         'user': current_user,
         'role_options': assignable_roles(current_user),
         'supervisors': _available_supervisors(),
