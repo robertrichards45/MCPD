@@ -248,19 +248,26 @@ def ask_openai_with_system(prompt, system_prompt, api_key, history=None):
     return 'AI returned no answer.'
 
 
-def openai_tts(text, api_key, voice='nova'):
-    """Call OpenAI TTS and return raw audio bytes (MP3), or None on failure."""
+_ALLOWED_VOICES = {'alloy', 'ash', 'coral', 'echo', 'fable', 'nova', 'onyx', 'shimmer', 'verse'}
+
+
+def openai_tts(text, api_key, voice='coral'):
+    """Call OpenAI TTS (tts-1-hd for higher quality) and return raw audio bytes (MP3), or None on failure."""
     api_key = (api_key or os.environ.get('OPENAI_API_KEY') or '').strip()
     text = (text or '').strip()
     if not text or not api_key:
         return None
+
+    # Sanitise voice — fall back to coral if caller passes an unknown value
+    if voice not in _ALLOWED_VOICES:
+        voice = 'coral'
 
     headers = {
         'Authorization': f'Bearer {api_key}',
         'Content-Type': 'application/json',
     }
     payload = {
-        'model': 'tts-1',
+        'model': 'tts-1-hd',   # higher-quality model — noticeably more natural
         'input': text[:4096],
         'voice': voice,
     }

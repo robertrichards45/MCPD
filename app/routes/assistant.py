@@ -4,7 +4,7 @@ import os
 from flask import Blueprint, Response, g, jsonify, request, session
 from flask_login import login_required
 
-from ..services.ai_client import ask_openai_with_system, openai_tts
+from ..services.ai_client import _ALLOWED_VOICES, ask_openai_with_system, openai_tts
 
 bp = Blueprint('assistant', __name__)
 
@@ -53,13 +53,22 @@ def assistant_speak():
 
     body = request.get_json(silent=True) or {}
     text = (body.get('text') or '').strip()
+    voice = (body.get('voice') or 'coral').strip().lower()
+    if voice not in _ALLOWED_VOICES:
+        voice = 'coral'
 
     if not text:
         return jsonify({'ok': False, 'error': 'No text provided.'}), 400
 
     api_key = os.environ.get('OPENAI_API_KEY', '')
-    audio = openai_tts(text, api_key, voice='nova')
+    audio = openai_tts(text, api_key, voice=voice)
     if audio:
         return Response(audio, mimetype='audio/mpeg')
 
     return jsonify({'ok': False, 'error': 'TTS unavailable.'}), 503
+
+
+@bp.get('/api/assistant/voices')
+@login_required
+def assistant_voices():
+    return jsonify({'voices': sorted(_ALLOWED_VOICES)})
