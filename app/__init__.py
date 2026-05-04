@@ -9,6 +9,7 @@ import json
 import secrets
 import weakref
 import warnings
+from urllib.parse import urlparse
 from sqlalchemy import inspect, text
 from sqlalchemy.exc import OperationalError
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -70,8 +71,15 @@ def _enforce_persistent_database_config(app):
         )
         if os.environ.get(key)
     ]
+    parsed_database_uri = urlparse(str(database_uri or ''))
+    database_summary = f"active database scheme={parsed_database_uri.scheme or 'none'}"
+    if parsed_database_uri.hostname:
+        database_summary += f", host={parsed_database_uri.hostname}"
+    if parsed_database_uri.path:
+        database_summary += f", path={parsed_database_uri.path}"
     details = (
         f" Detected database environment variables: {', '.join(configured_db_vars) or 'none'}."
+        f" {database_summary}."
     )
     message = (
         'Unsafe production database configuration: this deployment is using SQLite on the app filesystem. '
