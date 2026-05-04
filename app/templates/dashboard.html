@@ -79,7 +79,7 @@
           <a href="{{ url_for('stats.stats_home') }}">Stats</a>
           <a href="{{ url_for('officers.profile') }}">Profile</a>
           <a href="{{ url_for('annual_ai.page') }}">Assistant</a>
-          <a href="{{ url_for('reconstruction.case_list') }}">Reconstruction</a>
+          <a href="{{ url_for('reconstruction.accidents') }}">Accident Tools</a>
           {% if user.can_manage_team() %}<a href="{{ url_for('auth.manage_users') }}">Personnel</a>{% endif %}
           {% if portal_can_access_truck_gate %}<a href="{{ url_for('ops_modules.truck_gate') }}">Truck Gate</a>{% endif %}
           {% if portal_can_access_armory %}<a href="{{ url_for('ops_modules.armory') }}">Armory</a>{% endif %}

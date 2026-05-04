@@ -35,6 +35,14 @@ def _get_case_or_404(case_id):
     return ReconstructionCase.query.get_or_404(case_id)
 
 
+@bp.route("/accidents")
+@login_required
+def accidents():
+    from ..models import ReconstructionCase
+    recent = ReconstructionCase.query.order_by(ReconstructionCase.updated_at.desc()).limit(8).all()
+    return render_template("accidents.html", user=current_user, recent_cases=recent)
+
+
 @bp.route("/reconstruction", methods=["GET", "POST"])
 @login_required
 def case_list():

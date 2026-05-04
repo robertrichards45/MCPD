@@ -2,10 +2,10 @@
   {% set endpoint = request.endpoint or '' %}
   {% set forms_active = endpoint.startswith('forms.') and endpoint not in ['forms.saved_forms'] and not endpoint.startswith('forms.view_saved_form') and not endpoint.startswith('forms.preview_saved_form') and not endpoint.startswith('forms.download_saved_form') and not endpoint.startswith('forms.email_saved_form') %}
   {% set saved_work_active = endpoint == 'forms.saved_forms' or endpoint.startswith('forms.view_saved_form') or endpoint.startswith('forms.preview_saved_form') or endpoint.startswith('forms.download_saved_form') or endpoint.startswith('forms.email_saved_form') %}
-  {% set reports_active = endpoint.startswith('reports.') or endpoint.startswith('cleo_api.') or endpoint == 'dashboard.cleo' %}
+  {% set reports_active = endpoint.startswith('reports.') or endpoint.startswith('cleo_api.') or endpoint == 'dashboard.cleo' or endpoint == 'reconstruction.accidents' %}
   {% set reference_active = endpoint.startswith('legal.') or endpoint.startswith('orders.') or (endpoint.startswith('reference.') and endpoint not in ['reference.incident_paperwork_guide', 'reference.incident_paperwork_guide_manage']) %}
   {% set bolo_active = endpoint.startswith('bolo.') %}
-  {% set operations_active = endpoint.startswith('ops_modules.') or endpoint.startswith('training.') or endpoint.startswith('qual_tracker.') or endpoint.startswith('performance.') or endpoint.startswith('stats.') or endpoint.startswith('announcements.') or endpoint.startswith('officers.') or endpoint.startswith('annual_ai.') or endpoint.startswith('reconstruction.') %}
+  {% set operations_active = endpoint.startswith('ops_modules.') or endpoint.startswith('training.') or endpoint.startswith('qual_tracker.') or endpoint.startswith('performance.') or endpoint.startswith('stats.') or endpoint.startswith('announcements.') or endpoint.startswith('officers.') or endpoint.startswith('annual_ai.') %}
   <div class="brand">
     <img src="{{ url_for('usmc_emblem') }}" alt="USMC" />
     <div class="brand-copy">
@@ -28,7 +28,14 @@
       <a class="{% if endpoint in ['reference.incident_paperwork_guide', 'reference.incident_paperwork_guide_manage'] %}is-active{% endif %}" href="{{ url_for('reference.incident_paperwork_guide') }}">Navigator</a>
       <a class="{% if forms_active %}is-active{% endif %}" href="{{ url_for('forms.list_forms') }}">Forms</a>
       <a class="{% if saved_work_active %}is-active{% endif %}" href="{{ url_for('forms.saved_forms') }}">Saved Work</a>
-      <a class="{% if reports_active %}is-active{% endif %}" href="{{ url_for('reports.list_reports') }}">Reports</a>
+      <details class="nav-more nav-menu-group {% if reports_active %}has-active{% endif %}">
+        <summary>Reports</summary>
+        <div class="nav-more-menu">
+          <a class="{% if endpoint.startswith('reports.') or endpoint.startswith('cleo_api.') or endpoint == 'dashboard.cleo' %}is-active{% endif %}" href="{{ url_for('reports.list_reports') }}">All Reports</a>
+          <a class="{% if endpoint == 'reconstruction.accidents' %}is-active{% endif %}" href="{{ url_for('reconstruction.accidents') }}">Accident Tools</a>
+          <a class="{% if endpoint.startswith('reconstruction.') and endpoint != 'reconstruction.accidents' %}is-active{% endif %}" href="{{ url_for('reconstruction.case_list') }}">Reconstruction Cases</a>
+        </div>
+      </details>
       <a class="{% if bolo_active %}is-active{% endif %} nav-bolo-link" href="{{ url_for('bolo.bolo_board') }}">BOLO</a>
       <details class="nav-more nav-menu-group {% if reference_active %}has-active{% endif %}">
         <summary>Authority</summary>
@@ -49,7 +56,6 @@
           <a class="{% if endpoint.startswith('stats.') %}is-active{% endif %}" href="{{ url_for('stats.stats_home') }}">Stats</a>
           <a class="{% if endpoint.startswith('officers.') %}is-active{% endif %}" href="{{ url_for('officers.profile') }}">Profile</a>
           <a class="{% if endpoint.startswith('annual_ai.') %}is-active{% endif %}" href="{{ url_for('annual_ai.page') }}">Assistant</a>
-          <a class="{% if endpoint.startswith('reconstruction.') %}is-active{% endif %}" href="{{ url_for('reconstruction.case_list') }}">Reconstruction</a>
           {% if config.CAC_AUTH_ENABLED %}
             <a href="{{ url_for('auth.account_link_cac') }}">Link CAC</a>
           {% endif %}
