@@ -1,0 +1,56 @@
+{
+  "name": "MCPD Portal",
+  "short_name": "MCPD",
+  "description": "Mobile-first MCPD field reporting, law lookup, forms, and command portal.",
+  "id": "/?source=pwa",
+  "start_url": "/dashboard?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
+  "orientation": "portrait-primary",
+  "background_color": "#071b33",
+  "theme_color": "#071b33",
+  "categories": ["productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/static/icons/mcpd-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/icons/mcpd-icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/static/icons/mcpd-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/icons/mcpd-icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Start Report",
+      "short_name": "Report",
+      "description": "Open the mobile report workflow.",
+      "url": "/mobile/incident/start",
+      "icons": [{ "src": "/static/icons/mcpd-icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Law Lookup",
+      "short_name": "Law",
+      "description": "Search laws, UCMJ, orders, and references.",
+      "url": "/legal/search",
+      "icons": [{ "src": "/static/icons/mcpd-icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

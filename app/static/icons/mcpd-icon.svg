@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">MCPD Portal app icon</title>
+  <desc id="desc">Dark navy MCPD shield icon with gold border and blue command accent.</desc>
+  <rect width="512" height="512" rx="112" fill="#071b33"/>
+  <path d="M256 58 384 106v107c0 111-54 190-128 241-74-51-128-130-128-241V106L256 58Z" fill="#0d2d50" stroke="#d8ad45" stroke-width="18"/>
+  <path d="M173 172h166v43H279v146h-46V215h-60v-43Z" fill="#ffffff"/>
+  <path d="M181 381h150" stroke="#4ea1ff" stroke-width="18" stroke-linecap="round"/>
+  <text x="256" y="151" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="54" font-weight="700" fill="#ffffff">MCPD</text>
+</svg>

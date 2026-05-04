@@ -146,6 +146,14 @@ function bindModuleFeed() {
   window.setInterval(() => refreshModuleFeed(feed), 15000);
 }
 
+function registerMcpdServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+  if (!window.isSecureContext && !['localhost', '127.0.0.1'].includes(window.location.hostname)) return;
+  navigator.serviceWorker.register('/service-worker.js', { scope: '/' }).catch(() => {
+    // PWA install support is helpful, but it should never block field workflow.
+  });
+}
+
 window.addEventListener('load', () => {
   const canvas = getCanvas();
   if (canvas) {
@@ -185,4 +193,5 @@ window.addEventListener('load', () => {
 
   bindModuleScanner();
   bindModuleFeed();
+  registerMcpdServiceWorker();
 });

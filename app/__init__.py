@@ -64,6 +64,7 @@ def _enforce_persistent_database_config(app):
         return
     configured_db_vars = [
         key for key in (
+            'MCPD_DATABASE_URL',
             'DATABASE_URL',
             'DATABASE_PRIVATE_URL',
             'POSTGRES_URL',
@@ -72,6 +73,13 @@ def _enforce_persistent_database_config(app):
         )
         if os.environ.get(key)
     ]
+    configured_db_summaries = []
+    for key in configured_db_vars:
+        parsed_value = urlparse(_normalize_database_uri(os.environ.get(key)))
+        summary = f"{key}:{parsed_value.scheme or 'none'}"
+        if parsed_value.hostname:
+            summary += f"@{parsed_value.hostname}"
+        configured_db_summaries.append(summary)
     parsed_database_uri = urlparse(str(database_uri or ''))
     database_summary = f"active database scheme={parsed_database_uri.scheme or 'none'}"
     if parsed_database_uri.hostname:
@@ -80,6 +88,7 @@ def _enforce_persistent_database_config(app):
         database_summary += f", path={parsed_database_uri.path}"
     details = (
         f" Detected database environment variables: {', '.join(configured_db_vars) or 'none'}."
+        f" Variable summaries: {', '.join(configured_db_summaries) or 'none'}."
         f" {database_summary}."
     )
     message = (
@@ -769,6 +778,25 @@ def create_app():
     app.register_blueprint(reference.bp)
     app.register_blueprint(announcements.bp)
     app.register_blueprint(mobile.bp)
+
+    @app.get('/manifest.webmanifest')
+    def pwa_manifest():
+        return send_file(
+            os.path.join(app.static_folder, 'manifest.webmanifest'),
+            mimetype='application/manifest+json',
+            max_age=3600,
+        )
+
+    @app.get('/service-worker.js')
+    def service_worker():
+        response = send_file(
+            os.path.join(app.static_folder, 'service-worker.js'),
+            mimetype='application/javascript',
+            max_age=0,
+        )
+        response.headers['Service-Worker-Allowed'] = '/'
+        response.headers['Cache-Control'] = 'no-cache'
+        return response
 
     with app.app_context():
         try:

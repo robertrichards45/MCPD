@@ -10,16 +10,32 @@ RAILWAY_VOLUME_MOUNT_PATH = os.environ.get('RAILWAY_VOLUME_MOUNT_PATH', '/data')
 
 
 def _database_url_from_env():
-    for key in (
+    keys = (
+        'MCPD_DATABASE_URL',
         'DATABASE_URL',
         'DATABASE_PRIVATE_URL',
         'POSTGRES_URL',
         'POSTGRES_PRIVATE_URL',
         'RAILWAY_DATABASE_URL',
-    ):
-        value = os.environ.get(key)
-        if value and value.strip():
-            return value
+    )
+    candidates = [
+        (key, os.environ.get(key).strip())
+        for key in keys
+        if os.environ.get(key) and os.environ.get(key).strip()
+    ]
+    if not candidates:
+        return ''
+
+    # Railway can sometimes keep a stale DATABASE_URL around. In production,
+    # a Postgres URL is always safer than an app-filesystem SQLite URL, so
+    # prefer any Postgres candidate before falling back to declaration order.
+    if os.environ.get('RAILWAY_ENVIRONMENT') or os.environ.get('RAILWAY_PROJECT_ID'):
+        for _key, value in candidates:
+            normalized = _normalize_database_uri(value)
+            if normalized.startswith('postgresql://'):
+                return value
+
+    return candidates[0][1]
     return ''
 
 

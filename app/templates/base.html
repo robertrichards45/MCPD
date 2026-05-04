@@ -7,8 +7,17 @@
   <meta name="google-site-verification" content="{{ config.GOOGLE_SITE_VERIFICATION }}" />
   {% endif %}
   <title>{{ title if title else 'MCPD Portal' }}</title>
+  <meta name="application-name" content="MCPD Portal" />
+  <meta name="theme-color" content="#071b33" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="MCPD Portal" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="csrf-token" content="{{ g.csrf_token }}" />
-  <link rel="icon" type="image/svg+xml" href="{{ url_for('usmc_emblem') }}" />
+  <link rel="manifest" href="{{ url_for('pwa_manifest') }}" />
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='icons/mcpd-icon-32.png') }}" />
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='icons/mcpd-icon.svg') }}" />
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='icons/mcpd-apple-touch-icon.png') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css', v='2026-05-04-command-fix-2') }}" />
 </head>
 <body class="{{ body_class|default('') }}">

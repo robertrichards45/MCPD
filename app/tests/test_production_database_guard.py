@@ -24,10 +24,25 @@ def test_railway_postgres_url_is_normalized_for_sqlalchemy():
 
 
 def test_database_url_can_use_private_railway_fallback(monkeypatch):
+    monkeypatch.delenv("MCPD_DATABASE_URL", raising=False)
     monkeypatch.delenv("DATABASE_URL", raising=False)
     monkeypatch.setenv("DATABASE_PRIVATE_URL", "postgres://user:pass@private:5432/mcpd")
     assert _database_url_from_env() == "postgres://user:pass@private:5432/mcpd"
     assert _normalize_database_uri(_database_url_from_env()) == "postgresql://user:pass@private:5432/mcpd"
+
+
+def test_railway_prefers_postgres_over_stale_sqlite_database_url(monkeypatch):
+    monkeypatch.setenv("RAILWAY_PROJECT_ID", "project-test")
+    monkeypatch.setenv("DATABASE_URL", "sqlite:///data/app.db")
+    monkeypatch.setenv("POSTGRES_PRIVATE_URL", "postgres://user:pass@private:5432/mcpd")
+    assert _database_url_from_env() == "postgres://user:pass@private:5432/mcpd"
+
+
+def test_mcpd_database_url_override_wins(monkeypatch):
+    monkeypatch.setenv("RAILWAY_PROJECT_ID", "project-test")
+    monkeypatch.setenv("DATABASE_URL", "sqlite:///data/app.db")
+    monkeypatch.setenv("MCPD_DATABASE_URL", "postgresql://user:pass@override:5432/mcpd")
+    assert _database_url_from_env() == "postgresql://user:pass@override:5432/mcpd"
 
 
 def test_railway_allows_sqlite_on_mounted_volume(monkeypatch):
