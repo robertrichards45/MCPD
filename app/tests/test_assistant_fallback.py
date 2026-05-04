@@ -48,3 +48,15 @@ def test_assistant_returns_local_law_lookup_help_when_ai_key_missing(monkeypatch
     assert payload['mode'] == 'local_fallback'
     assert 'Law Lookup' in payload['reply']
     assert '/legal/search' in payload['reply']
+
+
+def test_assistant_status_reports_missing_key_to_site_controller(monkeypatch):
+    monkeypatch.delenv('OPENAI_API_KEY', raising=False)
+    client = _logged_in_client()
+    response = client.get('/api/assistant/status')
+
+    assert response.status_code == 200
+    payload = response.get_json()
+    assert payload['ok'] is True
+    assert payload['openai']['configured'] is False
+    assert payload['openai']['errorCode'] == 'missing_key'

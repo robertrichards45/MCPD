@@ -2,9 +2,10 @@ import hmac
 import os
 
 from flask import Blueprint, Response, g, jsonify, request, session, url_for
-from flask_login import login_required
+from flask_login import current_user, login_required
 
-from ..services.ai_client import _ALLOWED_VOICES, ask_openai_with_system, is_ai_unavailable_message, openai_tts
+from ..permissions import can_manage_site
+from ..services.ai_client import _ALLOWED_VOICES, ask_openai_with_system, is_ai_unavailable_message, openai_key_status, openai_tts
 
 bp = Blueprint('assistant', __name__)
 
@@ -128,3 +129,12 @@ def assistant_speak():
 @login_required
 def assistant_voices():
     return jsonify({'voices': sorted(_ALLOWED_VOICES)})
+
+
+@bp.get('/api/assistant/status')
+@login_required
+def assistant_status():
+    if not can_manage_site(current_user):
+        return jsonify({'ok': False, 'error': 'Forbidden.'}), 403
+    status = openai_key_status(os.environ.get('OPENAI_API_KEY', ''))
+    return jsonify({'ok': True, 'openai': status})

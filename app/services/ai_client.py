@@ -87,6 +87,68 @@ def is_ai_unavailable_message(text):
     )
 
 
+def openai_key_status(api_key=None):
+    """Return a safe diagnostic summary for the configured OpenAI key."""
+    key = (api_key or os.environ.get('OPENAI_API_KEY') or '').strip()
+    if not key:
+        return {
+            'configured': False,
+            'keyPrefix': '',
+            'keyLength': 0,
+            'ok': False,
+            'statusCode': None,
+            'errorCode': 'missing_key',
+            'message': 'OPENAI_API_KEY is not visible to the running app.',
+        }
+
+    summary = {
+        'configured': True,
+        'keyPrefix': key[:7],
+        'keyLength': len(key),
+        'ok': False,
+        'statusCode': None,
+        'errorCode': None,
+        'message': '',
+    }
+    headers = {
+        'Authorization': f'Bearer {key}',
+        'Content-Type': 'application/json',
+    }
+    payload = {
+        'model': 'gpt-4.1-mini',
+        'input': 'Reply with exactly: ok',
+        'max_output_tokens': 8,
+    }
+    try:
+        response = requests.post(
+            'https://api.openai.com/v1/responses',
+            headers=headers,
+            data=json.dumps(payload),
+            timeout=15,
+        )
+    except requests.Timeout:
+        summary['message'] = 'OpenAI diagnostic request timed out.'
+        return summary
+    except requests.RequestException as exc:
+        summary['message'] = f'OpenAI diagnostic request failed: {exc.__class__.__name__}.'
+        return summary
+
+    summary['statusCode'] = response.status_code
+    try:
+        data = response.json()
+    except ValueError:
+        data = {}
+    if response.status_code < 400:
+        summary['ok'] = True
+        summary['message'] = 'OpenAI accepted the configured key.'
+        return summary
+
+    _error_type, error_code, error_message = _extract_error_details(data)
+    summary['errorCode'] = error_code
+    summary['message'] = error_message or _friendly_error_message(response.status_code, data)
+    return summary
+
+
 def _disable_ai_temporarily(message, minutes=1):
     global _AI_DISABLED_MESSAGE, _AI_DISABLED_UNTIL
     _AI_DISABLED_MESSAGE = message
