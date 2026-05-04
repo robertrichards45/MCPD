@@ -2178,6 +2178,106 @@ body.mobile-foundation {
   height: 100%;
 }
 
+/* Personnel management edit workflow */
+.personnel-edit-page {
+  max-width: 1120px;
+}
+
+.personnel-edit-card {
+  border: 1px solid #d8e0ea;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.07);
+}
+
+.personnel-edit-identity {
+  align-items: center;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  gap: 14px;
+  margin: -4px 0 18px;
+  padding-bottom: 16px;
+}
+
+.personnel-avatar {
+  align-items: center;
+  background: #0b2238;
+  border-radius: 12px;
+  color: #ffffff;
+  display: inline-flex;
+  font-size: 1.05rem;
+  font-weight: 900;
+  height: 52px;
+  justify-content: center;
+  letter-spacing: 0.04em;
+  width: 52px;
+}
+
+.personnel-edit-identity h3 {
+  color: #0f172a;
+  font-size: 1.2rem;
+  font-weight: 900;
+  margin: 0;
+}
+
+.personnel-edit-identity p {
+  color: #64748b;
+  font-weight: 700;
+  margin: 2px 0 0;
+}
+
+.personnel-edit-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.personnel-edit-grid label {
+  color: #334155;
+  font-size: 0.84rem;
+  font-weight: 900;
+}
+
+.personnel-edit-grid .form-control {
+  border-color: #cbd5e1;
+  border-radius: 8px;
+  margin-top: 5px;
+  min-height: 42px;
+}
+
+.personnel-edit-wide,
+.personnel-edit-check {
+  grid-column: 1 / -1;
+}
+
+.personnel-edit-check {
+  align-items: center;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  display: flex;
+  gap: 10px;
+  min-height: 46px;
+  padding: 12px;
+}
+
+.personnel-edit-actions {
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 18px;
+  padding-top: 16px;
+}
+
+.personnel-name-link {
+  color: #0b55b7;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.personnel-name-link:hover {
+  text-decoration: underline;
+}
+
 /* Professional Accident Reconstruction module */
 .reconstruction-command-shell {
   --recon-navy: #071827;
@@ -2687,6 +2787,20 @@ body.dark .recon-section-head span,
 }
 
 @media (max-width: 720px) {
+  .personnel-edit-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .personnel-edit-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .personnel-edit-actions .btn {
+    min-height: 48px;
+    width: 100%;
+  }
+
   .recon-workspace {
     padding: 14px 10px 92px;
   }

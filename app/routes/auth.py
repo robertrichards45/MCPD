@@ -252,6 +252,74 @@ def _visible_users_query():
     return query.filter_by(id=current_user.id)
 
 
+def _supervisor_from_form():
+    supervisor_id = request.form.get('supervisor_id', '').strip()
+    if is_watch_commander(current_user):
+        return db.session.get(User, watch_commander_scope_id(current_user))
+    if not supervisor_id:
+        return None
+    try:
+        supervisor_id_int = int(supervisor_id)
+    except ValueError:
+        raise ValueError('Supervisor selection is invalid.')
+    supervisor = db.session.get(User, supervisor_id_int)
+    if supervisor and not can_view_user(current_user, supervisor):
+        raise ValueError('Supervisor selection is outside your command scope.')
+    return supervisor
+
+
+def _installation_from_form(target=None, *, allow_no_change=False):
+    raw = request.form.get('installation', '').strip()
+    if allow_no_change and not raw:
+        return None
+    valid_keys = {key for key, _ in USMC_INSTALLATIONS}
+    if is_watch_commander(current_user):
+        return current_user.installation
+    if raw and raw in valid_keys:
+        return raw
+    return target.installation if target else None
+
+
+def _apply_personnel_edit(target):
+    role = request.form.get('role', '').strip() or target.normalized_role
+    if role not in assignable_roles(current_user):
+        raise ValueError('You cannot assign that role.')
+    supervisor = _supervisor_from_form()
+    installation = _installation_from_form(target, allow_no_change=True)
+
+    first_name = request.form.get('first_name', '').strip()
+    last_name = request.form.get('last_name', '').strip()
+    if first_name or last_name:
+        _sync_user_name_fields(target, first_name, last_name)
+    target.display_name_override = request.form.get('display_name', '').strip() or None
+    target.email = request.form.get('email', '').strip().lower() or None
+    target.phone_number = request.form.get('phone_number', '').strip() or None
+    target.address = request.form.get('address', '').strip() or None
+    target.officer_number = _normalize_officer_number(request.form.get('officer_number', '')) or None
+    target.badge_employee_id = request.form.get('badge_employee_id', '').strip() or None
+    target.section_unit = request.form.get('section_unit', '').strip() or None
+    target.role = role
+    target.supervisor_id = supervisor.id if supervisor else None
+    target.can_grade_cleoc_reports = request.form.get('can_grade_cleoc_reports') == '1'
+    if 'active' in request.form:
+        target.active = request.form.get('active') == '1'
+    if installation:
+        target.installation = installation
+
+    if can_manage_site(current_user):
+        edipi = _normalize_edipi(request.form.get('edipi', '')) or None
+        if edipi and len(edipi) != 10:
+            raise ValueError('EDIPI must be a 10-digit number.')
+        if edipi and User.query.filter(User.edipi == edipi, User.id != target.id).first():
+            raise ValueError('EDIPI is already assigned to another user.')
+        target.edipi = edipi
+
+    if target.email and User.query.filter(User.email == target.email, User.id != target.id).first():
+        raise ValueError('Email is already assigned to another user.')
+    if target.officer_number and User.query.filter(User.officer_number == target.officer_number, User.id != target.id).first():
+        raise ValueError('Officer number is already assigned to another user.')
+
+
 def _pending_accounts_query():
     query = User.query.filter_by(pending_approval=True, active=False)
     if is_site_controller(current_user):
@@ -797,8 +865,8 @@ def manage_users():
             password = request.form.get('password')
             phone_number = request.form.get('phone_number', '').strip() or None
             address = request.form.get('address', '').strip() or None
+            installation = _installation_from_form()
             can_grade_reports = request.form.get('can_grade_cleoc_reports') == '1'
-            supervisor_id = request.form.get('supervisor_id', '').strip()
             if not first_name or not last_name:
                 return render_template('admin_users.html', **context_kwargs(error='First name and last name are required.'))
             if not username or not password or not phone_number or not address:
@@ -813,21 +881,17 @@ def manage_users():
                 return render_template('admin_users.html', **context_kwargs(error='EDIPI already exists.'))
             if role not in assignable_roles(current_user):
                 return render_template('admin_users.html', **context_kwargs(error='You cannot assign that role.'))
-            supervisor = None
-            if supervisor_id:
-                try:
-                    supervisor_id_int = int(supervisor_id)
-                except ValueError:
-                    return render_template('admin_users.html', **context_kwargs(error='Supervisor selection is invalid.'))
-                supervisor = User.query.filter_by(id=supervisor_id_int).first()
-            if is_watch_commander(current_user):
-                supervisor = db.session.get(User, watch_commander_scope_id(current_user))
+            try:
+                supervisor = _supervisor_from_form()
+            except ValueError as exc:
+                return render_template('admin_users.html', **context_kwargs(error=str(exc)))
             user = User(
                 username=username,
                 officer_number=officer_number,
                 edipi=edipi,
                 phone_number=phone_number,
                 address=address,
+                installation=installation,
                 supervisor_id=supervisor.id if supervisor else None,
                 role=role,
                 can_grade_cleoc_reports=can_grade_reports,
@@ -843,35 +907,13 @@ def manage_users():
             target = _user_by_username(username)
             if not target or not can_manage_user(current_user, target):
                 abort(403)
-            role = request.form.get('role', '').strip() or target.normalized_role
-            if role not in assignable_roles(current_user):
-                return render_template('admin_users.html', **context_kwargs(error='You cannot assign that role.'))
-            supervisor_id = request.form.get('supervisor_id', '').strip()
-            if supervisor_id:
-                try:
-                    supervisor_id_int = int(supervisor_id)
-                except ValueError:
-                    return render_template('admin_users.html', **context_kwargs(error='Supervisor selection is invalid.'))
-                supervisor = User.query.filter_by(id=supervisor_id_int).first()
-            else:
-                supervisor = None
-            if is_watch_commander(current_user):
-                supervisor = db.session.get(User, watch_commander_scope_id(current_user))
-            new_section_unit = request.form.get('section_unit', '').strip() or None
-            new_installation = request.form.get('installation', '').strip() or None
-            valid_keys = {k for k, _ in USMC_INSTALLATIONS}
-            if new_installation and new_installation not in valid_keys:
-                new_installation = None
-            target.role = role
-            target.supervisor_id = supervisor.id if supervisor else None
-            target.can_grade_cleoc_reports = request.form.get('can_grade_cleoc_reports') == '1'
-            if new_section_unit is not None:
-                target.section_unit = new_section_unit
-            if new_installation:
-                target.installation = new_installation
+            try:
+                _apply_personnel_edit(target)
+            except ValueError as exc:
+                return render_template('admin_users.html', **context_kwargs(error=str(exc)))
             if not _commit_or_rollback():
                 return render_template('admin_users.html', **context_kwargs(error='Unable to update that user right now. Try again later.'))
-            _safe_audit(actor_id=current_user.id, action='user_update_role', details=f'{username}:{role}')
+            _safe_audit(actor_id=current_user.id, action='user_update_role', details=f'{username}:{target.role}')
         elif action == 'delete':
             target = _user_by_username(username)
             if not target:
@@ -981,3 +1023,33 @@ def manage_users():
         return redirect(url_for('auth.manage_users'))
 
     return render_template('admin_users.html', **context_kwargs())
+
+
+@bp.route('/admin/users/<int:user_id>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_user(user_id):
+    require_admin()
+    target = db.session.get(User, user_id)
+    if not target or not can_manage_user(current_user, target):
+        abort(403)
+
+    context = {
+        'target_user': target,
+        'user': current_user,
+        'role_options': assignable_roles(current_user),
+        'supervisors': _available_supervisors(),
+        'role_labels': ROLE_LABELS,
+        'installation_labels': INSTALLATION_LABELS,
+        'installations': USMC_INSTALLATIONS,
+    }
+    if request.method == 'POST':
+        try:
+            _apply_personnel_edit(target)
+        except ValueError as exc:
+            return render_template('admin_user_edit.html', **context, error=str(exc))
+        if not _commit_or_rollback():
+            return render_template('admin_user_edit.html', **context, error='Unable to save that officer right now. Try again later.')
+        _safe_audit(actor_id=current_user.id, action='user_profile_admin_edit', details=f'{target.username}:{target.role}')
+        return redirect(url_for('auth.manage_users'))
+
+    return render_template('admin_user_edit.html', **context)
