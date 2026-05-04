@@ -7,6 +7,7 @@ from flask_login import current_user, login_required
 from ..extensions import db
 from ..models import AuditLog, EmergencyContact, INSTALLATION_LABELS, OfficerProfile, User
 from ..permissions import can_manage_site, can_view_user
+from ..permissions import can_manage_user
 
 bp = Blueprint('officers', __name__)
 
@@ -37,6 +38,7 @@ def officer_directory():
             user=current_user,
             profile=profile,
             profiles=_profiles_for_view(search_term=search_term),
+            editable_user_ids={user_row.id for _, user_row in _profiles_for_view(search_term=search_term) if can_manage_user(current_user, user_row)},
             search_term=search_term,
             emergency_contacts=current_user.emergency_contacts.all(),
             installation_label=INSTALLATION_LABELS.get(current_user.installation or '', current_user.installation or ''),

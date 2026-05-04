@@ -221,7 +221,13 @@
           <tbody>
             {% for u in users %}
             <tr>
-              <td><a class="personnel-name-link" href="{{ url_for('auth.edit_user', user_id=u.id) }}">{{ u.display_name }}</a></td>
+              <td>
+                {% if u.id in editable_user_ids %}
+                  <a class="personnel-name-link" href="{{ url_for('auth.edit_user', user_id=u.id) }}">{{ u.display_name }}</a>
+                {% else %}
+                  {{ u.display_name }}
+                {% endif %}
+              </td>
               <td>{{ u.username }}</td>
               <td>{{ u.officer_number or '' }}</td>
               <td>{{ u.phone_number or '' }}</td>
@@ -230,7 +236,11 @@
               <td>{{ u.role_label }}</td>
               <td>{{ u.supervisor.display_name if u.supervisor else '' }}</td>
               <td>{{ u.active }}</td>
-              <td><a class="btn btn-outline-secondary btn-sm" href="{{ url_for('auth.edit_user', user_id=u.id) }}">Edit</a></td>
+              <td>
+                {% if u.id in editable_user_ids %}
+                  <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('auth.edit_user', user_id=u.id) }}">Edit</a>
+                {% endif %}
+              </td>
             </tr>
             {% endfor %}
           </tbody>
