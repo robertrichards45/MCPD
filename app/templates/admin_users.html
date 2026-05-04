@@ -96,6 +96,14 @@
           <div class="mb-2"><label>Last Name</label><input class="form-control" name="last_name" /></div>
           <div class="mb-2"><label>Phone Number</label><input class="form-control" name="phone_number" /></div>
           <div class="mb-2"><label>Address</label><textarea class="form-control" name="address" rows="2"></textarea></div>
+          <div class="mb-2"><label>Installation</label>
+            <select class="form-control" name="installation">
+              <option value="">Unassigned</option>
+              {% for key, label in installations %}
+                <option value="{{ key }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
           <div class="mb-2"><label>Officer Number</label><input class="form-control" name="officer_number" /></div>
           <div class="mb-2"><label>EDIPI</label><input class="form-control" name="edipi" /></div>
           <div class="mb-2"><label>Username</label><input class="form-control" name="username" /></div>
@@ -207,13 +215,13 @@
             <tr>
               <th>Name</th><th>Username</th><th>Officer #</th>
               <th>Phone</th><th>Installation</th><th>CAC</th>
-              <th>Role</th><th>Supervisor</th><th>Active</th>
+              <th>Role</th><th>Supervisor</th><th>Active</th><th></th>
             </tr>
           </thead>
           <tbody>
             {% for u in users %}
             <tr>
-              <td>{{ u.display_name }}</td>
+              <td><a class="personnel-name-link" href="{{ url_for('auth.edit_user', user_id=u.id) }}">{{ u.display_name }}</a></td>
               <td>{{ u.username }}</td>
               <td>{{ u.officer_number or '' }}</td>
               <td>{{ u.phone_number or '' }}</td>
@@ -222,6 +230,7 @@
               <td>{{ u.role_label }}</td>
               <td>{{ u.supervisor.display_name if u.supervisor else '' }}</td>
               <td>{{ u.active }}</td>
+              <td><a class="btn btn-outline-secondary btn-sm" href="{{ url_for('auth.edit_user', user_id=u.id) }}">Edit</a></td>
             </tr>
             {% endfor %}
           </tbody>
