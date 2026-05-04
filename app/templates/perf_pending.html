@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell">
+  {% include 'partials/nav.html' %}
+  <div class="page-wrap perf-page">
+
+    <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('performance.team_overview') }}">&#8592; Team Overview</a>
+    </div>
+
+    <div class="eyebrow mb-1">Performance Tracker</div>
+    <h2 class="mb-1">Pending Approvals — {{ year }}</h2>
+
+    <form method="get" class="d-flex gap-2 mb-3 flex-wrap align-items-end">
+      <div>
+        <label class="form-label text-dark mb-1">Filter by Officer</label>
+        <select class="form-control form-control-sm" name="officer_id" onchange="this.form.submit()">
+          <option value="">All Officers</option>
+          {% for o in officers %}
+          <option value="{{ o.id }}" {% if filter_officer == o.id %}selected{% endif %}>{{ o.display_name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      {% if filter_officer %}
+      <a class="btn btn-outline-secondary btn-sm align-self-end" href="{{ url_for('performance.pending') }}">Clear</a>
+      {% endif %}
+    </form>
+
+    {% if subs %}
+    <div class="perf-pending-list">
+      {% for sub in subs %}
+      <div class="perf-pending-card">
+        <div class="perf-pend-officer">{{ sub.officer.display_name }}</div>
+        <div class="perf-pend-element">{{ sub.element.name }}</div>
+        <div class="perf-pend-qty">{{ sub.quantity }} unit{% if sub.quantity != 1 %}s{% endif %}</div>
+        {% if sub.notes %}<div class="perf-pend-notes text-muted">{{ sub.notes }}</div>{% endif %}
+        <div class="perf-pend-meta">Submitted {{ sub.submitted_date }}</div>
+
+        <div class="perf-pend-actions">
+          <form method="post" action="{{ url_for('performance.approve_submission', sub_id=sub.id) }}" class="d-inline">
+            <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}" />
+            <input type="text" name="comment" class="form-control form-control-sm perf-pend-comment"
+                   placeholder="Optional comment" />
+            <button class="btn btn-success btn-sm mt-1" type="submit">Approve</button>
+          </form>
+          <form method="post" action="{{ url_for('performance.reject_submission', sub_id=sub.id) }}" class="d-inline">
+            <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}" />
+            <input type="text" name="comment" class="form-control form-control-sm perf-pend-comment"
+                   placeholder="Reason (optional)" />
+            <button class="btn btn-outline-danger btn-sm mt-1" type="submit">Reject</button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="perf-empty">
+      <p>No pending submissions{% if filter_officer %} for this officer{% endif %}.</p>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

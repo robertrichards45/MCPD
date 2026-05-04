@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell">
+  {% include 'partials/nav.html' %}
+  <div class="page-wrap perf-page">
+
+    <div class="d-flex align-items-center gap-2 mb-3">
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('performance.elements') }}">&#8592; Elements</a>
+    </div>
+
+    <div class="perf-form-card">
+      <div class="eyebrow mb-1">Performance Tracker — {{ year }}</div>
+      <h3 class="mb-3">{{ 'Edit Element' if el else 'New Element' }}</h3>
+
+      <form method="post">
+        <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}" />
+
+        <div class="perf-form-field">
+          <label class="perf-label">Name <span class="text-danger">*</span></label>
+          <input class="form-control form-control-lg" type="text" name="name"
+                 value="{{ el.name if el else '' }}"
+                 placeholder="e.g. Traffic Stops" required />
+        </div>
+
+        <div class="perf-form-field">
+          <label class="perf-label">Category <span class="text-muted">(optional grouping)</span></label>
+          <input class="form-control" type="text" name="category"
+                 value="{{ el.category if el else '' }}"
+                 placeholder="e.g. Enforcement, Gate Operations…" />
+        </div>
+
+        <div class="perf-form-field">
+          <label class="perf-label">Goal Value <span class="text-danger">*</span></label>
+          <input class="form-control form-control-lg" type="number" name="goal_value"
+                 min="1" value="{{ el.goal_value if el else '' }}" required />
+          <div class="form-text">Target number of units for the year.</div>
+        </div>
+
+        <div class="perf-form-field">
+          <label class="perf-label">Description <span class="text-muted">(optional)</span></label>
+          <textarea class="form-control" name="description" rows="2"
+                    placeholder="Explain what counts as one unit…">{{ el.description if el else '' }}</textarea>
+        </div>
+
+        {% if el %}
+        <div class="perf-form-field">
+          <label class="perf-label">Active</label>
+          <select class="form-control" name="active">
+            <option value="1" {% if el.active %}selected{% endif %}>Yes — officers can submit</option>
+            <option value="0" {% if not el.active %}selected{% endif %}>No — hidden from submissions</option>
+          </select>
+        </div>
+        {% endif %}
+
+        <div class="d-flex gap-2 mt-3">
+          <button class="btn btn-primary btn-lg" type="submit">{{ 'Save Changes' if el else 'Create Element' }}</button>
+          <a class="btn btn-outline-secondary btn-lg" href="{{ url_for('performance.elements') }}">Cancel</a>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

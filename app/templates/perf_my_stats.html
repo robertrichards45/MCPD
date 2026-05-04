@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell">
+  {% include 'partials/nav.html' %}
+  <div class="page-wrap perf-page">
+
+    <div class="perf-hero">
+      <div>
+        <div class="eyebrow">Performance Tracker</div>
+        <h1 class="perf-hero-name">{{ user.display_name }}</h1>
+        <div class="perf-hero-year">{{ year }} Yearly Elements</div>
+      </div>
+      <div class="perf-hero-actions">
+        <a class="btn btn-primary" href="{{ url_for('performance.submit_entry') }}">+ Submit Activity</a>
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('performance.my_history') }}">History</a>
+        {% if can_approve %}
+        <a class="btn btn-outline-dark btn-sm" href="{{ url_for('performance.pending') }}">
+          Pending {% if pending_count %}<span class="perf-badge-count">{{ pending_count }}</span>{% endif %}
+        </a>
+        {% endif %}
+        {% if can_manage %}
+        <a class="btn btn-outline-dark btn-sm" href="{{ url_for('performance.team_overview') }}">Team</a>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if pending_count %}
+    <div class="perf-notice mb-3">
+      <strong>{{ pending_count }}</strong> submission{{ 's' if pending_count != 1 }} awaiting supervisor approval — not yet counted in totals below.
+    </div>
+    {% endif %}
+
+    {% if rows %}
+    <div class="perf-card-grid">
+      {% for row in rows %}
+      <div class="perf-stat-card {% if row.pct >= 100 %}perf-card-done{% elif row.pct >= 60 %}perf-card-good{% elif row.pct >= 30 %}perf-card-mid{% else %}perf-card-low{% endif %}">
+        <div class="perf-card-header">
+          {% if row.element.category %}
+          <span class="perf-card-category">{{ row.element.category }}</span>
+          {% endif %}
+          <span class="perf-card-name">{{ row.element.name }}</span>
+        </div>
+        <div class="perf-card-numbers">
+          <span class="perf-card-count">{{ row.approved }}</span>
+          <span class="perf-card-sep">/</span>
+          <span class="perf-card-goal">{{ row.goal }}</span>
+        </div>
+        <div class="perf-progress-bar-wrap">
+          <div class="perf-progress-bar" style="width:{{ row.pct }}%"></div>
+        </div>
+        <div class="perf-card-footer">
+          <span class="perf-pct">{{ row.pct }}%</span>
+          {% if row.pct < 100 %}
+          <span class="perf-remaining">{{ row.remaining }} remaining</span>
+          {% else %}
+          <span class="perf-done-label">Goal met ✓</span>
+          {% endif %}
+        </div>
+        <a class="perf-card-submit-link"
+           href="{{ url_for('performance.submit_entry', element_id=row.element.id) }}">
+          + Submit
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="perf-empty">
+      <p>No elements are defined for {{ year }}.</p>
+      {% if can_manage %}
+      <a class="btn btn-primary" href="{{ url_for('performance.elements') }}">Manage Elements</a>
+      {% else %}
+      <p class="text-muted">Contact your Watch Commander to set up yearly elements.</p>
+      {% endif %}
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell">
+  {% include 'partials/nav.html' %}
+  <div class="page-wrap perf-page">
+
+    <div class="perf-hero">
+      <div>
+        <div class="eyebrow">Performance Tracker</div>
+        <h1>Team Overview — {{ year }}</h1>
+      </div>
+      <div class="perf-hero-actions">
+        <a class="btn btn-warning btn-sm" href="{{ url_for('performance.pending') }}">
+          Pending Approvals
+        </a>
+        {% if can_manage %}
+        <a class="btn btn-outline-dark btn-sm" href="{{ url_for('performance.elements') }}">Elements</a>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card p-3 mb-3">
+      <form method="get" class="row g-2 align-items-end">
+        <div class="col-md-5">
+          <label class="form-label text-dark">Officer</label>
+          <select class="form-control" name="officer_id">
+            <option value="">All Officers</option>
+            {% for o in officers %}
+            <option value="{{ o.id }}" {% if filter_officer == o.id %}selected{% endif %}>{{ o.display_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-5">
+          <label class="form-label text-dark">Element</label>
+          <select class="form-control" name="element_id">
+            <option value="">All Elements</option>
+            {% for el in elements %}
+            <option value="{{ el.id }}" {% if filter_element == el.id %}selected{% endif %}>{{ el.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2">
+          <button class="btn btn-primary w-100" type="submit">Filter</button>
+        </div>
+      </form>
+    </div>
+
+    {% if grid %}
+    <div class="perf-team-list">
+      {% for entry in grid %}
+      <div class="perf-team-card">
+        <div class="perf-team-officer-row">
+          <div>
+            <div class="perf-team-officer-name">{{ entry.officer.display_name }}</div>
+            <div class="perf-team-officer-role text-muted small">{{ entry.officer.role_label }}</div>
+          </div>
+          {% if entry.pending %}
+          <a class="perf-pending-chip"
+             href="{{ url_for('performance.pending', officer_id=entry.officer.id) }}">
+            {{ entry.pending }} pending
+          </a>
+          {% endif %}
+        </div>
+        {% for row in entry.rows %}
+        <div class="perf-team-element-row">
+          <div class="perf-team-el-name">{{ row.element.name }}</div>
+          <div class="perf-team-el-bar-wrap">
+            <div class="perf-team-el-bar {% if row.pct >= 100 %}perf-bar-done{% elif row.pct >= 60 %}perf-bar-good{% elif row.pct >= 30 %}perf-bar-mid{% else %}perf-bar-low{% endif %}"
+                 style="width:{{ row.pct }}%"></div>
+          </div>
+          <div class="perf-team-el-label">{{ row.approved }}/{{ row.goal }} ({{ row.pct }}%)</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="perf-empty">No officers or no elements defined for {{ year }}.</div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

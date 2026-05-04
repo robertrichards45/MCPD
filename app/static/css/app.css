@@ -11003,3 +11003,246 @@ body.mobile-foundation .spr-training-warn {
   font-size: 11px;
   border-radius: 4px;
 }
+
+/* =============================================================================
+   PHASE 9 — PERFORMANCE / ELEMENT TRACKING
+   ============================================================================= */
+
+.perf-page { max-width: 860px; }
+
+/* Hero bar */
+.perf-hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.perf-hero-name  { font-size: 26px; font-weight: 700; color: #1a2a4a; margin: 0; }
+.perf-hero-year  { font-size: 13px; color: #64748b; margin-top: 2px; }
+.perf-hero-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+/* Notice strip */
+.perf-notice {
+  background: #fef3c7;
+  border-left: 4px solid #f59e0b;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+/* Stat cards grid */
+.perf-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.perf-stat-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 18px 16px 14px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+  border-top: 4px solid #94a3b8;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+}
+.perf-card-done { border-top-color: #16a34a; }
+.perf-card-good { border-top-color: #3b82f6; }
+.perf-card-mid  { border-top-color: #f59e0b; }
+.perf-card-low  { border-top-color: #ef4444; }
+
+.perf-card-header { display: flex; flex-direction: column; gap: 2px; }
+.perf-card-category { font-size: 10px; text-transform: uppercase; letter-spacing: .07em; color: #94a3b8; }
+.perf-card-name     { font-size: 15px; font-weight: 700; color: #1a2a4a; line-height: 1.2; }
+
+.perf-card-numbers {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin: 4px 0 2px;
+}
+.perf-card-count { font-size: 32px; font-weight: 800; color: #1a2a4a; line-height: 1; }
+.perf-card-sep   { font-size: 20px; color: #94a3b8; }
+.perf-card-goal  { font-size: 18px; color: #64748b; }
+
+.perf-progress-bar-wrap {
+  background: #e5e7eb;
+  border-radius: 20px;
+  height: 8px;
+  overflow: hidden;
+}
+.perf-progress-bar {
+  height: 100%;
+  border-radius: 20px;
+  background: #3b82f6;
+  transition: width .4s;
+  min-width: 2px;
+}
+.perf-card-done .perf-progress-bar { background: #16a34a; }
+.perf-card-mid  .perf-progress-bar { background: #f59e0b; }
+.perf-card-low  .perf-progress-bar { background: #ef4444; }
+
+.perf-card-footer  { display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
+.perf-pct          { font-weight: 700; color: #374151; }
+.perf-remaining    { color: #64748b; }
+.perf-done-label   { color: #16a34a; font-weight: 600; }
+
+.perf-card-submit-link {
+  margin-top: 8px;
+  display: block;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a2a4a;
+  background: #f1f5f9;
+  border-radius: 8px;
+  padding: 6px;
+  text-decoration: none;
+  transition: background .15s;
+}
+.perf-card-submit-link:hover { background: #e2e8f0; color: #1a2a4a; }
+
+/* Badge count on pending button */
+.perf-badge-count {
+  display: inline-block;
+  background: #ef4444;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 20px;
+  padding: 1px 6px;
+  margin-left: 4px;
+}
+
+/* Form card */
+.perf-form-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 28px 24px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  max-width: 560px;
+}
+.perf-form-field { margin-bottom: 18px; }
+.perf-label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 6px; color: #1a2a4a; }
+
+/* History list */
+.perf-history-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+.perf-history-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+  border-left: 4px solid #94a3b8;
+}
+.perf-hist-pending  { border-left-color: #f59e0b; }
+.perf-hist-approved { border-left-color: #16a34a; }
+.perf-hist-rejected { border-left-color: #ef4444; opacity: .75; }
+
+.perf-hist-top    { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+.perf-hist-name   { font-weight: 700; color: #1a2a4a; font-size: 15px; }
+.perf-hist-qty    { font-size: 20px; font-weight: 800; color: #1a2a4a; }
+.perf-hist-notes  { font-size: 13px; color: #475569; margin-top: 4px; }
+.perf-hist-meta   { font-size: 11px; color: #94a3b8; margin-top: 6px; }
+
+/* Status pills */
+.perf-status-pill {
+  font-size: 10px; font-weight: 700; letter-spacing: .07em;
+  padding: 2px 8px; border-radius: 20px; text-transform: uppercase;
+}
+.perf-pill-pending  { background: #fef3c7; color: #92400e; }
+.perf-pill-approved { background: #dcfce7; color: #15803d; }
+.perf-pill-rejected { background: #fee2e2; color: #991b1b; }
+
+/* Pending cards */
+.perf-pending-list { display: flex; flex-direction: column; gap: 12px; }
+.perf-pending-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  border-left: 4px solid #f59e0b;
+}
+.perf-pend-officer { font-size: 13px; color: #64748b; text-transform: uppercase; letter-spacing: .05em; }
+.perf-pend-element { font-size: 18px; font-weight: 700; color: #1a2a4a; margin: 2px 0; }
+.perf-pend-qty     { font-size: 14px; font-weight: 600; color: #374151; }
+.perf-pend-notes   { font-size: 13px; margin-top: 4px; }
+.perf-pend-meta    { font-size: 11px; color: #94a3b8; margin-top: 4px; }
+.perf-pend-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px; align-items: flex-end; }
+.perf-pend-comment { display: inline-block; width: 160px; vertical-align: middle; }
+
+/* Team overview */
+.perf-team-list { display: flex; flex-direction: column; gap: 14px; }
+.perf-team-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+}
+.perf-team-officer-row    { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; gap: 8px; }
+.perf-team-officer-name   { font-size: 16px; font-weight: 700; color: #1a2a4a; }
+.perf-pending-chip {
+  background: #fef3c7; color: #92400e;
+  font-size: 11px; font-weight: 700;
+  padding: 3px 9px; border-radius: 20px;
+  text-decoration: none; white-space: nowrap;
+}
+.perf-team-element-row {
+  display: grid;
+  grid-template-columns: 140px 1fr 70px;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  border-top: 1px solid #f1f5f9;
+  font-size: 13px;
+}
+.perf-team-el-name  { color: #374151; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.perf-team-el-bar-wrap { background: #e5e7eb; border-radius: 20px; height: 7px; overflow: hidden; }
+.perf-team-el-bar   { height: 100%; border-radius: 20px; min-width: 2px; transition: width .4s; }
+.perf-bar-done { background: #16a34a; }
+.perf-bar-good { background: #3b82f6; }
+.perf-bar-mid  { background: #f59e0b; }
+.perf-bar-low  { background: #ef4444; }
+.perf-team-el-label { font-size: 12px; color: #64748b; text-align: right; white-space: nowrap; }
+
+/* Element management list */
+.perf-element-list { display: flex; flex-direction: column; gap: 10px; }
+.perf-element-item {
+  background: #fff;
+  border-radius: 10px;
+  padding: 14px 16px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.perf-el-inactive { opacity: .55; }
+.perf-el-main  { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.perf-el-cat   { font-size: 10px; text-transform: uppercase; letter-spacing: .07em; color: #94a3b8; }
+.perf-el-name  { font-size: 15px; font-weight: 700; color: #1a2a4a; }
+.perf-el-goal  { font-size: 13px; color: #374151; }
+.perf-el-desc  { font-size: 12px; }
+.perf-el-actions { display: flex; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
+
+/* Empty state */
+.perf-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: #64748b;
+}
+.perf-empty p { margin-bottom: 14px; font-size: 15px; }
+
+/* Mobile tweaks */
+@media (max-width: 600px) {
+  .perf-card-grid { grid-template-columns: 1fr 1fr; }
+  .perf-card-count { font-size: 26px; }
+  .perf-team-element-row { grid-template-columns: 100px 1fr 56px; }
+  .perf-form-card { padding: 18px 14px; }
+}
+@media (max-width: 380px) {
+  .perf-card-grid { grid-template-columns: 1fr; }
+}

@@ -611,7 +611,7 @@ def create_app():
     db.init_app(app)
     login_manager.init_app(app)
 
-    from .routes import auth, assistant, bolo, dashboard, forms, training, qual_tracker, stats, annual_ai, admin, cleo_api, reports, reconstruction, officers, ops_modules, legal, orders, reference, announcements, mobile
+    from .routes import auth, assistant, bolo, dashboard, forms, training, qual_tracker, performance, stats, annual_ai, admin, cleo_api, reports, reconstruction, officers, ops_modules, legal, orders, reference, announcements, mobile
     app.register_blueprint(auth.bp)
     app.register_blueprint(assistant.bp)
     app.register_blueprint(bolo.bp)
@@ -619,6 +619,7 @@ def create_app():
     app.register_blueprint(forms.bp)
     app.register_blueprint(training.bp)
     app.register_blueprint(qual_tracker.bp)
+    app.register_blueprint(performance.bp)
     app.register_blueprint(stats.bp)
     app.register_blueprint(annual_ai.bp)
     app.register_blueprint(admin.bp)

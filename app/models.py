@@ -787,3 +787,60 @@ class OfficerQualification(db.Model):
     officer = db.relationship('User', foreign_keys=[officer_id], backref='qualifications')
     logger = db.relationship('User', foreign_keys=[logged_by], backref='logged_qualifications')
 
+
+# ---------------------------------------------------------------------------
+# Phase 9 — Officer Performance / Element Tracking
+# ---------------------------------------------------------------------------
+
+PERF_STATUS_PENDING  = 'PENDING'
+PERF_STATUS_APPROVED = 'APPROVED'
+PERF_STATUS_REJECTED = 'REJECTED'
+
+
+class YearCycle(db.Model):
+    """Tracks which performance year is active; old years are archived, not deleted."""
+    __tablename__ = 'year_cycle'
+    id          = db.Column(db.Integer, primary_key=True)
+    year        = db.Column(db.Integer, unique=True, nullable=False, index=True)
+    is_active   = db.Column(db.Boolean, default=True, nullable=False, index=True)
+    started_at  = db.Column(db.DateTime, default=utcnow_naive)
+    archived_at = db.Column(db.DateTime, nullable=True)
+    archived_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+
+
+class YearElement(db.Model):
+    """A performance element (e.g. Traffic Stops) defined for a specific year."""
+    __tablename__ = 'year_element'
+    id          = db.Column(db.Integer, primary_key=True)
+    name        = db.Column(db.String(120), nullable=False)
+    category    = db.Column(db.String(80),  nullable=True)
+    goal_value  = db.Column(db.Integer,     nullable=False, default=0)
+    description = db.Column(db.Text,        nullable=True)
+    year        = db.Column(db.Integer,     nullable=False, index=True)
+    active      = db.Column(db.Boolean,     default=True, nullable=False)
+    created_by  = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    created_at  = db.Column(db.DateTime, default=utcnow_naive)
+
+    creator     = db.relationship('User', foreign_keys=[created_by])
+    submissions = db.relationship('YearSubmission', backref='element', lazy='dynamic')
+
+
+class YearSubmission(db.Model):
+    """One officer's activity entry. Only APPROVED entries count toward stats."""
+    __tablename__ = 'year_submission'
+    id             = db.Column(db.Integer, primary_key=True)
+    officer_id     = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    element_id     = db.Column(db.Integer, db.ForeignKey('year_element.id'), nullable=False, index=True)
+    quantity       = db.Column(db.Integer, nullable=False, default=1)
+    notes          = db.Column(db.Text,    nullable=True)
+    submitted_date = db.Column(db.String(10), nullable=False)   # YYYY-MM-DD
+    year           = db.Column(db.Integer, nullable=False, index=True)
+    status         = db.Column(db.String(20), default=PERF_STATUS_PENDING, nullable=False, index=True)
+    reviewed_by    = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    review_comment = db.Column(db.Text,    nullable=True)
+    reviewed_at    = db.Column(db.DateTime, nullable=True)
+    created_at     = db.Column(db.DateTime, default=utcnow_naive)
+
+    officer  = db.relationship('User', foreign_keys=[officer_id],  backref='perf_submissions')
+    reviewer = db.relationship('User', foreign_keys=[reviewed_by], backref='perf_reviewed')
+

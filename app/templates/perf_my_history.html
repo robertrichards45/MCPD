@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell">
+  {% include 'partials/nav.html' %}
+  <div class="page-wrap perf-page">
+
+    <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('performance.my_stats') }}">&#8592; My Stats</a>
+      <a class="btn btn-primary btn-sm" href="{{ url_for('performance.submit_entry') }}">+ Submit Activity</a>
+    </div>
+
+    <div class="eyebrow mb-1">Performance Tracker</div>
+    <h2 class="mb-3">My Submissions — {{ year }}</h2>
+
+    {% if subs %}
+    <div class="perf-history-list">
+      {% for sub in subs %}
+      <div class="perf-history-card perf-hist-{{ sub.status | lower }}">
+        <div class="perf-hist-top">
+          <span class="perf-hist-name">{{ sub.element.name }}</span>
+          <span class="perf-status-pill perf-pill-{{ sub.status | lower }}">{{ sub.status }}</span>
+        </div>
+        <div class="perf-hist-qty">{{ sub.quantity }} unit{% if sub.quantity != 1 %}s{% endif %}</div>
+        {% if sub.notes %}<div class="perf-hist-notes">{{ sub.notes }}</div>{% endif %}
+        <div class="perf-hist-meta">
+          Submitted {{ sub.submitted_date }}
+          {% if sub.reviewed_at %} · Reviewed {{ sub.reviewed_at.strftime('%m/%d/%Y') }}{% endif %}
+          {% if sub.review_comment %} · "{{ sub.review_comment }}"{% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="perf-empty">
+      <p>No submissions yet for {{ year }}.</p>
+      <a class="btn btn-primary" href="{{ url_for('performance.submit_entry') }}">Submit Your First Entry</a>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell">
+  {% include 'partials/nav.html' %}
+  <div class="page-wrap perf-page">
+
+    <div class="d-flex align-items-center gap-2 mb-3">
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('performance.my_stats') }}">&#8592; My Stats</a>
+    </div>
+
+    <div class="perf-form-card">
+      <div class="eyebrow">Performance Tracker</div>
+      <h2 class="mb-1">Submit Activity</h2>
+      <p class="text-muted mb-3">Your entry will be pending until a supervisor approves it.</p>
+
+      <form method="post">
+        <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}" />
+
+        <div class="perf-form-field">
+          <label class="perf-label">Element <span class="text-danger">*</span></label>
+          {% set cats = [] %}
+          {% for el in elements %}{% if el.category not in cats %}{% set _ = cats.append(el.category) %}{% endif %}{% endfor %}
+          <select class="form-control form-control-lg" name="element_id" required>
+            <option value="">— Choose element —</option>
+            {% for cat in cats %}
+            {% if cat %}
+            <optgroup label="{{ cat }}">
+              {% for el in elements if el.category == cat %}
+              <option value="{{ el.id }}" {% if preselect == el.id %}selected{% endif %}>
+                {{ el.name }} (Goal: {{ el.goal_value }})
+              </option>
+              {% endfor %}
+            </optgroup>
+            {% endif %}
+            {% endfor %}
+            {% for el in elements if not el.category %}
+            <option value="{{ el.id }}" {% if preselect == el.id %}selected{% endif %}>
+              {{ el.name }} (Goal: {{ el.goal_value }})
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="perf-form-field">
+          <label class="perf-label">Quantity <span class="text-danger">*</span></label>
+          <input class="form-control form-control-lg" type="number" name="quantity"
+                 min="1" max="9999" value="1" required />
+        </div>
+
+        <div class="perf-form-field">
+          <label class="perf-label">Notes <span class="text-muted">(optional)</span></label>
+          <textarea class="form-control" name="notes" rows="3"
+                    placeholder="Location, case number, context…"></textarea>
+        </div>
+
+        <button class="btn btn-primary btn-lg w-100 mt-2" type="submit">Submit for Approval</button>
+      </form>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

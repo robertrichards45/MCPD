@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell">
+  {% include 'partials/nav.html' %}
+  <div class="page-wrap perf-page">
+
+    <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+      <div>
+        <div class="eyebrow">Performance Tracker</div>
+        <h2 class="mb-0">Elements — {{ year }}</h2>
+      </div>
+      <div class="d-flex gap-2 flex-wrap">
+        <a class="btn btn-primary btn-sm" href="{{ url_for('performance.element_new') }}">+ New Element</a>
+        <a class="btn btn-outline-dark btn-sm" href="{{ url_for('performance.year_reset') }}">Year Reset</a>
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('performance.team_overview') }}">Team Overview</a>
+      </div>
+    </div>
+
+    {% if past_years %}
+    <div class="small text-muted mb-3">Past years archived: {{ past_years | join(', ') }}</div>
+    {% endif %}
+
+    {% if elems %}
+    <div class="perf-element-list">
+      {% for el in elems %}
+      <div class="perf-element-item {% if not el.active %}perf-el-inactive{% endif %}">
+        <div class="perf-el-main">
+          {% if el.category %}<span class="perf-el-cat">{{ el.category }}</span>{% endif %}
+          <span class="perf-el-name">{{ el.name }}</span>
+          {% if not el.active %}<span class="badge bg-secondary ms-2">Inactive</span>{% endif %}
+        </div>
+        <div class="perf-el-goal">Goal: <strong>{{ el.goal_value }}</strong></div>
+        {% if el.description %}<div class="perf-el-desc text-muted">{{ el.description }}</div>{% endif %}
+        <div class="perf-el-actions">
+          <a class="btn btn-xs btn-outline-dark" href="{{ url_for('performance.element_edit', el_id=el.id) }}">Edit</a>
+          {% if el.active %}
+          <form method="post" action="{{ url_for('performance.element_deactivate', el_id=el.id) }}" class="d-inline">
+            <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}" />
+            <button class="btn btn-xs btn-outline-danger" type="submit"
+                    onclick="return confirm('Deactivate this element?')">Deactivate</button>
+          </form>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="perf-empty">
+      <p>No elements for {{ year }}. Add the first one to get started.</p>
+      <a class="btn btn-primary" href="{{ url_for('performance.element_new') }}">+ New Element</a>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

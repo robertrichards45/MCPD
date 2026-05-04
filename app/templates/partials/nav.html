@@ -5,7 +5,7 @@
   {% set reports_active = endpoint.startswith('reports.') or endpoint.startswith('cleo_api.') or endpoint == 'dashboard.cleo' %}
   {% set reference_active = endpoint.startswith('legal.') or endpoint.startswith('orders.') or (endpoint.startswith('reference.') and endpoint not in ['reference.incident_paperwork_guide', 'reference.incident_paperwork_guide_manage']) %}
   {% set bolo_active = endpoint.startswith('bolo.') %}
-  {% set operations_active = endpoint.startswith('ops_modules.') or endpoint.startswith('training.') or endpoint.startswith('qual_tracker.') or endpoint.startswith('stats.') or endpoint.startswith('announcements.') or endpoint.startswith('officers.') or endpoint.startswith('annual_ai.') or endpoint.startswith('reconstruction.') %}
+  {% set operations_active = endpoint.startswith('ops_modules.') or endpoint.startswith('training.') or endpoint.startswith('qual_tracker.') or endpoint.startswith('performance.') or endpoint.startswith('stats.') or endpoint.startswith('announcements.') or endpoint.startswith('officers.') or endpoint.startswith('annual_ai.') or endpoint.startswith('reconstruction.') %}
   <div class="brand">
     <img src="{{ url_for('usmc_emblem') }}" alt="USMC" />
     <div class="brand-copy">
@@ -44,6 +44,7 @@
           <a class="{% if endpoint.startswith('ops_modules.') %}is-active{% endif %}" href="{{ url_for('ops_modules.vehicle_inspections') }}">Inspections</a>
           <a class="{% if endpoint.startswith('training.') %}is-active{% endif %}" href="{{ url_for('training.training_menu') }}">Training</a>
           <a class="{% if endpoint.startswith('qual_tracker.') %}is-active{% endif %}" href="{{ url_for('qual_tracker.tracker_personal') }}">Qualifications</a>
+          <a class="{% if endpoint.startswith('performance.') %}is-active{% endif %}" href="{{ url_for('performance.my_stats') }}">My Elements</a>
           <a class="{% if endpoint.startswith('announcements.') %}is-active{% endif %}" href="{{ url_for('announcements.board') }}">Notices</a>
           <a class="{% if endpoint.startswith('stats.') %}is-active{% endif %}" href="{{ url_for('stats.stats_home') }}">Stats</a>
           <a class="{% if endpoint.startswith('officers.') %}is-active{% endif %}" href="{{ url_for('officers.profile') }}">Profile</a>
