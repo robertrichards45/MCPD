@@ -1,8 +1,8 @@
 (function () {
   'use strict';
 
-  // Don't inject on mobile-foundation pages (field incident shell)
-  if (document.body.classList.contains('mobile-foundation')) return;
+  // Don't inject on auth/landing pages (no user session)
+  if (document.body.classList.contains('landing')) return;
 
   var history = [];
   var isOpen = false;

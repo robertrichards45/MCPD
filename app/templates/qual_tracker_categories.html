@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell">
+  {% include 'partials/nav.html' %}
+  <div class="page-wrap">
+
+    <div class="d-flex align-items-center gap-2 mb-3">
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('qual_tracker.tracker_readiness') }}">&#8592; Readiness</a>
+    </div>
+
+    <div class="card p-3">
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+          <div class="eyebrow">Training Tracker</div>
+          <h4 class="mb-0">Qualification Types</h4>
+        </div>
+        <a class="btn btn-primary btn-sm" href="{{ url_for('qual_tracker.tracker_category_new') }}">+ New Type</a>
+      </div>
+
+      {% if cats %}
+      <table class="table table-sm">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Valid (days)</th>
+            <th>Warn Before</th>
+            <th>Required For</th>
+            <th>Active</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for cat in cats %}
+          <tr>
+            <td>
+              <div class="fw-semibold">{{ cat.name }}</div>
+              {% if cat.description %}<div class="small text-muted">{{ cat.description }}</div>{% endif %}
+            </td>
+            <td>{{ cat.validity_days }}</td>
+            <td>{{ cat.warn_days_before }}</td>
+            <td>{{ cat.required_roles or 'All roles' }}</td>
+            <td>{% if cat.active %}<span class="badge bg-success">Yes</span>{% else %}<span class="badge bg-secondary">No</span>{% endif %}</td>
+            <td><a class="btn btn-xs btn-outline-dark" href="{{ url_for('qual_tracker.tracker_category_edit', cat_id=cat.id) }}">Edit</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="notice-panel notice-panel-soft">No qualification types yet. Add your first one to start tracking.</div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+{% endblock %}

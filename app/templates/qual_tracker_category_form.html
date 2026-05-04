@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell">
+  {% include 'partials/nav.html' %}
+  <div class="page-wrap">
+
+    <div class="d-flex align-items-center gap-2 mb-3">
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('qual_tracker.tracker_categories') }}">&#8592; Qualification Types</a>
+    </div>
+
+    <div class="card p-3" style="max-width:560px">
+      <div class="eyebrow mb-1">Training Tracker</div>
+      <h3 class="mb-3">{{ 'Edit' if cat else 'New' }} Qualification Type</h3>
+
+      <form method="post">
+        <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}" />
+
+        <div class="mb-3">
+          <label class="form-label">Name <span class="text-danger">*</span></label>
+          <input class="form-control" type="text" name="name" value="{{ cat.name if cat else '' }}" required
+                 placeholder="e.g. Annual Firearms Qualification" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Description</label>
+          <textarea class="form-control" name="description" rows="2"
+                    placeholder="Brief description shown to officers…">{{ cat.description if cat else '' }}</textarea>
+        </div>
+
+        <div class="row g-2 mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Valid For (days) <span class="text-danger">*</span></label>
+            <input class="form-control" type="number" name="validity_days" min="1" max="3650"
+                   value="{{ cat.validity_days if cat else 365 }}" required />
+            <div class="form-text">365 = 1 year, 730 = 2 years</div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Warn This Many Days Before Expiry</label>
+            <input class="form-control" type="number" name="warn_days_before" min="1" max="365"
+                   value="{{ cat.warn_days_before if cat else 30 }}" />
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Required For (leave blank for all roles)</label>
+          <input class="form-control" type="text" name="required_roles"
+                 value="{{ cat.required_roles if cat else '' }}"
+                 placeholder='e.g. ["PATROL_OFFICER","WATCH_COMMANDER"]' />
+          <div class="form-text">JSON array of role keys, or leave blank to apply to all roles.</div>
+        </div>
+
+        {% if cat %}
+        <div class="mb-3">
+          <label class="form-label">Active</label>
+          <select class="form-control" name="active">
+            <option value="1" {% if cat.active %}selected{% endif %}>Yes — show to officers</option>
+            <option value="0" {% if not cat.active %}selected{% endif %}>No — hidden</option>
+          </select>
+        </div>
+        {% endif %}
+
+        <div class="d-flex gap-2 mt-4">
+          <button class="btn btn-primary" type="submit">{{ 'Save Changes' if cat else 'Create Type' }}</button>
+          <a class="btn btn-outline-secondary" href="{{ url_for('qual_tracker.tracker_categories') }}">Cancel</a>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

@@ -754,3 +754,36 @@ class BOLOEntry(db.Model):
     creator = db.relationship('User', foreign_keys=[created_by], backref='bolo_entries')
     resolver = db.relationship('User', foreign_keys=[resolved_by], backref='resolved_bolos')
 
+
+class QualificationCategory(db.Model):
+    """Defines a required qualification type (e.g. Annual Firearms, CPR, Use of Force)."""
+    __tablename__ = 'qualification_category'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), unique=True, nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    validity_days = db.Column(db.Integer, default=365, nullable=False)
+    warn_days_before = db.Column(db.Integer, default=30, nullable=False)
+    required_roles = db.Column(db.Text, nullable=True)  # JSON list of role keys, null = all roles
+    active = db.Column(db.Boolean, default=True, nullable=False)
+    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    created_at = db.Column(db.DateTime, default=utcnow_naive)
+
+    records = db.relationship('OfficerQualification', backref='category', lazy='dynamic')
+
+
+class OfficerQualification(db.Model):
+    """A qualification completion record for one officer."""
+    __tablename__ = 'officer_qualification'
+    id = db.Column(db.Integer, primary_key=True)
+    officer_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    category_id = db.Column(db.Integer, db.ForeignKey('qualification_category.id'), nullable=False, index=True)
+    completed_date = db.Column(db.String(10), nullable=False)   # YYYY-MM-DD
+    expiration_date = db.Column(db.String(10), nullable=False)  # YYYY-MM-DD
+    notes = db.Column(db.Text, nullable=True)
+    file_path = db.Column(db.String(255), nullable=True)
+    logged_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    created_at = db.Column(db.DateTime, default=utcnow_naive)
+
+    officer = db.relationship('User', foreign_keys=[officer_id], backref='qualifications')
+    logger = db.relationship('User', foreign_keys=[logged_by], backref='logged_qualifications')
+

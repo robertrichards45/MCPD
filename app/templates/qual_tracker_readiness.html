@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell">
+  {% include 'partials/nav.html' %}
+  <div class="page-wrap">
+
+    <section class="search-hero authority-hero mb-3">
+      <div class="search-hero-copy">
+        <div class="eyebrow">Training Tracker</div>
+        <h1>Team Readiness Dashboard</h1>
+        <p>Qualification status for all active personnel. Red rows need attention.</p>
+      </div>
+      <div class="search-hero-meta">
+        <div class="hero-chip">
+          <span class="hero-chip-label">Officers</span>
+          <strong>{{ total }}</strong>
+        </div>
+        <div class="hero-chip">
+          <span class="hero-chip-label">Issues</span>
+          <strong {% if issues %}class="text-danger"{% endif %}>{{ issues }}</strong>
+        </div>
+      </div>
+    </section>
+
+    <div class="card p-3 mb-3 d-flex flex-wrap gap-2 align-items-center justify-content-between">
+      <div class="d-flex gap-2 flex-wrap">
+        <a class="btn btn-primary btn-sm" href="{{ url_for('qual_tracker.tracker_log') }}">Log Completion</a>
+        <a class="btn btn-outline-dark btn-sm" href="{{ url_for('qual_tracker.tracker_personal') }}">My Record</a>
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('qual_tracker.tracker_categories') }}">Manage Types</a>
+      </div>
+      <div class="d-flex gap-3 small">
+        <span><span class="qual-legend-dot qual-dot-current"></span> Current</span>
+        <span><span class="qual-legend-dot qual-dot-warning"></span> Expiring Soon</span>
+        <span><span class="qual-legend-dot qual-dot-critical"></span> Critical</span>
+        <span><span class="qual-legend-dot qual-dot-expired"></span> Expired</span>
+        <span><span class="qual-legend-dot qual-dot-unknown"></span> No Record</span>
+      </div>
+    </div>
+
+    {% if grid %}
+    <div class="card p-0 overflow-auto">
+      <table class="qual-readiness-table">
+        <thead>
+          <tr>
+            <th class="qual-readiness-name-col">Officer</th>
+            {% for cat in categories %}
+            <th class="qual-readiness-cat-col" title="{{ cat.description or cat.name }}">{{ cat.name }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in grid %}
+          <tr>
+            <td class="qual-readiness-name-cell">
+              <a href="{{ url_for('qual_tracker.tracker_log', officer_id=row.officer.id) }}" class="text-decoration-none">
+                <div class="fw-semibold">{{ row.officer.display_name }}</div>
+                <div class="small text-muted">{{ row.officer.role_label }}</div>
+              </a>
+            </td>
+            {% for cell in row.cells %}
+            <td class="qual-readiness-cell qual-cell-{{ cell.status }}" title="{{ cell.category.name }}{% if cell.record %} — expires {{ cell.record.expiration_date }}{% endif %}">
+              <span class="qual-cell-dot qual-dot-{{ cell.status }}"></span>
+              {% if cell.days_left is not none %}
+              <span class="qual-cell-days">
+                {% if cell.days_left < 0 %}OVR
+                {% elif cell.days_left == 0 %}TODAY
+                {% elif cell.days_left <= 30 %}{{ cell.days_left }}d
+                {% endif %}
+              </span>
+              {% endif %}
+            </td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="card p-4 text-center text-muted">No active personnel found, or no qualification types are configured.</div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

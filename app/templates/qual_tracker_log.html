@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell">
+  {% include 'partials/nav.html' %}
+  <div class="page-wrap">
+
+    <div class="d-flex align-items-center gap-2 mb-3">
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('qual_tracker.tracker_readiness') }}">&#8592; Readiness</a>
+    </div>
+
+    <div class="card p-3" style="max-width:620px">
+      <div class="eyebrow mb-1">Training Tracker</div>
+      <h3 class="mb-3">Log Qualification Completion</h3>
+
+      <form method="post" enctype="multipart/form-data">
+        <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}" />
+
+        <div class="mb-3">
+          <label class="form-label">Officer <span class="text-danger">*</span></label>
+          <select class="form-control" name="officer_id" required>
+            <option value="">— Select Officer —</option>
+            {% for officer in officers %}
+            <option value="{{ officer.id }}" {% if preselect_officer == officer.id %}selected{% endif %}>{{ officer.display_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Qualification Type <span class="text-danger">*</span></label>
+          <select class="form-control" name="category_id" required id="cat-select">
+            <option value="">— Select Type —</option>
+            {% for cat in categories %}
+            <option value="{{ cat.id }}" data-validity="{{ cat.validity_days }}" {% if preselect_cat == cat.id %}selected{% endif %}>{{ cat.name }} (valid {{ cat.validity_days }} days)</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="row g-2 mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Completion Date <span class="text-danger">*</span></label>
+            <input class="form-control" type="date" name="completed_date" id="completed-date" value="{{ today }}" required />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Calculated Expiration</label>
+            <input class="form-control" type="text" id="exp-preview" value="—" readonly />
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Notes (optional)</label>
+          <textarea class="form-control" name="notes" rows="2" placeholder="Range score, instructor, location…"></textarea>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label">Supporting Document (optional)</label>
+          <input class="form-control" type="file" name="document" accept=".pdf,.jpg,.jpeg,.png" />
+          <div class="form-text">PDF or image. Range cards, training certificates, etc.</div>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button class="btn btn-primary" type="submit">Save Record</button>
+          <a class="btn btn-outline-secondary" href="{{ url_for('qual_tracker.tracker_readiness') }}">Cancel</a>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+(function () {
+  var catSelect = document.getElementById('cat-select');
+  var completedInput = document.getElementById('completed-date');
+  var expPreview = document.getElementById('exp-preview');
+
+  function updateExp() {
+    var opt = catSelect.options[catSelect.selectedIndex];
+    var validity = opt ? parseInt(opt.getAttribute('data-validity') || '0', 10) : 0;
+    var completedVal = completedInput.value;
+    if (!validity || !completedVal) { expPreview.value = '—'; return; }
+    var d = new Date(completedVal + 'T00:00:00');
+    d.setDate(d.getDate() + validity);
+    expPreview.value = d.toISOString().slice(0, 10);
+  }
+
+  catSelect.addEventListener('change', updateExp);
+  completedInput.addEventListener('change', updateExp);
+  updateExp();
+}());
+</script>
+{% endblock %}
