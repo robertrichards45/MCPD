@@ -123,72 +123,77 @@ def _safe_schema_execute(statement, params=None):
         return False
 
 
+def _quoted_identifier(name):
+    return db.engine.dialect.identifier_preparer.quote(name)
+
+
 def ensure_schema():
     inspector = inspect(db.engine)
     table_names = set(inspector.get_table_names())
     user_columns = {column['name'] for column in inspector.get_columns('user')}
     user_indexes = {index['name'] for index in inspector.get_indexes('user')}
+    user_table = _quoted_identifier('user')
     if 'edipi' not in user_columns:
-        _safe_schema_execute('ALTER TABLE user ADD COLUMN edipi VARCHAR(20)')
+        _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN edipi VARCHAR(20)')
     if 'first_name' not in user_columns:
-        _safe_schema_execute('ALTER TABLE user ADD COLUMN first_name VARCHAR(80)')
+        _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN first_name VARCHAR(80)')
     if 'last_name' not in user_columns:
-        _safe_schema_execute('ALTER TABLE user ADD COLUMN last_name VARCHAR(80)')
+        _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN last_name VARCHAR(80)')
     if 'officer_number' not in user_columns:
-        _safe_schema_execute('ALTER TABLE user ADD COLUMN officer_number VARCHAR(30)')
+        _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN officer_number VARCHAR(30)')
     if 'display_name_override' not in user_columns:
-        _safe_schema_execute('ALTER TABLE user ADD COLUMN display_name_override VARCHAR(120)')
+        _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN display_name_override VARCHAR(120)')
     if 'email' not in user_columns:
-        _safe_schema_execute('ALTER TABLE user ADD COLUMN email VARCHAR(120)')
+        _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN email VARCHAR(120)')
     if 'phone_number' not in user_columns:
-        _safe_schema_execute('ALTER TABLE user ADD COLUMN phone_number VARCHAR(30)')
+        _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN phone_number VARCHAR(30)')
     if 'badge_employee_id' not in user_columns:
-        _safe_schema_execute('ALTER TABLE user ADD COLUMN badge_employee_id VARCHAR(40)')
+        _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN badge_employee_id VARCHAR(40)')
     if 'section_unit' not in user_columns:
-        _safe_schema_execute('ALTER TABLE user ADD COLUMN section_unit VARCHAR(120)')
+        _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN section_unit VARCHAR(120)')
     if 'profile_image_path' not in user_columns:
-        _safe_schema_execute('ALTER TABLE user ADD COLUMN profile_image_path VARCHAR(255)')
+        _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN profile_image_path VARCHAR(255)')
     if 'address' not in user_columns:
-        _safe_schema_execute('ALTER TABLE user ADD COLUMN address VARCHAR(255)')
+        _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN address VARCHAR(255)')
     if 'cac_identifier' not in user_columns:
-        _safe_schema_execute('ALTER TABLE user ADD COLUMN cac_identifier VARCHAR(255)')
+        _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN cac_identifier VARCHAR(255)')
     if 'cac_enabled' not in user_columns:
-        if _safe_schema_execute('ALTER TABLE user ADD COLUMN cac_enabled BOOLEAN'):
-            _safe_schema_execute('UPDATE user SET cac_enabled = 0 WHERE cac_enabled IS NULL')
+        if _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN cac_enabled BOOLEAN'):
+            _safe_schema_execute(f'UPDATE {user_table} SET cac_enabled = 0 WHERE cac_enabled IS NULL')
     if 'cac_linked_at' not in user_columns:
-        _safe_schema_execute('ALTER TABLE user ADD COLUMN cac_linked_at DATETIME')
+        _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN cac_linked_at DATETIME')
     if 'pin_hash' not in user_columns:
-        _safe_schema_execute('ALTER TABLE user ADD COLUMN pin_hash VARCHAR(255)')
+        _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN pin_hash VARCHAR(255)')
     if 'can_grade_cleoc_reports' not in user_columns:
-        if _safe_schema_execute('ALTER TABLE user ADD COLUMN can_grade_cleoc_reports BOOLEAN'):
-            _safe_schema_execute('UPDATE user SET can_grade_cleoc_reports = 0 WHERE can_grade_cleoc_reports IS NULL')
+        if _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN can_grade_cleoc_reports BOOLEAN'):
+            _safe_schema_execute(f'UPDATE {user_table} SET can_grade_cleoc_reports = 0 WHERE can_grade_cleoc_reports IS NULL')
     if 'supervisor_id' not in user_columns:
-        _safe_schema_execute('ALTER TABLE user ADD COLUMN supervisor_id INTEGER')
+        _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN supervisor_id INTEGER')
     if 'pending_approval' not in user_columns:
-        if _safe_schema_execute('ALTER TABLE user ADD COLUMN pending_approval BOOLEAN'):
-            _safe_schema_execute('UPDATE user SET pending_approval = 0 WHERE pending_approval IS NULL')
+        if _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN pending_approval BOOLEAN'):
+            _safe_schema_execute(f'UPDATE {user_table} SET pending_approval = 0 WHERE pending_approval IS NULL')
     if 'installation' not in user_columns:
-        _safe_schema_execute('ALTER TABLE user ADD COLUMN installation VARCHAR(100)')
-    admin_count = db.session.execute(text("SELECT COUNT(*) FROM user WHERE role = 'ADMIN'")).scalar() or 0
+        _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN installation VARCHAR(100)')
+    admin_count = db.session.execute(text(f"SELECT COUNT(*) FROM {user_table} WHERE role = 'ADMIN'")).scalar() or 0
     if admin_count:
         _safe_schema_execute(
-            "UPDATE user SET role = :controller WHERE role = 'ADMIN'",
+            f"UPDATE {user_table} SET role = :controller WHERE role = 'ADMIN'",
             {'controller': ROLE_WEBSITE_CONTROLLER},
         )
-    officer_count = db.session.execute(text("SELECT COUNT(*) FROM user WHERE role = 'OFFICER'")).scalar() or 0
+    officer_count = db.session.execute(text(f"SELECT COUNT(*) FROM {user_table} WHERE role = 'OFFICER'")).scalar() or 0
     if officer_count:
         _safe_schema_execute(
-            "UPDATE user SET role = :patrol WHERE role = 'OFFICER'",
+            f"UPDATE {user_table} SET role = :patrol WHERE role = 'OFFICER'",
             {'patrol': 'PATROL_OFFICER'},
         )
     if 'ix_user_edipi_unique' not in user_indexes:
-        _safe_schema_execute('CREATE UNIQUE INDEX IF NOT EXISTS ix_user_edipi_unique ON user (edipi) WHERE edipi IS NOT NULL')
+        _safe_schema_execute(f'CREATE UNIQUE INDEX IF NOT EXISTS ix_user_edipi_unique ON {user_table} (edipi) WHERE edipi IS NOT NULL')
     if 'ix_user_officer_number_unique' not in user_indexes:
-        _safe_schema_execute('CREATE UNIQUE INDEX IF NOT EXISTS ix_user_officer_number_unique ON user (officer_number) WHERE officer_number IS NOT NULL')
+        _safe_schema_execute(f'CREATE UNIQUE INDEX IF NOT EXISTS ix_user_officer_number_unique ON {user_table} (officer_number) WHERE officer_number IS NOT NULL')
     if 'ix_user_cac_identifier_unique' not in user_indexes:
-        _safe_schema_execute('CREATE UNIQUE INDEX IF NOT EXISTS ix_user_cac_identifier_unique ON user (cac_identifier) WHERE cac_identifier IS NOT NULL')
+        _safe_schema_execute(f'CREATE UNIQUE INDEX IF NOT EXISTS ix_user_cac_identifier_unique ON {user_table} (cac_identifier) WHERE cac_identifier IS NOT NULL')
     if 'ix_user_email_unique' not in user_indexes:
-        _safe_schema_execute('CREATE UNIQUE INDEX IF NOT EXISTS ix_user_email_unique ON user (email) WHERE email IS NOT NULL')
+        _safe_schema_execute(f'CREATE UNIQUE INDEX IF NOT EXISTS ix_user_email_unique ON {user_table} (email) WHERE email IS NOT NULL')
 
     if 'truck_gate_log' in table_names:
         truck_gate_log_columns = {column['name'] for column in inspector.get_columns('truck_gate_log')}

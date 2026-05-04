@@ -25,6 +25,8 @@ def _normalize_database_uri(value):
     raw = str(value or '').strip()
     if not raw:
         return DEFAULT_DATABASE_URI
+    if raw.startswith('postgres://'):
+        return 'postgresql://' + raw[len('postgres://'):]
     if not raw.startswith('sqlite:///') or raw.startswith('sqlite:////'):
         return raw
 

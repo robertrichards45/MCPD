@@ -12,6 +12,8 @@ APP_ENV=prod
 REQUIRE_PERSISTENT_DATABASE=1
 ```
 
+The app accepts both `postgresql://...` and Railway-style `postgres://...` database URLs.
+
 Do not use the default local SQLite path on Railway:
 
 ```text
@@ -33,4 +35,3 @@ REQUIRE_PERSISTENT_DATABASE=1
 ## Safety Guard
 
 The app now refuses to boot on Railway if `DATABASE_URL` points to unsafe local SQLite storage. This is intentional. It is better for deploy to fail clearly than to start with an empty database and make officers recreate accounts.
-
