@@ -233,3 +233,37 @@ def test_watch_commander_role_defaults_to_assignable_watch_shift():
         with client.application.app_context():
             _delete_user(username)
         _dispose_app(client.application)
+
+
+def test_edit_page_can_delete_new_bad_account():
+    client = _logged_in_client()
+    username = "pytest_delete_bad_account"
+    try:
+        with client.application.app_context():
+            _delete_user(username)
+            officer = User(
+                username=username,
+                first_name="Delete",
+                last_name="Account",
+                role=ROLE_PATROL_OFFICER,
+                active=True,
+                installation="MCLB_ALBANY",
+            )
+            officer.set_password("TempPass123!")
+            db.session.add(officer)
+            db.session.commit()
+            officer_id = officer.id
+
+        response = client.post(
+            f"/admin/users/{officer_id}/edit",
+            data={"action": "delete"},
+            follow_redirects=False,
+        )
+        assert response.status_code in {302, 303}
+
+        with client.application.app_context():
+            assert User.query.filter_by(username=username).first() is None
+    finally:
+        with client.application.app_context():
+            _delete_user(username)
+        _dispose_app(client.application)
