@@ -7,6 +7,15 @@ DATA_DIR = os.path.join(ROOT_DIR, 'data')
 UPLOAD_ROOT = os.environ.get('UPLOAD_ROOT', os.path.join(DATA_DIR, 'uploads'))
 DEFAULT_DATABASE_URI = f"sqlite:///{os.path.join(DATA_DIR, 'app.db').replace(os.sep, '/')}"
 
+# Railway provides DATABASE_URL (private network) and DATABASE_PUBLIC_URL (public).
+# Prefer DATABASE_URL; fall back to DATABASE_PUBLIC_URL so the app works even when
+# the private network isn't wired up (e.g. wrong service linking or first deploy).
+_RAW_DATABASE_URL = (
+    os.environ.get('DATABASE_URL') or
+    os.environ.get('DATABASE_PUBLIC_URL') or
+    ''
+).strip()
+
 
 def _header_list(value):
     return [item.strip() for item in (value or '').split(',') if item.strip()]
@@ -38,7 +47,7 @@ def _normalize_database_uri(value):
 
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY', 'change-me')
-    SQLALCHEMY_DATABASE_URI = _normalize_database_uri(os.environ.get('DATABASE_URL'))
+    SQLALCHEMY_DATABASE_URI = _normalize_database_uri(_RAW_DATABASE_URL)
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     REMEMBER_COOKIE_DURATION = timedelta(days=7)
     UPLOAD_ROOT = UPLOAD_ROOT
