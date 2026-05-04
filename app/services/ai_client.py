@@ -87,7 +87,7 @@ def is_ai_unavailable_message(text):
     )
 
 
-def _disable_ai_temporarily(message, minutes=20):
+def _disable_ai_temporarily(message, minutes=1):
     global _AI_DISABLED_MESSAGE, _AI_DISABLED_UNTIL
     _AI_DISABLED_MESSAGE = message
     _AI_DISABLED_UNTIL = datetime.now(timezone.utc) + timedelta(minutes=minutes)
