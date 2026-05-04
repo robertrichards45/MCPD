@@ -118,6 +118,11 @@ def ensure_schema():
             _safe_schema_execute('UPDATE user SET can_grade_cleoc_reports = 0 WHERE can_grade_cleoc_reports IS NULL')
     if 'supervisor_id' not in user_columns:
         _safe_schema_execute('ALTER TABLE user ADD COLUMN supervisor_id INTEGER')
+    if 'pending_approval' not in user_columns:
+        if _safe_schema_execute('ALTER TABLE user ADD COLUMN pending_approval BOOLEAN'):
+            _safe_schema_execute('UPDATE user SET pending_approval = 0 WHERE pending_approval IS NULL')
+    if 'installation' not in user_columns:
+        _safe_schema_execute('ALTER TABLE user ADD COLUMN installation VARCHAR(100)')
     admin_count = db.session.execute(text("SELECT COUNT(*) FROM user WHERE role = 'ADMIN'")).scalar() or 0
     if admin_count:
         _safe_schema_execute(
