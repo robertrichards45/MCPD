@@ -319,6 +319,8 @@ def _apply_personnel_edit(target):
     target.can_grade_cleoc_reports = request.form.get('can_grade_cleoc_reports') == '1'
     if 'active' in request.form:
         target.active = request.form.get('active') == '1'
+        if target.active:
+            target.pending_approval = False
     if installation:
         target.installation = installation
 

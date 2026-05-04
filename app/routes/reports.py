@@ -14,6 +14,7 @@ from ..extensions import db
 from ..models import (
     AccidentReconstruction,
     CleoReport,
+    IncidentDraft,
     ReconstructionMeasurement,
     ReconstructionMedia,
     ReconstructionObject,
@@ -228,11 +229,18 @@ def list_reports():
             .order_by(CleoReport.updated_at.desc())
             .all()
         )
+    active_incident_draft = (
+        IncidentDraft.query
+        .filter_by(officer_user_id=current_user.id, status='ACTIVE')
+        .order_by(IncidentDraft.updated_at.desc())
+        .first()
+    )
     return render_template(
         'reports_list.html',
         reports=reports,
         cleo_reports=cleo_reports,
         cleo_review_reports=cleo_review_reports,
+        active_incident_draft=active_incident_draft,
         report_count=len(reports),
         cleo_count=len(cleo_reports),
         cleo_review_count=len(cleo_review_reports),

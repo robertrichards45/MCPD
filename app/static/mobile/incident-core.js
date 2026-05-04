@@ -1,6 +1,8 @@
 (function () {
   const STORAGE_KEY = 'mcpd.mobile.incident.state';
   let stateCache = null;
+  let draftSyncTimer = null;
+  let draftHydrated = false;
   const jsonScriptCache = {};
 
   const defaultCallTypeRules = {
@@ -400,9 +402,50 @@
     }
   }
 
+  function isMeaningfulIncidentState(current) {
+    const state = current || {};
+    const basics = state.incidentBasics || {};
+    return !!(
+      state.callType
+      || Object.values(basics).some((value) => String(value || '').trim())
+      || (Array.isArray(state.persons) && state.persons.length)
+      || (Array.isArray(state.facts) && state.facts.some((entry) => entry && String(entry.value || '').trim()))
+      || String(state.narrative || '').trim()
+    );
+  }
+
+  function scheduleDraftSync(nextState) {
+    if (!draftHydrated || !isMeaningfulIncidentState(nextState)) return;
+    window.clearTimeout(draftSyncTimer);
+    draftSyncTimer = window.setTimeout(() => {
+      fetch('/mobile/api/incident/draft', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ incident: nextState }),
+      }).catch(() => {});
+    }, 350);
+  }
+
+  async function hydrateDraftFromServer() {
+    if (draftHydrated) return;
+    draftHydrated = true;
+    try {
+      const local = readState();
+      if (isMeaningfulIncidentState(local)) return;
+      const response = await fetch('/mobile/api/incident/draft', { credentials: 'same-origin' });
+      const payload = await response.json().catch(() => ({}));
+      const serverState = payload && payload.draft && payload.draft.state;
+      if (serverState && isMeaningfulIncidentState(serverState)) {
+        writeState(serverState);
+      }
+    } catch (_error) {}
+  }
+
   function writeState(nextState) {
     stateCache = Object.assign(clone(defaultState), nextState || {});
     window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(stateCache));
+    scheduleDraftSync(stateCache);
     return clone(stateCache);
   }
 
@@ -1404,6 +1447,10 @@
   function clearSessionAfterSend() {
     stateCache = null;
     window.sessionStorage.removeItem(STORAGE_KEY);
+    fetch('/mobile/api/incident/draft', {
+      method: 'DELETE',
+      credentials: 'same-origin',
+    }).catch(() => {});
   }
 
   function packetValidationCard(title, items, variant) {
@@ -3406,9 +3453,10 @@
     `;
   }
 
-  function mountIncidentPages() {
+  async function mountIncidentPages() {
     const root = document.querySelector('.mobile-incident-app');
     if (!root) return;
+    await hydrateDraftFromServer();
     const page = root.getAttribute('data-mobile-incident-page') || 'start';
     const urls = {
       home: root.getAttribute('data-mobile-home-url') || '/mobile/home',

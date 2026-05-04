@@ -1,6 +1,6 @@
 from app import create_app
 from app.extensions import db
-from app.models import ROLE_DESK_SGT, ROLE_PATROL_OFFICER, ROLE_WATCH_COMMANDER, User
+from app.models import IncidentDraft, ROLE_DESK_SGT, ROLE_PATROL_OFFICER, ROLE_WATCH_COMMANDER, User
 
 
 def _logged_in_client():
@@ -266,4 +266,97 @@ def test_edit_page_can_delete_new_bad_account():
     finally:
         with client.application.app_context():
             _delete_user(username)
+        _dispose_app(client.application)
+
+
+def test_edit_activation_clears_pending_approval_so_officer_can_login():
+    client = _logged_in_client()
+    username = "pytest_activate_pending"
+    try:
+        with client.application.app_context():
+            _delete_user(username)
+            officer = User(
+                username=username,
+                first_name="Activate",
+                last_name="Pending",
+                role=ROLE_PATROL_OFFICER,
+                active=False,
+                pending_approval=True,
+                installation="MCLB_ALBANY",
+            )
+            officer.set_password("TempPass123!")
+            db.session.add(officer)
+            db.session.commit()
+            officer_id = officer.id
+
+        response = client.post(
+            f"/admin/users/{officer_id}/edit",
+            data={
+                "first_name": "Activate",
+                "last_name": "Pending",
+                "phone_number": "555-0155",
+                "address": "400 Command Way",
+                "section_unit": "Alpha Shift",
+                "installation": "MCLB_ALBANY",
+                "supervisor_id": "",
+                "role": ROLE_PATROL_OFFICER,
+                "active": "1",
+            },
+            follow_redirects=False,
+        )
+        assert response.status_code in {302, 303}
+
+        with client.application.app_context():
+            officer = db.session.get(User, officer_id)
+            assert officer.active is True
+            assert officer.pending_approval is False
+
+        login_response = client.post(
+            "/login",
+            data={"username": username, "password": "TempPass123!"},
+            follow_redirects=False,
+        )
+        assert login_response.status_code in {302, 303}
+    finally:
+        with client.application.app_context():
+            _delete_user(username)
+        _dispose_app(client.application)
+
+
+def test_mobile_incident_draft_sync_api_round_trip():
+    client = _logged_in_client()
+    try:
+        response = client.post(
+            "/mobile/api/incident/draft",
+            json={
+                "incident": {
+                    "callType": "domestic-disturbance",
+                    "incidentBasics": {
+                        "location": "Bldg 100",
+                        "summary": "Victim reported being pushed.",
+                    },
+                    "persons": [{"name": "Jane Doe", "role": "Victim"}],
+                }
+            },
+        )
+        assert response.status_code == 200
+        assert response.get_json()["ok"] is True
+
+        get_response = client.get("/mobile/api/incident/draft")
+        payload = get_response.get_json()
+        assert payload["ok"] is True
+        assert payload["draft"]["state"]["callType"] == "domestic-disturbance"
+        assert payload["draft"]["location"] == "Bldg 100"
+
+        delete_response = client.delete("/mobile/api/incident/draft")
+        assert delete_response.status_code == 200
+        assert delete_response.get_json()["ok"] is True
+
+        with client.application.app_context():
+            active = IncidentDraft.query.filter_by(status="ACTIVE").first()
+            assert active is None
+    finally:
+        with client.application.app_context():
+            IncidentDraft.query.delete()
+            db.session.commit()
         _dispose_app(client.application)

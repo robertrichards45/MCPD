@@ -836,6 +836,21 @@ class IncidentPacket(db.Model):
     reviewer = db.relationship('User', foreign_keys=[reviewer_user_id], backref='reviewed_packets')
 
 
+class IncidentDraft(db.Model):
+    """Active cross-device incident draft for the officer workflow."""
+    id = db.Column(db.Integer, primary_key=True)
+    officer_user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    status = db.Column(db.String(20), default='ACTIVE', nullable=False, index=True)
+    call_type = db.Column(db.String(80), nullable=True)
+    location = db.Column(db.String(255), nullable=True)
+    summary = db.Column(db.String(500), nullable=True)
+    draft_json = db.Column(db.Text, nullable=False, default='{}')
+    created_at = db.Column(db.DateTime, default=utcnow_naive, nullable=False, index=True)
+    updated_at = db.Column(db.DateTime, default=utcnow_naive, onupdate=utcnow_naive, nullable=False, index=True)
+
+    officer = db.relationship('User', foreign_keys=[officer_user_id], backref='incident_drafts')
+
+
 BOLO_STATUS_ACTIVE = 'ACTIVE'
 BOLO_STATUS_LOCATED = 'LOCATED'
 BOLO_STATUS_CANCELLED = 'CANCELLED'

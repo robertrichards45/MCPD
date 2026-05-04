@@ -19,6 +19,7 @@ from ..extensions import db
 from ..models import (
     AuditLog,
     Form,
+    IncidentDraft,
     IncidentPacket,
     PACKET_APPROVAL_APPROVED,
     PACKET_APPROVAL_NEEDS_CORRECTION,
@@ -36,6 +37,88 @@ from ..services.mobile_incident_documents import build_narrative_draft, build_pa
 from ..services.mobile_form_catalog import build_mobile_form_catalog
 
 bp = Blueprint('mobile', __name__)
+
+
+def _active_incident_draft():
+    return (
+        IncidentDraft.query
+        .filter_by(officer_user_id=current_user.id, status='ACTIVE')
+        .order_by(IncidentDraft.updated_at.desc())
+        .first()
+    )
+
+
+def _state_summary_fields(state):
+    if not isinstance(state, dict):
+        state = {}
+    basics = state.get('incidentBasics') if isinstance(state.get('incidentBasics'), dict) else {}
+    facts = state.get('facts') if isinstance(state.get('facts'), list) else []
+    summary = str(basics.get('summary') or '').strip()
+    if not summary:
+        for fact in facts:
+            if isinstance(fact, dict) and str(fact.get('value') or '').strip():
+                summary = str(fact.get('value') or '').strip()
+                break
+    return {
+        'call_type': str(state.get('callType') or '')[:80] or None,
+        'location': str(basics.get('location') or '')[:255] or None,
+        'summary': summary[:500] or None,
+    }
+
+
+@bp.route('/mobile/api/incident/draft', methods=['GET', 'POST', 'DELETE'])
+@login_required
+def incident_draft_api():
+    if request.method == 'GET':
+        draft = _active_incident_draft()
+        if not draft:
+            return jsonify({'ok': True, 'draft': None})
+        try:
+            state = json.loads(draft.draft_json or '{}')
+        except Exception:
+            state = {}
+        return jsonify(
+            {
+                'ok': True,
+                'draft': {
+                    'id': draft.id,
+                    'state': state,
+                    'updatedAt': draft.updated_at.isoformat() if draft.updated_at else None,
+                    'callType': draft.call_type,
+                    'location': draft.location,
+                    'summary': draft.summary,
+                },
+            }
+        )
+
+    if request.method == 'DELETE':
+        draft = _active_incident_draft()
+        if draft:
+            draft.status = 'CLEARED'
+            draft.updated_at = utcnow_naive()
+            db.session.add(draft)
+            db.session.add(AuditLog(actor_id=current_user.id, action='mobile_incident_draft_clear', details=str(draft.id)))
+            db.session.commit()
+        return jsonify({'ok': True})
+
+    payload = request.get_json(silent=True) or {}
+    state = payload.get('incident') if isinstance(payload.get('incident'), dict) else payload.get('state')
+    if not isinstance(state, dict):
+        return jsonify({'ok': False, 'error': 'Invalid incident draft.'}), 400
+    draft = _active_incident_draft()
+    if not draft:
+        draft = IncidentDraft(officer_user_id=current_user.id)
+    fields = _state_summary_fields(state)
+    draft.call_type = fields['call_type']
+    draft.location = fields['location']
+    draft.summary = fields['summary']
+    draft.draft_json = json.dumps(state, default=str)
+    draft.status = 'ACTIVE'
+    draft.updated_at = utcnow_naive()
+    db.session.add(draft)
+    db.session.add(AuditLog(actor_id=current_user.id, action='mobile_incident_draft_save', details=draft.call_type or 'draft'))
+    db.session.commit()
+    return jsonify({'ok': True, 'draftId': draft.id, 'updatedAt': draft.updated_at.isoformat() if draft.updated_at else None})
 
 
 def _require_csrf(f):
@@ -1045,6 +1128,7 @@ def _smtp_send_packet(recipient, cc_list, subject, body, attachments):
 def home():
     saved_forms_count = SavedForm.query.filter_by(officer_user_id=current_user.id).count()
     report_count = Report.query.filter_by(owner_id=current_user.id).count()
+    active_incident_draft = _active_incident_draft()
     primary_cards = [
         {
             'title': 'Start Incident',
@@ -1078,6 +1162,7 @@ def home():
         action_cards=primary_cards + feature_cards,
         dashboard_saved_forms_count=saved_forms_count,
         dashboard_report_count=report_count,
+        active_incident_draft=active_incident_draft,
         **_shell_context('Home', 'home'),
     )
 
@@ -1529,6 +1614,11 @@ def send_packet_api():
         db.session.add(packet_record)
     except Exception:
         pass
+    draft = _active_incident_draft()
+    if draft:
+        draft.status = 'SENT'
+        draft.updated_at = utcnow_naive()
+        db.session.add(draft)
     db.session.commit()
     return jsonify(
         {
