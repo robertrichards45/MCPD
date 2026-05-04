@@ -5,13 +5,86 @@
   <div class="page-wrap">
     <div class="card p-3 mb-3 page-head">
       <h2 class="mb-1">Personnel Management</h2>
-      <p class="text-muted mb-0">Website Controllers can manage all personnel. Watch Commanders can manage only assigned officers.</p>
+      <p class="text-muted mb-0">Website Controllers manage all personnel. Watch Commanders manage only their installation's officers.</p>
     </div>
+
     {% if database_write_notice %}<div class="alert alert-warning">{{ database_write_notice }}</div>{% endif %}
     {% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
     {% if success %}<div class="alert alert-success">{{ success }}</div>{% endif %}
     {% if issued_code %}<div class="alert alert-warning">Enrollment Code: <strong>{{ issued_code }}</strong></div>{% endif %}
 
+    {# ── Pending Approvals ──────────────────────────────────────────── #}
+    {% if pending_accounts %}
+    <div class="card p-3 mb-4 pending-approvals-card">
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <span class="pending-badge-dot"></span>
+        <h5 class="mb-0">Pending Account Requests</h5>
+        <span class="badge bg-warning text-dark ms-1">{{ pending_accounts|length }}</span>
+      </div>
+      <div class="pending-list">
+        {% for pending in pending_accounts %}
+        <div class="pending-item">
+          <div class="pending-item-info">
+            <div class="pending-item-name">{{ pending.display_name }}</div>
+            <div class="pending-item-meta">
+              <span>@{{ pending.username }}</span>
+              {% if pending.installation %}
+                <span class="pending-item-install">{{ installation_labels.get(pending.installation, pending.installation) }}</span>
+              {% endif %}
+              {% if pending.phone_number %}
+                <span>{{ pending.phone_number }}</span>
+              {% endif %}
+              <span class="text-muted">Requested {{ pending.created_at.strftime('%b %d, %Y') if pending.created_at else 'unknown' }}</span>
+            </div>
+            {% if pending.address %}
+              <div class="pending-item-address">{{ pending.address }}</div>
+            {% endif %}
+          </div>
+          <div class="pending-item-actions">
+            <form method="post" class="pending-approve-form">
+              <input type="hidden" name="action" value="approve" />
+              <input type="hidden" name="pending_id" value="{{ pending.id }}" />
+              <div class="pending-form-row">
+                <div>
+                  <label class="form-label-xs">Role</label>
+                  <select class="form-control form-control-sm" name="role">
+                    {% for role in role_options %}
+                      <option value="{{ role }}">{{ role_labels.get(role, role.replace('_', ' ').title()) }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div>
+                  <label class="form-label-xs">Supervisor / Unit</label>
+                  <select class="form-control form-control-sm" name="supervisor_id">
+                    <option value="">Unassigned</option>
+                    {% for sup in supervisors %}
+                      <option value="{{ sup.id }}">{{ sup.display_name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div>
+                  <label class="form-label-xs">Section / Shift</label>
+                  <input class="form-control form-control-sm" name="section_unit" placeholder="e.g. Alpha Shift" />
+                </div>
+              </div>
+              <div class="d-flex gap-2 mt-2">
+                <button class="btn btn-success btn-sm">Approve &amp; Activate</button>
+                <button
+                  class="btn btn-outline-danger btn-sm"
+                  type="submit"
+                  formaction="{{ url_for('auth.manage_users') }}"
+                  onclick="this.form.querySelector('[name=action]').value='reject'; return confirm('Reject and delete this account request?');"
+                >Reject</button>
+              </div>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {# ── Create / Update ────────────────────────────────────────────── #}
     <div class="row">
       <div class="col-md-6">
         <details class="card p-3 mb-3 collapse-card" open>
@@ -44,7 +117,7 @@
           </div>
           <div class="form-check mb-3">
             <input class="form-check-input" type="checkbox" name="can_grade_cleoc_reports" value="1" id="createCanGradeCleoc">
-              <label class="form-check-label" for="createCanGradeCleoc">Can review mock reports</label>
+            <label class="form-check-label" for="createCanGradeCleoc">Can review mock reports</label>
           </div>
           <button class="btn btn-primary">Create</button>
         </form>
@@ -75,7 +148,7 @@
           </div>
           <div class="form-check mb-3">
             <input class="form-check-input" type="checkbox" name="can_grade_cleoc_reports" value="1" id="updateCanGradeCleoc">
-              <label class="form-check-label" for="updateCanGradeCleoc">Grant mock report review access</label>
+            <label class="form-check-label" for="updateCanGradeCleoc">Grant mock report review access</label>
           </div>
           <button class="btn btn-secondary">Update Assignment</button>
         </form>
@@ -101,26 +174,31 @@
       </div>
     </div>
 
+    {# ── Current Personnel ──────────────────────────────────────────── #}
     <details class="card p-3 collapse-card" open>
       <summary>Current Personnel</summary>
       <div class="table-responsive mt-2">
         <table class="table table-striped">
-              <thead><tr><th>Name</th><th>Username</th><th>Officer #</th><th>Phone</th><th>CAC</th><th>Role</th><th>Mock Report Reviewer</th><th>Supervisor</th><th>Active</th></tr></thead>
+          <thead>
+            <tr>
+              <th>Name</th><th>Username</th><th>Officer #</th>
+              <th>Phone</th><th>Installation</th><th>CAC</th>
+              <th>Role</th><th>Supervisor</th><th>Active</th>
+            </tr>
+          </thead>
           <tbody>
             {% for u in users %}
-              <tr>
-                <td>{{ u.display_name }}</td>
-                <td>{{ u.username }}</td>
-                <td>{{ u.officer_number or '' }}</td>
-                <td>{{ u.phone_number or '' }}</td>
-                <td>{{ 'Linked' if u.cac_identifier else '' }}</td>
-                <td>{{ u.role_label }}</td>
-                <td>{{ 'Yes' if u.can_grade_cleoc_reports or u.can_manage_site() else 'No' }}</td>
-                <td>
-                  {{ u.supervisor.display_name if u.supervisor else '' }}
-                </td>
-                <td>{{ u.active }}</td>
-              </tr>
+            <tr>
+              <td>{{ u.display_name }}</td>
+              <td>{{ u.username }}</td>
+              <td>{{ u.officer_number or '' }}</td>
+              <td>{{ u.phone_number or '' }}</td>
+              <td>{{ installation_labels.get(u.installation or '', '') }}</td>
+              <td>{{ 'Linked' if u.cac_identifier else '' }}</td>
+              <td>{{ u.role_label }}</td>
+              <td>{{ u.supervisor.display_name if u.supervisor else '' }}</td>
+              <td>{{ u.active }}</td>
+            </tr>
             {% endfor %}
           </tbody>
         </table>

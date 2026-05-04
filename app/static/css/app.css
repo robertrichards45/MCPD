@@ -11346,3 +11346,136 @@ body.mobile-foundation .spr-training-warn {
   .ai-voice-list { grid-template-columns: 1fr; }
   .ai-settings-panel { max-height: 260px; }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   REGISTRATION — installation section label
+   ════════════════════════════════════════════════════════════════ */
+.reg-section-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  margin-bottom: 6px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PENDING APPROVALS — admin_users.html
+   ════════════════════════════════════════════════════════════════ */
+.pending-approvals-card {
+  border-left: 4px solid #f59e0b;
+  background: #fffbeb;
+}
+.pending-badge-dot {
+  width: 10px; height: 10px;
+  background: #f59e0b;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+.pending-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.pending-item {
+  background: #fff;
+  border-radius: 10px;
+  padding: 14px 16px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.pending-item-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a2a4a;
+}
+.pending-item-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 2px;
+}
+.pending-item-install {
+  background: #dbeafe;
+  color: #1d4ed8;
+  border-radius: 20px;
+  padding: 1px 8px;
+  font-weight: 600;
+}
+.pending-item-address {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+.pending-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  align-items: start;
+}
+.form-label-xs {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  display: block;
+  margin-bottom: 2px;
+}
+@media (max-width: 600px) {
+  .pending-form-row { grid-template-columns: 1fr; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   EMERGENCY CONTACTS — officers.html
+   ════════════════════════════════════════════════════════════════ */
+.ec-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ec-card {
+  background: #f8fafc;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+}
+.ec-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 10px 14px;
+  background: #f1f5f9;
+  border-bottom: 1px solid #e2e8f0;
+}
+.ec-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a2a4a;
+}
+.ec-relation {
+  font-size: 11px;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  margin-top: 1px;
+}
+.ec-card-body {
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.ec-field {
+  font-size: 13px;
+  color: #374151;
+}
+.ec-field-label {
+  font-weight: 600;
+  color: #64748b;
+}

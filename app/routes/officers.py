@@ -1,11 +1,11 @@
 import csv
 import io
 
-from flask import Blueprint, current_app, render_template, request
+from flask import Blueprint, abort, current_app, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
 from ..extensions import db
-from ..models import AuditLog, OfficerProfile, User
+from ..models import AuditLog, EmergencyContact, INSTALLATION_LABELS, OfficerProfile, User
 from ..permissions import can_manage_site, can_view_user
 
 bp = Blueprint('officers', __name__)
@@ -31,43 +31,34 @@ def officer_directory():
     profile = _load_profile(current_user.id)
     search_term = (request.args.get('q') or '').strip()
 
+    def _render(**kwargs):
+        return render_template(
+            'officers.html',
+            user=current_user,
+            profile=profile,
+            profiles=_profiles_for_view(search_term=search_term),
+            search_term=search_term,
+            emergency_contacts=current_user.emergency_contacts.all(),
+            installation_label=INSTALLATION_LABELS.get(current_user.installation or '', current_user.installation or ''),
+            **kwargs,
+        )
+
     if request.method == 'POST':
         user = db.session.get(User, current_user.id)
         first_name = request.form.get('first_name', '').strip() or None
         last_name = request.form.get('last_name', '').strip() or None
         edipi = _normalize_edipi(request.form.get('edipi', '')) or None
         if edipi and len(edipi) != 10:
-            return render_template(
-                'officers.html',
-                user=current_user,
-                profile=profile,
-                profiles=_profiles_for_view(search_term=search_term),
-                search_term=search_term,
-                error='EDIPI must be a 10-digit number.',
-            )
+            return _render(error='EDIPI must be a 10-digit number.')
         if edipi:
             existing = User.query.filter(User.edipi == edipi, User.id != current_user.id).first()
             if existing:
-                return render_template(
-                    'officers.html',
-                    user=current_user,
-                    profile=profile,
-                    profiles=_profiles_for_view(search_term=search_term),
-                    search_term=search_term,
-                    error='That EDIPI is already assigned to another user.',
-                )
+                return _render(error='That EDIPI is already assigned to another user.')
         email = request.form.get('email', '').strip().lower() or None
         if email:
             existing_email = User.query.filter(User.email == email, User.id != current_user.id).first()
             if existing_email:
-                return render_template(
-                    'officers.html',
-                    user=current_user,
-                    profile=profile,
-                    profiles=_profiles_for_view(search_term=search_term),
-                    search_term=search_term,
-                    error='That email is already assigned to another user.',
-                )
+                return _render(error='That email is already assigned to another user.')
 
         user.first_name = first_name
         user.last_name = last_name
@@ -85,30 +76,44 @@ def officer_directory():
         profile.duty_phone = request.form.get('duty_phone', '').strip() or None
         profile.personal_phone = request.form.get('personal_phone', '').strip() or None
         profile.personal_email = request.form.get('personal_email', '').strip() or None
-        profile.emergency_contact_name = request.form.get('emergency_contact_name', '').strip() or None
-        profile.emergency_contact_relationship = request.form.get('emergency_contact_relationship', '').strip() or None
-        profile.emergency_contact_phone = request.form.get('emergency_contact_phone', '').strip() or None
-        profile.emergency_contact_address = request.form.get('emergency_contact_address', '').strip() or None
 
         db.session.add(AuditLog(actor_id=current_user.id, action='officer_profile_update', details=user.username))
         db.session.commit()
 
-        return render_template(
-            'officers.html',
-            user=current_user,
-            profile=profile,
-            profiles=_profiles_for_view(search_term=search_term),
-            search_term=search_term,
-            success='Officer information saved.',
-        )
+        return _render(success='Profile saved.')
 
-    return render_template(
-        'officers.html',
-        user=current_user,
-        profile=profile,
-        profiles=_profiles_for_view(search_term=search_term),
-        search_term=search_term,
+    return _render()
+
+
+@bp.post('/officers/emergency-contacts/add')
+@login_required
+def add_emergency_contact():
+    name = request.form.get('name', '').strip()
+    if not name:
+        return redirect(url_for('officers.officer_directory'))
+    contact = EmergencyContact(
+        user_id=current_user.id,
+        name=name,
+        relationship=request.form.get('relationship', '').strip() or None,
+        phone=request.form.get('phone', '').strip() or None,
+        secondary_phone=request.form.get('secondary_phone', '').strip() or None,
+        email=request.form.get('email', '').strip() or None,
+        notes=request.form.get('notes', '').strip() or None,
     )
+    db.session.add(contact)
+    db.session.commit()
+    return redirect(url_for('officers.officer_directory', _anchor='emergency-contacts'))
+
+
+@bp.post('/officers/emergency-contacts/<int:contact_id>/delete')
+@login_required
+def delete_emergency_contact(contact_id):
+    contact = db.session.get(EmergencyContact, contact_id)
+    if not contact or contact.user_id != current_user.id:
+        abort(403)
+    db.session.delete(contact)
+    db.session.commit()
+    return redirect(url_for('officers.officer_directory', _anchor='emergency-contacts'))
 
 
 @bp.route('/profile', methods=['GET', 'POST'])

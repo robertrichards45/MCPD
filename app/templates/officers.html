@@ -4,107 +4,168 @@
   {% include 'partials/nav.html' %}
   <div class="page-wrap">
     <div class="card p-3 mb-3">
-      <h2 class="mb-1">Profile</h2>
-      <p class="text-muted mb-0">Update your account and emergency details.</p>
+      <h2 class="mb-1">My Profile</h2>
+      <p class="text-muted mb-0">Update your personal information and emergency contacts.</p>
     </div>
     {% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
     {% if success %}<div class="alert alert-success">{{ success }}</div>{% endif %}
 
     <div class="row g-4">
+      {# ── Left: Profile form ─────────────────────────────────────────── #}
       <div class="col-lg-7">
-        <div class="card p-3">
-          <h5 class="mb-3">My Profile</h5>
+        <div class="card p-3 mb-4">
+          <h5 class="mb-3">Personal Information</h5>
           <form method="post">
-            <div class="mb-2">
-              <label class="form-label text-dark">First Name</label>
-              <input class="form-control" name="first_name" value="{{ user.first_name or '' }}" required />
+            <div class="row g-2 mb-2">
+              <div class="col-6">
+                <label class="form-label text-dark">First Name</label>
+                <input class="form-control" name="first_name" value="{{ user.first_name or '' }}" required />
+              </div>
+              <div class="col-6">
+                <label class="form-label text-dark">Last Name</label>
+                <input class="form-control" name="last_name" value="{{ user.last_name or '' }}" required />
+              </div>
             </div>
             <div class="mb-2">
-              <label class="form-label text-dark">Last Name</label>
-              <input class="form-control" name="last_name" value="{{ user.last_name or '' }}" required />
+              <label class="form-label text-dark">Display Name <span class="form-text">(optional override)</span></label>
+              <input class="form-control" name="display_name" value="{{ user.display_name_override or '' }}" placeholder="Leave blank to use first + last name" />
             </div>
             <div class="mb-2">
-              <label class="form-label text-dark">Display Name</label>
-              <input class="form-control" name="display_name" value="{{ user.display_name_override or '' }}" placeholder="Optional custom display name" />
+              <label class="form-label text-dark">Contact Number</label>
+              <input class="form-control" name="phone_number" value="{{ user.phone_number or '' }}" />
+            </div>
+            <div class="mb-2">
+              <label class="form-label text-dark">Home Address</label>
+              <textarea class="form-control" name="address" rows="2">{{ user.address or '' }}</textarea>
+            </div>
+            <div class="mb-2">
+              <label class="form-label text-dark">Installation</label>
+              <input class="form-control" value="{{ installation_label or 'Not set' }}" readonly />
+              <div class="form-text">Contact your Watch Commander to update your installation assignment.</div>
             </div>
             <div class="mb-2">
               <label class="form-label text-dark">Email</label>
               <input class="form-control" name="email" value="{{ user.email or '' }}" />
             </div>
             <div class="mb-2">
-              <label class="form-label text-dark">Phone Number</label>
-              <input class="form-control" name="phone_number" value="{{ user.phone_number or '' }}" />
-            </div>
-            <div class="mb-2">
-              <label class="form-label text-dark">Badge / Employee ID</label>
-              <input class="form-control" name="badge_employee_id" value="{{ user.badge_employee_id or '' }}" />
-            </div>
-            <div class="mb-2">
-              <label class="form-label text-dark">Section / Unit</label>
-              <input class="form-control" name="section_unit" value="{{ user.section_unit or '' }}" />
-            </div>
-            <div class="mb-2">
-              <label class="form-label text-dark">Address</label>
-              <textarea class="form-control" name="address" rows="2">{{ user.address or '' }}</textarea>
-            </div>
-            <div class="mb-2">
-              <label class="form-label text-dark">Role Display</label>
+              <label class="form-label text-dark">Role</label>
               <input class="form-control" value="{{ user.role_label }}" readonly />
             </div>
-            <div class="mb-2">
-              <label class="form-label text-dark">EDIPI</label>
-              <input class="form-control" name="edipi" value="{{ user.edipi or '' }}" inputmode="numeric" maxlength="10" {% if not user.can_manage_site() %}readonly{% endif %} />
-              {% if not user.can_manage_site() %}
-                <div class="form-text">Only the Website Controller can change EDIPI after registration.</div>
-              {% endif %}
-            </div>
-            <div class="mb-2">
-              <label class="form-label text-dark">Rank</label>
-              <input class="form-control" name="rank" value="{{ profile.rank or '' }}" />
-            </div>
-            <div class="mb-2">
-              <label class="form-label text-dark">Unit</label>
-              <input class="form-control" name="unit" value="{{ profile.unit or '' }}" />
-            </div>
-            <div class="mb-2">
-              <label class="form-label text-dark">Duty Phone</label>
-              <input class="form-control" name="duty_phone" value="{{ profile.duty_phone or '' }}" />
-            </div>
-            <div class="mb-2">
-              <label class="form-label text-dark">Personal Phone</label>
-              <input class="form-control" name="personal_phone" value="{{ profile.personal_phone or '' }}" />
-            </div>
-            <div class="mb-3">
-              <label class="form-label text-dark">Personal Email</label>
-              <input class="form-control" name="personal_email" value="{{ profile.personal_email or '' }}" />
-            </div>
 
-            <details class="collapse-card" open>
-            <summary>Emergency Contact</summary>
-            <div class="mt-2">
-            <div class="mb-2">
-              <label class="form-label text-dark">Contact Name</label>
-              <input class="form-control" name="emergency_contact_name" value="{{ profile.emergency_contact_name or '' }}" />
-            </div>
-            <div class="mb-2">
-              <label class="form-label text-dark">Relationship</label>
-              <input class="form-control" name="emergency_contact_relationship" value="{{ profile.emergency_contact_relationship or '' }}" />
-            </div>
-            <div class="mb-2">
-              <label class="form-label text-dark">Phone</label>
-              <input class="form-control" name="emergency_contact_phone" value="{{ profile.emergency_contact_phone or '' }}" />
-            </div>
-            <div class="mb-3">
-              <label class="form-label text-dark">Address</label>
-              <textarea class="form-control" name="emergency_contact_address" rows="3">{{ profile.emergency_contact_address or '' }}</textarea>
-            </div>
-            </div>
+            <details class="collapse-card mt-3">
+              <summary>Additional Officer Details</summary>
+              <div class="mt-2">
+                <div class="mb-2">
+                  <label class="form-label text-dark">Badge / Employee ID</label>
+                  <input class="form-control" name="badge_employee_id" value="{{ user.badge_employee_id or '' }}" />
+                </div>
+                <div class="mb-2">
+                  <label class="form-label text-dark">Section / Unit</label>
+                  <input class="form-control" name="section_unit" value="{{ user.section_unit or '' }}" />
+                </div>
+                <div class="mb-2">
+                  <label class="form-label text-dark">EDIPI</label>
+                  <input class="form-control" name="edipi" value="{{ user.edipi or '' }}" inputmode="numeric" maxlength="10" {% if not user.can_manage_site() %}readonly{% endif %} />
+                  {% if not user.can_manage_site() %}<div class="form-text">Only the Website Controller can change EDIPI.</div>{% endif %}
+                </div>
+                <div class="mb-2">
+                  <label class="form-label text-dark">Rank</label>
+                  <input class="form-control" name="rank" value="{{ profile.rank or '' }}" />
+                </div>
+                <div class="mb-2">
+                  <label class="form-label text-dark">Unit</label>
+                  <input class="form-control" name="unit" value="{{ profile.unit or '' }}" />
+                </div>
+                <div class="mb-2">
+                  <label class="form-label text-dark">Duty Phone</label>
+                  <input class="form-control" name="duty_phone" value="{{ profile.duty_phone or '' }}" />
+                </div>
+                <div class="mb-2">
+                  <label class="form-label text-dark">Personal Phone</label>
+                  <input class="form-control" name="personal_phone" value="{{ profile.personal_phone or '' }}" />
+                </div>
+                <div class="mb-2">
+                  <label class="form-label text-dark">Personal Email</label>
+                  <input class="form-control" name="personal_email" value="{{ profile.personal_email or '' }}" />
+                </div>
+              </div>
             </details>
-            <button class="btn btn-primary">Save Information</button>
+
+            <button class="btn btn-primary mt-3">Save Profile</button>
           </form>
+        </div>
+
+        {# ── Emergency Contacts ──────────────────────────────────────── #}
+        <div class="card p-3" id="emergency-contacts">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">Emergency Contacts</h5>
+            <span class="badge bg-secondary">{{ emergency_contacts|length }}</span>
+          </div>
+
+          {% if emergency_contacts %}
+          <div class="ec-list mb-3">
+            {% for ec in emergency_contacts %}
+            <div class="ec-card">
+              <div class="ec-card-header">
+                <div>
+                  <div class="ec-name">{{ ec.name }}</div>
+                  {% if ec.relationship %}<div class="ec-relation">{{ ec.relationship }}</div>{% endif %}
+                </div>
+                <form method="post" action="{{ url_for('officers.delete_emergency_contact', contact_id=ec.id) }}" onsubmit="return confirm('Remove {{ ec.name }}?');">
+                  <button class="btn btn-outline-danger btn-xs" type="submit" title="Remove contact">Remove</button>
+                </form>
+              </div>
+              <div class="ec-card-body">
+                {% if ec.phone %}<div class="ec-field"><span class="ec-field-label">Primary:</span> {{ ec.phone }}</div>{% endif %}
+                {% if ec.secondary_phone %}<div class="ec-field"><span class="ec-field-label">Secondary:</span> {{ ec.secondary_phone }}</div>{% endif %}
+                {% if ec.email %}<div class="ec-field"><span class="ec-field-label">Email:</span> {{ ec.email }}</div>{% endif %}
+                {% if ec.notes %}<div class="ec-field text-muted">{{ ec.notes }}</div>{% endif %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          <details class="collapse-card">
+            <summary>Add Emergency Contact</summary>
+            <div class="mt-2">
+            <form method="post" action="{{ url_for('officers.add_emergency_contact') }}">
+              <div class="row g-2 mb-2">
+                <div class="col-sm-6">
+                  <label class="form-label text-dark">Name <span class="text-danger">*</span></label>
+                  <input class="form-control" name="name" required />
+                </div>
+                <div class="col-sm-6">
+                  <label class="form-label text-dark">Relationship</label>
+                  <input class="form-control" name="relationship" placeholder="e.g. Spouse, Parent" />
+                </div>
+              </div>
+              <div class="row g-2 mb-2">
+                <div class="col-sm-6">
+                  <label class="form-label text-dark">Primary Phone</label>
+                  <input class="form-control" name="phone" />
+                </div>
+                <div class="col-sm-6">
+                  <label class="form-label text-dark">Secondary Phone</label>
+                  <input class="form-control" name="secondary_phone" />
+                </div>
+              </div>
+              <div class="mb-2">
+                <label class="form-label text-dark">Email</label>
+                <input class="form-control" name="email" type="email" />
+              </div>
+              <div class="mb-3">
+                <label class="form-label text-dark">Notes</label>
+                <input class="form-control" name="notes" placeholder="Optional additional info" />
+              </div>
+              <button class="btn btn-primary btn-sm">Add Contact</button>
+            </form>
+            </div>
+          </details>
         </div>
       </div>
 
+      {# ── Right: Roster Directory (managers only) ─────────────────── #}
       {% if user.can_manage_team() %}
       <div class="col-lg-5">
         <details class="card p-3 collapse-card">
@@ -129,22 +190,18 @@
             <table class="table table-sm align-middle">
               <thead>
                 <tr>
-                  <th>Name</th>
-                  <th>EDIPI</th>
-                  <th>Unit</th>
-                  <th>Emergency Contact</th>
-                  <th>Export</th>
+                  <th>Name</th><th>EDIPI</th><th>Unit</th><th>Emergency Contact</th><th></th>
                 </tr>
               </thead>
               <tbody>
                 {% for profile_row, user_row in profiles %}
-                  <tr>
-                    <td>{{ user_row.display_name }}</td>
-                    <td>{{ user_row.edipi or '' }}</td>
-                    <td>{{ profile_row.unit or '' }}</td>
-                    <td>{{ profile_row.emergency_contact_name or '' }}</td>
-                    <td><a class="btn btn-outline-secondary btn-sm" href="{{ url_for('officers.officer_profile_export_csv', user_id=user_row.id) }}">CSV</a></td>
-                  </tr>
+                <tr>
+                  <td>{{ user_row.display_name }}</td>
+                  <td>{{ user_row.edipi or '' }}</td>
+                  <td>{{ profile_row.unit or '' }}</td>
+                  <td>{{ profile_row.emergency_contact_name or '' }}</td>
+                  <td><a class="btn btn-outline-secondary btn-sm" href="{{ url_for('officers.officer_profile_export_csv', user_id=user_row.id) }}">CSV</a></td>
+                </tr>
                 {% endfor %}
               </tbody>
             </table>

@@ -11,12 +11,14 @@ from ..extensions import db
 from ..models import (
     AuditLog,
     EnrollmentCode,
+    INSTALLATION_LABELS,
     ROLE_LABELS,
     ROLE_DESK_SGT,
     ROLE_FIELD_TRAINING,
     ROLE_PATROL_OFFICER,
     ROLE_WEBSITE_CONTROLLER,
     ROLE_WATCH_COMMANDER,
+    USMC_INSTALLATIONS,
     User,
 )
 from ..permissions import (
@@ -163,6 +165,7 @@ def _render_landing(**context):
 
 def _render_register_page(**context):
     context.setdefault('next_url', (request.form.get('next') or request.args.get('next') or '').strip())
+    context.setdefault('installations', USMC_INSTALLATIONS)
     return render_template('register.html', **context)
 
 
@@ -247,6 +250,14 @@ def _visible_users_query():
         scope_id = watch_commander_scope_id(current_user)
         return query.filter((User.supervisor_id == scope_id) | (User.id == scope_id))
     return query.filter_by(id=current_user.id)
+
+
+def _pending_accounts_query():
+    query = User.query.filter_by(pending_approval=True, active=False)
+    if is_site_controller(current_user):
+        return query
+    # Watch Commanders only see pending accounts from their own installation
+    return query.filter_by(installation=current_user.installation)
 
 
 def _cac_request_debug_context():
@@ -690,35 +701,42 @@ def register():
         return redirect(url_for('auth.account_create_cac', next=(request.form.get('next') or request.args.get('next') or '').strip()))
     if request.method == 'GET':
         return _render_register_page()
-    if not current_app.config.get('PUBLIC_SELF_REGISTER_ENABLED'):
-        return _render_register_page(
-            register_error='Public self-registration is disabled. Contact an administrator.'
-        )
+
     first_name = request.form.get('first_name', '').strip()
     last_name = request.form.get('last_name', '').strip()
     phone_number = request.form.get('phone_number', '').strip() or None
     address = request.form.get('address', '').strip() or None
     username = request.form.get('username', '').strip()
     password = request.form.get('password', '').strip()
-    edipi = _normalize_edipi(request.form.get('edipi', '')) or None
+    installation = request.form.get('installation', '').strip() or None
+
+    valid_installation_keys = {k for k, _ in USMC_INSTALLATIONS}
+    if installation and installation not in valid_installation_keys:
+        installation = None
+
     if not first_name or not last_name:
-        return _render_register_page(register_error='First name and last name are required.')
-    if not username or not password or not edipi or not phone_number or not address:
-        return _render_register_page(register_error='First name, last name, phone number, address, EDIPI, username, and password are required.')
-    if len(edipi) != 10:
-        return _render_register_page(register_error='EDIPI must be a 10-digit number.')
+        return _render_register_page(register_error='First and last name are required.')
+    if not username:
+        return _render_register_page(register_error='Username is required.')
+    if not password:
+        return _render_register_page(register_error='Password is required.')
+    if not phone_number:
+        return _render_register_page(register_error='Contact number is required.')
+    if not address:
+        return _render_register_page(register_error='Home address is required.')
+    if not installation:
+        return _render_register_page(register_error='Installation is required. Select your Marine Corps installation.')
     if _username_exists(username):
-        return _render_register_page(register_error='Username already exists.')
-    if User.query.filter_by(edipi=edipi).first():
-        return _render_register_page(register_error='EDIPI already exists.')
+        return _render_register_page(register_error='That username is already taken. Choose another.')
 
     user = User(
         username=username,
-        edipi=edipi,
         phone_number=phone_number,
         address=address,
+        installation=installation,
         role=ROLE_PATROL_OFFICER,
-        active=True,
+        active=False,
+        pending_approval=True,
     )
     _sync_user_name_fields(user, first_name, last_name)
     user.set_password(password)
@@ -727,7 +745,14 @@ def register():
         return _render_register_page(register_error='Unable to create the account right now. Try again later.')
     _safe_audit(actor_id=user.id, action='user_register', details=username)
 
-    return _render_register_page(register_success='User created. You can log in now.')
+    installation_label = INSTALLATION_LABELS.get(installation, installation)
+    return _render_register_page(
+        register_success=(
+            f'Account request submitted for {installation_label}. '
+            'A Watch Commander or higher at your installation will review and activate your account. '
+            'You will be able to log in once approved.'
+        )
+    )
 
 
 @bp.route('/logout', methods=['POST'])
@@ -750,10 +775,12 @@ def manage_users():
     require_admin()
     context_kwargs = lambda **extra: {
         'users': _visible_users_query().order_by(User.first_name, User.last_name, User.username).all(),
+        'pending_accounts': _pending_accounts_query().order_by(User.created_at).all(),
         'user': current_user,
         'role_options': assignable_roles(current_user),
         'supervisors': _available_supervisors(),
         'role_labels': ROLE_LABELS,
+        'installation_labels': INSTALLATION_LABELS,
         'database_write_notice': 'This server is currently running with limited database write capability. Some save actions may be blocked until the primary app process is restarted.' if current_app.config.get('APP_ENV') == 'prod' else '',
         **extra,
     }
@@ -835,6 +862,57 @@ def manage_users():
             if not _commit_or_rollback():
                 return render_template('admin_users.html', **context_kwargs(error='Unable to update that user right now. Try again later.'))
             _safe_audit(actor_id=current_user.id, action='user_update_role', details=f'{username}:{role}')
+        elif action == 'approve':
+            pending_id = request.form.get('pending_id', '').strip()
+            if not pending_id:
+                return render_template('admin_users.html', **context_kwargs(error='No account selected for approval.'))
+            try:
+                target = db.session.get(User, int(pending_id))
+            except (ValueError, TypeError):
+                target = None
+            if not target or not target.pending_approval:
+                return render_template('admin_users.html', **context_kwargs(error='Account not found or not pending approval.'))
+            # Enforce installation scope for non-site-controllers
+            if not is_site_controller(current_user) and target.installation != current_user.installation:
+                return render_template('admin_users.html', **context_kwargs(error='You can only approve accounts from your installation.'))
+            role = request.form.get('role', ROLE_PATROL_OFFICER).strip() or ROLE_PATROL_OFFICER
+            if role not in assignable_roles(current_user):
+                return render_template('admin_users.html', **context_kwargs(error='You cannot assign that role.'))
+            supervisor_id = request.form.get('supervisor_id', '').strip()
+            supervisor = None
+            if supervisor_id:
+                try:
+                    supervisor = db.session.get(User, int(supervisor_id))
+                except (ValueError, TypeError):
+                    pass
+            if is_watch_commander(current_user):
+                supervisor = db.session.get(User, watch_commander_scope_id(current_user))
+            section_unit = request.form.get('section_unit', '').strip() or None
+            target.role = role
+            target.supervisor_id = supervisor.id if supervisor else None
+            target.section_unit = section_unit or target.section_unit
+            target.active = True
+            target.pending_approval = False
+            if not _commit_or_rollback():
+                return render_template('admin_users.html', **context_kwargs(error='Unable to approve that account right now.'))
+            _safe_audit(actor_id=current_user.id, action='user_approve', details=f'{target.username}:{role}')
+        elif action == 'reject':
+            pending_id = request.form.get('pending_id', '').strip()
+            if not pending_id:
+                return render_template('admin_users.html', **context_kwargs(error='No account selected for rejection.'))
+            try:
+                target = db.session.get(User, int(pending_id))
+            except (ValueError, TypeError):
+                target = None
+            if not target or not target.pending_approval:
+                return render_template('admin_users.html', **context_kwargs(error='Account not found or not pending approval.'))
+            if not is_site_controller(current_user) and target.installation != current_user.installation:
+                return render_template('admin_users.html', **context_kwargs(error='You can only reject accounts from your installation.'))
+            rejected_name = target.display_name
+            db.session.delete(target)
+            if not _commit_or_rollback():
+                return render_template('admin_users.html', **context_kwargs(error='Unable to reject that account right now.'))
+            _safe_audit(actor_id=current_user.id, action='user_reject', details=rejected_name)
         elif action == 'issue_code':
             target = _user_by_username(username, active_only=True)
             if not target or not can_manage_user(current_user, target):

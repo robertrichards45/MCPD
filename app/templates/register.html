@@ -2,54 +2,68 @@
 {% set body_class = 'landing' %}
 {% block body %}
 <div class="login-bg">
-  <div class="login-panel">
+  <div class="login-panel" style="max-width:480px;">
     <img src="{{ url_for('usmc_emblem') }}" alt="USMC Emblem" class="login-emblem" />
     <h1>Create Account</h1>
-    <p class="subtitle">Create a standard portal account</p>
+    <p class="subtitle">Request a portal account. A Watch Commander at your installation will review and activate it.</p>
+
     {% if register_error %}
-      <div class="alert alert-danger py-1">{{ register_error }}</div>
+      <div class="alert alert-danger py-2">{{ register_error }}</div>
     {% endif %}
     {% if register_success %}
-      <div class="alert alert-success py-1">{{ register_success }}</div>
-    {% endif %}
-    {% if config.PUBLIC_SELF_REGISTER_ENABLED %}
+      <div class="alert alert-success py-2">{{ register_success }}</div>
+    {% else %}
     <form method="post" action="{{ url_for('auth.register') }}">
       {% if next_url %}
         <input type="hidden" name="next" value="{{ next_url }}" />
       {% endif %}
-      <div class="mb-2">
-        <label class="form-label">First Name</label>
-        <input type="text" name="first_name" class="form-control" />
+
+      <div class="reg-section-label">Personal Information</div>
+      <div class="row g-2 mb-2">
+        <div class="col-6">
+          <label class="form-label">First Name <span class="text-danger">*</span></label>
+          <input type="text" name="first_name" class="form-control" required />
+        </div>
+        <div class="col-6">
+          <label class="form-label">Last Name <span class="text-danger">*</span></label>
+          <input type="text" name="last_name" class="form-control" required />
+        </div>
       </div>
       <div class="mb-2">
-        <label class="form-label">Last Name</label>
-        <input type="text" name="last_name" class="form-control" />
+        <label class="form-label">Contact Number <span class="text-danger">*</span></label>
+        <input type="tel" name="phone_number" class="form-control" required />
       </div>
       <div class="mb-2">
-        <label class="form-label">Phone Number</label>
-        <input type="text" name="phone_number" class="form-control" required />
-      </div>
-      <div class="mb-2">
-        <label class="form-label">Address</label>
+        <label class="form-label">Home Address <span class="text-danger">*</span></label>
         <textarea name="address" class="form-control" rows="2" required></textarea>
       </div>
-      <div class="mb-2">
-        <label class="form-label">EDIPI Number</label>
-        <input type="text" name="edipi" class="form-control" inputmode="numeric" maxlength="10" required />
+
+      <div class="reg-section-label mt-3">Installation</div>
+      <div class="mb-3">
+        <label class="form-label">Marine Corps Installation <span class="text-danger">*</span></label>
+        <select name="installation" class="form-control" required>
+          <option value="">— Select your installation —</option>
+          {% for key, label in installations %}
+            <option value="{{ key }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+        <div class="form-text">Only Watch Commanders at your installation can approve your account.</div>
       </div>
+
+      <div class="reg-section-label mt-3">Login Credentials</div>
       <div class="mb-2">
-        <label class="form-label">Username</label>
-        <input type="text" name="username" class="form-control" required />
+        <label class="form-label">Username <span class="text-danger">*</span></label>
+        <input type="text" name="username" class="form-control" autocomplete="username" required />
       </div>
       <div class="mb-3">
-        <label class="form-label">Password</label>
-        <input type="password" name="password" class="form-control" required />
+        <label class="form-label">Password <span class="text-danger">*</span></label>
+        <input type="password" name="password" class="form-control" autocomplete="new-password" required />
       </div>
-      <button class="btn btn-primary w-100">Create Account</button>
+
+      <button class="btn btn-primary w-100">Submit Account Request</button>
     </form>
-    {% else %}
-      <div class="alert alert-warning py-1">Public self-registration is disabled. Contact an administrator.</div>
     {% endif %}
+
     <a class="btn btn-secondary w-100 mt-3" href="{{ url_for('auth.landing') }}">Back to Login</a>
   </div>
 </div>

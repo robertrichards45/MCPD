@@ -45,6 +45,28 @@ ALL_PORTAL_ROLES = [
     ROLE_RFI_PATROL_OFFICER,
 ]
 
+USMC_INSTALLATIONS = [
+    ('MCAS_BEAUFORT',       'MCAS Beaufort, SC'),
+    ('MCAS_CHERRY_POINT',   'MCAS Cherry Point, NC'),
+    ('MCAS_MIRAMAR',        'MCAS Miramar, CA'),
+    ('MCAS_NEW_RIVER',      'MCAS New River, NC'),
+    ('MCAS_YUMA',           'MCAS Yuma, AZ'),
+    ('MCB_CAMP_LEJEUNE',    'MCB Camp Lejeune, NC'),
+    ('MCB_CAMP_PENDLETON',  'MCB Camp Pendleton, CA'),
+    ('MCB_HAWAII',          'MCB Hawaii'),
+    ('MCB_QUANTICO',        'MCB Quantico, VA'),
+    ('MCRD_PARRIS_ISLAND',  'MCRD Parris Island, SC'),
+    ('MCRD_SAN_DIEGO',      'MCRD San Diego, CA'),
+    ('MCLB_ALBANY',         'MCLB Albany, GA'),
+    ('MCLB_BARSTOW',        'MCLB Barstow, CA'),
+    ('MCB_29_PALMS',        'MCB Twentynine Palms, CA'),
+    ('MCB_CAMP_BUTLER',     'MCB Camp Butler, Japan'),
+    ('MCAS_IWAKUNI',        'MCAS Iwakuni, Japan'),
+    ('OTHER',               'Other / Not Listed'),
+]
+
+INSTALLATION_LABELS = {k: v for k, v in USMC_INSTALLATIONS}
+
 
 class Role(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -84,6 +106,8 @@ class User(UserMixin, db.Model):
     pin_hash = db.Column(db.String(255), nullable=True)
     can_grade_cleoc_reports = db.Column(db.Boolean, default=False, nullable=False)
     active = db.Column(db.Boolean, default=True)
+    pending_approval = db.Column(db.Boolean, default=False, nullable=False)
+    installation = db.Column(db.String(100), nullable=True)
     created_at = db.Column(db.DateTime, default=utcnow_naive)
     supervisor = db.relationship('User', remote_side=[id], backref='direct_reports', foreign_keys=[supervisor_id])
     roles = db.relationship('Role', secondary='user_role', back_populates='users')
@@ -314,6 +338,22 @@ class OfficerProfile(db.Model):
     emergency_contact_phone = db.Column(db.String(30), nullable=True)
     emergency_contact_address = db.Column(db.String(255), nullable=True)
     updated_at = db.Column(db.DateTime, default=utcnow_naive, onupdate=utcnow_naive)
+
+
+class EmergencyContact(db.Model):
+    __tablename__ = 'emergency_contact'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    name = db.Column(db.String(120), nullable=False)
+    relationship = db.Column(db.String(80), nullable=True)
+    phone = db.Column(db.String(30), nullable=True)
+    secondary_phone = db.Column(db.String(30), nullable=True)
+    email = db.Column(db.String(120), nullable=True)
+    notes = db.Column(db.String(255), nullable=True)
+    created_at = db.Column(db.DateTime, default=utcnow_naive)
+
+    officer = db.relationship('User', backref=db.backref('emergency_contacts', lazy='dynamic', order_by='EmergencyContact.id'))
+
 
 class CleoFormData(db.Model):
     id = db.Column(db.Integer, primary_key=True)
