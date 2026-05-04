@@ -274,15 +274,6 @@ def create_app():
     app = Flask(__name__)
     _CREATED_APPS.add(app)
     app.config.from_object(Config)
-
-    # Ensure required data directories exist before the DB engine connects.
-    from .config import DATA_DIR, UPLOAD_ROOT
-    for _d in [DATA_DIR, UPLOAD_ROOT, os.path.join(UPLOAD_ROOT, 'forms'),
-               os.path.join(DATA_DIR, 'signatures')]:
-        try:
-            os.makedirs(_d, exist_ok=True)
-        except OSError:
-            pass
     # Respect environment/config-driven cookie and scheme settings so local
     # LAN access can use HTTP while production stays on secure cookies/HTTPS.
     app.config["PREFERRED_URL_SCHEME"] = app.config.get("PREFERRED_URL_SCHEME", "http")
