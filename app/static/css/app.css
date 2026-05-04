@@ -10463,6 +10463,139 @@ body.mobile-foundation .spr-training-warn {
 }
 
 /* =============================================================================
+   BOLO BOARD
+   ============================================================================= */
+
+.bolo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.bolo-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border-left: 5px solid #94a3b8;
+  transition: box-shadow 0.15s, transform 0.12s;
+  color: inherit;
+}
+.bolo-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.14); transform: translateY(-2px); }
+
+.bolo-threat-low   { border-left-color: #22c55e; }
+.bolo-threat-moderate { border-left-color: #f59e0b; }
+.bolo-threat-high  { border-left-color: #ef4444; }
+.bolo-threat-armed { border-left-color: #7c3aed; }
+
+.bolo-card-photo {
+  width: 100%;
+  height: 160px;
+  background: #f1f5f9;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.bolo-card-photo img { width: 100%; height: 100%; object-fit: cover; }
+.bolo-no-photo {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+}
+.bolo-no-photo svg { width: 56px; height: 56px; }
+
+.bolo-card-body { padding: 12px 14px 14px; flex: 1; }
+.bolo-card-badges { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 6px; }
+.bolo-card-name { font-size: 16px; font-weight: 700; color: #1a2a4a; margin-bottom: 2px; }
+.bolo-card-alias { font-size: 12px; color: #64748b; margin-bottom: 4px; }
+.bolo-card-offense { font-size: 13px; color: #374151; margin-bottom: 6px; }
+.bolo-card-vehicle {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 4px;
+}
+.bolo-card-vehicle svg { width: 14px; height: 14px; flex-shrink: 0; }
+.bolo-card-meta { font-size: 11px; color: #94a3b8; margin-top: 6px; }
+
+/* Threat badges */
+.bolo-threat-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 2px 8px;
+  border-radius: 20px;
+  text-transform: uppercase;
+}
+.bolo-threat-badge-low      { background: #dcfce7; color: #15803d; }
+.bolo-threat-badge-moderate { background: #fef3c7; color: #92400e; }
+.bolo-threat-badge-high     { background: #fee2e2; color: #991b1b; }
+.bolo-threat-badge-armed    { background: #ede9fe; color: #5b21b6; }
+
+/* Detail page */
+.bolo-detail-photo-card { border: none; }
+.bolo-detail-photo { width: 100%; max-height: 340px; object-fit: cover; display: block; }
+.bolo-detail-no-photo {
+  height: 240px;
+  background: #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  gap: 8px;
+  font-size: 13px;
+}
+.bolo-detail-no-photo svg { width: 64px; height: 64px; }
+.bolo-detail-threat {
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #fff;
+  text-align: center;
+}
+.bolo-threat-bg-low      { background: #16a34a; }
+.bolo-threat-bg-moderate { background: #d97706; }
+.bolo-threat-bg-high     { background: #dc2626; }
+.bolo-threat-bg-armed    { background: #7c3aed; }
+
+.bolo-desc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 8px 16px;
+  font-size: 14px;
+}
+.bolo-label {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #94a3b8;
+  margin-bottom: 1px;
+}
+
+/* Form section headers */
+.bolo-form-section-head {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #64748b;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 4px;
+  margin-bottom: 10px;
+  margin-top: 4px;
+}
+
+/* =============================================================================
    AI FLOATING ASSISTANT — Phase 8 / 2026-05-04
    ============================================================================= */
 

@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell">
+  {% include 'partials/nav.html' %}
+  <div class="page-wrap">
+
+    <div class="mobile-back-bar">
+      <a class="mobile-back-btn" href="{{ url_for('bolo.bolo_board') }}">&#8592; BOLO Board</a>
+    </div>
+
+    <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('bolo.bolo_board') }}">&#8592; Board</a>
+      {% if can_manage and entry.status == BOLO_STATUS_ACTIVE %}
+      <a class="btn btn-outline-dark btn-sm" href="{{ url_for('bolo.bolo_edit', entry_id=entry.id) }}">Edit</a>
+      {% endif %}
+    </div>
+
+    <div class="row g-3">
+      <div class="col-lg-4">
+        <div class="card p-0 overflow-hidden bolo-detail-photo-card">
+          {% if entry.photo_path %}
+          <img src="{{ url_for('bolo.bolo_photo', entry_id=entry.id) }}" alt="Subject photo" class="bolo-detail-photo" />
+          {% else %}
+          <div class="bolo-detail-no-photo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="12" cy="9" r="5"/><path d="M3 22c0-5 3.9-9 9-9s9 4 9 9"/></svg>
+            <span>No photo on file</span>
+          </div>
+          {% endif %}
+          <div class="bolo-detail-threat bolo-threat-bg-{{ entry.threat_level | lower }}">
+            THREAT LEVEL: {{ entry.threat_level }}
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-8">
+        <div class="card p-3 mb-3">
+          <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+            <div>
+              <div class="eyebrow">Subject</div>
+              <h2 class="mb-0">{{ entry.subject_name }}</h2>
+              {% if entry.aliases %}<div class="text-muted">AKA: {{ entry.aliases }}</div>{% endif %}
+            </div>
+            <div class="d-flex gap-1 flex-wrap">
+              <span class="bolo-threat-badge bolo-threat-badge-{{ entry.threat_level | lower }}">{{ entry.threat_level }}</span>
+              {% if entry.status == BOLO_STATUS_ACTIVE %}
+              <span class="badge bg-success">ACTIVE</span>
+              {% else %}
+              <span class="badge bg-secondary">{{ entry.status }}</span>
+              {% endif %}
+            </div>
+          </div>
+
+          {% if entry.offense %}
+          <div class="notice-panel notice-panel-soft mb-3">
+            <strong>Wanted For:</strong> {{ entry.offense }}
+          </div>
+          {% endif %}
+
+          <div class="bolo-desc-grid mb-3">
+            {% if entry.race %}<div><span class="bolo-label">Race</span> {{ entry.race }}</div>{% endif %}
+            {% if entry.sex %}<div><span class="bolo-label">Sex</span> {{ entry.sex }}</div>{% endif %}
+            {% if entry.dob %}<div><span class="bolo-label">DOB</span> {{ entry.dob }}</div>{% endif %}
+            {% if entry.height %}<div><span class="bolo-label">Height</span> {{ entry.height }}</div>{% endif %}
+            {% if entry.weight %}<div><span class="bolo-label">Weight</span> {{ entry.weight }}</div>{% endif %}
+            {% if entry.hair %}<div><span class="bolo-label">Hair</span> {{ entry.hair }}</div>{% endif %}
+            {% if entry.eyes %}<div><span class="bolo-label">Eyes</span> {{ entry.eyes }}</div>{% endif %}
+          </div>
+
+          {% if entry.description %}
+          <div class="summary-box mb-3">
+            <div class="small text-muted mb-1">Additional Description / Notes</div>
+            <p class="mb-0" style="white-space:pre-wrap">{{ entry.description }}</p>
+          </div>
+          {% endif %}
+
+          {% if entry.vehicle_description or entry.vehicle_plate %}
+          <div class="summary-box mb-3">
+            <div class="small text-muted mb-1">Vehicle</div>
+            <div>{{ entry.vehicle_description or '' }}</div>
+            {% if entry.vehicle_plate %}<div><strong>Plate:</strong> {{ entry.vehicle_plate }}</div>{% endif %}
+          </div>
+          {% endif %}
+
+          <div class="small text-muted">
+            Issued {{ entry.created_at.strftime('%B %d, %Y') if entry.created_at else 'unknown' }}
+            by {{ entry.creator.display_name if entry.creator else 'unknown' }}
+            {% if entry.expiration_date %} · Expires {{ entry.expiration_date }}{% endif %}
+          </div>
+        </div>
+
+        {% if entry.status != BOLO_STATUS_ACTIVE %}
+        <div class="card p-3 mb-3">
+          <div class="eyebrow mb-1">Resolution</div>
+          <div><strong>Status:</strong> {{ entry.status }}</div>
+          {% if entry.resolved_at %}<div><strong>Resolved:</strong> {{ entry.resolved_at.strftime('%B %d, %Y %H:%M') }}</div>{% endif %}
+          {% if entry.resolver %}<div><strong>By:</strong> {{ entry.resolver.display_name }}</div>{% endif %}
+          {% if entry.resolution_notes %}<div class="mt-2 text-muted">{{ entry.resolution_notes }}</div>{% endif %}
+        </div>
+        {% endif %}
+
+        {% if entry.status == BOLO_STATUS_ACTIVE %}
+        <div class="card p-3 mb-3">
+          <div class="eyebrow mb-2">Actions</div>
+          <form method="post" action="{{ url_for('bolo.bolo_locate', entry_id=entry.id) }}" class="mb-2">
+            <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}" />
+            <div class="mb-2">
+              <label class="form-label text-dark">Location / notes (optional)</label>
+              <input class="form-control form-control-sm" type="text" name="resolution_notes" placeholder="Where located, by whom, disposition…" />
+            </div>
+            <button class="btn btn-success btn-sm" type="submit">Mark as Located</button>
+          </form>
+          {% if can_manage %}
+          <form method="post" action="{{ url_for('bolo.bolo_cancel', entry_id=entry.id) }}">
+            <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}" />
+            <input type="hidden" name="resolution_notes" value="Cancelled by supervisor." />
+            <button class="btn btn-outline-danger btn-sm" type="submit" onclick="return confirm('Cancel this BOLO?')">Cancel BOLO</button>
+          </form>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

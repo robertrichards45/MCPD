@@ -706,3 +706,51 @@ class IncidentPacket(db.Model):
     officer = db.relationship('User', foreign_keys=[officer_user_id], backref='incident_packets')
     reviewer = db.relationship('User', foreign_keys=[reviewer_user_id], backref='reviewed_packets')
 
+
+BOLO_STATUS_ACTIVE = 'ACTIVE'
+BOLO_STATUS_LOCATED = 'LOCATED'
+BOLO_STATUS_CANCELLED = 'CANCELLED'
+
+BOLO_THREAT_LOW = 'LOW'
+BOLO_THREAT_MODERATE = 'MODERATE'
+BOLO_THREAT_HIGH = 'HIGH'
+BOLO_THREAT_ARMED = 'ARMED'
+
+
+class BOLOEntry(db.Model):
+    __tablename__ = 'bolo_entry'
+    id = db.Column(db.Integer, primary_key=True)
+
+    subject_name = db.Column(db.String(120), nullable=False, index=True)
+    aliases = db.Column(db.String(255), nullable=True)
+    race = db.Column(db.String(40), nullable=True)
+    sex = db.Column(db.String(20), nullable=True)
+    dob = db.Column(db.String(20), nullable=True)
+    height = db.Column(db.String(20), nullable=True)
+    weight = db.Column(db.String(20), nullable=True)
+    hair = db.Column(db.String(40), nullable=True)
+    eyes = db.Column(db.String(40), nullable=True)
+
+    offense = db.Column(db.String(255), nullable=True)
+    description = db.Column(db.Text, nullable=True)
+
+    vehicle_description = db.Column(db.String(255), nullable=True)
+    vehicle_plate = db.Column(db.String(40), nullable=True)
+
+    threat_level = db.Column(db.String(20), default=BOLO_THREAT_LOW, nullable=False, index=True)
+    photo_path = db.Column(db.String(255), nullable=True)
+
+    status = db.Column(db.String(20), default=BOLO_STATUS_ACTIVE, nullable=False, index=True)
+    expiration_date = db.Column(db.String(20), nullable=True)
+
+    resolved_at = db.Column(db.DateTime, nullable=True)
+    resolved_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    resolution_notes = db.Column(db.Text, nullable=True)
+
+    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=utcnow_naive)
+    updated_at = db.Column(db.DateTime, default=utcnow_naive, onupdate=utcnow_naive)
+
+    creator = db.relationship('User', foreign_keys=[created_by], backref='bolo_entries')
+    resolver = db.relationship('User', foreign_keys=[resolved_by], backref='resolved_bolos')
+

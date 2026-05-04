@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell">
+  {% include 'partials/nav.html' %}
+  <div class="page-wrap">
+
+    <div class="mobile-back-bar">
+      <a class="mobile-back-btn" href="{{ url_for('bolo.bolo_board') }}">&#8592; BOLO Board</a>
+    </div>
+
+    <div class="d-flex align-items-center gap-2 mb-3">
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('bolo.bolo_board') }}">&#8592; Board</a>
+    </div>
+
+    <div class="card p-3" style="max-width:760px">
+      <div class="eyebrow mb-1">{{ 'Edit' if entry else 'New' }} BOLO</div>
+      <h3 class="mb-3">{{ 'Update BOLO Entry' if entry else 'Issue Be On the Lookout' }}</h3>
+
+      <form method="post" enctype="multipart/form-data">
+        <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}" />
+
+        <h6 class="bolo-form-section-head">Subject Information</h6>
+        <div class="row g-2 mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Name <span class="text-danger">*</span></label>
+            <input class="form-control" type="text" name="subject_name" value="{{ entry.subject_name if entry else '' }}" required />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Aliases / AKA</label>
+            <input class="form-control" type="text" name="aliases" value="{{ entry.aliases if entry else '' }}" />
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Race</label>
+            <input class="form-control" type="text" name="race" value="{{ entry.race if entry else '' }}" />
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Sex</label>
+            <select class="form-control" name="sex">
+              <option value="">—</option>
+              {% for opt in ['Male','Female','Unknown'] %}
+              <option value="{{ opt }}" {% if entry and entry.sex == opt %}selected{% endif %}>{{ opt }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">DOB</label>
+            <input class="form-control" type="text" name="dob" value="{{ entry.dob if entry else '' }}" placeholder="MM/DD/YYYY" />
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Height</label>
+            <input class="form-control" type="text" name="height" value="{{ entry.height if entry else '' }}" placeholder='5&apos;10"' />
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Weight</label>
+            <input class="form-control" type="text" name="weight" value="{{ entry.weight if entry else '' }}" placeholder="175 lbs" />
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Hair</label>
+            <input class="form-control" type="text" name="hair" value="{{ entry.hair if entry else '' }}" />
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Eyes</label>
+            <input class="form-control" type="text" name="eyes" value="{{ entry.eyes if entry else '' }}" />
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Threat Level</label>
+            <select class="form-control" name="threat_level">
+              {% for level in [BOLO_THREAT_LOW, BOLO_THREAT_MODERATE, BOLO_THREAT_HIGH, BOLO_THREAT_ARMED] %}
+              <option value="{{ level }}" {% if entry and entry.threat_level == level %}selected{% elif not entry and level == BOLO_THREAT_LOW %}selected{% endif %}>{{ level }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <h6 class="bolo-form-section-head">Offense &amp; Description</h6>
+        <div class="row g-2 mb-3">
+          <div class="col-12">
+            <label class="form-label">Wanted For / Offense</label>
+            <input class="form-control" type="text" name="offense" value="{{ entry.offense if entry else '' }}" placeholder="e.g. Assault, Theft, Trespass…" />
+          </div>
+          <div class="col-12">
+            <label class="form-label">Additional Description / Notes</label>
+            <textarea class="form-control" name="description" rows="3" placeholder="Clothing, distinguishing marks, last known location, behavior…">{{ entry.description if entry else '' }}</textarea>
+          </div>
+        </div>
+
+        <h6 class="bolo-form-section-head">Vehicle (if applicable)</h6>
+        <div class="row g-2 mb-3">
+          <div class="col-md-8">
+            <label class="form-label">Vehicle Description</label>
+            <input class="form-control" type="text" name="vehicle_description" value="{{ entry.vehicle_description if entry else '' }}" placeholder="Year / Make / Model / Color" />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Plate Number</label>
+            <input class="form-control" type="text" name="vehicle_plate" value="{{ entry.vehicle_plate if entry else '' }}" placeholder="ABC1234" />
+          </div>
+        </div>
+
+        <h6 class="bolo-form-section-head">Photo &amp; Expiration</h6>
+        <div class="row g-2 mb-4">
+          <div class="col-md-6">
+            <label class="form-label">Photo {% if entry and entry.photo_path %}(upload to replace){% endif %}</label>
+            <input class="form-control" type="file" name="photo" accept="image/*" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Expiration Date</label>
+            <input class="form-control" type="date" name="expiration_date" value="{{ entry.expiration_date if entry else '' }}" />
+            <div class="form-text">Leave blank for no automatic expiration.</div>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button class="btn btn-primary" type="submit">{{ 'Update BOLO' if entry else 'Issue BOLO' }}</button>
+          <a class="btn btn-outline-secondary" href="{{ url_for('bolo.bolo_board') }}">Cancel</a>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell">
+  {% include 'partials/nav.html' %}
+  <div class="page-wrap">
+
+    <div class="mobile-back-bar">
+      <a class="mobile-back-btn" href="{{ url_for('mobile.home') }}">&#8592; Field Portal</a>
+    </div>
+
+    <section class="search-hero authority-hero mb-3">
+      <div class="search-hero-copy">
+        <div class="eyebrow">BOLO Board</div>
+        <h1>Be On the Lookout</h1>
+        <p>Active lookouts, wanted subjects, and vehicle alerts for all on-duty personnel.</p>
+      </div>
+      <div class="search-hero-meta authority-hero-meta">
+        <div class="hero-chip">
+          <span class="hero-chip-label">Active</span>
+          <strong>{{ active_count }}</strong>
+        </div>
+        <div class="hero-chip">
+          <span class="hero-chip-label">Showing</span>
+          <strong>{{ status_filter | title }}</strong>
+        </div>
+      </div>
+    </section>
+
+    <div class="card p-3 mb-3 ops-search-shell">
+      <form method="get" action="{{ url_for('bolo.bolo_board') }}">
+        <div class="row g-2 align-items-end">
+          <div class="col-lg-6">
+            <label class="form-label text-dark">Search</label>
+            <input class="form-control" type="text" name="q" value="{{ q }}" placeholder="Name, alias, plate, offense…" />
+          </div>
+          <div class="col-lg-3 col-md-6">
+            <label class="form-label text-dark">Status</label>
+            <select class="form-control" name="status">
+              <option value="ACTIVE" {% if status_filter == 'ACTIVE' %}selected{% endif %}>Active</option>
+              <option value="LOCATED" {% if status_filter == 'LOCATED' %}selected{% endif %}>Located</option>
+              <option value="CANCELLED" {% if status_filter == 'CANCELLED' %}selected{% endif %}>Cancelled</option>
+            </select>
+          </div>
+          <div class="col-lg-3">
+            <button class="btn btn-primary w-100" type="submit">Search</button>
+          </div>
+        </div>
+      </form>
+      {% if can_manage %}
+      <div class="mt-2">
+        <a class="btn btn-outline-dark btn-sm" href="{{ url_for('bolo.bolo_new') }}">+ Issue New BOLO</a>
+      </div>
+      {% endif %}
+    </div>
+
+    {% if entries %}
+    <div class="bolo-grid">
+      {% for entry in entries %}
+      <a class="bolo-card bolo-threat-{{ entry.threat_level | lower }} text-decoration-none" href="{{ url_for('bolo.bolo_detail', entry_id=entry.id) }}">
+        <div class="bolo-card-photo">
+          {% if entry.photo_path %}
+          <img src="{{ url_for('bolo.bolo_photo', entry_id=entry.id) }}" alt="Subject photo" />
+          {% else %}
+          <div class="bolo-no-photo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          </div>
+          {% endif %}
+        </div>
+        <div class="bolo-card-body">
+          <div class="bolo-card-badges">
+            <span class="bolo-threat-badge bolo-threat-badge-{{ entry.threat_level | lower }}">{{ entry.threat_level }}</span>
+            {% if entry.status != BOLO_STATUS_ACTIVE %}
+            <span class="badge bg-secondary">{{ entry.status }}</span>
+            {% endif %}
+          </div>
+          <div class="bolo-card-name">{{ entry.subject_name }}</div>
+          {% if entry.aliases %}<div class="bolo-card-alias">AKA: {{ entry.aliases }}</div>{% endif %}
+          {% if entry.offense %}<div class="bolo-card-offense">{{ entry.offense }}</div>{% endif %}
+          {% if entry.vehicle_description or entry.vehicle_plate %}
+          <div class="bolo-card-vehicle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+            {{ entry.vehicle_description or '' }}{% if entry.vehicle_plate %} · {{ entry.vehicle_plate }}{% endif %}
+          </div>
+          {% endif %}
+          <div class="bolo-card-meta">Issued {{ entry.created_at.strftime('%m/%d/%Y') if entry.created_at else '' }}</div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="card p-4 text-center text-muted">
+      {% if q %}No BOLOs matching "{{ q }}".{% elif status_filter == 'ACTIVE' %}No active BOLOs at this time.{% else %}No {{ status_filter | lower }} BOLOs found.{% endif %}
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}
