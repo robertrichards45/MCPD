@@ -1,0 +1,23 @@
+[
+  {
+    "page": "/forms",
+    "type": "link",
+    "text": "Download Blank",
+    "href": "http://127.0.0.1:8092/forms/40/download",
+    "issue": "bad status 404"
+  },
+  {
+    "page": "/forms",
+    "type": "link",
+    "text": "Download Blank",
+    "href": "http://127.0.0.1:8092/forms/34/download",
+    "issue": "bad status 404"
+  },
+  {
+    "page": "/mobile/home",
+    "type": "button",
+    "text": "☰",
+    "issue": "no visible form/js hook",
+    "html": "<button type=\"button\" aria-label=\"Open menu\">☰</button>"
+  }
+]
