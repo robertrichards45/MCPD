@@ -24,6 +24,7 @@ from ..models import (
     PACKET_APPROVAL_NEEDS_CORRECTION,
     PACKET_APPROVAL_PENDING,
     SavedForm,
+    Report,
     User,
     utcnow_naive,
 )
@@ -1042,6 +1043,8 @@ def _smtp_send_packet(recipient, cc_list, subject, body, attachments):
 @bp.route('/mobile/home')
 @login_required
 def home():
+    saved_forms_count = SavedForm.query.filter_by(officer_user_id=current_user.id).count()
+    report_count = Report.query.filter_by(owner_id=current_user.id).count()
     primary_cards = [
         {
             'title': 'Start Incident',
@@ -1073,6 +1076,8 @@ def home():
         primary_cards=primary_cards,
         feature_cards=feature_cards,
         action_cards=primary_cards + feature_cards,
+        dashboard_saved_forms_count=saved_forms_count,
+        dashboard_report_count=report_count,
         **_shell_context('Home', 'home'),
     )
 

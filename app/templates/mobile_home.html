@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="mcpd-mobile-app">
+  <header class="mcpd-mobile-topbar">
+    <button type="button" aria-label="Open menu">☰</button>
+    <strong>MCPD</strong>
+    <button class="mcpd-theme-toggle" type="button" data-theme-toggle>Dark</button>
+  </header>
+
+  <main class="mcpd-mobile-home">
+    <section class="mcpd-mobile-greeting">
+      <p>Good afternoon,</p>
+      <h1>{{ user.display_name }}</h1>
+      <span>{{ user.section_unit or portal_effective_role_label }}</span>
+    </section>
+
+    <section class="mcpd-mobile-grid" aria-label="Mobile actions">
+      <a href="{{ url_for('legal.legal_home') }}"><span>⚖</span>Law Lookup</a>
+      <a href="{{ url_for('mobile.incident_start') }}"><span>✎</span>Start Report</a>
+      <a href="{{ url_for('forms.list_forms') }}"><span>▣</span>Forms</a>
+      <a href="{{ url_for('orders.reference_search') }}"><span>☷</span>Orders</a>
+      <a href="{{ url_for('training.training_menu') }}"><span>▰</span>Training</a>
+      <a href="{{ url_for('forms.saved_forms') }}"><span>▤</span>Saved</a>
+    </section>
+
+    <section class="mcpd-mobile-officer-panel">
+      <div>
+        <strong>Officer Stats</strong>
+        <span>Forms: {{ dashboard_saved_forms_count|default(0) }} / Reports: {{ dashboard_report_count|default(0) }}</span>
+      </div>
+      <a href="{{ url_for('performance.my_stats') }}">View Stats</a>
+    </section>
+
+    <section class="mcpd-mobile-officer-panel">
+      <div>
+        <strong>Contact Info</strong>
+        <span>{{ user.phone_number or 'Phone not set' }}{% if user.email %} / {{ user.email }}{% endif %}</span>
+      </div>
+      <a href="{{ url_for('officers.profile') }}">Edit</a>
+    </section>
+  </main>
+
+  <footer class="mcpd-mobile-help">Need Help?</footer>
+</div>
+{% endblock %}
