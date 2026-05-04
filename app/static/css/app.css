@@ -9014,6 +9014,90 @@ body.mobile-foundation {
   border-color: rgba(255,255,255,0.15) !important;
 }
 
+.mcpd-mobile-menu-link {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,0.22);
+  border-radius: 12px;
+  padding: 0 14px;
+  color: #f5f2ea;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+/* ============================================================
+   GLOBAL COMMAND PORTAL CONSISTENCY PASS
+   Keeps older pages inside the approved MCPD command layout.
+   ============================================================ */
+
+body:not(.mobile-foundation) .page-wrap,
+body:not(.mobile-foundation) .dashboard,
+body:not(.mobile-foundation) .main-content {
+  background: var(--bg) !important;
+  color: var(--text) !important;
+}
+
+body:not(.mobile-foundation) .page-head,
+body:not(.mobile-foundation) .mission-hero,
+body:not(.mobile-foundation) .search-hero,
+body:not(.mobile-foundation) .command-hero,
+body:not(.mobile-foundation) .authority-hero,
+body:not(.mobile-foundation) .navigator-hero,
+body:not(.mobile-foundation) .perf-hero {
+  background: var(--card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08) !important;
+  color: var(--text) !important;
+}
+
+body:not(.mobile-foundation) .card,
+body:not(.mobile-foundation) .result-card,
+body:not(.mobile-foundation) .summary-box,
+body:not(.mobile-foundation) .list-card,
+body:not(.mobile-foundation) .panel,
+body:not(.mobile-foundation) .command-card,
+body:not(.mobile-foundation) .hero-chip {
+  background: var(--card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 12px !important;
+  color: var(--text) !important;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06) !important;
+}
+
+body:not(.mobile-foundation) .btn-primary,
+body:not(.mobile-foundation) button.btn-primary,
+body:not(.mobile-foundation) a.btn-primary {
+  background: var(--primary) !important;
+  border-color: var(--primary) !important;
+  color: #fff !important;
+}
+
+body:not(.mobile-foundation) .btn-primary:hover,
+body:not(.mobile-foundation) button.btn-primary:hover,
+body:not(.mobile-foundation) a.btn-primary:hover {
+  background: var(--primary-hover) !important;
+  border-color: var(--primary-hover) !important;
+}
+
+body:not(.mobile-foundation) input,
+body:not(.mobile-foundation) select,
+body:not(.mobile-foundation) textarea,
+body:not(.mobile-foundation) .form-control,
+body:not(.mobile-foundation) .form-select {
+  background: var(--surface) !important;
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+}
+
+body:not(.mobile-foundation) .text-muted,
+body:not(.mobile-foundation) .result-sub,
+body:not(.mobile-foundation) .small {
+  color: var(--muted) !important;
+}
+
 /* Progress chips */
 .mobile-progress-chip {
   background: rgba(255,255,255,0.08) !important;

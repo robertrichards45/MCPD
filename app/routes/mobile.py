@@ -1082,6 +1082,12 @@ def home():
     )
 
 
+@bp.route('/mobile/more')
+@login_required
+def more():
+    return render_template('mobile_more.html', **_shell_context('More', 'more'))
+
+
 @bp.route('/mobile/fast-capture')
 @login_required
 def fast_capture():

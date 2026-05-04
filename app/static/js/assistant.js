@@ -331,6 +331,10 @@
         hideTyping();
         isThinking = false;
         var reply = (data && data.reply) ? data.reply : 'Sorry, I could not get a response.';
+        if (data && data.mode === 'local_fallback') {
+          var label = document.getElementById('ai-status-label');
+          if (label) label.textContent = 'Local assist';
+        }
         appendMessage('assistant', reply);
         history.push({ role: 'user',      content: text  });
         history.push({ role: 'assistant', content: reply });

@@ -9,7 +9,7 @@
   <title>{{ title if title else 'MCPD Portal' }}</title>
   <meta name="csrf-token" content="{{ g.csrf_token }}" />
   <link rel="icon" type="image/svg+xml" href="{{ url_for('usmc_emblem') }}" />
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css', v='2026-05-04-accounts-1') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css', v='2026-05-04-command-fix-2') }}" />
 </head>
 <body class="{{ body_class|default('') }}">
   <script>
@@ -31,7 +31,7 @@
   {% endwith %}
   {% block body %}{% endblock %}
   <script src="{{ url_for('static', filename='js/app.js', v='2026-04-11-ops-refresh-1') }}"></script>
-  <script src="{{ url_for('static', filename='js/assistant.js', v='2026-05-04-voice-picker-1') }}"></script>
+  <script src="{{ url_for('static', filename='js/assistant.js', v='2026-05-04-assistant-fallback-2') }}"></script>
   <script>
   (function () {
     var meta = document.querySelector('meta[name="csrf-token"]');

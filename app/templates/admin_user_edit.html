@@ -98,6 +98,19 @@
         <button class="btn btn-primary">Save Officer</button>
       </div>
     </form>
+
+    {% if target_user.id != user.id %}
+    <form class="card p-3 mt-3 border-danger" method="post" onsubmit="return confirm('Permanently delete {{ target_user.display_name }}? This cannot be undone.');">
+      <input type="hidden" name="action" value="delete">
+      <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
+        <div>
+          <h4 class="mb-1 text-danger">Delete Account</h4>
+          <p class="text-muted mb-0">Permanently remove this account if it was created by mistake or the officer should not have portal access.</p>
+        </div>
+        <button class="btn btn-danger">Delete {{ target_user.display_name }}</button>
+      </div>
+    </form>
+    {% endif %}
   </div>
 </div>
 {% endblock %}

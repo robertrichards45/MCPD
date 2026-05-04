@@ -2,7 +2,7 @@
 {% block body %}
 <div class="mcpd-mobile-app">
   <header class="mcpd-mobile-topbar">
-    <button type="button" aria-label="Open menu">☰</button>
+    <a class="mcpd-mobile-menu-link" href="{{ url_for('mobile.more') }}" aria-label="Open menu">Menu</a>
     <strong>MCPD</strong>
     <button class="mcpd-theme-toggle" type="button" data-theme-toggle>Dark</button>
   </header>

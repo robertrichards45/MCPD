@@ -94,9 +94,11 @@ def assistant_ask():
 
     api_key = os.environ.get('OPENAI_API_KEY', '')
     answer = ask_openai_with_system(message, _SYSTEM_PROMPT, api_key, history=history)
+    mode = 'premium'
     if is_ai_unavailable_message(answer):
         answer = _local_assistant_reply(message)
-    return jsonify({'ok': True, 'reply': answer})
+        mode = 'local_fallback'
+    return jsonify({'ok': True, 'reply': answer, 'mode': mode})
 
 
 @bp.post('/api/assistant/speak')

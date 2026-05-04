@@ -44,7 +44,7 @@ def _friendly_error_message(status_code, payload):
     error_type, error_code, error_message = _extract_error_details(payload)
 
     if status_code == 401 or error_code == 'invalid_api_key':
-        return 'AI authentication failed. The configured OPENAI_API_KEY is invalid. Update it in .env and restart the portal.'
+        return 'AI authentication failed. OpenAI rejected the configured OPENAI_API_KEY. Verify the exact key value in Railway Variables or local .env, then redeploy/restart the portal.'
 
     if status_code == 429 and error_code == 'insufficient_quota':
         return 'AI quota has been exhausted for the configured OpenAI account. Add billing or switch to a funded API key.'

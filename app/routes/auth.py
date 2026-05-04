@@ -243,12 +243,19 @@ def _available_supervisors():
 
 
 def _visible_users_query():
-    query = User.query.filter_by(active=True)
+    query = User.query.filter(User.pending_approval.is_(False))
     if is_site_controller(current_user):
         return query
     if is_watch_commander(current_user):
         scope_id = watch_commander_scope_id(current_user)
-        return query.filter((User.supervisor_id == scope_id) | (User.id == scope_id))
+        return query.filter(
+            (User.supervisor_id == scope_id)
+            | (User.id == scope_id)
+            | (
+                (User.supervisor_id.is_(None))
+                & (User.installation == current_user.installation)
+            )
+        )
     return query.filter_by(id=current_user.id)
 
 
@@ -307,6 +314,8 @@ def _apply_personnel_edit(target):
         target.section_unit = request.form.get('section_unit', '').strip() or None
     target.role = role
     target.supervisor_id = supervisor.id if supervisor else None
+    if target.normalized_role == ROLE_WATCH_COMMANDER and not target.section_unit:
+        target.section_unit = f'{target.display_name} Watch'
     target.can_grade_cleoc_reports = request.form.get('can_grade_cleoc_reports') == '1'
     if 'active' in request.form:
         target.active = request.form.get('active') == '1'
@@ -325,6 +334,17 @@ def _apply_personnel_edit(target):
         raise ValueError('Email is already assigned to another user.')
     if target.officer_number and User.query.filter(User.officer_number == target.officer_number, User.id != target.id).first():
         raise ValueError('Officer number is already assigned to another user.')
+
+
+def _delete_user_account(target):
+    if target.id == current_user.id:
+        raise ValueError('You cannot delete your own account.')
+    if target.normalized_role == ROLE_WEBSITE_CONTROLLER and not can_manage_site(current_user):
+        raise ValueError('Only a Website Controller can delete another Website Controller account.')
+    deleted_name = target.display_name
+    username = target.username
+    db.session.delete(target)
+    return username, deleted_name
 
 
 def _pending_accounts_query():
@@ -481,7 +501,11 @@ def login():
     if len(attempts) >= 10:
         return _render_landing(error='Too many attempts. Try again later.')
 
-    user = _user_by_username(username, active_only=True)
+    user = _user_by_username(username)
+    if user and user.pending_approval:
+        return _render_landing(error='Your account is waiting for Watch Commander approval.')
+    if user and not user.active:
+        return _render_landing(error='Your account is disabled. Contact a Watch Commander or Website Controller.')
     if not user or not user.check_password(password):
         attempts.append(now)
         _login_attempts[key] = attempts
@@ -906,6 +930,8 @@ def manage_users():
                 active=True,
             )
             _sync_user_name_fields(user, first_name, last_name)
+            if user.normalized_role == ROLE_WATCH_COMMANDER and not user.section_unit:
+                user.section_unit = f'{user.display_name} Watch'
             user.set_password(password)
             db.session.add(user)
             if not _commit_or_rollback():
@@ -928,15 +954,13 @@ def manage_users():
                 return render_template('admin_users.html', **context_kwargs(error='User not found.'))
             if not can_manage_user(current_user, target):
                 abort(403)
-            # Site controllers cannot be deleted by non-site-controllers (enforced by can_manage_user),
-            # but also prevent deleting yourself
-            if target.id == current_user.id:
-                return render_template('admin_users.html', **context_kwargs(error='You cannot delete your own account.'))
-            deleted_name = target.display_name
-            db.session.delete(target)
+            try:
+                deleted_username, deleted_name = _delete_user_account(target)
+            except ValueError as exc:
+                return render_template('admin_users.html', **context_kwargs(error=str(exc)))
             if not _commit_or_rollback():
                 return render_template('admin_users.html', **context_kwargs(error='Unable to delete that user right now. Try again later.'))
-            _safe_audit(actor_id=current_user.id, action='user_delete', details=f'{username} ({deleted_name})')
+            _safe_audit(actor_id=current_user.id, action='user_delete', details=f'{deleted_username} ({deleted_name})')
         elif action == 'approve':
             pending_id = request.form.get('pending_id', '').strip()
             if not pending_id:
@@ -966,6 +990,8 @@ def manage_users():
             target.role = role
             target.supervisor_id = supervisor.id if supervisor else None
             target.section_unit = section_unit or target.section_unit
+            if target.normalized_role == ROLE_WATCH_COMMANDER and not target.section_unit:
+                target.section_unit = f'{target.display_name} Watch'
             target.active = True
             target.pending_approval = False
             if not _commit_or_rollback():
@@ -1051,6 +1077,15 @@ def edit_user(user_id):
         'installations': USMC_INSTALLATIONS,
     }
     if request.method == 'POST':
+        if request.form.get('action') == 'delete':
+            try:
+                deleted_username, deleted_name = _delete_user_account(target)
+            except ValueError as exc:
+                return render_template('admin_user_edit.html', **context, error=str(exc))
+            if not _commit_or_rollback():
+                return render_template('admin_user_edit.html', **context, error='Unable to delete that officer right now. Try again later.')
+            _safe_audit(actor_id=current_user.id, action='user_delete', details=f'{deleted_username} ({deleted_name})')
+            return redirect(url_for('auth.manage_users'))
         try:
             _apply_personnel_edit(target)
         except ValueError as exc:

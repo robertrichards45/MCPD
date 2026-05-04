@@ -68,3 +68,15 @@ def test_mobile_home_rebuild_has_only_primary_field_actions():
     assert 'Shift Workflow' not in html
     assert 'Command Radar' not in html
     assert 'Resume The Mission' not in html
+
+
+def test_mobile_home_menu_link_opens_more_tools():
+    client = _logged_in_client()
+    response = client.get('/mobile/home')
+    html = response.get_data(as_text=True)
+    assert response.status_code == 200
+    assert '/mobile/more' in html
+
+    more_response = client.get('/mobile/more')
+    assert more_response.status_code == 200
+    assert 'More tools' in more_response.get_data(as_text=True)

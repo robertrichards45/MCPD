@@ -28,6 +28,7 @@ def test_assistant_returns_local_report_help_when_ai_key_missing(monkeypatch):
     assert response.status_code == 200
     payload = response.get_json()
     assert payload['ok'] is True
+    assert payload['mode'] == 'local_fallback'
     assert 'Start Report' in payload['reply']
     assert '/reports/new' in payload['reply']
 
@@ -44,5 +45,6 @@ def test_assistant_returns_local_law_lookup_help_when_ai_key_missing(monkeypatch
     assert response.status_code == 200
     payload = response.get_json()
     assert payload['ok'] is True
+    assert payload['mode'] == 'local_fallback'
     assert 'Law Lookup' in payload['reply']
     assert '/legal/search' in payload['reply']
