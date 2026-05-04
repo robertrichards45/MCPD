@@ -12,6 +12,7 @@
         </div>
         <div class="recon-action-row">
           <button class="btn btn-outline-secondary" type="button" data-recon-save>Save</button>
+          <button class="btn btn-outline-secondary" type="button" data-recon-export-png>Export PNG</button>
           <a class="btn btn-outline-secondary" href="{{ url_for('reports.accident_reconstruction_export', reconstruction_id=reconstruction.id) }}">Export</a>
           <a class="btn btn-primary" href="{{ url_for('reports.accident_reconstruction_export', reconstruction_id=reconstruction.id) }}">Generate Report</a>
         </div>

@@ -13,9 +13,9 @@
     </div>
 
     <div class="card p-3 mb-3">
-      <h3 class="mb-2">Scene Diagram</h3>
+      <h3 class="mb-2">Report / Courtroom Diagram Workspace</h3>
       <div class="small text-muted mb-2">
-        Drag items to canvas. Shift-drag pans. Mouse wheel zooms. Keys: Delete removes, R rotates, L edits label.
+        Build a clean report-ready scene diagram. Show editing grid and snap objects to grid while drafting; export only the professional diagram.
       </div>
       <div
         class="recon-editor"
@@ -36,17 +36,20 @@
         </div>
         <div class="recon-body">
           <div class="recon-palette" data-palette>
-            <div class="recon-pal-title">Drag Items</div>
+            <div class="recon-pal-title">Professional Tools</div>
+            <button type="button" class="recon-pal-btn" data-template="rear_end">Rear-End</button>
             <button type="button" class="recon-pal-btn" data-item="road">Road</button>
             <button type="button" class="recon-pal-btn" data-item="intersection">Intersection</button>
             <button type="button" class="recon-pal-btn" data-item="curve_left">Curve Left</button>
             <button type="button" class="recon-pal-btn" data-item="curve_right">Curve Right</button>
             <button type="button" class="recon-pal-btn" data-item="car">Car</button>
-            <button type="button" class="recon-pal-btn" data-item="deer">Deer</button>
+            <button type="button" class="recon-pal-btn" data-item="animal_marker">Animal Marker</button>
             <button type="button" class="recon-pal-btn" data-item="cone">Cone</button>
             <button type="button" class="recon-pal-btn" data-item="arrow">Arrow</button>
-            <button type="button" class="recon-pal-btn" data-item="point">Point</button>
+            <button type="button" class="recon-pal-btn" data-item="point">Point of Impact</button>
             <button type="button" class="recon-pal-btn" data-item="text">Text</button>
+            <label class="small text-muted mt-2 d-block"><input type="checkbox" checked> Show editing grid</label>
+            <label class="small text-muted mt-1 d-block"><input type="checkbox" checked> Snap objects to grid</label>
             <div class="small text-muted mt-2">Tip: drag to place or click to add center.</div>
           </div>
           <div class="recon-canvas" data-canvas-wrap>

@@ -10,6 +10,7 @@ from app.models import (
     ReconstructionObject,
     ReconstructionTimelineItem,
     ReconstructionVehicle,
+    Report,
     User,
 )
 
@@ -203,4 +204,42 @@ def test_accident_reconstruction_routes_render_mobile_shell_cleanly():
     finally:
         with client.application.app_context():
             _cleanup_reconstruction(reconstruction_id)
+        _dispose_app(client.application)
+
+
+def test_report_connected_scene_diagram_creates_linked_reconstruction():
+    client = _logged_in_client()
+    report_id = None
+    reconstruction_id = None
+    try:
+        with client.application.app_context():
+            user = User.query.filter(User.username.ilike("robertrichards")).first() or User.query.first()
+            report = Report(title="Crash report linked reconstruction", owner_id=user.id, status="DRAFT")
+            db.session.add(report)
+            db.session.commit()
+            report_id = report.id
+
+        response = client.get(f"/reports/{report_id}/scene-diagram", follow_redirects=False)
+        assert response.status_code in {302, 303}
+        assert "/reports/accident-reconstruction/" in response.headers["Location"]
+        assert response.headers["Location"].endswith("/diagram")
+
+        with client.application.app_context():
+            row = AccidentReconstruction.query.filter_by(report_id=report_id).first()
+            assert row is not None
+            reconstruction_id = row.id
+            assert row.incident_number == f"RPT-{report_id}"
+
+        detail_response = client.get(f"/reports/{report_id}")
+        html = detail_response.get_data(as_text=True)
+        assert detail_response.status_code == 200
+        assert "Scene Diagram / Accident Reconstruction" in html
+        assert "Open Diagram" in html
+        assert "Export PDF" in html
+    finally:
+        with client.application.app_context():
+            _cleanup_reconstruction(reconstruction_id)
+            if report_id:
+                Report.query.filter_by(id=report_id).delete()
+                db.session.commit()
         _dispose_app(client.application)

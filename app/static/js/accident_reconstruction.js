@@ -5,6 +5,7 @@
   var canvas = root.querySelector('[data-recon-canvas]');
   var stateScript = root.querySelector('[data-recon-state]');
   var saveButton = document.querySelector('[data-recon-save]');
+  var exportPngButton = document.querySelector('[data-recon-export-png]');
   var toolButtons = Array.prototype.slice.call(root.querySelectorAll('[data-tool]'));
   var gridToggle = root.querySelector('[data-grid-toggle]');
   var snapToggle = root.querySelector('[data-snap-toggle]');
@@ -395,6 +396,16 @@
         saveButton.disabled = false;
         window.alert('Unable to save the diagram. Your work is still on screen; try again.');
       });
+    });
+  }
+
+  if (exportPngButton) {
+    exportPngButton.addEventListener('click', function () {
+      redraw();
+      var link = document.createElement('a');
+      link.download = 'accident-reconstruction-diagram.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
     });
   }
 
