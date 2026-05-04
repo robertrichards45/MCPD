@@ -1,6 +1,6 @@
 from flask import Flask, Response, g, redirect, render_template, request, send_file, session, url_for
 from flask_login import current_user
-from dotenv import load_dotenv
+from dotenv import dotenv_values
 from datetime import datetime, timezone
 import hmac
 import logging
@@ -24,9 +24,13 @@ warnings.filterwarnings(
     category=CryptographyDeprecationWarning,
 )
 
-# Let the active shell or launcher override .env so machine-local startup
-# settings (like DATABASE_URL and PORT) can safely differ from older handoff values.
-load_dotenv(override=False)
+# Load .env file into the environment.  Variables already set to a non-empty
+# value (e.g. by the shell or Railway) take precedence; but if Railway injected
+# a blank value for a key (common when the variable was added but left empty),
+# the .env file value fills it in so credentials are never silently lost.
+for _env_key, _env_val in dotenv_values().items():
+    if _env_val and not os.environ.get(_env_key):
+        os.environ[_env_key] = _env_val
 
 from .config import Config
 from .extensions import db, login_manager
