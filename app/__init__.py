@@ -28,11 +28,57 @@ warnings.filterwarnings(
 # settings (like DATABASE_URL and PORT) can safely differ from older handoff values.
 load_dotenv(override=False)
 
-from .config import Config
+from .config import Config, _normalize_database_uri
 from .extensions import db, login_manager
 from .models import ALL_PORTAL_ROLES, ROLE_LABELS, ROLE_WEBSITE_CONTROLLER, ROLE_WATCH_COMMANDER, Role, User
 
 _CREATED_APPS = weakref.WeakSet()
+
+
+def _database_uri_is_ephemeral(uri):
+    raw = str(uri or '').strip()
+    if not raw.startswith('sqlite:///'):
+        return False
+    if raw == 'sqlite:///:memory:':
+        return True
+    path = raw[len('sqlite:///'):]
+    if not os.path.isabs(path):
+        path = os.path.abspath(path)
+    persistent_roots = [
+        os.environ.get('RAILWAY_VOLUME_MOUNT_PATH', ''),
+        os.environ.get('PERSISTENT_DATA_DIR', ''),
+    ]
+    persistent_roots = [os.path.abspath(root) for root in persistent_roots if root]
+    if any(os.path.abspath(path).startswith(root + os.sep) or os.path.abspath(path) == root for root in persistent_roots):
+        return False
+    return True
+
+
+def _enforce_persistent_database_config(app):
+    if app.config.get('TESTING') or not app.config.get('REQUIRE_PERSISTENT_DATABASE'):
+        return
+    database_uri = app.config.get('SQLALCHEMY_DATABASE_URI')
+    if not _database_uri_is_ephemeral(database_uri):
+        return
+    message = (
+        'Unsafe production database configuration: this deployment is using SQLite on the app filesystem. '
+        'That can wipe officer accounts on rebuild/update. Set DATABASE_URL to Railway Postgres, or mount a '
+        'persistent volume and use sqlite:////data/app.db. Set REQUIRE_PERSISTENT_DATABASE=0 only for throwaway testing.'
+    )
+    logging.getLogger(__name__).critical(message)
+    raise RuntimeError(message)
+
+
+def _refresh_runtime_environment_config(app):
+    database_url = os.environ.get('DATABASE_URL')
+    if database_url is not None:
+        app.config['SQLALCHEMY_DATABASE_URI'] = _normalize_database_uri(database_url)
+    require_persistent = os.environ.get('REQUIRE_PERSISTENT_DATABASE')
+    if require_persistent is not None:
+        app.config['REQUIRE_PERSISTENT_DATABASE'] = require_persistent.lower() in {'1', 'true', 'yes', 'on'}
+    elif os.environ.get('RAILWAY_ENVIRONMENT') or os.environ.get('RAILWAY_PROJECT_ID'):
+        app.config['REQUIRE_PERSISTENT_DATABASE'] = True
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -308,6 +354,8 @@ def create_app():
     app = Flask(__name__)
     _CREATED_APPS.add(app)
     app.config.from_object(Config)
+    _refresh_runtime_environment_config(app)
+    _enforce_persistent_database_config(app)
     # Respect environment/config-driven cookie and scheme settings so local
     # LAN access can use HTTP while production stays on secure cookies/HTTPS.
     app.config["PREFERRED_URL_SCHEME"] = app.config.get("PREFERRED_URL_SCHEME", "http")
