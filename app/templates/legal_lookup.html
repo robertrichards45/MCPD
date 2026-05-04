@@ -79,6 +79,15 @@
       </div>
     </div>
 
+    {% if ai_interpretation_note %}
+    <div class="intel-strip mb-3">
+      <div class="intel-card">
+        <span class="intel-kicker">AI Read Your Statement As</span>
+        <p class="mb-0">{{ ai_interpretation_note }}</p>
+      </div>
+    </div>
+    {% endif %}
+
     {% if ai_candidates %}
     <section class="card p-3 mb-3 ai-law-candidates">
       <div class="section-tight mb-2">
