@@ -12,6 +12,14 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css', v='2026-05-04-accounts-1') }}" />
 </head>
 <body class="{{ body_class|default('') }}">
+  <script>
+  (function () {
+    var stored = localStorage.getItem('mcpd-theme');
+    var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var theme = stored || (prefersDark ? 'dark' : 'light');
+    document.body.setAttribute('data-theme', theme);
+  }());
+  </script>
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
     <div class="global-flash-stack">
@@ -43,6 +51,25 @@
       }
       return _origFetch.call(this, input, init);
     };
+  }());
+  </script>
+  <script>
+  (function () {
+    function setTheme(theme) {
+      document.body.setAttribute('data-theme', theme);
+      localStorage.setItem('mcpd-theme', theme);
+      document.querySelectorAll('[data-theme-toggle]').forEach(function (button) {
+        button.setAttribute('aria-label', theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+        button.textContent = theme === 'dark' ? 'Light' : 'Dark';
+      });
+    }
+    document.addEventListener('click', function (event) {
+      var button = event.target.closest('[data-theme-toggle]');
+      if (!button) return;
+      var next = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      setTheme(next);
+    });
+    setTheme(document.body.getAttribute('data-theme') || 'light');
   }());
   </script>
   {% block scripts %}{% endblock %}
