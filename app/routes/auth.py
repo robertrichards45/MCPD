@@ -256,8 +256,11 @@ def _pending_accounts_query():
     query = User.query.filter_by(pending_approval=True, active=False)
     if is_site_controller(current_user):
         return query
-    # Watch Commanders only see pending accounts from their own installation
-    return query.filter_by(installation=current_user.installation)
+    # Scope to matching installation; if the WC has no installation set yet,
+    # show all pending accounts so nothing falls through the cracks.
+    if current_user.installation:
+        return query.filter_by(installation=current_user.installation)
+    return query
 
 
 def _cac_request_debug_context():

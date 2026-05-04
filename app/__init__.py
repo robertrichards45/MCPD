@@ -606,7 +606,7 @@ def create_app():
         if current_user.can_manage_team():
             try:
                 q = User.query.filter_by(pending_approval=True, active=False)
-                if not is_site_controller(current_user):
+                if not is_site_controller(current_user) and current_user.installation:
                     q = q.filter_by(installation=current_user.installation)
                 pending_approvals_count = q.count()
             except Exception:

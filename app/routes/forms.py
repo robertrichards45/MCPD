@@ -134,6 +134,9 @@ def _humanize_field_name(name):
     text = (name or '').strip()
     if not text:
         return 'Field'
+    # Purely numeric names (e.g. "1", "2", "3") from PDFs with unnamed fields
+    if re.match(r'^[0-9]+$', text):
+        return f'Field {text}'
     if text.isupper() and len(text) <= 12:
         return text
     text = text.replace('_', ' ').replace('-', ' ')
