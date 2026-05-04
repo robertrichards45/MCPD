@@ -75,6 +75,7 @@
           <a class="{% if endpoint == 'reference.incident_paperwork_guide_manage' %}is-active{% endif %}" href="{{ url_for('reference.incident_paperwork_guide_manage') }}">Navigator Editor</a>
           <a class="{% if endpoint == 'admin.legal_corpus_admin' %}is-active{% endif %}" href="{{ url_for('admin.legal_corpus_admin') }}">Legal QA</a>
           <a class="{% if endpoint == 'admin.legal_analytics' %}is-active{% endif %}" href="{{ url_for('admin.legal_analytics') }}">Legal Analytics</a>
+          <a class="{% if endpoint == 'admin.system_status' %}is-active{% endif %}" href="{{ url_for('admin.system_status') }}">System Status</a>
         </div>
       </details>
       {% endif %}
