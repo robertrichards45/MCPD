@@ -2960,7 +2960,7 @@ def _run_retrieval_pass(query: str, source: str, strict_gating: bool, stage: str
     scored: list[LegalMatch] = []
     for profile in candidates:
         raw_score, reasons, matched_terms = _score_profile(profile, analysis, strict_gating)
-        if raw_score <= (20 if stage == 'fallback' else 28):
+        if raw_score <= (36 if stage == 'fallback' else 28):
             continue
         if not reasons and strict_gating:
             continue
@@ -3020,8 +3020,6 @@ def _merge_search_passes(groups: list[list[LegalMatch]]) -> list[LegalMatch]:
 
 def _needs_fallback(results: list[LegalMatch]) -> bool:
     if not results:
-        return True
-    if results[0].score < 72:
         return True
     if len(results) == 1 and results[0].score < 90:
         return True
@@ -4272,8 +4270,8 @@ def search_entries(query: str, source: str = 'ALL', strict_gating: bool = True) 
 
     top_score = merged[0].score
     floor = 22 if analysis.ocga_code or analysis.ocga_prefix or analysis.article_number else max(
-        30,
-        int(top_score * (0.42 if strict_gating else 0.35)),
+        40,
+        int(top_score * (0.52 if strict_gating else 0.45)),
     )
     filtered = [
         item for item in merged
@@ -4283,7 +4281,7 @@ def search_entries(query: str, source: str = 'ALL', strict_gating: bool = True) 
         or 'matched article number' in item.reasons
     ]
     if not filtered:
-        filtered = merged[:6]
+        filtered = [item for item in merged[:6] if item.score >= 38]
 
     finalized = _finalize_results(query, filtered[:18])
     if not finalized:

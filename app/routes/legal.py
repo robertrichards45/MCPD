@@ -629,7 +629,7 @@ def _ai_search_hints(query: str, source: str, results: list[LegalMatch] | None =
 def _merge_ai_results(base_results: list[LegalMatch], ai_results: list[LegalMatch]) -> list[LegalMatch]:
     merged: dict[str, LegalMatch] = {item.entry.code: item for item in base_results}
     top_base_score = base_results[0].score if base_results else 0
-    min_ai_new_score = int(top_base_score * 0.85) if top_base_score else 0
+    min_ai_new_score = int(top_base_score * 0.92) if top_base_score else 0
     for item in ai_results:
         existing = merged.get(item.entry.code)
         if existing is None:
@@ -637,11 +637,11 @@ def _merge_ai_results(base_results: list[LegalMatch], ai_results: list[LegalMatc
                 continue
             merged[item.entry.code] = LegalMatch(
                 entry=item.entry,
-                score=item.score + 12,
+                score=item.score + 6,
                 reasons=tuple(dict.fromkeys(tuple(item.reasons) + ('AI scenario expansion match',))),
             )
             continue
-        ai_score = item.score + 12
+        ai_score = item.score + 6
         if ai_score > existing.score:
             merged[item.entry.code] = LegalMatch(
                 entry=item.entry,
