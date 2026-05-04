@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell mcpd-command-app">
+  {% include 'partials/nav.html' %}
+  <main class="dashboard mcpd-dashboard">
+    <section class="mcpd-dashboard-head">
+      <div>
+        <h1>Welcome back, {{ user.display_name }}</h1>
+        <p>{{ portal_effective_role_label }}{% if user.section_unit %} / {{ user.section_unit }}{% endif %}</p>
+      </div>
+      <div class="mcpd-date-tile">
+        <strong>MCPD</strong>
+        <span>Command Portal</span>
+      </div>
+    </section>
+
+    <section class="mcpd-action-grid" aria-label="Quick actions">
+      <a class="mcpd-action-card" href="{{ url_for('legal.legal_home') }}">
+        <span class="mcpd-action-icon">⚖</span>
+        <strong>Law Lookup</strong>
+        <small>Search laws, UCMJ, and base orders</small>
+      </a>
+      <a class="mcpd-action-card" href="{{ url_for('reports.new_report') }}">
+        <span class="mcpd-action-icon">✎</span>
+        <strong>Start New Report</strong>
+        <small>Create an incident report or blotter</small>
+      </a>
+      <a class="mcpd-action-card" href="{{ url_for('forms.list_forms') }}">
+        <span class="mcpd-action-icon">▣</span>
+        <strong>Forms Library</strong>
+        <small>Fill out, save, and manage forms</small>
+      </a>
+      <a class="mcpd-action-card" href="{{ url_for('orders.reference_search') }}">
+        <span class="mcpd-action-icon">☷</span>
+        <strong>Orders &amp; Memos</strong>
+        <small>Search orders, memos, and references</small>
+      </a>
+    </section>
+
+    <section class="mcpd-dashboard-panels">
+      <article class="mcpd-panel">
+        <div class="mcpd-panel-head">
+          <h2>Recent Reports</h2>
+          <a href="{{ url_for('reports.list_reports') }}">View All</a>
+        </div>
+        <div class="mcpd-list">
+          <a href="{{ url_for('reports.list_reports') }}"><strong>Reports Center</strong><span>{{ dashboard_metrics[0].detail if dashboard_metrics else 'Open reports and packets' }}</span></a>
+          <a href="{{ url_for('reports.accident_reconstruction_list') }}"><strong>Accident Reconstruction</strong><span>Scene diagrams and crash reports</span></a>
+          <a href="{{ url_for('reference.incident_paperwork_guide') }}"><strong>Paperwork Navigator</strong><span>Required / likely paperwork</span></a>
+        </div>
+      </article>
+
+      <article class="mcpd-panel">
+        <div class="mcpd-panel-head">
+          <h2>Training Rosters</h2>
+          <a href="{{ url_for('training.training_menu') }}">View All</a>
+        </div>
+        <div class="mcpd-list">
+          <a href="{{ url_for('training.training_menu') }}"><strong>Training Center</strong><span>Assigned rosters and sign-offs</span></a>
+          <a href="{{ url_for('qual_tracker.tracker_personal') }}"><strong>Qualifications</strong><span>Personal qualification tracker</span></a>
+          <a href="{{ url_for('performance.my_stats') }}"><strong>Officer Stats</strong><span>Performance and elements</span></a>
+        </div>
+      </article>
+
+      <article class="mcpd-panel">
+        <div class="mcpd-panel-head">
+          <h2>Saved Work</h2>
+          <a href="{{ url_for('forms.saved_forms') }}">View All</a>
+        </div>
+        <div class="mcpd-list">
+          <a href="{{ url_for('forms.saved_forms') }}"><strong>Saved Forms</strong><span>{{ dashboard_saved_forms_count }} item{{ '' if dashboard_saved_forms_count == 1 else 's' }}</span></a>
+          <a href="{{ url_for('officers.profile') }}"><strong>My Profile</strong><span>Contact info and emergency contacts</span></a>
+          <a href="{{ url_for('announcements.board') }}"><strong>Command Notices</strong><span>Assigned notices and updates</span></a>
+        </div>
+      </article>
+    </section>
+  </main>
+</div>
+{% endblock %}
