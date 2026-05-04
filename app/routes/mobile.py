@@ -1,13 +1,17 @@
 import json
 import os
 import smtplib
+import time
 from email.message import EmailMessage
 from functools import lru_cache
 from pathlib import Path
 
 import re
 
-from flask import Blueprint, current_app, jsonify, render_template, request, url_for
+import functools
+import hmac
+
+from flask import Blueprint, current_app, g, jsonify, render_template, request, session, url_for
 from flask_login import current_user, login_required
 from werkzeug.utils import secure_filename
 
@@ -31,6 +35,22 @@ from ..services.mobile_incident_documents import build_narrative_draft, build_pa
 from ..services.mobile_form_catalog import build_mobile_form_catalog
 
 bp = Blueprint('mobile', __name__)
+
+
+def _require_csrf(f):
+    @functools.wraps(f)
+    def wrapper(*args, **kwargs):
+        token = (
+            request.headers.get('X-CSRFToken')
+            or (request.get_json(silent=True) or {}).get('_csrf_token')
+            or ''
+        )
+        expected = session.get('_csrf_token', '')
+        if not expected or not hmac.compare_digest(str(token), str(expected)):
+            return jsonify({'ok': False, 'error': 'CSRF validation failed.'}), 403
+        return f(*args, **kwargs)
+    return wrapper
+
 
 PACKET_ALLOWED_FORM_STATUSES = {'COMPLETED', 'SUBMITTED'}
 LEGACY_FORM_ALIASES = {
@@ -827,6 +847,7 @@ def _officer_pattern_summary(officer_user_id: int, limit: int = 20) -> dict:
 
 @bp.route('/mobile/api/narrative/suggest', methods=['POST'])
 @login_required
+@_require_csrf
 def narrative_suggest():
     body = request.get_json(silent=True) or {}
     narrative = str(body.get('narrative') or '').strip()
@@ -853,6 +874,7 @@ def narrative_suggest():
 
 @bp.route('/mobile/api/forms/smart-suggest', methods=['POST'])
 @login_required
+@_require_csrf
 def forms_smart_suggest():
     state = request.get_json(silent=True) or {}
     suggestions = _rule_based_form_suggestions(state if isinstance(state, dict) else {})
@@ -861,6 +883,7 @@ def forms_smart_suggest():
 
 @bp.route('/mobile/api/incident/summary', methods=['POST'])
 @login_required
+@_require_csrf
 def incident_summary_api():
     state = request.get_json(silent=True) or {}
     summary = _build_incident_summary(state if isinstance(state, dict) else {})
@@ -999,16 +1022,21 @@ def _smtp_send_packet(recipient, cc_list, subject, body, attachments):
             filename=attachment.get('filename') or 'attachment.bin',
         )
 
-    try:
-        with smtplib.SMTP(host, port, timeout=20) as server:
-            if use_tls:
-                server.starttls()
-            if username and password:
-                server.login(username, password)
-            server.send_message(message)
-    except Exception as exc:
-        return False, str(exc)
-    return True, 'sent'
+    last_exc = None
+    for attempt in range(2):
+        try:
+            with smtplib.SMTP(host, port, timeout=20) as server:
+                if use_tls:
+                    server.starttls()
+                if username and password:
+                    server.login(username, password)
+                server.send_message(message)
+            return True, 'sent'
+        except Exception as exc:
+            last_exc = exc
+            if attempt == 0:
+                time.sleep(1.5)
+    return False, str(last_exc)
 
 
 @bp.route('/mobile/home')
@@ -1760,6 +1788,7 @@ def supervisor_packet_review(packet_id):
 
 @bp.route('/mobile/api/supervisor/packet/<int:packet_id>/action', methods=['POST'])
 @login_required
+@_require_csrf
 def supervisor_packet_action(packet_id):
     _supervisor_required_or_403()
     packet = IncidentPacket.query.get_or_404(packet_id)

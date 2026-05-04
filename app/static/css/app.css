@@ -10448,3 +10448,16 @@ body.mobile-foundation .spr-training-warn {
   border: 1px solid rgba(255,165,0,0.22);
   color: rgba(245,242,234,0.8);
 }
+
+/* =============================================================================
+   MCPD PHASE 8 — 2026-05-03-phase8-1
+   Deployment hardening: error pages
+   ============================================================================= */
+
+/* 404 / 500 error pages reuse the .login-bg / .login-panel layout from
+   forbidden.html — no new structural styles needed. Only cosmetic tweaks: */
+
+.login-panel h1 {
+  /* Ensure error headings remain readable at all sizes */
+  word-break: break-word;
+}

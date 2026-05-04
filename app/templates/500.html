@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% set body_class = 'landing' %}
+{% block body %}
+<div class="login-bg">
+  <div class="login-panel">
+    <img src="{{ url_for('usmc_emblem') }}" alt="USMC Emblem" class="login-emblem" />
+    <h1>Server Error</h1>
+    <p class="subtitle">An unexpected error occurred. Please try again or contact your administrator if the problem persists.</p>
+    <a class="btn btn-primary w-100 mt-2" href="{{ url_for('auth.landing') }}">Back to Portal</a>
+  </div>
+</div>
+{% endblock %}
