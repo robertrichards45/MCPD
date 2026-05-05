@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import re
 from datetime import datetime, timedelta, timezone
 
 import requests
@@ -75,6 +76,19 @@ def _extract_error_details(payload):
         str(error.get('code') or '').strip() or None,
         str(error.get('message') or '').strip() or None,
     )
+
+
+def _redact_secret_fragments(message):
+    text = str(message or '')
+    if not text:
+        return ''
+    text = re_sub_openai_key(text)
+    return text
+
+
+def re_sub_openai_key(text):
+    # OpenAI can echo a masked key fragment in diagnostic errors. Keep UI logs safe.
+    return re.sub(r'sk-[A-Za-z0-9_\-*]{12,}', '[redacted OpenAI key]', str(text or ''))
 
 
 def _friendly_error_message(status_code, payload):
@@ -188,7 +202,7 @@ def openai_key_status(api_key=None):
 
     _error_type, error_code, error_message = _extract_error_details(data)
     summary['errorCode'] = error_code
-    summary['message'] = error_message or _friendly_error_message(response.status_code, data)
+    summary['message'] = _redact_secret_fragments(error_message or _friendly_error_message(response.status_code, data))
     return summary
 
 

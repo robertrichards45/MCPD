@@ -92,6 +92,29 @@ def test_openai_key_status_uses_configured_model_without_exposing_key(monkeypatc
     assert '"model": "gpt-test-model"' in captured['data']
 
 
+def test_openai_key_status_redacts_error_key_fragments(monkeypatch):
+    class FakeResponse:
+        status_code = 401
+
+        def json(self):
+            return {
+                'error': {
+                    'code': 'invalid_api_key',
+                    'message': 'Incorrect API key provided: sk-proj-abc123456789SECRET.',
+                }
+            }
+
+    monkeypatch.setenv('OPENAI_API_KEY', 'sk-test-secret-value')
+    monkeypatch.setattr(ai_client.requests, 'post', lambda *args, **kwargs: FakeResponse())
+
+    status = ai_client.openai_key_status()
+
+    assert status['ok'] is False
+    assert status['errorCode'] == 'invalid_api_key'
+    assert '[redacted OpenAI key]' in status['message']
+    assert 'sk-proj' not in status['message']
+
+
 def test_openai_tts_uses_fast_default_model(monkeypatch):
     class FakeResponse:
         status_code = 200
