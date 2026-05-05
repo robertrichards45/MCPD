@@ -806,9 +806,10 @@ def create_app():
             ensure_schema()
             seed_roles()
             seed_admin()
-        except OperationalError as exc:
-            if 'readonly database' not in str(exc).lower():
-                raise
+        except Exception as exc:
+            logging.getLogger(__name__).critical(
+                'Database initialization failed — app will start but may be non-functional: %s', exc
+            )
 
     return app
 
