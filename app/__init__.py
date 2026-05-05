@@ -10,7 +10,7 @@ import secrets
 import weakref
 import warnings
 from urllib.parse import urlparse
-from sqlalchemy import inspect, text
+from sqlalchemy import func, inspect, text
 from sqlalchemy.exc import OperationalError
 from werkzeug.middleware.proxy_fix import ProxyFix
 
@@ -117,16 +117,33 @@ def load_user(user_id):
     return db.session.get(User, int(user_id))
 
 def seed_admin():
-    username = os.environ.get('ADMIN_USERNAME')
+    username = (os.environ.get('ADMIN_USERNAME') or '').strip()
     password = os.environ.get('ADMIN_PASSWORD')
     if not username or not password:
         return
-    if User.query.filter_by(username=username).first():
-        return
+    force_password_reset = (os.environ.get('ADMIN_FORCE_PASSWORD_RESET') or '').strip().lower() in {
+        '1',
+        'true',
+        'yes',
+        'on',
+    }
     try:
-        user = User(username=username, role=ROLE_WEBSITE_CONTROLLER, active=True)
-        user.set_password(password)
-        db.session.add(user)
+        user = User.query.filter(func.lower(User.username) == username.lower()).first()
+        if user:
+            user.role = ROLE_WEBSITE_CONTROLLER
+            user.active = True
+            user.pending_approval = False
+            if force_password_reset:
+                user.set_password(password)
+        else:
+            user = User(
+                username=username,
+                role=ROLE_WEBSITE_CONTROLLER,
+                active=True,
+                pending_approval=False,
+            )
+            user.set_password(password)
+            db.session.add(user)
         db.session.commit()
     except Exception:
         db.session.rollback()
