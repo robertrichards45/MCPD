@@ -74,19 +74,19 @@
               <input type="hidden" name="inspection_id" value="{{ editing_inspection.id }}" />
             {% endif %}
             <div class="row">
-              <div class="col-md-6 mb-2">
+              <div class="col-md-6 mb-3">
                 <label class="form-label text-dark">Date</label>
                 <input class="form-control" type="date" name="inspection_date" value="{{ editing_inspection.inspection_date if editing_inspection else current_log_date }}" required />
               </div>
-              <div class="col-md-6 mb-2">
+              <div class="col-md-6 mb-3">
                 <label class="form-label text-dark">Vehicle #</label>
                 <input class="form-control" name="vehicle_number" value="{{ editing_inspection.vehicle_number if editing_inspection else '' }}" required />
               </div>
-              <div class="col-md-6 mb-2">
+              <div class="col-md-6 mb-3">
                 <label class="form-label text-dark">Mileage</label>
                 <input class="form-control" name="mileage" value="{{ editing_inspection.mileage if editing_inspection else '' }}" />
               </div>
-              <div class="col-md-6 mb-2">
+              <div class="col-md-6 mb-3">
                 <label class="form-label text-dark">Fuel Level</label>
                 <select class="form-control" name="fuel_level">
                   {% set fuel_value = editing_inspection.fuel_level if editing_inspection else '' %}
@@ -97,7 +97,7 @@
                   <option value="1/4" {% if fuel_value == '1/4' %}selected{% endif %}>1/4</option>
                 </select>
               </div>
-              <div class="col-md-3 mb-2">
+              <div class="col-md-3 mb-3">
                 <label class="form-label text-dark">Lights</label>
                 <select class="form-control" name="lights_status">
                   <option value="S">S</option>
@@ -106,7 +106,7 @@
                   <option value="N/A">N/A</option>
                 </select>
               </div>
-              <div class="col-md-3 mb-2">
+              <div class="col-md-3 mb-3">
                 <label class="form-label text-dark">Tires</label>
                 <select class="form-control" name="tires_status">
                   <option value="S">S</option>
@@ -115,7 +115,7 @@
                   <option value="N/A">N/A</option>
                 </select>
               </div>
-              <div class="col-md-3 mb-2">
+              <div class="col-md-3 mb-3">
                 <label class="form-label text-dark">Equipment</label>
                 <select class="form-control" name="equipment_status">
                   <option value="S">S</option>
@@ -124,7 +124,7 @@
                   <option value="N/A">N/A</option>
                 </select>
               </div>
-              <div class="col-md-3 mb-2">
+              <div class="col-md-3 mb-3">
                 <label class="form-label text-dark">Cleanliness</label>
                 <select class="form-control" name="cleanliness_status">
                   <option value="S">S</option>
@@ -133,7 +133,7 @@
                   <option value="N/A">N/A</option>
                 </select>
               </div>
-              <div class="col-12 mb-2">
+              <div class="col-12 mb-3">
                 <label class="form-label text-dark">Remarks</label>
                 <textarea class="form-control" name="remarks" rows="3">{{ editing_inspection.remarks if editing_inspection else '' }}</textarea>
               </div>
@@ -157,7 +157,7 @@
             <form method="post" action="{{ url_for('ops_modules.vehicle_inspection_sign') }}" onsubmit="return submitSig();">
               <input type="hidden" name="inspection_id" value="{{ editing_inspection.id }}" />
               <input type="hidden" name="signature_data" id="signature_data" />
-              <div class="mb-2">
+              <div class="mb-3">
                 <label class="form-label text-dark">Signature Role</label>
                 <select class="form-control" name="sign_role" required>
                   <option value="OFFICER">Patrol Officer</option>
@@ -172,7 +172,7 @@
               </div>
             </form>
             {% if editing_inspection.status != 'COMPLETE' %}
-              <hr />
+              <hr class="my-3" />
               <form method="post" action="{{ url_for('ops_modules.vehicle_inspection_return') }}">
                 <input type="hidden" name="inspection_id" value="{{ editing_inspection.id }}" />
                 <label class="form-label text-dark">Return For Correction</label>

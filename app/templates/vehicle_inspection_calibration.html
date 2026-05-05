@@ -189,7 +189,7 @@
     <div class="card p-3 mb-3">
       <div class="fw-semibold">Source Folder</div>
       <div class="text-muted small">{{ inspection_template_dir }}</div>
-      <hr />
+      <hr class="my-3" />
         <form method="post" action="{{ url_for('ops_modules.vehicle_inspection_template_calibration_import') }}" enctype="multipart/form-data">
           {% if selected_template_filename %}
             <input type="hidden" name="focus_filename" value="{{ selected_template_filename }}" />
@@ -374,7 +374,7 @@
               </div>
             </form>
             {% if template.field_markers or template.signature_markers %}
-              <hr />
+              <hr class="my-3" />
               <div class="small text-muted mb-2">Live marker positions for this page:</div>
               <div class="table-responsive">
                 <table class="table table-sm table-bordered mb-0">

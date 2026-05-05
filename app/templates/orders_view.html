@@ -24,7 +24,7 @@
         <div class="col-md-4"><strong>Version:</strong> {{ document.source_version or document.version_label or '-' }}</div>
         <div class="col-md-4"><strong>Parser Confidence:</strong> {{ '%.0f'|format((document.parser_confidence or 0) * 100) }}%</div>
       </div>
-      {% if document.summary %}<div class="mb-2">{{ document.summary }}</div>{% endif %}
+      {% if document.summary %}<div class="mb-3">{{ document.summary }}</div>{% endif %}
       {% if partial_text_warning %}
       <div class="small text-muted mb-2">{{ partial_text_warning }}</div>
       {% endif %}

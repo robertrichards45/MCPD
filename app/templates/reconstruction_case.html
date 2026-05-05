@@ -83,15 +83,15 @@
         <details class="card p-3 collapse-card mb-3" open>
           <summary>Case Info</summary>
           <form method="post" action="{{ url_for('reconstruction.case_update', case_id=case.id) }}">
-            <div class="mb-2">
+            <div class="mb-3">
               <label class="form-label text-dark">Title</label>
               <input class="form-control" name="title" value="{{ case.title }}" />
             </div>
-            <div class="mb-2">
+            <div class="mb-3">
               <label class="form-label text-dark">Incident Date (YYYY-MM-DD)</label>
               <input class="form-control" name="incident_date" value="{{ case.incident_date or '' }}" />
             </div>
-            <div class="mb-2">
+            <div class="mb-3">
               <label class="form-label text-dark">Location</label>
               <input class="form-control" name="location" value="{{ case.location or '' }}" />
             </div>
@@ -102,19 +102,19 @@
         <details class="card p-3 collapse-card mb-3">
           <summary>Add Vehicle</summary>
           <form method="post" action="{{ url_for('reconstruction.add_vehicle', case_id=case.id) }}">
-            <div class="mb-2">
+            <div class="mb-3">
               <label class="form-label text-dark">Unit</label>
               <input class="form-control" name="unit" placeholder="Vehicle 1" />
             </div>
-            <div class="mb-2">
+            <div class="mb-3">
               <label class="form-label text-dark">Make/Model</label>
               <input class="form-control" name="make_model" placeholder="Toyota Camry" />
             </div>
-            <div class="mb-2">
+            <div class="mb-3">
               <label class="form-label text-dark">Direction</label>
               <input class="form-control" name="direction" placeholder="N/B" />
             </div>
-            <div class="mb-2">
+            <div class="mb-3">
               <label class="form-label text-dark">Notes</label>
               <input class="form-control" name="notes" placeholder="Damage or rest position notes" />
             </div>
@@ -125,21 +125,21 @@
         <details class="card p-3 collapse-card">
           <summary>Add Measurement</summary>
           <form method="post" action="{{ url_for('reconstruction.add_measurement', case_id=case.id) }}">
-            <div class="mb-2">
+            <div class="mb-3">
               <label class="form-label text-dark">Label</label>
               <input class="form-control" name="label" placeholder="Skid mark length" />
             </div>
             <div class="row">
-              <div class="col-md-6 mb-2">
+              <div class="col-md-6 mb-3">
                 <label class="form-label text-dark">Value</label>
                 <input class="form-control" name="value" placeholder="132" />
               </div>
-              <div class="col-md-6 mb-2">
+              <div class="col-md-6 mb-3">
                 <label class="form-label text-dark">Units</label>
                 <input class="form-control" name="units" placeholder="ft" />
               </div>
             </div>
-            <div class="mb-2">
+            <div class="mb-3">
               <label class="form-label text-dark">Notes</label>
               <input class="form-control" name="notes" placeholder="Surface or direction details" />
             </div>
@@ -152,7 +152,7 @@
         <details class="card p-3 collapse-card mb-3" open>
           <summary>Uploads</summary>
           <form method="post" action="{{ url_for('reconstruction.upload', case_id=case.id) }}" enctype="multipart/form-data" class="row">
-            <div class="col-md-6 mb-2">
+            <div class="col-md-6 mb-3">
               <label class="form-label text-dark">Kind</label>
               <select class="form-control" name="kind">
                 <option value="">(general)</option>
@@ -162,7 +162,7 @@
                 <option value="diagram">diagram</option>
               </select>
             </div>
-            <div class="col-md-6 mb-2">
+            <div class="col-md-6 mb-3">
               <label class="form-label text-dark">File</label>
               <input class="form-control" type="file" name="file" />
             </div>
