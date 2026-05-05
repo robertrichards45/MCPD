@@ -103,25 +103,25 @@ def test_mobile_officer_flow_pages_include_updated_mobile_assets():
         domestic = _text_response(client.get('/mobile/incident/domestic-supplemental'))
         runtime = _text_response(client.get('/static/mobile/incident-core.js?v=2026-04-24-mobile-live-scanner-1'))
 
-        assert 'Ready to start a call?' in home
-        assert 'Start New Incident' in home
-        assert 'Continue Incident' in home
-        assert 'Laws / Orders' in home
-        assert 'Quick Reference' in home
-        assert 'MCPD Portal' in home
+        assert 'MCPD' in home
+        assert 'Law Lookup' in home
+        assert 'Start Report' in home or 'Continue Report' in home
+        assert 'Forms' in home
+        assert 'Orders' in home
+        assert 'Training' in home
+        assert 'Saved' in home
+        assert 'Officer Stats' in home
+        assert 'Contact Info' in home
+        assert '<svg viewBox="0 0 24 24">' in home
         assert 'Shift Workflow' not in home
         assert 'Command Radar' not in home
         assert 'Resume Mission' not in home
-        assert 'Saved Forms' not in home
         assert 'Reports Center' not in home
         assert 'Paperwork Navigator' not in home
-        assert 'Profile' not in home
-        assert 'Stats' not in home
-        assert 'Training' not in home
         assert 'Admin / Desktop Tools' not in home
         assert 'data-mobile-incident-page="selected-forms"' in forms
-        assert '2026-04-24-mobile-live-scanner-1' in domestic
-        assert '/static/vendor/zxing-browser.min.js?v=2026-04-24-mobile-live-scanner-1' in domestic
+        assert '2026-05-04-draft-sync-1' in domestic
+        assert '/static/vendor/zxing-browser.min.js' in domestic
         assert 'mobile-domestic-schema-data' in domestic
         assert 'data-id-scan-raw' in runtime
         assert 'data-id-scan-file' in runtime

@@ -49,17 +49,20 @@ def test_mobile_statement_pages_render_for_authenticated_user():
         _dispose_app(client.application)
 
 
-def test_mobile_home_keeps_only_field_start_actions():
+def test_mobile_home_keeps_approved_field_actions():
     client = _logged_in_client()
     try:
         response = client.get('/mobile/home')
         assert response.status_code == 200
         html = _text_response(response)
-        assert 'Ready to start a call?' in html
-        assert 'Start New Incident' in html
-        assert 'Continue Incident' in html
-        assert 'Laws / Orders' in html
-        assert 'Quick Reference' in html
+        assert 'Law Lookup' in html
+        assert 'Start Report' in html or 'Continue Report' in html
+        assert 'Forms' in html
+        assert 'Orders' in html
+        assert 'Training' in html
+        assert 'Saved' in html
+        assert 'Officer Stats' in html
+        assert 'Contact Info' in html
         assert 'Voluntary Statement' not in html
         assert 'Open Statements' not in html
     finally:

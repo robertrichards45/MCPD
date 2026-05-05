@@ -1,8 +1,0 @@
-Title: Vehicle Registration and Insurance Compliance on Base
-Category: Vehicle Compliance
-Order Number: MCLBAO 5560.4
-Memo Number: -
-Issuing Authority: Provost Marshal Office
-Summary: Registration, insurance, and licensing requirements for operating vehicles aboard installation.
-Aliases: vehicle registration order, base registration, insurance requirement
-Specifies documents required at stop, suspension criteria, and corrective action timelines.

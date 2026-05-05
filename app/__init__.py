@@ -98,6 +98,7 @@ def _enforce_persistent_database_config(app):
         + details
     )
     logging.getLogger(__name__).critical(message)
+    raise RuntimeError(message)
     # Log the warning but do not crash — a running app with ephemeral storage
     # is better than a completely unreachable site. Fix the volume mount or
     # DATABASE_URL in Railway Variables to make storage persistent.
@@ -821,4 +822,3 @@ def create_app():
             )
 
     return app
-
