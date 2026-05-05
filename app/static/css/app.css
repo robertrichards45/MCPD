@@ -13457,6 +13457,35 @@ input::placeholder {
   white-space: normal;
 }
 
+.action-row,
+.forms-toolbar,
+.result-actions,
+.forms-card-actions,
+.no-print .d-flex.flex-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.action-row > *,
+.forms-toolbar > *,
+.result-actions > *,
+.forms-card-actions > *,
+.no-print .d-flex.flex-wrap > * {
+  min-width: 0;
+}
+
+.action-row .btn,
+.forms-toolbar .btn,
+.result-actions .btn,
+.forms-card-actions .btn,
+.no-print .d-flex.flex-wrap .btn {
+  min-height: 40px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
 .mcpd-mobile-grid a {
   min-width: 0;
   color: var(--text);
@@ -13552,6 +13581,24 @@ body[data-theme="dark"] .saved-form-role-notes {
   .form-action-group .btn,
   .form-action-group a.btn {
     flex: 1 1 100%;
+    width: 100%;
+  }
+
+  .action-row,
+  .forms-toolbar,
+  .result-actions,
+  .forms-card-actions,
+  .no-print .d-flex.flex-wrap {
+    width: 100%;
+    align-items: stretch;
+  }
+
+  .action-row .btn,
+  .action-row button,
+  .forms-toolbar .btn,
+  .result-actions .btn,
+  .forms-card-actions .btn,
+  .no-print .d-flex.flex-wrap .btn {
     width: 100%;
   }
 
