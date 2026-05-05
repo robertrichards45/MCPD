@@ -154,6 +154,15 @@ function registerMcpdServiceWorker() {
   });
 }
 
+function loadDispatcherAssistantPatch() {
+  if (document.querySelector('script[data-assistant-dispatcher]')) return;
+  const script = document.createElement('script');
+  script.src = '/static/js/assistant-dispatcher.js?v=2026-05-05-dispatcher';
+  script.defer = true;
+  script.setAttribute('data-assistant-dispatcher', 'true');
+  document.body.appendChild(script);
+}
+
 window.addEventListener('load', () => {
   const canvas = getCanvas();
   if (canvas) {
@@ -217,4 +226,5 @@ window.addEventListener('load', () => {
   bindModuleScanner();
   bindModuleFeed();
   registerMcpdServiceWorker();
+  loadDispatcherAssistantPatch();
 });
