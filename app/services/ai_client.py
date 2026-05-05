@@ -11,6 +11,40 @@ _AI_DISABLED_MESSAGE = ''
 _AI_DISABLED_UNTIL = None
 
 
+def configured_openai_api_key(api_key=None):
+    """Return the configured OpenAI API key without exposing it to callers."""
+    return (
+        (api_key or '').strip()
+        or os.environ.get('OPENAI_API_KEY', '').strip()
+        or os.environ.get('MCPD_OPENAI_API_KEY', '').strip()
+        or os.environ.get('OPENAI_KEY', '').strip()
+    )
+
+
+def configured_openai_model():
+    """Allow Railway to override the chat model without a code deploy."""
+    return (
+        os.environ.get('OPENAI_MODEL', '').strip()
+        or os.environ.get('MCPD_OPENAI_MODEL', '').strip()
+        or 'gpt-4.1-mini'
+    )
+
+
+def configured_openai_tts_model():
+    """Default to the broadly available, faster TTS model unless overridden."""
+    return (
+        os.environ.get('OPENAI_TTS_MODEL', '').strip()
+        or os.environ.get('MCPD_OPENAI_TTS_MODEL', '').strip()
+        or 'tts-1'
+    )
+
+
+def reset_openai_cooldown():
+    global _AI_DISABLED_MESSAGE, _AI_DISABLED_UNTIL
+    _AI_DISABLED_MESSAGE = ''
+    _AI_DISABLED_UNTIL = None
+
+
 def _extract_response_text(payload):
     if not isinstance(payload, dict):
         return ''
@@ -92,12 +126,15 @@ def is_ai_unavailable_message(text):
 
 def openai_key_status(api_key=None):
     """Return a safe diagnostic summary for the configured OpenAI key."""
-    key = (api_key or os.environ.get('OPENAI_API_KEY') or '').strip()
+    key = configured_openai_api_key(api_key)
+    model = configured_openai_model()
     if not key:
         return {
             'configured': False,
             'keyPrefix': '',
             'keyLength': 0,
+            'model': model,
+            'ttsModel': configured_openai_tts_model(),
             'ok': False,
             'statusCode': None,
             'errorCode': 'missing_key',
@@ -108,6 +145,8 @@ def openai_key_status(api_key=None):
         'configured': True,
         'keyPrefix': key[:7],
         'keyLength': len(key),
+        'model': model,
+        'ttsModel': configured_openai_tts_model(),
         'ok': False,
         'statusCode': None,
         'errorCode': None,
@@ -118,7 +157,7 @@ def openai_key_status(api_key=None):
         'Content-Type': 'application/json',
     }
     payload = {
-        'model': 'gpt-4.1-mini',
+        'model': model,
         'input': 'Reply with exactly: ok',
         'max_output_tokens': 8,
     }
@@ -142,6 +181,7 @@ def openai_key_status(api_key=None):
     except ValueError:
         data = {}
     if response.status_code < 400:
+        reset_openai_cooldown()
         summary['ok'] = True
         summary['message'] = 'OpenAI accepted the configured key.'
         return summary
