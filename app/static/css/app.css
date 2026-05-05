@@ -3061,6 +3061,47 @@ body[data-theme="dark"] .mcpd-mobile-officer-panel {
   }
 }
 
+body.force-mobile-view .mcpd-command-header {
+  grid-template-columns: 1fr auto;
+  height: 64px;
+}
+body.force-mobile-view .mcpd-header-search {
+  display: none;
+}
+body.force-mobile-view .mcpd-mobile-menu {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: #ffffff;
+  display: inline-flex;
+  height: 36px;
+  justify-content: center;
+  width: 40px;
+}
+body.force-mobile-view .mcpd-command-sidebar {
+  padding-top: 76px;
+  transform: translateX(-105%);
+  transition: transform 0.18s ease;
+}
+body.force-mobile-view .mcpd-command-sidebar.is-open {
+  transform: translateX(0);
+}
+body.force-mobile-view .page-wrap,
+body.force-mobile-view .dashboard,
+body.force-mobile-view .recon-layout {
+  margin-left: 0 !important;
+  margin-top: 64px !important;
+}
+body.force-mobile-view .mcpd-action-grid,
+body.force-mobile-view .mcpd-dashboard-panels {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+body.force-mobile-view .mcpd-header-brand img {
+  height: 28px;
+  width: 28px;
+}
+
 /* Personnel management edit workflow */
 .personnel-edit-page {
   max-width: 1120px;
