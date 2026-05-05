@@ -378,11 +378,11 @@ def _builder_audit_details(target, previous_value, new_value, reason):
 
 
 def _apply_builder_mode_change(target):
-    raw_value = request.form.get('builder_mode_access')
-    if raw_value is None:
+    raw_values = request.form.getlist('builder_mode_access')
+    if not raw_values:
         return None
 
-    requested = raw_value == '1'
+    requested = raw_values[-1] == '1'
     previous = bool(getattr(target, 'builder_mode_access', False))
     if requested == previous:
         return None

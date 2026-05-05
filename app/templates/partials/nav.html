@@ -62,6 +62,9 @@
         <a href="{{ url_for('admin.legal_analytics') }}">Legal Analytics</a>
       </details>
     {% endif %}
+    {% if portal_can_access_builder_mode %}
+      <a class="{% if endpoint == 'admin.site_builder' %}is-active{% endif %}" href="{{ url_for('admin.site_builder') }}">Site Builder</a>
+    {% endif %}
   </nav>
   <div class="mcpd-sidebar-help">
     <strong>Need Help?</strong>

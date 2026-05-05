@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell">
+  {% include 'partials/nav.html' %}
+  <main class="page-wrap">
+    <section class="card p-3 mb-3 page-head">
+      <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
+        <div>
+          <h2 class="mb-1">Site Builder</h2>
+          <p class="text-muted mb-0">Owner-controlled Builder Mode for protected site change requests.</p>
+        </div>
+        <span class="badge bg-warning text-dark">Restricted</span>
+      </div>
+    </section>
+
+    <section class="card p-3">
+      <h3>Builder Mode Access</h3>
+      <p>
+        This area is restricted to the Site Owner by default. Any additional access must be granted
+        by the Site Owner, confirmed multiple times, and recorded in the audit log.
+      </p>
+      <p class="text-muted mb-0">
+        Builder tools should be used only for approved MCPD Portal changes.
+      </p>
+    </section>
+  </main>
+</div>
+{% endblock %}

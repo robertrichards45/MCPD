@@ -93,6 +93,34 @@
         </label>
       </div>
 
+      {% if can_manage_builder_mode %}
+      <section class="card p-3 mt-3 border-warning">
+        <h4 class="mb-1">Site Builder Access</h4>
+        <p class="text-muted mb-2">Builder Mode can modify site features and create AI-generated change requests. Access is controlled by the Site Owner only.</p>
+        <input type="hidden" name="builder_mode_access" value="0">
+        <label class="personnel-edit-check">
+          <input type="checkbox" name="builder_mode_access" value="1" {% if target_user.builder_mode_access %}checked{% endif %}>
+          Grant Site Builder access to {{ target_user.display_name }}
+        </label>
+        <label>Reason for Builder Mode change
+          <textarea class="form-control" name="builder_reason" rows="2" placeholder="Optional reason for audit log"></textarea>
+        </label>
+        <div class="builder-confirmation-stack mt-2">
+          <label class="personnel-edit-check">
+            <input type="checkbox" name="builder_confirm_risk" value="1">
+            Builder Mode can modify site features and create code changes. Are you sure you want to grant this access?
+          </label>
+          <label class="personnel-edit-check">
+            <input type="checkbox" name="builder_confirm_ai" value="1">
+            This user will be able to create AI-generated change requests. Confirm again to continue.
+          </label>
+          <label>Final confirmation for grants
+            <input class="form-control" name="builder_confirm_phrase" placeholder="Type GRANT BUILDER">
+          </label>
+        </div>
+      </section>
+      {% endif %}
+
       <div class="personnel-edit-actions">
         <a class="btn btn-outline-secondary" href="{{ url_for('auth.manage_users') }}">Cancel</a>
         <button class="btn btn-primary">Save Officer</button>

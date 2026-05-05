@@ -14,7 +14,7 @@ import os
 
 from ..extensions import db
 from ..models import AuditLog, StatCategory, StatsUpload
-from ..permissions import can_manage_site
+from ..permissions import can_access_builder_mode, can_manage_site
 from ..services.excel_stats_parser import parse_targets
 from ..services.legal_lookup import corpus_status, export_corpus_payload, get_entries, import_corpus_payload, reindex_corpus
 from ..services.legal_ingestion import (
@@ -41,6 +41,11 @@ def require_admin():
         abort(403)
 
 
+def require_builder_mode():
+    if not can_access_builder_mode(current_user):
+        abort(403)
+
+
 def _load_legal_qa_status() -> dict | None:
     try:
         if not LEGAL_QA_STATUS_PATH.exists():
@@ -57,6 +62,13 @@ def _write_legal_qa_status(payload: dict) -> None:
         LEGAL_QA_STATUS_PATH.write_text(json.dumps(payload, indent=2), encoding='utf-8')
     except Exception:
         return
+
+
+@bp.route('/admin/site-builder')
+@login_required
+def site_builder():
+    require_builder_mode()
+    return render_template('site_builder.html', title='Site Builder', user=current_user)
 
 
 def _load_legal_query_events(limit: int = 5000) -> list[dict]:

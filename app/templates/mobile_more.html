@@ -14,7 +14,9 @@
     <a class="mobile-more-link" href="{{ url_for('bodycam.mobile_library') }}">Bodycam Footage</a>
     <a class="mobile-more-link" href="{{ url_for('bodycam.mobile_narrative_tool') }}">Narrative / 5W Builder</a>
     <a class="mobile-more-link" href="{{ url_for('forms.saved_forms') }}">Saved Work</a>
-    <a class="mobile-more-link" href="{{ url_for('forms.call_type_rules_manager') }}">Scenario Builder</a>
+    {% if portal_can_access_builder_mode %}
+    <a class="mobile-more-link" href="{{ url_for('admin.site_builder') }}">Site Builder</a>
+    {% endif %}
     <a class="mobile-more-link" href="{{ url_for('dashboard.dashboard') }}">Desktop Dashboard</a>
   </div>
 </section>

@@ -215,7 +215,7 @@
             <tr>
               <th>Name</th><th>Username</th><th>Officer #</th>
               <th>Phone</th><th>Installation</th><th>CAC</th>
-              <th>Role</th><th>Supervisor</th><th>Active</th><th></th>
+              <th>Role</th><th>Builder</th><th>Supervisor</th><th>Active</th><th></th>
             </tr>
           </thead>
           <tbody>
@@ -234,6 +234,7 @@
               <td>{{ installation_labels.get(u.installation or '', '') }}</td>
               <td>{{ 'Linked' if u.cac_identifier else '' }}</td>
               <td>{{ u.role_label }}</td>
+              <td>{{ 'Granted' if u.builder_mode_access else '' }}</td>
               <td>{{ u.supervisor.display_name if u.supervisor else '' }}</td>
               <td>{{ u.active }}</td>
               <td>
