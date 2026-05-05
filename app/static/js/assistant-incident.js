@@ -2,6 +2,8 @@
   'use strict';
 
   var INCIDENT_INTENT_KEY = 'mcpd.incidentAutomationIntent';
+  var NARRATIVE_LEARNING_KEY = 'mcpd.narrativeLearning.v1';
+  var lastNarrativeDraft = '';
 
   function speak(text) {
     if (!window.speechSynthesis || !text) return;
@@ -45,7 +47,6 @@
 
   function extract5W(text) {
     var raw = String(text || '').trim();
-    var lower = normalize(raw);
     var who = [];
     var when = '';
     var where = '';
@@ -74,6 +75,98 @@
     return { who: who.join('; ') || 'Unknown / not stated', what: what || 'Unknown / not stated', when: when || 'Unknown / not stated', where: where || 'Unknown / not stated', how: how || 'Unknown / not stated', raw: raw, incidentType: detectIncidentType(raw) || 'general incident' };
   }
 
+  function loadLearning() {
+    try { return JSON.parse(localStorage.getItem(NARRATIVE_LEARNING_KEY) || '[]'); } catch (e) { return []; }
+  }
+
+  function saveLearning(example) {
+    var items = loadLearning();
+    items.unshift(example);
+    items = items.slice(0, 50);
+    try { localStorage.setItem(NARRATIVE_LEARNING_KEY, JSON.stringify(items)); } catch (e) {}
+  }
+
+  function applyLearnedStyle(text, incidentType) {
+    var examples = loadLearning().filter(function (x) { return !incidentType || x.incidentType === incidentType; });
+    if (!examples.length) return text;
+    var learned = examples[0];
+    var edited = String(learned.edited || '');
+    var result = text;
+    if (/\bresponded to\b/i.test(edited) && !/\bresponded to\b/i.test(result)) {
+      result = result.replace(/was dispatched to/i, 'responded to');
+    }
+    if (/\bI,\s*(Officer|Lt\.|Sgt\.)/i.test(edited) && !/\bI,\s*(Officer|Lt\.|Sgt\.)/i.test(result)) {
+      result = result.replace(/^On\s+/i, 'On ');
+    }
+    return result;
+  }
+
+  function buildNarrativeFrom5W(data) {
+    var dateTime = data.when !== 'Unknown / not stated' ? data.when : 'an unknown date and time';
+    var location = data.where !== 'Unknown / not stated' ? data.where : 'an unspecified location aboard MCLB Albany, GA';
+    var involved = data.who !== 'Unknown / not stated' ? data.who : 'the involved party/parties';
+    var action = data.what !== 'Unknown / not stated' ? data.what : 'an incident';
+    var basis = data.how !== 'Unknown / not stated' ? data.how : 'based on the information provided';
+
+    var narrative = 'Location: ' + location + '\n\n' +
+      'On ' + dateTime + ', I responded to ' + location + ' in reference to ' + action.toLowerCase() + '. ' +
+      'Upon arrival, contact was made with ' + involved + '. ' +
+      'The initial information provided indicated that the incident occurred ' + basis + '. ' +
+      'I documented the available facts, identified the involved parties, and completed the required follow-up actions based on the circumstances known at the time. ' +
+      'This narrative is based on the officer-provided information and should be reviewed for accuracy before final submission.';
+
+    return applyLearnedStyle(narrative, data.incidentType);
+  }
+
+  function findNarrativeField() {
+    var fields = Array.prototype.slice.call(document.querySelectorAll('textarea, [contenteditable="true"]'));
+    return fields.find(function (el) {
+      var id = (el.id || '').toLowerCase();
+      var name = (el.name || '').toLowerCase();
+      var placeholder = (el.getAttribute('placeholder') || '').toLowerCase();
+      var label = '';
+      if (el.id) {
+        var lab = document.querySelector('label[for="' + CSS.escape(el.id) + '"]');
+        label = lab ? lab.textContent.toLowerCase() : '';
+      }
+      return /narrative|facts|summary|details/.test(id + ' ' + name + ' ' + placeholder + ' ' + label);
+    }) || null;
+  }
+
+  function setNarrativeField(value) {
+    var field = findNarrativeField();
+    if (!field) return false;
+    if (field.isContentEditable) field.textContent = value;
+    else field.value = value;
+    field.dispatchEvent(new Event('input', { bubbles: true }));
+    field.dispatchEvent(new Event('change', { bubbles: true }));
+    return true;
+  }
+
+  function showNarrativePanel(data) {
+    var narrative = buildNarrativeFrom5W(data);
+    lastNarrativeDraft = narrative;
+    var old = document.getElementById('ai-narrative-panel');
+    if (old) old.remove();
+    var panel = document.createElement('div');
+    panel.id = 'ai-narrative-panel';
+    panel.style.cssText = 'position:fixed;left:12px;right:12px;bottom:12px;z-index:10001;background:#06182d;color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:16px;padding:12px;box-shadow:0 12px 32px rgba(0,0,0,.38);font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-height:78vh;overflow:auto;';
+    panel.innerHTML = '<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:8px;"><strong>MCPD Narrative Generator</strong><button type="button" data-close style="background:transparent;color:#fff;border:1px solid rgba(255,255,255,.35);border-radius:8px;padding:4px 8px;">Close</button></div>' +
+      '<textarea data-narrative-edit style="width:100%;min-height:220px;border-radius:12px;padding:10px;border:0;font-family:inherit;line-height:1.4;">' + escapeHtml(narrative) + '</textarea>' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;"><button type="button" data-copy style="border:0;border-radius:10px;padding:10px;background:#d4af37;color:#071b33;font-weight:700;">Copy Narrative</button><button type="button" data-insert style="border:0;border-radius:10px;padding:10px;background:#fff;color:#071b33;font-weight:700;">Insert Into Report</button><button type="button" data-learn style="border:0;border-radius:10px;padding:10px;background:#94a3b8;color:#071b33;font-weight:700;">Learn From My Edit</button></div>' +
+      '<div style="margin-top:8px;font-size:12px;color:#d6e2f0;">Edit the narrative, then select Learn From My Edit so future drafts move closer to your MCPD style.</div>';
+    document.body.appendChild(panel);
+    var edit = panel.querySelector('[data-narrative-edit]');
+    panel.querySelector('[data-close]').addEventListener('click', function () { panel.remove(); });
+    panel.querySelector('[data-copy]').addEventListener('click', function () { navigator.clipboard && navigator.clipboard.writeText(edit.value).then(function () { speak('Narrative copied.'); }); });
+    panel.querySelector('[data-insert]').addEventListener('click', function () { speak(setNarrativeField(edit.value) ? 'Narrative inserted into report.' : 'No narrative field found on this page. Narrative remains ready to copy.'); });
+    panel.querySelector('[data-learn]').addEventListener('click', function () {
+      saveLearning({ incidentType: data.incidentType, original: lastNarrativeDraft, edited: edit.value, savedAt: new Date().toISOString() });
+      speak('Narrative edit saved. Future drafts will use this style example.');
+    });
+    speak('Narrative draft complete. Review before submission.');
+  }
+
   function show5WPanel(data) {
     var old = document.getElementById('ai-5w-panel');
     if (old) old.remove();
@@ -81,15 +174,15 @@
     panel.id = 'ai-5w-panel';
     panel.style.cssText = 'position:fixed;left:12px;right:12px;bottom:12px;z-index:10000;background:#06182d;color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:16px;padding:12px;box-shadow:0 12px 32px rgba(0,0,0,.38);font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-height:70vh;overflow:auto;';
     panel.innerHTML = '<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:8px;"><strong>5W Builder</strong><button type="button" data-close style="background:transparent;color:#fff;border:1px solid rgba(255,255,255,.35);border-radius:8px;padding:4px 8px;">Close</button></div>' +
-      '<div style="display:grid;gap:8px;font-size:14px;">' +
-      row('WHO', data.who) + row('WHAT', data.what) + row('WHEN', data.when) + row('WHERE', data.where) + row('HOW', data.how) +
-      '</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;"><button type="button" data-copy style="border:0;border-radius:10px;padding:10px;background:#d4af37;color:#071b33;font-weight:700;">Copy 5Ws</button><button type="button" data-forms style="border:0;border-radius:10px;padding:10px;background:#fff;color:#071b33;font-weight:700;">Open Recommended Forms</button></div>';
+      '<div style="display:grid;gap:8px;font-size:14px;">' + row('WHO', data.who) + row('WHAT', data.what) + row('WHEN', data.when) + row('WHERE', data.where) + row('HOW', data.how) + '</div>' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;"><button type="button" data-copy style="border:0;border-radius:10px;padding:10px;background:#d4af37;color:#071b33;font-weight:700;">Copy 5Ws</button><button type="button" data-narrative style="border:0;border-radius:10px;padding:10px;background:#fff;color:#071b33;font-weight:700;">Build Narrative</button><button type="button" data-forms style="border:0;border-radius:10px;padding:10px;background:#94a3b8;color:#071b33;font-weight:700;">Open Recommended Forms</button></div>';
     document.body.appendChild(panel);
     panel.querySelector('[data-close]').addEventListener('click', function () { panel.remove(); });
     panel.querySelector('[data-copy]').addEventListener('click', function () {
       var txt = 'WHO: ' + data.who + '\nWHAT: ' + data.what + '\nWHEN: ' + data.when + '\nWHERE: ' + data.where + '\nHOW: ' + data.how;
       navigator.clipboard && navigator.clipboard.writeText(txt).then(function () { speak('5 Ws copied.'); });
     });
+    panel.querySelector('[data-narrative]').addEventListener('click', function () { showNarrativePanel(data); });
     panel.querySelector('[data-forms]').addEventListener('click', function () { openIncidentForms(data.incidentType); });
     speak('5 W builder complete. Review who, what, when, where, and how.');
   }
@@ -131,6 +224,10 @@
     return /5w|5 w|five w|who what when where how|builder everything|narrative builder|build narrative facts/i.test(text || '');
   }
 
+  function shouldBuildNarrative(text) {
+    return /build narrative|generate narrative|write narrative|draft narrative|create narrative/i.test(text || '');
+  }
+
   function patchAssistantForIncidents() {
     var originalFetch = window.fetch;
     if (!originalFetch || originalFetch.mcpdIncidentPatch) return;
@@ -141,6 +238,10 @@
           var payload = JSON.parse(init.body);
           var msg = payload.message || '';
           var type = detectIncidentType(msg);
+          if (shouldBuildNarrative(msg)) {
+            showNarrativePanel(extract5W(msg));
+            return Promise.resolve(new Response(JSON.stringify({ ok: true, reply: 'Narrative draft generated. Review and edit before submission.', mode: 'local_narrative_generator' }), { status: 200, headers: { 'Content-Type': 'application/json' } }));
+          }
           if (shouldStart5W(msg)) {
             show5WPanel(extract5W(msg));
             return Promise.resolve(new Response(JSON.stringify({ ok: true, reply: '5W builder complete. Review the extracted facts.', mode: 'local_5w_builder' }), { status: 200, headers: { 'Content-Type': 'application/json' } }));
