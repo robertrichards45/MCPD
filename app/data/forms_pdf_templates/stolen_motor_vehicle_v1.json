@@ -1,0 +1,242 @@
+{
+  "template_id": "stolen_motor_vehicle_v1",
+  "description": "Auto-generated from form_field_registry \u2014 stolen motor vehicle",
+  "field_map": {
+    "Date1": "form1[0].#subform[0].Date1[0]",
+    "TimeRecieved": "form1[0].#subform[0].TimeRecieved[0]",
+    "RegistedOwner": "form1[0].#subform[0].RegistedOwner[0]",
+    "Telephone1": "form1[0].#subform[0].Telephone1[0]",
+    "LocationStolen": "form1[0].#subform[0].LocationStolen[0]",
+    "Date2": "form1[0].#subform[0].Date2[0]",
+    "Time2": "form1[0].#subform[0].Time2[0]",
+    "Name": "form1[0].#subform[0].Name[0]",
+    "Rate": "form1[0].#subform[0].Rate[0]",
+    "SSN": "form1[0].#subform[0].SSN[0]",
+    "HomeAddPhone": "form1[0].#subform[0].HomeAddPhone[0]",
+    "DutyStation": "form1[0].#subform[0].DutyStation[0]",
+    "DutyStationTelephone": "form1[0].#subform[0].DutyStationTelephone[0]",
+    "Make": "form1[0].#subform[0].Make[0]",
+    "bodyStyle": "form1[0].#subform[0].bodyStyle[0]",
+    "Top": "form1[0].#subform[0].Top[0]",
+    "Bottom": "form1[0].#subform[0].Bottom[0]",
+    "Year": "form1[0].#subform[0].Year[0]",
+    "Value": "form1[0].#subform[0].Value[0]",
+    "LicenseNumber": "form1[0].#subform[0].LicenseNumber[0]",
+    "State": "form1[0].#subform[0].State[0]",
+    "Vin": "form1[0].#subform[0].Vin[0]",
+    "Identifing": "form1[0].#subform[0].Identifing[0]",
+    "KeyInCar": "form1[0].#subform[0].KeyInCar[0]",
+    "DoorsLocked": "form1[0].#subform[0].DoorsLocked[0]",
+    "ComSignature": "form1[0].#subform[0].ComSignature[0]"
+  },
+  "ui_fields": [
+    {
+      "name": "Date1",
+      "label": "Date Received",
+      "type": "date",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "TimeRecieved",
+      "label": "Time Received",
+      "type": "time",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "RegistedOwner",
+      "label": "Registered Owner",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Telephone1",
+      "label": "Owner Telephone",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "LocationStolen",
+      "label": "Location Vehicle Was Stolen",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Date2",
+      "label": "Date Last Seen",
+      "type": "date",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Time2",
+      "label": "Time Last Seen",
+      "type": "time",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Name",
+      "label": "Complainant Name",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Rate",
+      "label": "Rank / Rate",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "SSN",
+      "label": "SSN",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "HomeAddPhone",
+      "label": "Home Address / Phone",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "DutyStation",
+      "label": "Duty Station",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "DutyStationTelephone",
+      "label": "Duty Station Telephone",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Make",
+      "label": "Vehicle Make",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "bodyStyle",
+      "label": "Body Style",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Top",
+      "label": "Color (Top)",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Bottom",
+      "label": "Color (Bottom)",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Year",
+      "label": "Vehicle Year",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Value",
+      "label": "Estimated Value",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "LicenseNumber",
+      "label": "License Plate Number",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "State",
+      "label": "License State",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Vin",
+      "label": "VIN",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Identifing",
+      "label": "Identifying Marks / Features",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "KeyInCar",
+      "label": "Keys in Car?",
+      "type": "checkbox",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "DoorsLocked",
+      "label": "Doors Locked?",
+      "type": "checkbox",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "ComSignature",
+      "label": "Commanding Officer Signature",
+      "type": "signature",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    }
+  ]
+}

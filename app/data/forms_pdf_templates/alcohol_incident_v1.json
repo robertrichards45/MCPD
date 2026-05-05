@@ -1,0 +1,395 @@
+{
+  "template_id": "alcohol_incident_v1",
+  "description": "Auto-generated from form_field_registry \u2014 alcohol incident",
+  "field_map": {
+    "installation": "installation",
+    "ori_no": "ori_no",
+    "case_no": "case_no",
+    "lastname": "lastname",
+    "firstname": "firstname",
+    "middle": "middle",
+    "grade": "grade",
+    "ssn": "ssn",
+    "dob": "dob",
+    "unit": "unit",
+    "incloc": "incloc",
+    "incdate": "incdate",
+    "synopsis": "synopsis",
+    "prearrtime": "prearrtime",
+    "prearrloc": "prearrloc",
+    "prearrcond": "prearrcond",
+    "intname": "intname",
+    "whatdate": "whatdate",
+    "drinking": "drinking",
+    "whatdrink": "whatdrink",
+    "howmuch": "howmuch",
+    "wheredrink": "wheredrink",
+    "startdrink": "startdrink",
+    "stopdrink": "stopdrink",
+    "lasteat": "lasteat",
+    "whateat": "whateat",
+    "physdef": "physdef",
+    "injured": "injured",
+    "howinj": "howinj",
+    "pills": "pills",
+    "whatpills": "whatpills",
+    "whensleep": "whensleep",
+    "muchsleep": "muchsleep",
+    "bwtest": "bwtest",
+    "bwperf": "bwperf",
+    "testres": "testres",
+    "chemoff": "chemoff",
+    "chemtime": "chemtime",
+    "totalhgn": "totalhgn",
+    "totalwalk": "totalwalk",
+    "totaloneleg": "totaloneleg",
+    "observer": "observer",
+    "appl": "appl"
+  },
+  "ui_fields": [
+    {
+      "name": "installation",
+      "label": "Installation",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "ori_no",
+      "label": "ORI Number",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "case_no",
+      "label": "Case Number",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "lastname",
+      "label": "Last Name",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "firstname",
+      "label": "First Name",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "middle",
+      "label": "Middle Initial",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "grade",
+      "label": "Grade / Rank",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "ssn",
+      "label": "SSN",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "dob",
+      "label": "Date of Birth",
+      "type": "date",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "unit",
+      "label": "Unit",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "incloc",
+      "label": "Incident Location",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "incdate",
+      "label": "Incident Date",
+      "type": "date",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "synopsis",
+      "label": "Incident Synopsis",
+      "type": "textarea",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "prearrtime",
+      "label": "Pre-Arrest Observation Time",
+      "type": "time",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "prearrloc",
+      "label": "Pre-Arrest Location",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "prearrcond",
+      "label": "Pre-Arrest Conditions Observed",
+      "type": "textarea",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "intname",
+      "label": "Interviewer Name",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "whatdate",
+      "label": "Date of Interview",
+      "type": "date",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "drinking",
+      "label": "Was Subject Drinking?",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "whatdrink",
+      "label": "What Was Consumed",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "howmuch",
+      "label": "How Much Consumed",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "wheredrink",
+      "label": "Where Consumed",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "startdrink",
+      "label": "Started Drinking (Time)",
+      "type": "time",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "stopdrink",
+      "label": "Stopped Drinking (Time)",
+      "type": "time",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "lasteat",
+      "label": "Last Ate (Time)",
+      "type": "time",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "whateat",
+      "label": "What Was Eaten",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "physdef",
+      "label": "Physical Defect?",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "injured",
+      "label": "Injured?",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "howinj",
+      "label": "How Injured",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "pills",
+      "label": "Taking Medication?",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "whatpills",
+      "label": "Medication Name",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "whensleep",
+      "label": "Last Slept",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "muchsleep",
+      "label": "Hours of Sleep",
+      "type": "number",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "bwtest",
+      "label": "Breath/Blood/Urine Test",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "bwperf",
+      "label": "Test Performed By",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "testres",
+      "label": "Chemical Test Result",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "chemoff",
+      "label": "Chemical Test Officer",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "chemtime",
+      "label": "Chemical Test Time",
+      "type": "time",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "totalhgn",
+      "label": "HGN Test \u2014 Total Clues",
+      "type": "number",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "totalwalk",
+      "label": "Walk-and-Turn \u2014 Total Clues",
+      "type": "number",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "totaloneleg",
+      "label": "One-Leg Stand \u2014 Total Clues",
+      "type": "number",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "observer",
+      "label": "Observation Officer",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "appl",
+      "label": "Approving Authority",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    }
+  ]
+}

@@ -1,0 +1,125 @@
+{
+  "template_id": "field_interview_v1",
+  "description": "Auto-generated from form_field_registry \u2014 field interview",
+  "field_map": {
+    "1 NAME": "1 NAME",
+    "2 SSN": "2 SSN",
+    "3 TELEPHONE": "3 TELEPHONE",
+    "4 DATE  PLACE OF BIRTH": "4 DATE  PLACE OF BIRTH",
+    "5 ADDRESS": "5 ADDRESS",
+    "6 SEX  RACE  HEIGHT  WEIGHT  HAIR  EYES": "6 SEX  RACE  HEIGHT  WEIGHT  HAIR  EYES",
+    "7 SCARS MARKS TATOOS": "7 SCARS MARKS TATOOS",
+    "8 DATE TIME LOCATION AND CIRCUMSTANCES SURROUNDING INTERVIEW": "8 DATE TIME LOCATION AND CIRCUMSTANCES SURROUNDING INTERVIEW",
+    "9 STATED REASON FOR BEING IN AREA": "9 STATED REASON FOR BEING IN AREA",
+    "10 INTEVIEWERS": "10 INTEVIEWERS",
+    "11 REMARKS": "11 REMARKS",
+    "12 SIGNATURE OF INTERVIEWING OFFICIALS": "12 SIGNATURE OF INTERVIEWING OFFICIALS",
+    "13 LOCATION OF INTERVIEW": "13 LOCATION OF INTERVIEW"
+  },
+  "ui_fields": [
+    {
+      "name": "1 NAME",
+      "label": "Name",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "2 SSN",
+      "label": "SSN",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "3 TELEPHONE",
+      "label": "Telephone",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "4 DATE  PLACE OF BIRTH",
+      "label": "Date / Place of Birth",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "5 ADDRESS",
+      "label": "Address",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "6 SEX  RACE  HEIGHT  WEIGHT  HAIR  EYES",
+      "label": "Physical Description (Sex / Race / Ht / Wt / Hair / Eyes)",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "7 SCARS MARKS TATOOS",
+      "label": "Scars / Marks / Tattoos",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "8 DATE TIME LOCATION AND CIRCUMSTANCES SURROUNDING INTERVIEW",
+      "label": "Date / Time / Location / Circumstances of Interview",
+      "type": "textarea",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "9 STATED REASON FOR BEING IN AREA",
+      "label": "Stated Reason for Being in Area",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "10 INTEVIEWERS",
+      "label": "Interviewing Officer(s)",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "11 REMARKS",
+      "label": "Remarks",
+      "type": "textarea",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "12 SIGNATURE OF INTERVIEWING OFFICIALS",
+      "label": "Officer Signature",
+      "type": "signature",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "13 LOCATION OF INTERVIEW",
+      "label": "Location of Interview",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    }
+  ]
+}

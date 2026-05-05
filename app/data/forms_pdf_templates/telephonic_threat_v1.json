@@ -1,0 +1,242 @@
+{
+  "template_id": "telephonic_threat_v1",
+  "description": "Auto-generated from form_field_registry \u2014 telephonic threat",
+  "field_map": {
+    "nameadd": "F[0].P1[0].nameadd[0]",
+    "Telephone": "F[0].P1[0].Telephone[0]",
+    "comname": "F[0].P1[0].comname[0]",
+    "pername": "F[0].P1[0].pername[0]",
+    "commname": "F[0].P1[0].commname[0]",
+    "date1": "F[0].P1[0].date1[0]",
+    "place": "F[0].P1[0].place[0]",
+    "LOCO": "F[0].P1[0].LOCO[0]",
+    "date2": "F[0].P1[0].date2[0]",
+    "hourtime": "F[0].P1[0].hourtime[0]",
+    "hometelephone": "F[0].P1[0].hometelephone[0]",
+    "worktelephone": "F[0].P1[0].worktelephone[0]",
+    "contextname1": "F[0].P1[0].contextname1[0]",
+    "contextname2": "F[0].P1[0].contextname2[0]",
+    "contextname3": "F[0].P1[0].contextname3[0]",
+    "contextname4": "F[0].P1[0].contextname4[0]",
+    "contextname5": "F[0].P1[0].contextname5[0]",
+    "contextname6": "F[0].P1[0].contextname6[0]",
+    "background": "F[0].P1[0].background[0]",
+    "age": "F[0].P1[0].age[0]",
+    "edulevel": "F[0].P1[0].edulevel[0]",
+    "accent": "F[0].P1[0].accent[0]",
+    "attitude": "F[0].P1[0].attitude[0]",
+    "other1": "F[0].P1[0].other1[0]",
+    "witname": "F[0].P1[0].witname[0]",
+    "identname": "F[0].P1[0].identname[0]"
+  },
+  "ui_fields": [
+    {
+      "name": "nameadd",
+      "label": "Name / Address of Location",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Telephone",
+      "label": "Telephone Number Called",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "comname",
+      "label": "Command Name",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "pername",
+      "label": "Person Notified",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "commname",
+      "label": "Commanding Officer",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "date1",
+      "label": "Date/Time of Call",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "place",
+      "label": "Place",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "LOCO",
+      "label": "Location",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "date2",
+      "label": "Date Reported",
+      "type": "date",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "hourtime",
+      "label": "Time of Call",
+      "type": "time",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "hometelephone",
+      "label": "Home Telephone",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "worktelephone",
+      "label": "Work Telephone",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "contextname1",
+      "label": "Exact Words of Threat (1)",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "contextname2",
+      "label": "Exact Words of Threat (2)",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "contextname3",
+      "label": "Exact Words of Threat (3)",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "contextname4",
+      "label": "Exact Words of Threat (4)",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "contextname5",
+      "label": "Exact Words of Threat (5)",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "contextname6",
+      "label": "Exact Words of Threat (6)",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "background",
+      "label": "Background Noise",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "age",
+      "label": "Caller Age",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "edulevel",
+      "label": "Education Level",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "accent",
+      "label": "Accent",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "attitude",
+      "label": "Attitude",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "other1",
+      "label": "Other Caller Description",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "witname",
+      "label": "Witness Name",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "identname",
+      "label": "Identity (if known)",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    }
+  ]
+}

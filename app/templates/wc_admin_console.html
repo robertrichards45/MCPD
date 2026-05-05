@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/wc_admin.css', v='2026-05-05') }}" />
+{% endblock %}
+{% block body %}
+<div class="wc-admin-shell">
+  <header class="wc-admin-header">
+    <div>
+      <p class="eyebrow">Supervisor Tools</p>
+      <h1>Watch Commander Admin</h1>
+      <p>Generate supervisor documents, submit learning examples, and file officer records.</p>
+    </div>
+    <a class="btn btn-outline" href="{{ url_for('dashboard.dashboard') }}">Back to Dashboard</a>
+  </header>
+  <section class="wc-admin-grid">
+    <article class="wc-card">
+      <h2>Counseling Generator</h2>
+      <form data-wc-form="counseling">
+        <input name="officer_name" placeholder="Officer name" />
+        <input name="counseling_type" placeholder="Counseling type" />
+        <input name="category" placeholder="Category" />
+        <textarea name="facts" placeholder="Facts"></textarea>
+        <textarea name="standard" placeholder="Standard"></textarea>
+        <textarea name="corrective_action" placeholder="Corrective action"></textarea>
+        <textarea name="follow_up" placeholder="Follow-up"></textarea>
+        <button class="btn btn-primary" type="submit">Generate Counseling</button>
+      </form>
+    </article>
+    <article class="wc-card">
+      <h2>Award Generator</h2>
+      <form data-wc-form="award">
+        <input name="officer_name" placeholder="Officer name" />
+        <input name="award_type" placeholder="Award type" />
+        <input name="period" placeholder="Period" />
+        <textarea name="actions" placeholder="Actions"></textarea>
+        <textarea name="impact" placeholder="Impact"></textarea>
+        <button class="btn btn-primary" type="submit">Generate Award</button>
+      </form>
+    </article>
+    <article class="wc-card">
+      <h2>Learning Submission</h2>
+      <form data-wc-form="learning">
+        <input name="category" placeholder="Category" />
+        <textarea name="prompt" placeholder="Officer prompt / scenario"></textarea>
+        <textarea name="approved_answer" placeholder="Approved answer or corrected wording"></textarea>
+        <textarea name="notes" placeholder="Supervisor notes"></textarea>
+        <button class="btn btn-primary" type="submit">Submit for Approval</button>
+      </form>
+      <button class="btn btn-outline" type="button" data-wc-load-learning>Load Pending Learning</button>
+    </article>
+    <article class="wc-card">
+      <h2>Officer File Upload</h2>
+      <form data-wc-form="files" enctype="multipart/form-data">
+        <input name="officer_id" placeholder="Officer ID" />
+        <input name="area" placeholder="Area, optional" />
+        <textarea name="description" placeholder="Description"></textarea>
+        <input name="files" type="file" multiple />
+        <button class="btn btn-primary" type="submit">Upload Files</button>
+      </form>
+      <button class="btn btn-outline" type="button" data-wc-load-files>Load File Index</button>
+    </article>
+  </section>
+  <section class="wc-output-card">
+    <h2>Output</h2>
+    <pre id="wc-admin-output">Ready.</pre>
+  </section>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/wc_admin.js', v='2026-05-05') }}"></script>
+{% endblock %}

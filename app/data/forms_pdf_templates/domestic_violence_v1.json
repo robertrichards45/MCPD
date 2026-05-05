@@ -1,0 +1,89 @@
+{
+  "template_id": "domestic_violence_v1",
+  "description": "Auto-generated from form_field_registry \u2014 domestic violence",
+  "field_map": {
+    "VicName": "form1.VicName",
+    "ResponseDate": "form1.ResponseDate",
+    "RespTime": "form1.RespTime",
+    "Reported": "form1.Reported",
+    "SupInitial1": "SupInitial.1",
+    "SupInitial2": "SupInitial.2",
+    "SupInitial4": "SupInitial.4",
+    "SupInitial7": "SupInitial.7",
+    "OfficerSign": "OfficerSign"
+  },
+  "ui_fields": [
+    {
+      "name": "VicName",
+      "label": "Victim Name",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "ResponseDate",
+      "label": "Response Date",
+      "type": "date",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "RespTime",
+      "label": "Response Time",
+      "type": "time",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Reported",
+      "label": "Violation Reported",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "SupInitial1",
+      "label": "Supervisor Initials 1",
+      "type": "initial",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "SupInitial2",
+      "label": "Supervisor Initials 2",
+      "type": "initial",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "SupInitial4",
+      "label": "Supervisor Initials 4",
+      "type": "initial",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "SupInitial7",
+      "label": "Supervisor Initials 7",
+      "type": "initial",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "OfficerSign",
+      "label": "Officer Signature",
+      "type": "signature",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    }
+  ]
+}

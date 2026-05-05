@@ -1,0 +1,170 @@
+{
+  "template_id": "civilian_suspect_v1",
+  "description": "Auto-generated from form_field_registry \u2014 civilian suspect",
+  "field_map": {
+    "Place 1": "Place 1",
+    "Place 2": "Place 2",
+    "I": "I",
+    "have been advised by": "have been advised by",
+    "that I am suspected of": "that I am suspected of",
+    "At this time I": "At this time I",
+    "Date  Time": "Date  Time",
+    "Date  Time_2": "Date  Time_2",
+    "Statement Line 1": "forth above It is made with no threats or promises having been extended to me 1",
+    "Statement Line 2": "forth above It is made with no threats or promises having been extended to me 2",
+    "Statement Line 3": "forth above It is made with no threats or promises having been extended to me 3",
+    "Statement Line 4": "forth above It is made with no threats or promises having been extended to me 4",
+    "Statement Line 5": "forth above It is made with no threats or promises having been extended to me 5",
+    "Statement Line 6": "forth above It is made with no threats or promises having been extended to me 6",
+    "Statement Line 7": "forth above It is made with no threats or promises having been extended to me 7",
+    "Witnessed 1": "Witnessed 1",
+    "Witnessed 2": "Witnessed 2",
+    "Signature": "Signature"
+  },
+  "ui_fields": [
+    {
+      "name": "Place 1",
+      "label": "Location (Line 1)",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Place 2",
+      "label": "Location (Line 2)",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "I",
+      "label": "Subject Name",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "have been advised by",
+      "label": "Advised By (Officer)",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "that I am suspected of",
+      "label": "Suspected Offense",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "At this time I",
+      "label": "Decision (waive/invoke rights)",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Date  Time",
+      "label": "Date/Time Rights Read",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Date  Time_2",
+      "label": "Date/Time Signed",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Statement Line 1",
+      "label": "Statement (Line 1)",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Statement Line 2",
+      "label": "Statement (Line 2)",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Statement Line 3",
+      "label": "Statement (Line 3)",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Statement Line 4",
+      "label": "Statement (Line 4)",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Statement Line 5",
+      "label": "Statement (Line 5)",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Statement Line 6",
+      "label": "Statement (Line 6)",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Statement Line 7",
+      "label": "Statement (Line 7)",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Witnessed 1",
+      "label": "Witness 1",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Witnessed 2",
+      "label": "Witness 2",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Signature",
+      "label": "Subject Signature",
+      "type": "signature",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    }
+  ]
+}

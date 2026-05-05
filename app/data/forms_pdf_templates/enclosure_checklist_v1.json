@@ -1,0 +1,134 @@
+{
+  "template_id": "enclosure_checklist_v1",
+  "description": "Auto-generated from form_field_registry \u2014 enclosure checklist",
+  "field_map": {
+    "CASE": "CASE",
+    "INCIDENT TYPE": "INCIDENT TYPE",
+    "CLEOC CCN CASE": "CLEOC CCN CASE",
+    "Initials": "Initials",
+    "Initials_2": "Initials_2",
+    "Initials_3": "Initials_3",
+    "Initials_4": "Initials_4",
+    "DDMMMYYYY": "DDMMMYYYY",
+    "DDMMMYYYY_2": "DDMMMYYYY_2",
+    "DDMMMYYYY_3": "DDMMMYYYY_3",
+    "DDMMMYYYY_4": "DDMMMYYYY_4",
+    "MISCADDITIONAL DOCUMENTS If applicable 1": "MISCADDITIONAL DOCUMENTS If applicable 1",
+    "MISCADDITIONAL DOCUMENTS If applicable 2": "MISCADDITIONAL DOCUMENTS If applicable 2",
+    "MISCADDITIONAL DOCUMENTS If applicable 3": "MISCADDITIONAL DOCUMENTS If applicable 3"
+  },
+  "ui_fields": [
+    {
+      "name": "CASE",
+      "label": "Case Number",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "INCIDENT TYPE",
+      "label": "Incident Type",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "CLEOC CCN CASE",
+      "label": "CLEOC / CCN / Case",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Initials",
+      "label": "Reviewer Initials (1)",
+      "type": "initial",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Initials_2",
+      "label": "Reviewer Initials (2)",
+      "type": "initial",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Initials_3",
+      "label": "Reviewer Initials (3)",
+      "type": "initial",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Initials_4",
+      "label": "Reviewer Initials (4)",
+      "type": "initial",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "DDMMMYYYY",
+      "label": "Date (1)",
+      "type": "date",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "DDMMMYYYY_2",
+      "label": "Date (2)",
+      "type": "date",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "DDMMMYYYY_3",
+      "label": "Date (3)",
+      "type": "date",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "DDMMMYYYY_4",
+      "label": "Date (4)",
+      "type": "date",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "MISCADDITIONAL DOCUMENTS If applicable 1",
+      "label": "Additional Document (1)",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "MISCADDITIONAL DOCUMENTS If applicable 2",
+      "label": "Additional Document (2)",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "MISCADDITIONAL DOCUMENTS If applicable 3",
+      "label": "Additional Document (3)",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    }
+  ]
+}

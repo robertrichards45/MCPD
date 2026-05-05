@@ -1,0 +1,107 @@
+{
+  "template_id": "command_search_authorization_v1",
+  "description": "Auto-generated from form_field_registry \u2014 command search authorization",
+  "field_map": {
+    "NameOfPerson": "form1[0].#subform[0].NameOfPerson[0]",
+    "To": "form1[0].#subform[0].To[0]",
+    "PremisisDetail": "form1[0].#subform[0].PremisisDetail[0]",
+    "DescribeProperty": "form1[0].#subform[0].DescribeProperty[0]",
+    "Affidavit": "form1[0].#subform[0].Affidavit[0]",
+    "Day": "form1[0].#subform[0].Day[0]",
+    "Month": "form1[0].#subform[0].Month[0]",
+    "Year": "form1[0].#subform[0].Year[0]",
+    "Command": "form1[0].#subform[0].Command[0]",
+    "RankSerTitle": "form1[0].#subform[0].RankSerTitle[0]",
+    "SignatureAuthorization": "form1[0].#subform[0].SignatureAuthorization[0]"
+  },
+  "ui_fields": [
+    {
+      "name": "NameOfPerson",
+      "label": "Name of Person to be Searched",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "To",
+      "label": "Authorized To (Officer Name)",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "PremisisDetail",
+      "label": "Premises Description",
+      "type": "textarea",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "DescribeProperty",
+      "label": "Property / Evidence to Seize",
+      "type": "textarea",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Affidavit",
+      "label": "Affidavit / Probable Cause",
+      "type": "textarea",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Day",
+      "label": "Day",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Month",
+      "label": "Month",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Year",
+      "label": "Year",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Command",
+      "label": "Command",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "RankSerTitle",
+      "label": "Rank / Serial / Title",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "SignatureAuthorization",
+      "label": "Authorizing Signature",
+      "type": "signature",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    }
+  ]
+}

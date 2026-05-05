@@ -1,0 +1,161 @@
+{
+  "template_id": "evidence_custody_v1",
+  "description": "Auto-generated from form_field_registry \u2014 evidence custody",
+  "field_map": {
+    "1": "1",
+    "2": "2",
+    "3": "3",
+    "4": "4",
+    "5": "5",
+    "6": "6",
+    "7": "7",
+    "8E": "8E",
+    "9": "9",
+    "10": "10",
+    "11": "11",
+    "12": "12",
+    "13": "13",
+    "14": "14",
+    "15": "15",
+    "16": "16",
+    "CollectorSign": "CollectorSign"
+  },
+  "ui_fields": [
+    {
+      "name": "1",
+      "label": "Report / Case Number",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "2",
+      "label": "Date",
+      "type": "date",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "3",
+      "label": "Time",
+      "type": "time",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "4",
+      "label": "Agency / ORI",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "5",
+      "label": "Item Number",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "6",
+      "label": "Description of Evidence",
+      "type": "textarea",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "7",
+      "label": "Make / Model / Serial Number",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "8E",
+      "label": "Class of Property \u2014 Other (specify)",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "9",
+      "label": "Released From (Name)",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "10",
+      "label": "Date Released",
+      "type": "date",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "11",
+      "label": "Time Released",
+      "type": "time",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "12",
+      "label": "Received By (Officer)",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "13",
+      "label": "Disposition",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "14",
+      "label": "Disposition Date",
+      "type": "date",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "15",
+      "label": "Custodian Signature",
+      "type": "signature",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "16",
+      "label": "Released To / Final Disposition",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "CollectorSign",
+      "label": "Collector Signature",
+      "type": "signature",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    }
+  ]
+}

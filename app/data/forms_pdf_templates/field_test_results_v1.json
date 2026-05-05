@@ -1,0 +1,197 @@
+{
+  "template_id": "field_test_results_v1",
+  "description": "Auto-generated from form_field_registry \u2014 field test results",
+  "field_map": {
+    "Suspect0": "form1[0].#subform[0].Suspect0[0]",
+    "Suspect1": "form1[0].#subform[0].Suspect1[0]",
+    "CommandAddress": "form1[0].#subform[0].CommandAddress[0]",
+    "RecoveredFrom": "form1[0].#subform[0].RecoveredFrom[0]",
+    "ExaminedBy": "form1[0].#subform[0].ExaminedBy[0]",
+    "DNSDate3": "form1[0].#subform[0].DNSDate3[0]",
+    "ItemNumber1": "form1[0].#subform[0].ItemNumber1[0]",
+    "DesEvid1": "form1[0].#subform[0].DesEvid1[0]",
+    "FieldTestUtilized1": "form1[0].#subform[0].FieldTestUtilized1[0]",
+    "Results1": "form1[0].#subform[0].Results1[0]",
+    "RecValue1": "form1[0].#subform[0].RecValue1[0]",
+    "ItemNumber2": "form1[0].#subform[0].ItemNumber2[0]",
+    "DesEvid2": "form1[0].#subform[0].DesEvid2[0]",
+    "FieldTestUtilized2": "form1[0].#subform[0].FieldTestUtilized2[0]",
+    "Results2": "form1[0].#subform[0].Results2[0]",
+    "RecValue2": "form1[0].#subform[0].RecValue2[0]",
+    "ItemNumber3": "form1[0].#subform[0].ItemNumber3[0]",
+    "DesEvid3": "form1[0].#subform[0].DesEvid3[0]",
+    "FieldTestUtilized3": "form1[0].#subform[0].FieldTestUtilized3[0]",
+    "Results3": "form1[0].#subform[0].Results3[0]",
+    "RecValue3": "form1[0].#subform[0].RecValue3[0]"
+  },
+  "ui_fields": [
+    {
+      "name": "Suspect0",
+      "label": "Suspect Name",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Suspect1",
+      "label": "Suspect SSN / DOB",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "CommandAddress",
+      "label": "Command / Address",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "RecoveredFrom",
+      "label": "Recovered From (Location)",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "ExaminedBy",
+      "label": "Examined By (Officer)",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "DNSDate3",
+      "label": "Date of Test",
+      "type": "date",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "ItemNumber1",
+      "label": "Item 1 \u2014 Item Number",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "DesEvid1",
+      "label": "Item 1 \u2014 Description of Evidence",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "FieldTestUtilized1",
+      "label": "Item 1 \u2014 Field Test Used",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Results1",
+      "label": "Item 1 \u2014 Results",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "RecValue1",
+      "label": "Item 1 \u2014 Recovered Value",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "ItemNumber2",
+      "label": "Item 2 \u2014 Item Number",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "DesEvid2",
+      "label": "Item 2 \u2014 Description of Evidence",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "FieldTestUtilized2",
+      "label": "Item 2 \u2014 Field Test Used",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Results2",
+      "label": "Item 2 \u2014 Results",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "RecValue2",
+      "label": "Item 2 \u2014 Recovered Value",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "ItemNumber3",
+      "label": "Item 3 \u2014 Item Number",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "DesEvid3",
+      "label": "Item 3 \u2014 Description of Evidence",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "FieldTestUtilized3",
+      "label": "Item 3 \u2014 Field Test Used",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Results3",
+      "label": "Item 3 \u2014 Results",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "RecValue3",
+      "label": "Item 3 \u2014 Recovered Value",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    }
+  ]
+}

@@ -1,0 +1,152 @@
+{
+  "template_id": "permissive_authorization_v1",
+  "description": "Auto-generated from form_field_registry \u2014 permissive authorization",
+  "field_map": {
+    "FillIn1": "form1[0].#subform[0].FillIn1[0]",
+    "FillIn2": "form1[0].#subform[0].FillIn2[0]",
+    "FillIn3": "form1[0].#subform[0].FillIn3[0]",
+    "FillIn4": "form1[0].#subform[0].FillIn4[0]",
+    "FillIn5": "form1[0].#subform[0].FillIn5[0]",
+    "FillIn6": "form1[0].#subform[0].FillIn6[0]",
+    "FillIn7": "form1[0].#subform[0].FillIn7[0]",
+    "FillIn8": "form1[0].#subform[0].FillIn8[0]",
+    "FillIn9": "form1[0].#subform[0].FillIn9[0]",
+    "FillIn10": "form1[0].#subform[0].FillIn10[0]",
+    "Start": "form1[0].#subform[0].Start[0]",
+    "End": "form1[0].#subform[0].End[0]",
+    "DNSDate1_0": "form1[0].#subform[0].DNSDate1[0]",
+    "WitnessesSig": "form1[0].#subform[0].WitnessesSig[0]",
+    "WitnessesSig2": "form1[0].#subform[0].WitnessesSig2[0]",
+    "by": "form1[0].#subform[0].by[0]"
+  },
+  "ui_fields": [
+    {
+      "name": "FillIn1",
+      "label": "Name of Person Consenting",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "FillIn2",
+      "label": "Premises / Property Address",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "FillIn3",
+      "label": "Requesting Officer Name",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "FillIn4",
+      "label": "Requesting Officer Rank",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "FillIn5",
+      "label": "Items / Area to be Searched",
+      "type": "textarea",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "FillIn6",
+      "label": "Property / Evidence Sought",
+      "type": "textarea",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "FillIn7",
+      "label": "Additional Details (7)",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "FillIn8",
+      "label": "Additional Details (8)",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "FillIn9",
+      "label": "Additional Details (9)",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "FillIn10",
+      "label": "Additional Details (10)",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Start",
+      "label": "Search Start Time",
+      "type": "time",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "End",
+      "label": "Search End Time",
+      "type": "time",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "DNSDate1_0",
+      "label": "Date (Authorization)",
+      "type": "date",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "WitnessesSig",
+      "label": "Witness Signature",
+      "type": "signature",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "WitnessesSig2",
+      "label": "Witness Signature 2",
+      "type": "signature",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "by",
+      "label": "Authorization By (Officer)",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    }
+  ]
+}

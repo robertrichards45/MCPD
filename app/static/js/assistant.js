@@ -21,6 +21,7 @@
   var VOICE_STORAGE_KEY = 'mcpd.assistant.voice';
   var HISTORY_STORAGE_KEY = 'mcpd.assistant.history';
   var DEFAULT_VOICE     = 'coral';
+  var Voice = window.MCPDVoiceAssistant || {};
 
   function getSavedVoice() {
     try { return localStorage.getItem(VOICE_STORAGE_KEY) || DEFAULT_VOICE; } catch (e) { return DEFAULT_VOICE; }
@@ -107,6 +108,18 @@
       '  <div class="ai-settings-title">Choose a Voice</div>',
       '  <div id="ai-tts-status" class="ai-settings-subtitle">Checking voice engine…</div>',
       '  <div id="ai-voice-list" class="ai-voice-list"></div>',
+      '  <div class="ai-voice-controls" aria-label="Assistant voice controls">',
+      '    <button id="ai-stop-voice-btn" class="btn btn-sm btn-outline" type="button">Stop</button>',
+      '    <button id="ai-replay-voice-btn" class="btn btn-sm btn-outline" type="button">Replay</button>',
+      '    <button id="ai-voice-toggle-btn" class="btn btn-sm btn-outline" type="button">Voice On</button>',
+      '    <label class="ai-speed-label" for="ai-voice-speed">Voice Speed</label>',
+      '    <select id="ai-voice-speed" class="form-control form-control-sm">',
+      '      <option value="normal">Normal</option>',
+      '      <option value="fast">Fast</option>',
+      '      <option value="veryfast">Very Fast</option>',
+      '    </select>',
+      '  </div>',
+      '  <div class="ai-settings-subtitle">The assistant speaks a short summary first. Use Read Full Response when needed.</div>',
       '  <button id="ai-settings-done" class="btn btn-sm btn-primary w-100 mt-2">Done</button>',
       '</div>',
       // Messages area
@@ -132,6 +145,18 @@
     document.getElementById('ai-send-btn').addEventListener('click', sendText);
     document.getElementById('ai-settings-btn').addEventListener('click', toggleSettings);
     document.getElementById('ai-settings-done').addEventListener('click', toggleSettings);
+    document.getElementById('ai-stop-voice-btn').addEventListener('click', function () { stopAudio(); });
+    document.getElementById('ai-replay-voice-btn').addEventListener('click', function () {
+      if (Voice.replayLastVoice) Voice.replayLastVoice();
+    });
+    document.getElementById('ai-voice-toggle-btn').addEventListener('click', function () {
+      var enabled = Voice.getVoiceEnabled ? !Voice.getVoiceEnabled() : false;
+      if (Voice.toggleVoice) Voice.toggleVoice(enabled);
+      syncVoiceControls();
+    });
+    document.getElementById('ai-voice-speed').addEventListener('change', function (event) {
+      if (Voice.setVoiceSpeed) Voice.setVoiceSpeed(event.target.value);
+    });
     document.getElementById('ai-text-input').addEventListener('keydown', function (e) {
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendText(); }
     });
@@ -142,11 +167,23 @@
     });
 
     setupMic();
+    syncVoiceControls();
+    if (Voice.isVoiceSupported && !Voice.isVoiceSupported()) {
+      setTTSStatus('unsupported');
+    }
 
     setTimeout(function () {
       var v = VOICES.find(function (x) { return x.id === getSavedVoice(); }) || VOICES[0];
       appendMessage('assistant', 'Hello. I\'m the MCPD AI Assistant, speaking with the ' + v.label + ' voice. Tap the mic or type to get started.');
     }, 300);
+  }
+
+  function syncVoiceControls() {
+    var toggle = document.getElementById('ai-voice-toggle-btn');
+    var speed = document.getElementById('ai-voice-speed');
+    var enabled = Voice.getVoiceEnabled ? Voice.getVoiceEnabled() : true;
+    if (toggle) toggle.textContent = enabled ? 'Voice On' : 'Voice Off';
+    if (speed && Voice.getVoiceSpeed) speed.value = Voice.getVoiceSpeed();
   }
 
   // ── Voice picker ───────────────────────────────────────────────────────────
@@ -210,6 +247,9 @@
       buildVoiceList();
       sp.classList.remove('ai-settings-hidden');
       msgs.style.display = 'none';
+    } else if (mode === 'unsupported') {
+      el.textContent = 'Voice playback is not supported on this device/browser.';
+      el.style.color = '#fbbf24';
     } else {
       sp.classList.add('ai-settings-hidden');
       msgs.style.display = '';
@@ -309,6 +349,20 @@
     bubble.textContent = text;
     var msgs = document.getElementById('ai-messages');
     if (msgs) msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function addReadFullControl(bubble, text) {
+    if (!bubble || !text) return;
+    var button = document.createElement('button');
+    button.className = 'ai-read-full-btn';
+    button.type = 'button';
+    button.textContent = 'Read Full Response';
+    button.addEventListener('click', function () {
+      if (Voice.speakFull) Voice.speakFull(text);
+      else browserSpeak(text, getSavedVoice(), null);
+    });
+    bubble.appendChild(document.createElement('br'));
+    bubble.appendChild(button);
   }
 
   function showTyping() {
@@ -523,11 +577,11 @@
     isThinking = true;
     updateUI();
     var thinkingBubble = appendMessage('assistant', 'Thinking...');
-    var processingTimer = setTimeout(function () {
+    var processingTimer = Voice.speakProcessingIfDelayed ? Voice.speakProcessingIfDelayed(1000) : setTimeout(function () {
       if (isThinking && currentSpeechRun === speechRunId) {
-        browserSpeak('Processing request', getSavedVoice(), null, { cancel: false, rate: 1.15 });
+        browserSpeak('Processing request.', getSavedVoice(), null, { cancel: false, rate: 1.35 });
       }
-    }, 1500);
+    }, 1000);
 
     fetch('/api/assistant/ask', {
       method: 'POST',
@@ -536,17 +590,20 @@
     })
       .then(function (r) { return r.json(); })
       .then(function (data) {
-        clearTimeout(processingTimer);
+        if (Voice.cancelProcessing) Voice.cancelProcessing(processingTimer);
+        else clearTimeout(processingTimer);
         hideTyping();
         isThinking = false;
+        if (Voice.startVoiceStatus) Voice.startVoiceStatus('Answering...');
         var reply = (data && data.reply) ? data.reply : 'Sorry, I could not get a response.';
         if (data && data.mode === 'local_fallback') {
           var label = document.getElementById('ai-status-label');
           if (label) label.textContent = 'Local assist';
         }
         stopAudio();
-        speakText(reply);
         updateMessage(thinkingBubble, reply);
+        addReadFullControl(thinkingBubble, reply);
+        speakText(reply);
         history.push({ role: 'user',      content: text  });
         history.push({ role: 'assistant', content: reply });
         if (history.length > 20) history = history.slice(history.length - 20);
@@ -555,11 +612,13 @@
         applyAssistantAction(data && data.action);
       })
       .catch(function () {
-        clearTimeout(processingTimer);
+        if (Voice.cancelProcessing) Voice.cancelProcessing(processingTimer);
+        else clearTimeout(processingTimer);
         hideTyping();
         isThinking = false;
         updateUI();
         updateMessage(thinkingBubble, 'Connection error. Please try again.');
+        speakText('Connection error. Please try again.');
         if (voiceMode) scheduleAutoListen();
       });
   }
@@ -584,7 +643,11 @@
   function speakText(text) {
     if (!text) { if (voiceMode) scheduleAutoListen(); return; }
     stopAudio();
-    setTTSStatus('instant');
+    setTTSStatus(Voice.isVoiceSupported && !Voice.isVoiceSupported() ? 'unsupported' : 'instant');
+    if (Voice.speakSummary) {
+      Voice.speakSummary(text, function () { if (voiceMode) scheduleAutoListen(); });
+      return;
+    }
     browserSpeak(text, getSavedVoice(), function () { if (voiceMode) scheduleAutoListen(); });
     return;
 
@@ -625,6 +688,7 @@
 
   function stopAudio() {
     if (audioQueue) { try { audioQueue.pause(); } catch (e) {} audioQueue = null; }
+    if (Voice.stopVoice) { Voice.stopVoice(); return; }
     if (window.speechSynthesis) window.speechSynthesis.cancel();
   }
 
