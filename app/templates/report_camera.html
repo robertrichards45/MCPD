@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell mcpd-command-app">
+  {% include 'partials/nav.html' %}
+  <main class="page-wrap report-camera-page">
+    <section class="card p-3 mb-3">
+      <div class="report-panel-head">
+        <div>
+          <div class="eyebrow">Report Camera</div>
+          <h1>Report #{{ report.id }} Photos</h1>
+          <p class="text-muted mb-0">Capture photos into the report file. The browser uploads directly to MCPD storage and does not save the photo to the phone camera roll.</p>
+        </div>
+        <a class="btn btn-outline-secondary" href="{{ url_for('reports.report_detail', report_id=report.id) }}">Back to Report</a>
+      </div>
+    </section>
+
+    <section class="bodycam-grid">
+      <article class="card p-3">
+        <div class="bodycam-warning">
+          <strong>Storage notice</strong>
+          <span>Use this in-app camera for report photos. Avoid using the device camera app if the photo should stay only in MCPD Portal storage.</span>
+        </div>
+        <video id="report-camera-preview" class="bodycam-preview" playsinline muted></video>
+        <canvas id="report-camera-canvas" hidden></canvas>
+        <img id="report-camera-capture-preview" class="report-camera-capture-preview" alt="Captured report photo preview" hidden>
+        <div id="report-camera-status" class="bodycam-status">Camera not started.</div>
+        <div class="bodycam-control-row">
+          <button id="report-camera-start" class="btn btn-outline-primary" type="button">Start Camera</button>
+          <button id="report-camera-capture" class="btn btn-primary" type="button" disabled>Capture Photo</button>
+          <button id="report-camera-save" class="btn btn-success" type="button" disabled>Save to Report</button>
+        </div>
+      </article>
+
+      <aside class="card p-3 bodycam-meta-card">
+        <h2>Photo Details</h2>
+        <label>Photo Type
+          <select id="report-camera-page-key" class="form-control">
+            <option value="report-photo-scene">Scene Photo</option>
+            <option value="report-photo-vehicle">Vehicle Photo</option>
+            <option value="report-photo-damage">Damage Photo</option>
+            <option value="report-photo-evidence">Evidence Photo</option>
+            <option value="report-photo-property">Property Photo</option>
+            <option value="report-photo-other">Other Report Photo</option>
+          </select>
+        </label>
+        <label>Label<input id="report-camera-label" class="form-control" value="Report Photo"></label>
+        <a id="report-camera-open-report" class="btn btn-outline-secondary w-100" href="{{ url_for('reports.report_detail', report_id=report.id) }}" hidden>Open Report Photos</a>
+      </aside>
+    </section>
+  </main>
+</div>
+<script>
+  window.MCPD_REPORT_CAMERA_UPLOAD_URL = "{{ url_for('reports.report_photo_upload', report_id=report.id) }}";
+</script>
+<script src="{{ url_for('static', filename='js/report_camera.js', v='2026-05-05-1') }}"></script>
+{% endblock %}

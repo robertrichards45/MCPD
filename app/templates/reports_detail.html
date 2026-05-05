@@ -34,6 +34,36 @@
       {% endif %}
     </div>
 
+    <div class="card p-3 mb-3 report-photo-card">
+      <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap">
+        <div>
+          <h5 class="mb-1">Report Photos</h5>
+          <p class="text-muted mb-0">Capture scene, vehicle, property, damage, or evidence photos directly into this report. Photos are uploaded to MCPD storage and are not saved to the phone camera roll.</p>
+        </div>
+        {% if report.owner_id == user.id %}
+          <a class="btn btn-primary" href="{{ url_for('reports.report_camera', report_id=report.id) }}">Open Report Camera</a>
+        {% endif %}
+      </div>
+      {% if photo_attachments %}
+        <div class="report-photo-grid mt-3">
+          {% for a in photo_attachments %}
+          <article class="report-photo-thumb">
+            <a href="{{ url_for('reports.report_attachment_media', report_id=report.id, attachment_id=a.id) }}" target="_blank" rel="noopener">
+              <img src="{{ url_for('reports.report_attachment_media', report_id=report.id, attachment_id=a.id) }}" alt="Report photo {{ loop.index }}">
+            </a>
+            <div>
+              <strong>{{ a.page_key }}</strong>
+              <span>{{ a.uploaded_at.strftime('%Y-%m-%d %H:%M') if a.uploaded_at else '' }}</span>
+              <a href="{{ url_for('reports.report_attachment_download', report_id=report.id, attachment_id=a.id) }}">Download</a>
+            </div>
+          </article>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="text-muted mt-3">No report photos have been captured yet.</div>
+      {% endif %}
+    </div>
+
     <div class="row">
       <div class="col-md-6">
         <div class="card p-3 mb-3">
@@ -63,9 +93,10 @@
 
         <h6 class="mt-4">Attached PDFs</h6>
         <ul class="list-group">
-          {% for a in attachments %}
+          {% for a in pdf_attachments %}
             <li class="list-group-item d-flex justify-content-between">
               <span>{{ a.page_key }}  {{ a.uploaded_at.strftime('%Y-%m-%d %H:%M') }}</span>
+              <a href="{{ url_for('reports.report_attachment_download', report_id=report.id, attachment_id=a.id) }}">Download</a>
             </li>
           {% endfor %}
         </ul>

@@ -3121,6 +3121,50 @@ body[data-theme="dark"] .mcpd-mobile-officer-panel {
   font-family: inherit;
 }
 
+.report-photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 12px;
+}
+
+.report-photo-thumb {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--panel);
+}
+
+.report-photo-thumb img,
+.report-camera-capture-preview {
+  display: block;
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #020617;
+  object-fit: cover;
+}
+
+.report-photo-thumb img {
+  aspect-ratio: 4 / 3;
+}
+
+.report-photo-thumb div {
+  display: grid;
+  gap: 2px;
+  color: var(--text);
+  font-size: 12px;
+}
+
+.report-photo-thumb span {
+  color: var(--muted);
+}
+
+.report-camera-capture-preview {
+  max-height: 360px;
+}
+
 .bodycam-dl {
   display: grid;
   grid-template-columns: auto 1fr;

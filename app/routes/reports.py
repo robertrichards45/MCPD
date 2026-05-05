@@ -2,6 +2,7 @@ import os
 import json
 from datetime import datetime, timezone
 from io import BytesIO
+from pathlib import Path
 from flask import Blueprint, render_template, request, redirect, url_for, abort, current_app, flash, jsonify, send_file
 from flask_login import login_required, current_user
 from sqlalchemy import func
@@ -43,6 +44,31 @@ def _get_or_404(model, object_id):
     if obj is None:
         abort(404)
     return obj
+
+
+def _can_edit_report(report):
+    return report.owner_id == current_user.id
+
+
+def _can_view_report(report):
+    owner = _get_or_404(User, report.owner_id)
+    return can_view_user(current_user, owner)
+
+
+def _report_photo_root(report_id):
+    root = (Path(current_app.config['UPLOAD_ROOT']) / 'reports' / 'photos' / str(report_id)).resolve()
+    root.mkdir(parents=True, exist_ok=True)
+    return root
+
+
+def _attachment_or_404(report_id, attachment_id):
+    report = _get_or_404(Report, report_id)
+    if not _can_view_report(report):
+        abort(403)
+    attachment = db.session.get(ReportAttachment, attachment_id)
+    if attachment is None or attachment.report_id != report.id:
+        abort(404)
+    return report, attachment
 
 
 def _is_test_report_title(title: str) -> bool:
@@ -701,9 +727,11 @@ def new_report():
 def report_detail(report_id):
     r = _get_or_404(Report, report_id)
     owner = _get_or_404(User, r.owner_id)
-    if not can_view_user(current_user, owner):
+    if not _can_view_report(r):
         abort(403)
     attachments = ReportAttachment.query.filter_by(report_id=r.id).all()
+    photo_attachments = [item for item in attachments if str(item.page_key or '').startswith('report-photo')]
+    pdf_attachments = [item for item in attachments if item not in photo_attachments]
     persons = ReportPerson.query.filter_by(report_id=r.id).all()
     coauthors = ReportCoAuthor.query.filter_by(report_id=r.id).all()
     grades = ReportGrade.query.filter_by(report_id=r.id).order_by(ReportGrade.graded_at.desc()).all()
@@ -714,6 +742,8 @@ def report_detail(report_id):
         report=r,
         report_owner=owner,
         attachments=attachments,
+        pdf_attachments=pdf_attachments,
+        photo_attachments=photo_attachments,
         persons=persons,
         coauthors=coauthors,
         grades=grades,
@@ -727,7 +757,7 @@ def report_detail(report_id):
 @login_required
 def report_upload(report_id):
     r = _get_or_404(Report, report_id)
-    if r.owner_id != current_user.id:
+    if not _can_edit_report(r):
         abort(403)
     file = request.files.get('file')
     page_key = request.form.get('page_key') or 'unknown'
@@ -744,6 +774,77 @@ def report_upload(report_id):
     db.session.add(AuditLog(actor_id=current_user.id, action='report_upload', details=f'{r.id}:{page_key}'))
     db.session.commit()
     return redirect(url_for('reports.report_detail', report_id=r.id))
+
+
+@bp.route('/reports/<int:report_id>/camera')
+@login_required
+def report_camera(report_id):
+    report = _get_or_404(Report, report_id)
+    if not _can_edit_report(report):
+        abort(403)
+    return render_template('report_camera.html', report=report, user=current_user)
+
+
+@bp.route('/reports/<int:report_id>/photo', methods=['POST'])
+@login_required
+def report_photo_upload(report_id):
+    report = _get_or_404(Report, report_id)
+    if not _can_edit_report(report):
+        abort(403)
+    upload = request.files.get('photo')
+    if not upload or not upload.filename:
+        return jsonify({'ok': False, 'error': 'No photo was provided.'}), 400
+    mime_type = (upload.mimetype or '').lower()
+    extension = Path(upload.filename).suffix.lower()
+    if mime_type not in {'image/jpeg', 'image/png', 'image/webp'} and extension not in {'.jpg', '.jpeg', '.png', '.webp'}:
+        return jsonify({'ok': False, 'error': 'Unsupported photo format.'}), 400
+    if extension not in {'.jpg', '.jpeg', '.png', '.webp'}:
+        extension = '.jpg' if mime_type == 'image/jpeg' else '.png'
+    label = secure_filename(request.form.get('label') or 'report-photo')
+    timestamp = _utcnow_naive().strftime('%Y%m%d-%H%M%S')
+    filename = f'report-{report.id}-photo-{timestamp}-{label}{extension}'
+    path = _report_photo_root(report.id) / filename
+    upload.save(path)
+    attachment = ReportAttachment(
+        report_id=report.id,
+        file_path=str(path),
+        page_key=(request.form.get('page_key') or 'report-photo')[:100],
+        uploaded_by=current_user.id,
+    )
+    report.updated_at = _utcnow_naive()
+    db.session.add(attachment)
+    db.session.add(report)
+    db.session.add(AuditLog(actor_id=current_user.id, action='report_photo_upload', details=f'{report.id}:{filename}'))
+    db.session.commit()
+    return jsonify({'ok': True, 'id': attachment.id, 'detailUrl': url_for('reports.report_detail', report_id=report.id)})
+
+
+@bp.route('/reports/<int:report_id>/attachments/<int:attachment_id>/download')
+@login_required
+def report_attachment_download(report_id, attachment_id):
+    _report, attachment = _attachment_or_404(report_id, attachment_id)
+    path = Path(attachment.file_path).resolve()
+    try:
+        path.relative_to(Path(current_app.config['UPLOAD_ROOT']).resolve())
+    except ValueError:
+        abort(403)
+    if not path.exists() or not path.is_file():
+        abort(404)
+    return send_file(path, as_attachment=True, download_name=path.name)
+
+
+@bp.route('/reports/<int:report_id>/attachments/<int:attachment_id>/media')
+@login_required
+def report_attachment_media(report_id, attachment_id):
+    _report, attachment = _attachment_or_404(report_id, attachment_id)
+    path = Path(attachment.file_path).resolve()
+    try:
+        path.relative_to(Path(current_app.config['UPLOAD_ROOT']).resolve())
+    except ValueError:
+        abort(403)
+    if not path.exists() or not path.is_file():
+        abort(404)
+    return send_file(path, as_attachment=False, download_name=path.name)
 
 
 @bp.route('/reports/<int:report_id>/add-person', methods=['POST'])
