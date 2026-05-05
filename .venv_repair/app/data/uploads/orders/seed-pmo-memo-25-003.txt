@@ -1,8 +1,0 @@
-Title: Watch Commander Duty and Notification Matrix
-Category: Command Operations
-Order Number: -
-Memo Number: PMO-MEMO-25-003
-Issuing Authority: PMO Command Staff
-Summary: Clarifies watch commander responsibilities, approval thresholds, and required notifications.
-Aliases: watch commander responsibilities, wc duties, command notification matrix
-Lists reportable incidents, required call-outs, and shift-level authority boundaries.

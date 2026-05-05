@@ -1,7 +1,0 @@
-tunnel: test-tunnel
-credentials-file: C:\Users\rober\.cloudflared\test-tunnel.json
-
-ingress:
-  - hostname: test.example.com
-    service: rdp://127.0.0.1:3389
-  - service: http_status:404

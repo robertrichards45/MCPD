@@ -1,8 +1,0 @@
-Title: Installation Access Control and Gate Search Authority
-Category: Gate Operations
-Order Number: MCLBAO 5530.5
-Memo Number: -
-Issuing Authority: Installation Commander
-Summary: Defines gate checks, vehicle inspection authority, denied-entry actions, and escalation to law enforcement.
-Aliases: gate procedures, entry control, gate search, truck gate policy
-Includes ID verification, random inspections, probable-cause inspections, and refusal-of-inspection procedures.

@@ -1,9 +1,0 @@
-@echo off
-rem Copy this file to tunnels.local.cmd and set real values locally.
-rem Do not commit tunnels.local.cmd.
-rem If you use a named tunnel config instead of tokens, set MCLBPD_TUNNEL_CONFIG
-rem to a local YAML file and leave MCLBPD_TUNNEL_TOKEN blank.
-
-set MCLBPD_TUNNEL_TOKEN=replace-with-rotated-mclbpd-token
-set MCLBPD_TUNNEL_CONFIG=
-set VET_TUNNEL_TOKEN=replace-with-rotated-vet-token

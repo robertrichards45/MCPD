@@ -1,5 +1,0 @@
-@echo off
-rem Copy this file to cleo_client.local.cmd and set the host PC name or IP.
-rem Officers can keep the client launcher on their desktops.
-
-set CLEOC_CLIENT_URL=http://REPLACE-WITH-HOST-PC:8092/cleo/reports

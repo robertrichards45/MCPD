@@ -1,8 +1,0 @@
-Title: Evidence Collection, Packaging, and Chain of Custody
-Category: Evidence
-Order Number: MCLBAO 5580.3
-Memo Number: -
-Issuing Authority: Provost Marshal Office
-Summary: Evidence handling and chain-of-custody requirements from field collection to property room intake.
-Aliases: evidence handling, chain of custody, property room, evidence storage
-Defines packaging standards, labeling rules, transfer logging, and supervisory audits.
