@@ -1,3 +1,5 @@
+import os
+
 from flask import session
 
 from .models import (
@@ -11,6 +13,9 @@ from .models import (
     ROLE_WEBSITE_CONTROLLER,
     ROLE_WATCH_COMMANDER,
 )
+
+SITE_OWNER_USERNAME = os.environ.get('SITE_OWNER_USERNAME', 'robertrichards').strip().lower()
+SITE_OWNER_FULL_NAME = 'Robert L. Richards III'
 
 
 def effective_role(user):
@@ -46,6 +51,27 @@ def is_watch_commander(user):
 
 def can_manage_site(user):
     return is_site_controller(user)
+
+
+def is_site_owner(user):
+    if not user or not getattr(user, 'is_authenticated', False):
+        return False
+    if not SITE_OWNER_USERNAME:
+        return False
+    username = (getattr(user, 'username', '') or '').strip().lower()
+    return username == SITE_OWNER_USERNAME and user.has_role(ROLE_WEBSITE_CONTROLLER)
+
+
+def can_access_builder_mode(user):
+    if not user or not getattr(user, 'is_authenticated', False):
+        return False
+    if is_site_owner(user):
+        return True
+    return bool(getattr(user, 'builder_mode_access', False))
+
+
+def can_manage_builder_mode(user):
+    return is_site_owner(user)
 
 
 def can_grade_cleoc_reports(user):

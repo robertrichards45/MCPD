@@ -221,6 +221,13 @@ def ensure_schema():
         _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN installation VARCHAR(100)')
     if 'preferred_legal_state' not in user_columns:
         _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN preferred_legal_state VARCHAR(2)')
+    if 'builder_mode_access' not in user_columns:
+        if _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN builder_mode_access BOOLEAN'):
+            _safe_schema_execute(f'UPDATE {user_table} SET builder_mode_access = 0 WHERE builder_mode_access IS NULL')
+    if 'builder_mode_granted_by' not in user_columns:
+        _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN builder_mode_granted_by INTEGER')
+    if 'builder_mode_granted_at' not in user_columns:
+        _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN builder_mode_granted_at DATETIME')
     admin_count = db.session.execute(text(f"SELECT COUNT(*) FROM {user_table} WHERE role = 'ADMIN'")).scalar() or 0
     if admin_count:
         _safe_schema_execute(
@@ -722,6 +729,7 @@ def create_app():
 
         from .permissions import (
             can_access_armory,
+            can_access_builder_mode,
             can_access_rfi,
             can_access_truck_gate,
             effective_role,
@@ -763,6 +771,7 @@ def create_app():
             'portal_watch_commander_scope_id': watch_commander_scope_id(current_user),
             'portal_role_keys': sorted(current_user.role_keys),
             'portal_can_access_armory': can_access_armory(current_user),
+            'portal_can_access_builder_mode': can_access_builder_mode(current_user),
             'portal_can_access_truck_gate': can_access_truck_gate(current_user),
             'portal_can_access_rfi': can_access_rfi(current_user),
             'portal_pending_approvals': pending_approvals_count,

@@ -1,3 +1,4 @@
+import json
 import secrets
 import re
 from urllib.parse import urlsplit
@@ -28,6 +29,7 @@ from ..permissions import (
     can_manage_user,
     can_view_user,
     effective_role,
+    can_manage_builder_mode,
     is_site_controller,
     is_watch_commander,
     watch_commander_scope_id,
@@ -347,6 +349,60 @@ def _delete_user_account(target):
     username = target.username
     db.session.delete(target)
     return username, deleted_name
+
+
+def _builder_confirmation_completed():
+    return (
+        request.form.get('builder_confirm_risk') == '1'
+        and request.form.get('builder_confirm_ai') == '1'
+        and (request.form.get('builder_confirm_phrase') or '').strip() == 'GRANT BUILDER'
+    )
+
+
+def _builder_audit_details(target, previous_value, new_value, reason):
+    return json.dumps(
+        {
+            'granted_by': current_user.id,
+            'granted_by_username': current_user.username,
+            'granted_to': target.id,
+            'granted_to_username': target.username,
+            'confirmation_completed': bool(_builder_confirmation_completed()) if new_value else True,
+            'reason': (reason or '').strip(),
+            'previous_role': 'SITE_BUILDER' if previous_value else 'NO_BUILDER_ACCESS',
+            'new_role': 'SITE_BUILDER' if new_value else 'NO_BUILDER_ACCESS',
+            'previous_builder_mode_access': bool(previous_value),
+            'new_builder_mode_access': bool(new_value),
+        },
+        sort_keys=True,
+    )
+
+
+def _apply_builder_mode_change(target):
+    raw_value = request.form.get('builder_mode_access')
+    if raw_value is None:
+        return None
+
+    requested = raw_value == '1'
+    previous = bool(getattr(target, 'builder_mode_access', False))
+    if requested == previous:
+        return None
+
+    if not can_manage_builder_mode(current_user):
+        raise ValueError('Only the Site Owner can grant or revoke Builder Mode.')
+    if target.id == current_user.id and not can_manage_builder_mode(current_user):
+        raise ValueError('Builder Mode cannot be self-assigned.')
+    if requested and not _builder_confirmation_completed():
+        raise ValueError('Builder Mode grant requires both confirmations and typing GRANT BUILDER.')
+
+    reason = request.form.get('builder_reason', '')
+    target.builder_mode_access = requested
+    target.builder_mode_granted_by = current_user.id if requested else None
+    target.builder_mode_granted_at = _utcnow_naive() if requested else None
+    return AuditLog(
+        actor_id=current_user.id,
+        action='builder_mode_grant' if requested else 'builder_mode_revoke',
+        details=_builder_audit_details(target, previous, requested, reason),
+    )
 
 
 def _pending_accounts_query():
@@ -887,6 +943,7 @@ def manage_users():
         'role_labels': ROLE_LABELS,
         'installation_labels': INSTALLATION_LABELS,
         'installations': USMC_INSTALLATIONS,
+        'can_manage_builder_mode': can_manage_builder_mode(current_user),
         'database_write_notice': 'This server is currently running with limited database write capability. Some save actions may be blocked until the primary app process is restarted.' if current_app.config.get('APP_ENV') == 'prod' else '',
         **extra,
     }
@@ -948,6 +1005,9 @@ def manage_users():
                 abort(403)
             try:
                 _apply_personnel_edit(target)
+                builder_audit = _apply_builder_mode_change(target)
+                if builder_audit:
+                    db.session.add(builder_audit)
             except ValueError as exc:
                 return render_template('admin_users.html', **context_kwargs(error=str(exc)))
             if not _commit_or_rollback():
@@ -1080,6 +1140,7 @@ def edit_user(user_id):
         'role_labels': ROLE_LABELS,
         'installation_labels': INSTALLATION_LABELS,
         'installations': USMC_INSTALLATIONS,
+        'can_manage_builder_mode': can_manage_builder_mode(current_user),
     }
     if request.method == 'POST':
         if request.form.get('action') == 'delete':
@@ -1093,6 +1154,9 @@ def edit_user(user_id):
             return redirect(url_for('auth.manage_users'))
         try:
             _apply_personnel_edit(target)
+            builder_audit = _apply_builder_mode_change(target)
+            if builder_audit:
+                db.session.add(builder_audit)
         except ValueError as exc:
             return render_template('admin_user_edit.html', **context, error=str(exc))
         if not _commit_or_rollback():
