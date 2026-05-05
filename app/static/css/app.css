@@ -650,6 +650,37 @@ body.mobile-foundation {
   backdrop-filter: blur(14px);
 }
 
+.mobile-header-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.mobile-header-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  min-width: 74px;
+  padding: 0 12px;
+  border: 1px solid rgba(245, 242, 234, 0.2);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #f8fafc;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.mobile-header-nav-btn:focus-visible,
+.mobile-header-nav-btn:hover {
+  background: rgba(201, 168, 106, 0.2);
+  border-color: rgba(201, 168, 106, 0.5);
+  color: #ffffff;
+}
+
 .mobile-header-topline,
 .mobile-header-main {
   display: flex;

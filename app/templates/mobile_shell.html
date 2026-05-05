@@ -2,6 +2,10 @@
 {% block body %}
 <div class="mobile-shell">
   <header class="mobile-header">
+    <nav class="mobile-header-nav" aria-label="Mobile page navigation">
+      <a class="mobile-header-nav-btn" href="{{ url_for('mobile.home') }}">Home</a>
+      <a class="mobile-header-nav-btn" href="{{ url_for('mobile.more') }}">Menu</a>
+    </nav>
     <div class="mobile-header-topline">
       <span class="mobile-header-kicker">{{ mobile_header_kicker or 'MCPD Mobile' }}</span>
       <span class="mobile-role-pill">{{ portal_effective_role_label }}</span>
@@ -55,4 +59,3 @@
   </script>
   {% endif %}
 {% endblock %}
-

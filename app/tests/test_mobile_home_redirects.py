@@ -102,3 +102,24 @@ def test_mobile_stats_and_contact_pages_work_without_desktop_shell():
     assert 'Save Contact Info' in contact_html
     assert 'name="phone_number"' in contact_html
     assert 'name="email"' in contact_html
+
+
+def test_mobile_shell_pages_always_have_home_and_menu_escape_links():
+    client = _logged_in_client()
+    response = client.get('/mobile/incident/start')
+    assert response.status_code == 200
+    html = response.get_data(as_text=True)
+    assert 'class="mobile-header-nav"' in html
+    assert 'href="/mobile/home"' in html
+    assert 'href="/mobile/more"' in html
+    assert '>Home<' in html
+    assert '>Menu<' in html
+
+
+def test_mobile_bottom_more_tab_opens_mobile_menu_not_desktop_dashboard():
+    client = _logged_in_client()
+    response = client.get('/mobile/incident/start')
+    assert response.status_code == 200
+    html = response.get_data(as_text=True)
+    assert '<span class="mobile-tab-label">More</span>' in html
+    assert 'href="/mobile/more"' in html
