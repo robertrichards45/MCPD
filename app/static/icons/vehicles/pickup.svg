@@ -1,7 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 66" role="img" aria-label="Top-down pickup">
-  <path d="M14 15C23 7 37 5 58 5h47c7 0 13 6 13 13v30c0 7-6 13-13 13H24c-8 0-14-6-14-14 0-14 2-25 4-32Z" fill="#eef3f8" stroke="#0f3155" stroke-width="3"/>
-  <path d="M36 13c5-3 13-5 22-5s17 2 22 5l-5 17H41l-5-17Z" fill="#4a6379" opacity=".56" stroke="#0f3155" stroke-width="2"/>
-  <rect x="82" y="16" width="29" height="34" rx="3" fill="#d7e1ec" stroke="#0f3155" stroke-width="2"/>
-  <path d="M88 23h17M88 33h17M88 43h17" stroke="#8a9bad" stroke-width="2"/>
-  <path d="M17 23h12M102 23h12M17 51h12M102 51h12" stroke="#0f3155" stroke-width="5" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 202 86" role="img" aria-label="Professional top-down pickup truck">
+  <defs>
+    <linearGradient id="pickupBody" x1="0" x2="1"><stop offset="0" stop-color="#d6e0eb"/><stop offset=".48" stop-color="#f8fafc"/><stop offset="1" stop-color="#c3cfdb"/></linearGradient>
+    <linearGradient id="pickupGlass" x1="0" x2="1"><stop offset="0" stop-color="#536e84"/><stop offset="1" stop-color="#26394c"/></linearGradient>
+  </defs>
+  <path d="M20 20C34 9 56 5 91 5h73c10 0 18 8 18 18v40c0 10-8 18-18 18H30c-11 0-19-8-19-19 0-20 3-35 9-42Z" fill="url(#pickupBody)" stroke="#0a2744" stroke-width="3.8"/>
+  <path d="M49 18c11-6 25-9 42-9s31 3 42 9l-10 24H59L49 18Z" fill="url(#pickupGlass)" opacity=".72" stroke="#0a2744" stroke-width="2.6"/>
+  <rect x="130" y="17" width="39" height="52" rx="4" fill="#dbe4ed" stroke="#0a2744" stroke-width="2.8"/>
+  <path d="M137 27h25M137 39h25M137 51h25M137 63h25" stroke="#8fa0b1" stroke-width="2"/>
+  <path d="M33 30h95M33 58h95" stroke="#94a5b5" stroke-width="1.8" opacity=".65"/>
+  <path d="M28 24h20M154 24h20M28 68h20M154 68h20" stroke="#0a2744" stroke-width="9" stroke-linecap="round"/>
+  <path d="M18 43h17M171 43h17" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+  <path d="M77 11v64M118 11v64" stroke="#0a2744" stroke-width="1.5" opacity=".24"/>
 </svg>

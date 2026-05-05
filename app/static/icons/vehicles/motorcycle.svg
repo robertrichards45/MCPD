@@ -1,7 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 52" role="img" aria-label="Top-down motorcycle">
-  <ellipse cx="20" cy="26" rx="10" ry="15" fill="none" stroke="#0f3155" stroke-width="4"/>
-  <ellipse cx="80" cy="26" rx="10" ry="15" fill="none" stroke="#0f3155" stroke-width="4"/>
-  <path d="M28 26h16l10-12 16 12M44 26l11 13 17-13" fill="none" stroke="#0f3155" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M48 20h15v12H48z" fill="#dbe7f3" stroke="#0f3155" stroke-width="3"/>
-  <circle cx="56" cy="26" r="6" fill="#50677d"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 64" role="img" aria-label="Professional top-down motorcycle">
+  <ellipse cx="24" cy="32" rx="12" ry="19" fill="none" stroke="#0a2744" stroke-width="5"/>
+  <ellipse cx="104" cy="32" rx="12" ry="19" fill="none" stroke="#0a2744" stroke-width="5"/>
+  <path d="M36 32h19l13-15 22 15M55 32l14 17 22-17" fill="none" stroke="#0a2744" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M58 22h23c5 0 9 4 9 9v2c0 5-4 9-9 9H58V22Z" fill="#d9e4ef" stroke="#0a2744" stroke-width="3"/>
+  <circle cx="69" cy="32" r="8" fill="#435b72" stroke="#0a2744" stroke-width="2"/>
+  <path d="M43 24l10 8-10 8M91 24l-10 8 10 8" fill="none" stroke="#5d7184" stroke-width="3" stroke-linecap="round"/>
 </svg>

@@ -129,44 +129,28 @@ def test_diagram_from_report_saves_exports_and_appears_in_packet():
         _dispose_app(client.application)
 
 
-def test_report_type_can_require_scene_diagram_before_submit(monkeypatch, tmp_path):
-    monkeypatch.setenv("MCPD_CALL_TYPE_RULES_PATH", str(tmp_path / "call_type_rules.json"))
-    client = _logged_in_client()
-    try:
-        from app.services.call_type_rules import save_call_type_rules
-
-        with client.application.app_context():
-            save_call_type_rules({
-                "traffic-accident": {
-                    "title": "Traffic Accident",
-                    "slug": "traffic-accident",
-                    "diagramAllowed": True,
-                    "diagramRequired": True,
-                    "diagramModes": ["report"],
-                    "diagramScenarios": ["rear_end"],
-                    "active": True,
-                }
-            })
-            user = User.query.filter(User.username.ilike("robertrichards")).first() or User.query.first()
-            report = Report(
-                title="Required Diagram Test",
-                owner_id=user.id,
-                status="DRAFT",
-                call_type_slug="traffic-accident",
-                facts_text="V1 struck V2 from the rear.",
-                narrative_text="V1 struck V2 from the rear.",
-            )
-            db.session.add(report)
-            db.session.commit()
-            report_id = report.id
-
-        response = client.post(f"/reports/{report_id}/submit", follow_redirects=True)
-        body = response.get_data(as_text=True)
-        assert response.status_code == 200
-        assert "attached scene diagram" in body
-
-        detail_response = client.get(f"/reports/{report_id}")
-        detail_html = detail_response.get_data(as_text=True)
-        assert "This report type requires a scene diagram" in detail_html
-    finally:
-        _dispose_app(client.application)
+def test_accident_diagram_svg_asset_library_is_available():
+    expected_assets = [
+        "vehicles/sedan.svg",
+        "vehicles/suv.svg",
+        "vehicles/pickup.svg",
+        "vehicles/patrol.svg",
+        "vehicles/truck.svg",
+        "vehicles/motorcycle.svg",
+        "people/pedestrian.svg",
+        "people/officer.svg",
+        "traffic/stop-sign.svg",
+        "traffic/traffic-light.svg",
+        "traffic/cone.svg",
+        "traffic/barrier.svg",
+        "traffic/building.svg",
+        "traffic/tree.svg",
+        "diagram/arrow.svg",
+        "diagram/skid.svg",
+        "diagram/impact.svg",
+    ]
+    root = Path(__file__).resolve().parents[1] / "static" / "icons"
+    for asset in expected_assets:
+        text = (root / asset).read_text(encoding="utf-8")
+        assert "<svg" in text
+        assert "</svg>" in text

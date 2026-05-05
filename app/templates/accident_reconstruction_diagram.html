@@ -7,17 +7,23 @@
     <main class="recon-workspace">
       <section class="recon-page-head">
         <div>
-          <div class="recon-breadcrumb">Reports / Accident Reconstruction / Diagram</div>
-          <h1>Accident Reconstruction #{{ reconstruction.incident_number or reconstruction.id }}</h1>
+          <div class="recon-breadcrumb">Reports / Accidents / {{ 'Officer Diagram' if is_officer_diagram else 'Reconstruction' }}</div>
+          <h1>{{ page_title or 'Accident Reconstruction Diagram' }}</h1>
+          <p class="text-muted mb-0">#{{ reconstruction.incident_number or reconstruction.id }}</p>
         </div>
         <div class="recon-action-row">
           <button class="btn btn-outline-secondary" type="button" data-recon-save>Save</button>
           <button class="btn btn-outline-secondary" type="button" data-recon-export-png>Export PNG</button>
+          {% if is_officer_diagram %}
+          <a class="btn btn-outline-secondary" href="{{ url_for('reports.accidents') }}">Back to Accident Tools</a>
+          {% else %}
           <a class="btn btn-outline-secondary" href="{{ url_for('reports.accident_reconstruction_export', reconstruction_id=reconstruction.id) }}">Export</a>
           <a class="btn btn-primary" href="{{ url_for('reports.accident_reconstruction_export', reconstruction_id=reconstruction.id) }}">Generate Report</a>
+          {% endif %}
         </div>
       </section>
 
+      {% if not is_officer_diagram %}
       <nav class="recon-tabs">
         <a class="is-active" href="{{ url_for('reports.accident_reconstruction_diagram', reconstruction_id=reconstruction.id) }}">Scene Diagram</a>
         <a href="{{ url_for('reports.accident_reconstruction_detail', reconstruction_id=reconstruction.id) }}#measurements">Measurements</a>
@@ -25,11 +31,12 @@
         <a href="{{ url_for('reports.accident_reconstruction_detail', reconstruction_id=reconstruction.id) }}#view3d">3D View</a>
         <a href="{{ url_for('reports.accident_reconstruction_export', reconstruction_id=reconstruction.id) }}">Reports</a>
       </nav>
+      {% endif %}
 
       <section
         class="recon-builder"
         data-accident-recon
-        data-save-url="{{ url_for('reports.accident_reconstruction_diagram', reconstruction_id=reconstruction.id) }}"
+        data-save-url="{{ save_url or url_for('reports.accident_reconstruction_diagram', reconstruction_id=reconstruction.id) }}"
         data-vehicles='{{ vehicles|map(attribute="id")|list|tojson }}'
       >
         <aside class="recon-tools-panel">
@@ -72,8 +79,13 @@
             <dt>Delta-V</dt><dd>Estimate only</dd>
             <dt>Collision Angle</dt><dd>Verify</dd>
           </div>
+          {% if is_officer_diagram %}
+          <h3>Officer Workflow</h3>
+          <p>Simple responding-officer crash sketch: place vehicles, people, signs, arrows, impact point, and notes for a quick report-ready diagram.</p>
+          {% else %}
           <h3>Scene Summary</h3>
           <p>{{ reconstruction.notes or 'Add reconstruction notes on the report tab.' }}</p>
+          {% endif %}
         </aside>
 
         <script type="application/json" data-recon-state>

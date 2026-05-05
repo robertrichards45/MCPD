@@ -24,7 +24,7 @@
             <li>Export PNG attached to the case record</li>
           </ul>
           <div class="mt-auto d-flex gap-2 flex-wrap">
-            <a class="btn btn-primary" href="{{ url_for('reconstruction.case_list') }}">Open Diagram Tool</a>
+            <a class="btn btn-primary" href="{{ url_for('reports.officer_accident_diagram_new') }}">Open Diagram Tool</a>
           </div>
         </div>
       </div>
@@ -44,7 +44,11 @@
             <li>Downloadable reconstruction packet PDF</li>
           </ul>
           <div class="mt-auto d-flex gap-2 flex-wrap">
-            <a class="btn btn-primary" href="{{ url_for('reconstruction.case_list') }}">Open Reconstruction Tool</a>
+            {% if can_open_reconstruction %}
+            <a class="btn btn-primary" href="{{ url_for('reports.investigator_reconstruction_new') }}">Open Reconstruction Tool</a>
+            {% else %}
+            <span class="btn btn-outline-secondary disabled" aria-disabled="true">Investigator Access Required</span>
+            {% endif %}
           </div>
         </div>
       </div>
@@ -55,13 +59,14 @@
       {% if recent_cases %}
         <div class="list-group">
           {% for c in recent_cases %}
-            <a class="list-group-item list-group-item-action" href="{{ url_for('reconstruction.case_detail', case_id=c.id) }}">
+            <a class="list-group-item list-group-item-action" href="{{ c.url }}">
               <div class="d-flex justify-content-between align-items-center">
                 <strong>#{{ c.id }} {{ c.title }}</strong>
                 <span class="small text-muted">{{ c.updated_at.strftime('%Y-%m-%d') if c.updated_at else '' }}</span>
               </div>
               <div class="small text-muted">
-                {{ c.incident_date or '' }}{% if c.location %} &bull; {{ c.location }}{% endif %}
+                <span class="badge bg-light text-dark border me-2">{{ c.type_label }}</span>
+                {% if c.location %}{{ c.location }}{% else %}Location pending{% endif %}
               </div>
             </a>
           {% endfor %}

@@ -91,6 +91,40 @@ def _get_reconstruction_or_404(reconstruction_id):
     return row
 
 
+def _is_officer_diagram(row):
+    return (getattr(row, 'status', '') or '').upper() == 'OFFICER_DIAGRAM'
+
+
+def _require_advanced_reconstruction_access():
+    if not (can_manage_site(current_user) or can_manage_team(current_user)):
+        abort(403)
+
+
+def _save_reconstruction_diagram_payload(row, payload):
+    row.diagram_data_json = json.dumps(payload)
+    row.updated_at = _utcnow_naive()
+
+    for item in payload.get('vehicles', []):
+        vehicle_id = item.get('id')
+        vehicle = db.session.get(ReconstructionVehicle, vehicle_id) if vehicle_id else None
+        if vehicle and vehicle.reconstruction_id == row.id:
+            vehicle.x_position = _float_or_none(item.get('x')) or vehicle.x_position
+            vehicle.y_position = _float_or_none(item.get('y')) or vehicle.y_position
+            vehicle.rotation = _float_or_none(item.get('rotation')) or 0
+            vehicle.label = str(item.get('label') or vehicle.label or '').strip() or vehicle.label
+
+    for item in payload.get('objects', []):
+        object_id = item.get('id')
+        obj = db.session.get(ReconstructionObject, object_id) if object_id else None
+        if obj and obj.reconstruction_id == row.id:
+            obj.x_position = _float_or_none(item.get('x')) or obj.x_position
+            obj.y_position = _float_or_none(item.get('y')) or obj.y_position
+            obj.rotation = _float_or_none(item.get('rotation')) or 0
+            obj.label = str(item.get('label') or obj.label or '').strip() or obj.label
+
+    db.session.add(row)
+
+
 def _parse_datetime_local(value):
     raw = str(value or '').strip()
     if not raw:
@@ -248,6 +282,143 @@ def list_reports():
     )
 
 
+@bp.route('/reports/accidents')
+@login_required
+def accidents():
+    visible_ids = _visible_user_ids()
+    officer_rows = (
+        AccidentReconstruction.query
+        .filter(AccidentReconstruction.officer_id.in_(visible_ids))
+        .filter(AccidentReconstruction.status == 'OFFICER_DIAGRAM')
+        .order_by(AccidentReconstruction.updated_at.desc())
+        .limit(8)
+        .all()
+    )
+    advanced_query = AccidentReconstruction.query.filter(AccidentReconstruction.status != 'OFFICER_DIAGRAM')
+    if not (can_manage_site(current_user) or can_manage_team(current_user)):
+        advanced_query = advanced_query.filter(AccidentReconstruction.officer_id == current_user.id)
+    else:
+        advanced_query = advanced_query.filter(AccidentReconstruction.officer_id.in_(visible_ids))
+    advanced_rows = advanced_query.order_by(AccidentReconstruction.updated_at.desc()).limit(8).all()
+
+    recent_cases = []
+    for row in officer_rows:
+        recent_cases.append({
+            'id': row.id,
+            'title': row.title,
+            'location': row.location,
+            'updated_at': row.updated_at,
+            'type_label': 'Officer Diagram',
+            'url': url_for('reports.officer_accident_diagram', diagram_id=row.id),
+        })
+    for row in advanced_rows:
+        recent_cases.append({
+            'id': row.id,
+            'title': row.title,
+            'location': row.location,
+            'updated_at': row.updated_at,
+            'type_label': 'Investigator Reconstruction',
+            'url': url_for('reports.investigator_reconstruction', reconstruction_id=row.id),
+        })
+    recent_cases.sort(key=lambda item: item.get('updated_at') or datetime.min, reverse=True)
+    return render_template(
+        'accidents.html',
+        user=current_user,
+        recent_cases=recent_cases[:8],
+        can_open_reconstruction=can_manage_site(current_user) or can_manage_team(current_user),
+    )
+
+
+@bp.route('/reports/accidents/officer-diagram/new')
+@login_required
+def officer_accident_diagram_new():
+    row = AccidentReconstruction(
+        incident_number=None,
+        title='Officer Accident Diagram',
+        officer_id=current_user.id,
+        status='OFFICER_DIAGRAM',
+    )
+    db.session.add(row)
+    db.session.add(AuditLog(actor_id=current_user.id, action='officer_accident_diagram_create', details='Officer Accident Diagram'))
+    db.session.commit()
+    return redirect(url_for('reports.officer_accident_diagram', diagram_id=row.id))
+
+
+@bp.route('/reports/accidents/officer-diagram/<int:diagram_id>', methods=['GET', 'POST'])
+@login_required
+def officer_accident_diagram(diagram_id):
+    row = _get_reconstruction_or_404(diagram_id)
+    if not _is_officer_diagram(row):
+        abort(404)
+    if request.method == 'POST':
+        if not _can_edit_reconstruction(row):
+            abort(403)
+        _save_reconstruction_diagram_payload(row, request.get_json(silent=True) or {})
+        db.session.add(AuditLog(actor_id=current_user.id, action='officer_accident_diagram_save', details=str(row.id)))
+        db.session.commit()
+        return jsonify({'ok': True})
+    return render_template(
+        'accident_reconstruction_diagram.html',
+        reconstruction=row,
+        page_title='Officer Accident Diagram',
+        save_url=url_for('reports.officer_accident_diagram', diagram_id=row.id),
+        is_officer_diagram=True,
+        can_edit=_can_edit_reconstruction(row),
+        **_reconstruction_payload(row),
+        user=current_user,
+    )
+
+
+@bp.route('/reports/accidents/reconstruction/new')
+@login_required
+def investigator_reconstruction_new():
+    _require_advanced_reconstruction_access()
+    row = AccidentReconstruction(
+        incident_number=None,
+        title='Accident Investigator Reconstruction',
+        officer_id=current_user.id,
+        status='DRAFT',
+    )
+    db.session.add(row)
+    db.session.add(AuditLog(actor_id=current_user.id, action='investigator_reconstruction_create', details='Accident Investigator Reconstruction'))
+    db.session.commit()
+    return redirect(url_for('reports.investigator_reconstruction', reconstruction_id=row.id))
+
+
+@bp.route('/reports/accidents/reconstruction/<int:reconstruction_id>', methods=['GET', 'POST'])
+@login_required
+def investigator_reconstruction(reconstruction_id):
+    _require_advanced_reconstruction_access()
+    row = _get_reconstruction_or_404(reconstruction_id)
+    if _is_officer_diagram(row):
+        abort(404)
+    if request.method == 'POST':
+        if not _can_edit_reconstruction(row):
+            abort(403)
+        row.incident_number = (request.form.get('incident_number') or '').strip() or None
+        row.title = (request.form.get('title') or '').strip() or row.title
+        row.location = (request.form.get('location') or '').strip() or None
+        row.date_time = _parse_datetime_local(request.form.get('date_time'))
+        row.weather = (request.form.get('weather') or '').strip() or None
+        row.road_surface = (request.form.get('road_surface') or '').strip() or None
+        row.notes = (request.form.get('notes') or '').strip() or None
+        row.updated_at = _utcnow_naive()
+        db.session.add(row)
+        db.session.add(AuditLog(actor_id=current_user.id, action='investigator_reconstruction_update', details=str(row.id)))
+        db.session.commit()
+        flash('Accident investigator reconstruction saved.', 'success')
+        return redirect(url_for('reports.investigator_reconstruction', reconstruction_id=row.id))
+    return render_template(
+        'accident_reconstruction_detail.html',
+        reconstruction=row,
+        page_title='Accident Investigator Reconstruction',
+        is_investigator_reconstruction=True,
+        can_edit=_can_edit_reconstruction(row),
+        **_reconstruction_payload(row),
+        user=current_user,
+    )
+
+
 @bp.route('/reports/accident-reconstruction')
 @login_required
 def accident_reconstruction_list():
@@ -348,34 +519,16 @@ def accident_reconstruction_diagram(reconstruction_id):
         if not _can_edit_reconstruction(row):
             abort(403)
         payload = request.get_json(silent=True) or {}
-        row.diagram_data_json = json.dumps(payload)
-        row.updated_at = _utcnow_naive()
-
-        for item in payload.get('vehicles', []):
-            vehicle_id = item.get('id')
-            vehicle = db.session.get(ReconstructionVehicle, vehicle_id) if vehicle_id else None
-            if vehicle and vehicle.reconstruction_id == row.id:
-                vehicle.x_position = _float_or_none(item.get('x')) or vehicle.x_position
-                vehicle.y_position = _float_or_none(item.get('y')) or vehicle.y_position
-                vehicle.rotation = _float_or_none(item.get('rotation')) or 0
-                vehicle.label = str(item.get('label') or vehicle.label or '').strip() or vehicle.label
-
-        for item in payload.get('objects', []):
-            object_id = item.get('id')
-            obj = db.session.get(ReconstructionObject, object_id) if object_id else None
-            if obj and obj.reconstruction_id == row.id:
-                obj.x_position = _float_or_none(item.get('x')) or obj.x_position
-                obj.y_position = _float_or_none(item.get('y')) or obj.y_position
-                obj.rotation = _float_or_none(item.get('rotation')) or 0
-                obj.label = str(item.get('label') or obj.label or '').strip() or obj.label
-
-        db.session.add(row)
+        _save_reconstruction_diagram_payload(row, payload)
         db.session.add(AuditLog(actor_id=current_user.id, action='accident_reconstruction_diagram_save', details=str(row.id)))
         db.session.commit()
         return jsonify({'ok': True})
     return render_template(
         'accident_reconstruction_diagram.html',
         reconstruction=row,
+        page_title='Accident Reconstruction Diagram',
+        save_url=url_for('reports.accident_reconstruction_diagram', reconstruction_id=row.id),
+        is_officer_diagram=False,
         can_edit=_can_edit_reconstruction(row),
         **_reconstruction_payload(row),
         user=current_user,

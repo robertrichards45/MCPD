@@ -35,7 +35,7 @@
     <details class="mcpd-sidebar-admin" {% if reports_active %}open{% endif %}>
       <summary>Reports</summary>
       <a href="{{ url_for('reports.list_reports') }}">All Reports</a>
-      <a href="{{ url_for('reconstruction.accidents') }}">Accident Tools</a>
+      <a href="{{ url_for('reports.accidents') }}">Accident Tools</a>
       <a href="{{ url_for('reconstruction.case_list') }}">Reconstruction Cases</a>
     </details>
     <a class="{% if forms_active %}is-active{% endif %}" href="{{ url_for('forms.list_forms') }}">Forms</a>

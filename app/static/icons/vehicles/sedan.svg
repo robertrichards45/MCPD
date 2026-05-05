@@ -1,8 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 60" role="img" aria-label="Top-down sedan">
-  <defs><linearGradient id="body" x1="0" x2="1"><stop offset="0" stop-color="#dbe7f3"/><stop offset="1" stop-color="#f8fafc"/></linearGradient></defs>
-  <path d="M18 17C25 8 39 5 60 5s35 3 42 12c5 7 8 18 8 26 0 7-5 12-12 12H22c-7 0-12-5-12-12 0-8 3-19 8-26Z" fill="url(#body)" stroke="#0f3155" stroke-width="3"/>
-  <path d="M36 15c6-5 15-7 24-7s18 2 24 7l-8 12H44L36 15Z" fill="#56748f" opacity=".55" stroke="#0f3155" stroke-width="2"/>
-  <path d="M43 34h34l8 13H35l8-13Z" fill="#4c6378" opacity=".45" stroke="#0f3155" stroke-width="2"/>
-  <path d="M17 23h11M92 23h11M18 45h10M92 45h10" stroke="#0f3155" stroke-width="4" stroke-linecap="round"/>
-  <path d="M12 31h10M98 31h10" stroke="#f8fafc" stroke-width="3" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 78" role="img" aria-label="Professional top-down sedan">
+  <defs>
+    <linearGradient id="sedanBody" x1="0" x2="1"><stop offset="0" stop-color="#d9e2ec"/><stop offset=".52" stop-color="#f8fafc"/><stop offset="1" stop-color="#cbd8e4"/></linearGradient>
+    <linearGradient id="sedanGlass" x1="0" x2="1"><stop offset="0" stop-color="#50677d"/><stop offset="1" stop-color="#26394c"/></linearGradient>
+  </defs>
+  <path d="M21 23C31 10 52 5 90 5s59 5 69 18c6 8 9 22 9 32 0 10-7 17-17 17H29c-10 0-17-7-17-17 0-10 3-24 9-32Z" fill="url(#sedanBody)" stroke="#0a2744" stroke-width="3.5"/>
+  <path d="M48 17c11-6 24-9 42-9s31 3 42 9l-12 19H60L48 17Z" fill="url(#sedanGlass)" opacity=".72" stroke="#0a2744" stroke-width="2.5"/>
+  <path d="M58 42h64l13 20H45l13-20Z" fill="url(#sedanGlass)" opacity=".56" stroke="#0a2744" stroke-width="2.5"/>
+  <path d="M36 29h108M37 51h106" stroke="#9fb0c0" stroke-width="1.8" opacity=".75"/>
+  <path d="M31 21h17M132 21h17M29 60h19M132 60h19" stroke="#0a2744" stroke-width="8" stroke-linecap="round"/>
+  <path d="M16 35h15M149 35h15" stroke="#f8fafc" stroke-width="4" stroke-linecap="round"/>
+  <path d="M72 11v56M108 11v56" stroke="#0a2744" stroke-width="1.4" opacity=".28"/>
+  <path d="M24 25c7-8 27-13 66-13s59 5 66 13" fill="none" stroke="#ffffff" stroke-width="2" opacity=".65"/>
 </svg>

@@ -1,9 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 124 62" role="img" aria-label="Top-down patrol car">
-  <path d="M18 17C26 8 40 5 62 5s36 3 44 12c5 7 8 18 8 26 0 8-6 13-14 13H24c-8 0-14-5-14-13 0-8 3-19 8-26Z" fill="#f8fafc" stroke="#092846" stroke-width="3"/>
-  <path d="M14 31h96" stroke="#0d5db8" stroke-width="8" opacity=".9"/>
-  <path d="M37 15c7-5 16-7 25-7s18 2 25 7l-8 12H45L37 15Z" fill="#3e5870" opacity=".55" stroke="#092846" stroke-width="2"/>
-  <path d="M42 37h40l8 13H34l8-13Z" fill="#3e5870" opacity=".42" stroke="#092846" stroke-width="2"/>
-  <rect x="55" y="27" width="14" height="6" rx="2" fill="#d92332"/><rect x="69" y="27" width="14" height="6" rx="2" fill="#1f6fd1"/>
-  <text x="62" y="47" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="700" fill="#092846">POLICE</text>
-  <path d="M18 23h11M95 23h11M18 45h11M95 45h11" stroke="#092846" stroke-width="4" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 184 82" role="img" aria-label="Professional top-down patrol car">
+  <defs>
+    <linearGradient id="patrolBody" x1="0" x2="1"><stop offset="0" stop-color="#e8eef5"/><stop offset=".5" stop-color="#ffffff"/><stop offset="1" stop-color="#d5e0ea"/></linearGradient>
+    <linearGradient id="patrolGlass" x1="0" x2="1"><stop offset="0" stop-color="#4e667b"/><stop offset="1" stop-color="#24384b"/></linearGradient>
+  </defs>
+  <path d="M21 24C32 11 54 6 92 6s60 5 71 18c6 8 9 22 9 33 0 11-8 18-19 18H31c-11 0-19-7-19-18 0-11 3-25 9-33Z" fill="url(#patrolBody)" stroke="#071b33" stroke-width="3.8"/>
+  <path d="M21 40h142" stroke="#0d5db8" stroke-width="11" opacity=".95"/>
+  <path d="M49 18c11-6 26-9 43-9s32 3 43 9l-12 20H61L49 18Z" fill="url(#patrolGlass)" opacity=".72" stroke="#071b33" stroke-width="2.6"/>
+  <path d="M58 48h68l14 20H44l14-20Z" fill="url(#patrolGlass)" opacity=".55" stroke="#071b33" stroke-width="2.6"/>
+  <rect x="76" y="35" width="16" height="8" rx="2" fill="#c9252d" stroke="#071b33" stroke-width="1"/>
+  <rect x="92" y="35" width="16" height="8" rx="2" fill="#1f6fd1" stroke="#071b33" stroke-width="1"/>
+  <text x="92" y="60" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="800" fill="#071b33">POLICE</text>
+  <path d="M30 28h18M136 28h18M29 64h19M136 64h19" stroke="#071b33" stroke-width="8" stroke-linecap="round"/>
+  <path d="M18 42h16M150 42h16" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
 </svg>

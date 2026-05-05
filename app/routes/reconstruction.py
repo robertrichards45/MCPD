@@ -38,9 +38,7 @@ def _get_case_or_404(case_id):
 @bp.route("/accidents")
 @login_required
 def accidents():
-    from ..models import ReconstructionCase
-    recent = ReconstructionCase.query.order_by(ReconstructionCase.updated_at.desc()).limit(8).all()
-    return render_template("accidents.html", user=current_user, recent_cases=recent)
+    return redirect(url_for("reports.accidents"))
 
 
 @bp.route("/reconstruction", methods=["GET", "POST"])

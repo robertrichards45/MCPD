@@ -7,8 +7,9 @@
     <main class="recon-workspace">
       <section class="recon-page-head">
         <div>
-          <div class="recon-breadcrumb">Reports / Accident Reconstruction / {{ reconstruction.incident_number or reconstruction.id }}</div>
-          <h1>Accident Reconstruction #{{ reconstruction.incident_number or reconstruction.id }}</h1>
+          <div class="recon-breadcrumb">Reports / Accidents / Reconstruction / {{ reconstruction.incident_number or reconstruction.id }}</div>
+          <h1>{{ page_title or 'Accident Reconstruction' }}</h1>
+          <p class="text-muted mb-1">#{{ reconstruction.incident_number or reconstruction.id }}</p>
           <p>{{ reconstruction.location or 'Location pending' }} / {{ reconstruction.status }}</p>
         </div>
         <div class="recon-action-row">

@@ -48,12 +48,12 @@
   };
 
   var SIZES = {
-    sedan: [92, 46],
-    suv: [98, 52],
-    pickup: [106, 52],
-    patrol: [96, 48],
-    truck: [132, 64],
-    motorcycle: [76, 40],
+    sedan: [112, 49],
+    suv: [118, 54],
+    pickup: [128, 55],
+    patrol: [116, 52],
+    truck: [150, 62],
+    motorcycle: [86, 43],
     pedestrian: [38, 38],
     officer: [40, 42],
     'stop-sign': [52, 60],
