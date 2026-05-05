@@ -624,7 +624,7 @@ def _sync_forms_from_storage():
             continue
 
         detected = heuristic_metadata(_recovered_source_name(entry.name))
-        uploaded_at = datetime.utcfromtimestamp(entry.stat().st_mtime)
+        uploaded_at = datetime.fromtimestamp(entry.stat().st_mtime, timezone.utc).replace(tzinfo=None)
         form = Form(
             title=detected['title'],
             category=detected['category'],

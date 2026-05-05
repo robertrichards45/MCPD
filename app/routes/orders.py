@@ -466,7 +466,7 @@ def _seed_orders_library():
                 parser_confidence=0.95,
                 file_path=file_path,
                 uploaded_by=current_user.id if getattr(current_user, 'is_authenticated', False) else None,
-                last_indexed_at=datetime.utcnow(),
+                last_indexed_at=datetime.now(timezone.utc).replace(tzinfo=None),
                 is_active=True,
             )
         )
