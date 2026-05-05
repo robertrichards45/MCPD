@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Watch Commander Admin</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/wc_admin.css') }}">
+</head>
+<body class="wc-admin-shell">
+  <aside class="wc-sidebar">
+    <div class="wc-brand">MCPD Admin</div>
+    <a href="#officer-files">Officer Files</a>
+    <a href="#counseling">Counseling</a>
+    <a href="#awards">Awards</a>
+    <a href="#learning">Approval Queue</a>
+    <a href="#uploads">Smart Upload</a>
+  </aside>
+  <main class="wc-main">
+    <section class="wc-topbar">
+      <div>
+        <div class="wc-eyebrow">Watch Commander / Supervisor Workspace</div>
+        <h1>Administrative Control Panel</h1>
+      </div>
+      <button class="wc-muted-btn" onclick="window.print()">Print Page</button>
+    </section>
+
+    <section id="officer-files" class="wc-panel">
+      <div class="wc-panel-head">
+        <div><h2>Officer File Viewer</h2><p>Search, upload, download, and print officer file documents.</p></div>
+      </div>
+      <div class="wc-grid two">
+        <div>
+          <label>Officer ID / Name</label>
+          <input id="officerSearch" placeholder="Enter officer ID or name">
+        </div>
+        <div>
+          <label>Area</label>
+          <select id="fileArea">
+            <option value="officer_files">Officer Files</option>
+            <option value="watch_forms">Watch Commander Forms</option>
+            <option value="orders">Marine Corps Orders</option>
+            <option value="pdi">Police Department Instructions</option>
+            <option value="training">Training</option>
+            <option value="medical">Medical</option>
+            <option value="accident_investigation">Accident Investigation</option>
+            <option value="srt">SRT</option>
+            <option value="k9">K9</option>
+          </select>
+        </div>
+      </div>
+      <div class="wc-actions">
+        <button onclick="loadFiles()">Search Files</button>
+        <button class="wc-secondary" onclick="clearFileSearch()">Clear</button>
+      </div>
+      <div id="fileResults" class="wc-results"></div>
+    </section>
+
+    <section id="uploads" class="wc-panel">
+      <h2>Smart Upload</h2>
+      <p>Upload one file or bulk files. The system classifies forms, awards, counseling, medical, training, orders, and PDIs.</p>
+      <div class="wc-grid two">
+        <div><label>Officer ID / Folder</label><input id="uploadOfficerId" placeholder="Officer ID or unassigned"></div>
+        <div><label>Upload Area</label><select id="uploadArea"><option value="officer_files">Officer Files</option><option value="watch_forms">Watch Commander Forms</option><option value="orders">Marine Corps Orders</option><option value="pdi">Police Department Instructions</option><option value="training">Training</option><option value="medical">Medical</option><option value="accident_investigation">Accident Investigation</option><option value="srt">SRT</option><option value="k9">K9</option></select></div>
+      </div>
+      <label>Description / Keywords</label>
+      <input id="uploadDescription" placeholder="Example: voluntary statement, medical, counseling, award">
+      <label>Files</label>
+      <input id="uploadFiles" type="file" multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.heic,.xls,.xlsx,.txt,image/*,application/pdf">
+      <div class="wc-actions"><button onclick="uploadAdminFiles()">Upload and Auto-File</button></div>
+      <div id="uploadStatus" class="wc-status"></div>
+    </section>
+
+    <section id="counseling" class="wc-panel">
+      <h2>Counseling Generator</h2>
+      <div class="wc-grid two">
+        <div><label>Officer</label><input id="cOfficer" placeholder="Officer name"></div>
+        <div><label>Type</label><select id="cType"><option>Verbal Counseling</option><option>Written Counseling</option><option>Performance Counseling</option><option>Conduct Counseling</option><option>Marine Counseling</option><option>Civilian Counseling</option></select></div>
+      </div>
+      <label>Category</label><input id="cCategory" placeholder="Tardiness, report errors, conduct, performance">
+      <label>Facts</label><textarea id="cFacts" placeholder="Enter what happened"></textarea>
+      <label>Corrective Action</label><textarea id="cCorrective" placeholder="What needs to happen next"></textarea>
+      <div class="wc-actions"><button onclick="generateCounseling()">Generate Counseling</button><button class="wc-secondary" onclick="submitCurrentLearning('counseling')">Submit for Approval</button></div>
+      <textarea id="cOutput" class="wc-output" placeholder="Generated counseling will appear here"></textarea>
+    </section>
+
+    <section id="awards" class="wc-panel">
+      <h2>Award Writer</h2>
+      <div class="wc-grid two">
+        <div><label>Officer</label><input id="aOfficer" placeholder="Officer name"></div>
+        <div><label>Award Type</label><select id="aType"><option>On-the-Spot Cash Award</option><option>Time-Off Award</option><option>Special Act Award</option><option>Letter of Appreciation</option></select></div>
+      </div>
+      <label>Actions</label><textarea id="aActions" placeholder="What did the officer do?"></textarea>
+      <label>Impact</label><textarea id="aImpact" placeholder="What was the mission impact?"></textarea>
+      <div class="wc-actions"><button onclick="generateAward()">Generate Award</button><button class="wc-secondary" onclick="submitCurrentLearning('award')">Submit for Approval</button></div>
+      <textarea id="aOutput" class="wc-output" placeholder="Generated award text will appear here"></textarea>
+    </section>
+
+    <section id="learning" class="wc-panel">
+      <h2>Supervisor Approval Queue</h2>
+      <p>Approve role-specific learning examples so future drafts match approved command style.</p>
+      <div class="wc-actions"><button onclick="loadPendingLearning()">Load Pending</button></div>
+      <div id="learningResults" class="wc-results"></div>
+    </section>
+  </main>
+  <script src="{{ url_for('static', filename='js/wc_admin.js') }}"></script>
+</body>
+</html>
