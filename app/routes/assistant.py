@@ -1,6 +1,8 @@
 import hmac
+import json
 import os
 import re
+from datetime import datetime
 
 from flask import Blueprint, Response, g, jsonify, request, session, url_for
 from flask_login import current_user, login_required
@@ -28,7 +30,6 @@ _RADIO_SYSTEM_PROMPT = (
 
 
 def _safe_user_context():
-    """Build a small, non-sensitive context block from the logged-in portal user."""
     if not getattr(current_user, 'is_authenticated', False):
         return ''
     pieces = []
@@ -48,7 +49,6 @@ def _safe_user_context():
 
 
 def _extract_spoken_unit_label(message: str) -> str:
-    """Detect simple spoken unit labels such as Unit 2, Unit 12, Desk, or Watch Commander."""
     text = (message or '').strip()
     patterns = [
         r'\b(unit\s*[0-9A-Za-z-]{1,10})\b',
@@ -78,65 +78,112 @@ def _build_radio_prompt(message: str) -> str:
 
 
 def _local_assistant_reply(message: str) -> str:
-    """Reliable MCPD fallback when premium AI is not configured or unavailable."""
     text = (message or '').strip().lower()
     if not text:
         return 'Tell me what you need help with, such as starting a report, finding paperwork, searching law, or opening forms.'
-
     if any(term in text for term in ('start report', 'start a report', 'new report', 'incident report', 'write report', 'start a call')):
-        return (
-            'To start a report, open Start Report and work through Parties, Facts, Narrative, Paperwork, and Review. '
-            f'Start here: {url_for("reports.new_report")}. On mobile, use {url_for("mobile.incident_start")}.'
-        )
+        return ('To start a report, open Start Report and work through Parties, Facts, Narrative, Paperwork, and Review. '
+                f'Start here: {url_for("reports.new_report")}. On mobile, use {url_for("mobile.incident_start")}.')
     if any(term in text for term in ('law', 'charge', 'statute', 'ucmj', 'federal', 'georgia', 'order applies')):
-        return (
-            'Use Law Lookup in plain language. Describe what happened, who was involved, where it happened, and whether it was on base. '
-            f'Open Law Lookup: {url_for("legal.legal_lookup")}. Verify final charge selection with supervisor/legal review.'
-        )
+        return ('Use Law Lookup in plain language. Describe what happened, who was involved, where it happened, and whether it was on base. '
+                f'Open Law Lookup: {url_for("legal.legal_lookup")}. Verify final charge selection with supervisor/legal review.')
     if any(term in text for term in ('paperwork', 'forms needed', 'what forms', 'navigator', 'packet')):
-        return (
-            'Use the Paperwork Navigator for required and likely paperwork. Select the call type, confirm the facts, then add only the forms actually used. '
-            f'Open Navigator: {url_for("reference.incident_paperwork_guide")}.'
-        )
+        return ('Use the Paperwork Navigator for required and likely paperwork. Select the call type, confirm the facts, then add only the forms actually used. '
+                f'Open Navigator: {url_for("reference.incident_paperwork_guide")}.')
     if any(term in text for term in ('form', 'pdf', 'statement', 'domestic supplemental', 'stat sheet')):
-        return (
-            'Open Forms Library, choose the official form, fill only fields shown on the source PDF, then preview before download or email. '
-            f'Open Forms: {url_for("forms.list_forms")}.'
-        )
+        return ('Open Forms Library, choose the official form, fill only fields shown on the source PDF, then preview before download or email. '
+                f'Open Forms: {url_for("forms.list_forms")}.')
     if any(term in text for term in ('training', 'roster', 'sign training', 'qualification')):
-        return (
-            'Open Training to view assigned rosters, sign your own line, and track completions. '
-            f'Open Training: {url_for("training.training_menu")}.'
-        )
+        return ('Open Training to view assigned rosters, sign your own line, and track completions. '
+                f'Open Training: {url_for("training.training_menu")}.')
     if any(term in text for term in ('personnel', 'officer', 'watch', 'shift', 'role', 'installation')):
-        return (
-            'Personnel tools let authorized users edit officer profiles, roles, installation, shift, and watch assignments. '
-            f'Open Personnel: {url_for("auth.manage_users")}.'
-        )
+        return ('Personnel tools let authorized users edit officer profiles, roles, installation, shift, and watch assignments. '
+                f'Open Personnel: {url_for("auth.manage_users")}.')
     if any(term in text for term in ('scanner', 'scan id', 'license', 'driver license', 'camera')):
-        return (
-            'For ID scanning, use the mobile person editor. Live camera scanning requires browser camera support and HTTPS on phones; '
-            'manual entry and paste/photo fallback should remain available so the report flow is not blocked.'
-        )
+        return ('For ID scanning, use the mobile person editor. Live camera scanning requires browser camera support and HTTPS on phones; '
+                'manual entry and paste/photo fallback should remain available so the report flow is not blocked.')
     if any(term in text for term in ('accident', 'crash', 'diagram', 'reconstruction')):
-        return (
-            'Use Accident Reconstruction under Reports for crash diagrams, measurements, vehicles, media, timeline, and export. '
-            f'Open Accident Reconstruction: {url_for("reports.accident_reconstruction_list")}.'
-        )
-    return (
-        'I can help with report workflow, Law Lookup, paperwork guidance, forms, training, personnel, scanner fallback, and accident reconstruction. '
-        'Tell me the task or describe the incident in plain language.'
-    )
+        return ('Use Accident Reconstruction under Reports for crash diagrams, measurements, vehicles, media, timeline, and export. '
+                f'Open Accident Reconstruction: {url_for("reports.accident_reconstruction_list")}.')
+    return ('I can help with report workflow, Law Lookup, paperwork guidance, forms, training, personnel, scanner fallback, and accident reconstruction. '
+            'Tell me the task or describe the incident in plain language.')
 
 
 def _check_csrf():
-    token = (
-        request.headers.get('X-CSRFToken')
-        or (request.get_json(silent=True) or {}).get('_csrf_token')
-        or ''
-    )
+    token = request.headers.get('X-CSRFToken') or (request.get_json(silent=True) or {}).get('_csrf_token') or ''
     expected = session.get('_csrf_token', '')
     return bool(expected and hmac.compare_digest(str(token), str(expected)))
+
+
+def _admin_store_path(filename):
+    base = os.path.join(os.getcwd(), 'instance', 'wc_admin')
+    os.makedirs(base, exist_ok=True)
+    return os.path.join(base, filename)
+
+
+def _load_json_store(filename, default):
+    path = _admin_store_path(filename)
+    if not os.path.exists(path):
+        return default
+    try:
+        with open(path, 'r', encoding='utf-8') as handle:
+            return json.load(handle)
+    except Exception:
+        return default
+
+
+def _save_json_store(filename, data):
+    path = _admin_store_path(filename)
+    with open(path, 'w', encoding='utf-8') as handle:
+        json.dump(data, handle, indent=2)
+
+
+def _is_supervisor():
+    role = (getattr(current_user, 'normalized_role', '') or getattr(current_user, 'role', '') or '').upper()
+    return role in {'WEBSITE_CONTROLLER', 'WATCH_COMMANDER', 'DESK_SGT', 'FIELD_TRAINING_OFFICER'} or can_manage_site(current_user)
+
+
+def _require_supervisor_json():
+    if not _is_supervisor():
+        return jsonify({'ok': False, 'error': 'Supervisor access required.'}), 403
+    return None
+
+
+def _build_counseling_text(data):
+    officer = data.get('officer_name') or 'the officer'
+    ctype = data.get('counseling_type') or 'Performance Counseling'
+    category = data.get('category') or 'General'
+    facts = data.get('facts') or 'No facts entered.'
+    standard = data.get('standard') or 'Officer is expected to comply with MCPD standards, post orders, lawful instructions, and professional conduct requirements.'
+    corrective = data.get('corrective_action') or 'Officer will correct the deficiency immediately and comply with all future instructions and standards.'
+    followup = data.get('follow_up') or 'Supervisor will monitor future performance and document additional issues if necessary.'
+    return (
+        f'{ctype}\n\n'
+        f'Officer: {officer}\n'
+        f'Category: {category}\n'
+        f'Date: {datetime.utcnow().strftime("%Y-%m-%d")}\n\n'
+        f'Facts/Reason for Counseling:\n{facts}\n\n'
+        f'Standard/Expectation:\n{standard}\n\n'
+        f'Corrective Action/Plan:\n{corrective}\n\n'
+        f'Follow-Up:\n{followup}\n\n'
+        'This counseling documents the supervisor guidance provided and does not replace any required LER, HR, command, or administrative action when applicable.'
+    )
+
+
+def _build_award_text(data):
+    officer = data.get('officer_name') or 'the officer'
+    award_type = data.get('award_type') or 'On-the-Spot Cash Award'
+    impact = data.get('impact') or 'positively impacted department operations and mission readiness'
+    actions = data.get('actions') or 'performed duties above the expected standard'
+    period = data.get('period') or 'the reporting period'
+    return (
+        f'{award_type} Recommendation\n\n'
+        f'Nominee: {officer}\n'
+        f'Period: {period}\n\n'
+        f'Recommended Narrative:\nDuring {period}, {officer} {actions}. These actions {impact}. '
+        'The officer demonstrated initiative, professionalism, and commitment to mission accomplishment. '
+        f'Recommend approval of a {award_type.lower()} in recognition of this contribution.'
+    )
 
 
 @bp.post('/api/assistant/ask')
@@ -144,15 +191,12 @@ def _check_csrf():
 def assistant_ask():
     if not _check_csrf():
         return jsonify({'ok': False, 'error': 'Invalid request.'}), 403
-
     body = request.get_json(silent=True) or {}
     message = (body.get('message') or '').strip()
     history = body.get('history') or []
     voice_mode = (body.get('voice') or '').strip().lower()
-
     if not message:
         return jsonify({'ok': False, 'error': 'No message provided.'}), 400
-
     api_key = os.environ.get('OPENAI_API_KEY', '')
     system_prompt = _build_radio_prompt(message) if voice_mode == 'dispatcher' else _SYSTEM_PROMPT
     answer = ask_openai_with_system(message, system_prompt, api_key, history=history)
@@ -168,21 +212,17 @@ def assistant_ask():
 def assistant_speak():
     if not _check_csrf():
         return jsonify({'ok': False, 'error': 'Invalid request.'}), 403
-
     body = request.get_json(silent=True) or {}
     text = (body.get('text') or '').strip()
     voice = (body.get('voice') or 'coral').strip().lower()
     if voice not in _ALLOWED_VOICES:
         voice = 'coral'
-
     if not text:
         return jsonify({'ok': False, 'error': 'No text provided.'}), 400
-
     api_key = os.environ.get('OPENAI_API_KEY', '')
     audio = openai_tts(text, api_key, voice=voice)
     if audio:
         return Response(audio, mimetype='audio/mpeg')
-
     return jsonify({'ok': False, 'error': 'TTS unavailable.'}), 503
 
 
@@ -199,3 +239,104 @@ def assistant_status():
         return jsonify({'ok': False, 'error': 'Forbidden.'}), 403
     status = openai_key_status(os.environ.get('OPENAI_API_KEY', ''))
     return jsonify({'ok': True, 'openai': status})
+
+
+@bp.post('/api/admin/narrative-learning/submit')
+@login_required
+def submit_narrative_learning():
+    body = request.get_json(silent=True) or {}
+    items = _load_json_store('narrative_learning_pending.json', [])
+    entry = {
+        'id': f'nl-{int(datetime.utcnow().timestamp())}-{len(items)+1}',
+        'incidentType': body.get('incidentType', 'general'),
+        'original': body.get('original', ''),
+        'edited': body.get('edited', ''),
+        'submittedBy': getattr(current_user, 'username', 'unknown'),
+        'status': 'pending',
+        'createdAt': datetime.utcnow().isoformat(),
+    }
+    items.insert(0, entry)
+    _save_json_store('narrative_learning_pending.json', items[:200])
+    return jsonify({'ok': True, 'entry': entry})
+
+
+@bp.get('/api/admin/narrative-learning/pending')
+@login_required
+def list_narrative_learning_pending():
+    denied = _require_supervisor_json()
+    if denied:
+        return denied
+    return jsonify({'ok': True, 'items': _load_json_store('narrative_learning_pending.json', [])})
+
+
+@bp.post('/api/admin/narrative-learning/approve')
+@login_required
+def approve_narrative_learning():
+    denied = _require_supervisor_json()
+    if denied:
+        return denied
+    body = request.get_json(silent=True) or {}
+    entry_id = body.get('id')
+    pending = _load_json_store('narrative_learning_pending.json', [])
+    approved = _load_json_store('narrative_learning_approved.json', [])
+    remaining = []
+    approved_entry = None
+    for item in pending:
+        if item.get('id') == entry_id:
+            approved_entry = dict(item)
+            approved_entry['status'] = 'approved'
+            approved_entry['approvedBy'] = getattr(current_user, 'username', 'unknown')
+            approved_entry['approvedAt'] = datetime.utcnow().isoformat()
+        else:
+            remaining.append(item)
+    if not approved_entry:
+        return jsonify({'ok': False, 'error': 'Entry not found.'}), 404
+    approved.insert(0, approved_entry)
+    _save_json_store('narrative_learning_pending.json', remaining)
+    _save_json_store('narrative_learning_approved.json', approved[:200])
+    return jsonify({'ok': True, 'entry': approved_entry})
+
+
+@bp.post('/api/admin/counseling/generate')
+@login_required
+def generate_counseling():
+    denied = _require_supervisor_json()
+    if denied:
+        return denied
+    body = request.get_json(silent=True) or {}
+    text = _build_counseling_text(body)
+    records = _load_json_store('counseling_records.json', [])
+    record = {
+        'id': f'counseling-{int(datetime.utcnow().timestamp())}-{len(records)+1}',
+        'officerName': body.get('officer_name', ''),
+        'type': body.get('counseling_type', ''),
+        'category': body.get('category', ''),
+        'generatedText': text,
+        'createdBy': getattr(current_user, 'username', 'unknown'),
+        'createdAt': datetime.utcnow().isoformat(),
+    }
+    records.insert(0, record)
+    _save_json_store('counseling_records.json', records[:500])
+    return jsonify({'ok': True, 'record': record, 'text': text})
+
+
+@bp.post('/api/admin/awards/generate')
+@login_required
+def generate_award():
+    denied = _require_supervisor_json()
+    if denied:
+        return denied
+    body = request.get_json(silent=True) or {}
+    text = _build_award_text(body)
+    records = _load_json_store('award_records.json', [])
+    record = {
+        'id': f'award-{int(datetime.utcnow().timestamp())}-{len(records)+1}',
+        'officerName': body.get('officer_name', ''),
+        'awardType': body.get('award_type', ''),
+        'generatedText': text,
+        'createdBy': getattr(current_user, 'username', 'unknown'),
+        'createdAt': datetime.utcnow().isoformat(),
+    }
+    records.insert(0, record)
+    _save_json_store('award_records.json', records[:500])
+    return jsonify({'ok': True, 'record': record, 'text': text})
