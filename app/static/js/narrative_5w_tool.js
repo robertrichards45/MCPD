@@ -27,6 +27,31 @@
     return String(text || '').replace(/\s+/g, ' ').trim();
   }
 
+  function unique(items) {
+    var seen = {};
+    return items.map(compact).filter(function (item) {
+      var key = item.toLowerCase();
+      if (!item || seen[key]) return false;
+      seen[key] = true;
+      return true;
+    });
+  }
+
+  function splitSentences(text) {
+    return compact(text).match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [];
+  }
+
+  function sentencesMatching(sentences, pattern) {
+    return unique(sentences.filter(function (sentence) {
+      return pattern.test(sentence);
+    }));
+  }
+
+  function joinFacts(items, fallback) {
+    var cleaned = unique(items);
+    return cleaned.length ? cleaned.join(' ') : fallback;
+  }
+
   function buildFiveWsFromNotes(notes) {
     var clean = compact(notes);
     if (!clean) {
@@ -42,45 +67,27 @@
       /\b(?:at|to|near|inside|outside)\s+(?:the\s+)?([A-Z][A-Za-z0-9\s\/&.-]{2,60}?)(?:\s+for|\s+regarding|\.|,|$)/,
       /\blocation\s*[:\-]\s*([^.;]+)/i,
     ]);
-    var who = firstMatch(clean, [
-      /\bsubject\s+([A-Z][A-Za-z ,.'-]{2,50})/i,
-      /\bsuspect\s+([A-Z][A-Za-z ,.'-]{2,50})/i,
-      /\b(?:victim|complainant|witness)\s+([A-Z][A-Za-z ,.'-]{2,50})/i,
-    ]);
-    var actions = [];
-    [
-      /\bI\s+(responded[^.]*\.)/i,
-      /\bI\s+(detained[^.]*\.)/i,
-      /\bI\s+(recovered[^.]*\.)/i,
-      /\bI\s+(photographed[^.]*\.)/i,
-      /\bI\s+(notified[^.]*\.)/i,
-      /\bI\s+(interviewed[^.]*\.)/i,
-    ].forEach(function (pattern) {
-      var m = clean.match(pattern);
-      if (m && m[1]) actions.push('I ' + m[1]);
-    });
-
-    var sentences = clean.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [clean];
-    var what = sentences.find(function (sentence) {
-      return /(reported|observed|concealed|stole|struck|pushed|damaged|entered|refused|returned|crash|collision|accident|larceny|assault|trespass)/i.test(sentence);
-    }) || sentences[0] || clean;
-    var whyHow = sentences.find(function (sentence) {
-      return /(because|after|by |using|while|when|sequence|how|method|concealed|forced|entered|refused)/i.test(sentence) && sentence !== what;
-    }) || '';
+    var sentences = splitSentences(clean);
+    var people = sentencesMatching(sentences, /\b(subject|suspect|victim|complainant|witness|driver|passenger|officer|marine|civilian|spouse|husband|wife|child|person|party)\b/i);
+    var actions = sentencesMatching(sentences, /\b(I|officer|patrol|unit|we)\s+(responded|arrived|observed|located|detained|searched|recovered|photographed|notified|interviewed|advised|issued|transported|cleared|secured|placed|arrested|cited|completed|requested)\b/i);
+    var whatFacts = sentencesMatching(sentences, /(reported|observed|concealed|stole|took|struck|hit|pushed|damaged|entered|refused|returned|crash|collision|accident|larceny|assault|trespass|barred|order|weed|marijuana|domestic|disturbance|theft|property|injury|vehicle|gate|base|installation)/i);
+    var howFacts = sentencesMatching(sentences, /(because|after|before|during|while|when|then|by |using|sequence|method|concealed|forced|entered|refused|returned|fled|left|approached|followed|northbound|southbound|eastbound|westbound|direction|traveling|located|found)/i);
+    if (!whatFacts.length && sentences.length) whatFacts = [sentences[0]];
 
     var narrative = [];
-    narrative.push('Who: ' + (who || 'Review notes for involved parties: ' + clean.slice(0, 140)));
-    narrative.push('What: ' + compact(what));
+    narrative.push('Who: ' + joinFacts(people, 'Not clearly stated. Add involved persons, roles, or unit identifiers if known.'));
+    narrative.push('What: ' + joinFacts(whatFacts, 'Not clearly stated. Add the main incident conduct or complaint.'));
     narrative.push('When: ' + (when || 'Not clearly stated. Add date/time if known.'));
     narrative.push('Where: ' + (where || 'Not clearly stated. Add location if known.'));
-    narrative.push('Why / How: ' + (whyHow ? compact(whyHow) : 'Not clearly stated. Use officer-entered facts only.'));
-    narrative.push('Officer Actions: ' + (actions.length ? actions.join(' ') : 'Not clearly stated. Add response, detention, evidence, notifications, or disposition if known.'));
+    narrative.push('Why / How: ' + joinFacts(howFacts, 'Not clearly stated. Use officer-entered sequence, method, and context only.'));
+    narrative.push('Officer Actions: ' + joinFacts(actions, 'Not clearly stated. Add response, detention, evidence, notifications, or disposition if known.'));
     narrative.push('Narrative Starter: ' + [
       when ? 'On ' + when.replace(/^on\s+/i, '') + ',' : 'On [date/time],',
       where ? 'at ' + where + ',' : 'at [location],',
-      compact(what).replace(/\.$/, '') + '.',
+      compact(whatFacts[0] || clean).replace(/\.$/, '') + '.',
       actions.length ? actions.join(' ') : ''
     ].filter(Boolean).join(' '));
+    narrative.push('Full Officer Notes: ' + clean);
     narrative.push('Officer Review: Verify all facts before texting, emailing, or adding to a report.');
     return narrative.join('\n\n');
   }

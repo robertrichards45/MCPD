@@ -149,9 +149,25 @@ function bindModuleFeed() {
 function registerMcpdServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
   if (!window.isSecureContext && !['localhost', '127.0.0.1'].includes(window.location.hostname)) return;
-  navigator.serviceWorker.register('/service-worker.js', { scope: '/' }).catch(() => {
-    // PWA install support is helpful, but it should never block field workflow.
-  });
+  navigator.serviceWorker.register('/service-worker.js', { scope: '/', updateViaCache: 'none' })
+    .then((registration) => {
+      registration.update().catch(() => {});
+      if (registration.waiting) {
+        registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+      }
+      registration.addEventListener('updatefound', () => {
+        const worker = registration.installing;
+        if (!worker) return;
+        worker.addEventListener('statechange', () => {
+          if (worker.state === 'installed' && navigator.serviceWorker.controller) {
+            worker.postMessage({ type: 'SKIP_WAITING' });
+          }
+        });
+      });
+    })
+    .catch(() => {
+      // PWA install support is helpful, but it should never block field workflow.
+    });
 }
 
 window.addEventListener('load', () => {

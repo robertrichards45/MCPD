@@ -1,4 +1,4 @@
-const MCPD_CACHE = 'mcpd-portal-shell-v2';
+const MCPD_CACHE = 'mcpd-portal-shell-v4';
 const MCPD_ASSETS = [
   '/manifest.webmanifest',
   '/static/icons/mcpd-icon-192.png',
@@ -24,6 +24,12 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
 self.addEventListener('fetch', (event) => {
   const request = event.request;
   if (request.method !== 'GET') return;
@@ -32,18 +38,26 @@ self.addEventListener('fetch', (event) => {
 
   if (request.mode === 'navigate') {
     event.respondWith(
-      fetch(request).catch(() => caches.match('/mobile/home').then((cached) => cached || Response.error()))
+      fetch(request).catch(() => new Response('MCPD Portal is offline. Reconnect and refresh.', {
+        status: 503,
+        headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+      }))
     );
+    return;
+  }
+
+  if (url.pathname.startsWith('/static/js/') || url.pathname.startsWith('/static/css/')) {
+    event.respondWith(fetch(request));
     return;
   }
 
   if (url.pathname.startsWith('/static/icons/') || url.pathname === '/manifest.webmanifest') {
     event.respondWith(
-      caches.match(request).then((cached) => cached || fetch(request).then((response) => {
+      fetch(request).then((response) => {
         const copy = response.clone();
         caches.open(MCPD_CACHE).then((cache) => cache.put(request, copy));
         return response;
-      }))
+      }).catch(() => caches.match(request))
     );
   }
 });
