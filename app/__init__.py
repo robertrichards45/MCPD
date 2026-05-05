@@ -800,6 +800,13 @@ def create_app():
         response.headers['Cache-Control'] = 'no-cache'
         return response
 
+    from .config import DATA_DIR, UPLOAD_ROOT
+    for _dir in (DATA_DIR, UPLOAD_ROOT):
+        try:
+            os.makedirs(_dir, exist_ok=True)
+        except Exception:
+            pass
+
     with app.app_context():
         try:
             db.create_all()
