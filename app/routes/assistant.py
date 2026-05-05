@@ -10,7 +10,14 @@ from flask_login import current_user, login_required
 from werkzeug.utils import secure_filename
 
 from ..permissions import can_manage_site
-from ..services.ai_client import _ALLOWED_VOICES, ask_openai_with_system, is_ai_unavailable_message, openai_key_status, openai_tts
+from ..services.ai_client import (
+    _ALLOWED_VOICES,
+    ask_openai_with_system,
+    configured_openai_api_key,
+    is_ai_unavailable_message,
+    openai_key_status,
+    openai_tts,
+)
 
 try:
     from ..services.smart_filing import allowed_file, build_storage_path, classify_document, smart_title
@@ -163,7 +170,7 @@ def assistant_ask():
         return jsonify({'ok': False, 'error': 'No message provided.'}), 400
 
     action = _assistant_action_for(message, page)
-    api_key = os.environ.get('OPENAI_API_KEY', '')
+    api_key = configured_openai_api_key()
     answer = ask_openai_with_system(message, _SYSTEM_PROMPT, api_key, history=history)
     mode = 'premium'
     if is_ai_unavailable_message(answer):
@@ -191,7 +198,7 @@ def assistant_speak():
     if not text:
         return jsonify({'ok': False, 'error': 'No text provided.'}), 400
 
-    api_key = os.environ.get('OPENAI_API_KEY', '')
+    api_key = configured_openai_api_key()
     audio = openai_tts(text, api_key, voice=voice)
     if audio:
         return Response(audio, mimetype='audio/mpeg')
@@ -210,7 +217,7 @@ def assistant_voices():
 def assistant_status():
     if not can_manage_site(current_user):
         return jsonify({'ok': False, 'error': 'Forbidden.'}), 403
-    status = openai_key_status(os.environ.get('OPENAI_API_KEY', ''))
+    status = openai_key_status(configured_openai_api_key())
     return jsonify({'ok': True, 'openai': status})
 
 

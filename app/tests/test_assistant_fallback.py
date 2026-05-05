@@ -1,5 +1,6 @@
 from app import create_app
 from app.models import User
+from app.services import ai_client
 
 
 def _logged_in_client():
@@ -60,3 +61,53 @@ def test_assistant_status_reports_missing_key_to_site_controller(monkeypatch):
     assert payload['ok'] is True
     assert payload['openai']['configured'] is False
     assert payload['openai']['errorCode'] == 'missing_key'
+
+
+def test_openai_key_status_uses_configured_model_without_exposing_key(monkeypatch):
+    class FakeResponse:
+        status_code = 200
+
+        def json(self):
+            return {'output_text': 'ok'}
+
+    captured = {}
+
+    def fake_post(_url, headers=None, data=None, timeout=None):
+        captured['auth'] = headers.get('Authorization')
+        captured['data'] = data
+        captured['timeout'] = timeout
+        return FakeResponse()
+
+    monkeypatch.setenv('OPENAI_API_KEY', 'sk-test-secret-value')
+    monkeypatch.setenv('OPENAI_MODEL', 'gpt-test-model')
+    monkeypatch.setattr(ai_client.requests, 'post', fake_post)
+
+    status = ai_client.openai_key_status()
+
+    assert status['ok'] is True
+    assert status['configured'] is True
+    assert status['model'] == 'gpt-test-model'
+    assert 'sk-test-secret-value' not in str(status)
+    assert captured['auth'] == 'Bearer sk-test-secret-value'
+    assert '"model": "gpt-test-model"' in captured['data']
+
+
+def test_openai_tts_uses_fast_default_model(monkeypatch):
+    class FakeResponse:
+        status_code = 200
+        content = b'audio'
+
+    captured = {}
+
+    def fake_post(_url, headers=None, data=None, timeout=None):
+        captured['data'] = data
+        return FakeResponse()
+
+    monkeypatch.setenv('OPENAI_API_KEY', 'sk-test-secret-value')
+    monkeypatch.delenv('OPENAI_TTS_MODEL', raising=False)
+    monkeypatch.setattr(ai_client.requests, 'post', fake_post)
+
+    audio = ai_client.openai_tts('Test audio.', None, voice='coral')
+
+    assert audio == b'audio'
+    assert '"model": "tts-1"' in captured['data']
