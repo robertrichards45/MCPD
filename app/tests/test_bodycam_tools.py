@@ -71,10 +71,16 @@ def test_mobile_home_and_more_expose_bodycam_and_narrative_tools():
     _app, client, _user_id = _logged_in_client()
 
     home = client.get('/mobile/home').get_data(as_text=True)
-    assert '/mobile/bodycam' in home
-    assert '/mobile/tools/narrative' in home
+    assert 'Law Lookup' in home
+    assert 'Start Report' in home
+    assert 'Forms' in home
+    assert 'Orders' in home
+    assert 'Training' in home
+    assert 'Saved' in home
 
     more = client.get('/mobile/more').get_data(as_text=True)
     assert 'Body Cam Mode' in more
     assert 'Bodycam Footage' in more
     assert 'Narrative / 5W Builder' in more
+    assert '/mobile/bodycam' in more
+    assert '/mobile/tools/narrative' in more

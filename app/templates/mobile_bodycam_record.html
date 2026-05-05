@@ -27,9 +27,9 @@
 <section class="mobile-section-block">
   <div class="mobile-section-head">
     <h3>Live Transcript</h3>
-    <p><span id="bodycam-transcript-mode">Checking transcription support.</span></p>
+    <p><span id="bodycam-transcript-mode">Checking transcription support.</span> Officers may type or correct transcript text before saving.</p>
   </div>
-  <textarea id="bodycam-transcript" class="mobile-input" rows="7" placeholder="Transcript will appear here when supported. Verify before saving."></textarea>
+  <textarea id="bodycam-transcript" class="mobile-input" rows="7" placeholder="Live transcript appears here when supported. If unavailable, type officer-verified transcript notes here before saving."></textarea>
 </section>
-<script src="{{ url_for('static', filename='js/bodycam.js', v='2026-05-05-1') }}"></script>
+<script src="{{ url_for('static', filename='js/bodycam.js', v='2026-05-05-transcript') }}"></script>
 {% endblock %}
