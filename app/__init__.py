@@ -121,20 +121,16 @@ def seed_admin():
     password = os.environ.get('ADMIN_PASSWORD')
     if not username or not password:
         return
-    force_password_reset = (os.environ.get('ADMIN_FORCE_PASSWORD_RESET') or '').strip().lower() in {
-        '1',
-        'true',
-        'yes',
-        'on',
-    }
     try:
         user = User.query.filter(func.lower(User.username) == username.lower()).first()
         if user:
             user.role = ROLE_WEBSITE_CONTROLLER
             user.active = True
             user.pending_approval = False
-            if force_password_reset:
-                user.set_password(password)
+            # Railway rebuilds should not strand the Website Controller with an
+            # unknown password after a database cutover. If ADMIN_PASSWORD is
+            # configured, treat it as the source of truth for this bootstrap user.
+            user.set_password(password)
         else:
             user = User(
                 username=username,
