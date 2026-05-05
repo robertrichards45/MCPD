@@ -1,15 +1,23 @@
 <nav class="mobile-tab-bar" aria-label="Mobile navigation">
   <div class="mobile-tab-strip">
     <a class="mobile-tab {% if mobile_active_tab == 'home' %}is-active{% endif %}" href="{{ url_for('mobile.home') }}">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.5 12 5l8 6.5V20h-5v-5H9v5H4z"/></svg>
       <span class="mobile-tab-label">Home</span>
     </a>
     <a class="mobile-tab {% if mobile_active_tab == 'incident' %}is-active{% endif %}" href="{{ url_for('mobile.incident_start') }}">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
       <span class="mobile-tab-label">New</span>
     </a>
     <a class="mobile-tab {% if mobile_active_tab == 'reference' %}is-active{% endif %}" href="{{ url_for('reference.quick_reference') }}">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12v16H6z"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>
       <span class="mobile-tab-label">Reference</span>
     </a>
+    <a class="mobile-tab {% if mobile_active_tab == 'saved' %}is-active{% endif %}" href="{{ url_for('forms.saved_forms') }}">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12v17l-6-3-6 3V4Z"/></svg>
+      <span class="mobile-tab-label">Saved</span>
+    </a>
     <a class="mobile-tab {% if mobile_active_tab == 'more' %}is-active{% endif %}" href="{{ url_for('mobile.more') }}">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h.01M12 12h.01M19 12h.01"/></svg>
       <span class="mobile-tab-label">More</span>
     </a>
   </div>

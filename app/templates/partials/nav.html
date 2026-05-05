@@ -8,7 +8,9 @@
 
 <header class="mcpd-command-header">
   <div class="mcpd-header-brand">
-    <button class="mcpd-mobile-menu" type="button" aria-label="Open navigation" data-nav-toggle>☰</button>
+    <button class="mcpd-mobile-menu" type="button" aria-label="Open navigation" data-nav-toggle>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
     <img src="{{ url_for('usmc_emblem') }}" alt="" />
     <strong>MCPD PORTAL</strong>
   </div>
@@ -20,7 +22,7 @@
   </form>
   <div class="mcpd-header-user">
     <button class="mcpd-theme-toggle" type="button" data-theme-toggle>Dark</button>
-    <button class="mcpd-theme-toggle" type="button" data-view-toggle>Mobile</button>
+    <button class="mcpd-theme-toggle" type="button" data-view-toggle>Mobile Mode</button>
     <div>
       <strong>{{ user.display_name }}</strong>
       <small>{{ portal_effective_role_label }}</small>
@@ -30,31 +32,31 @@
 
 <aside class="mcpd-command-sidebar" data-nav-menu>
   <nav aria-label="Main navigation">
-    <a class="{% if endpoint == 'dashboard.dashboard' %}is-active{% endif %}" href="{{ url_for('dashboard.dashboard') }}">Dashboard</a>
-    <a class="{% if endpoint.startswith('legal.') %}is-active{% endif %}" href="{{ url_for('legal.legal_home') }}">Law Lookup</a>
+    <a class="{% if endpoint == 'dashboard.dashboard' %}is-active{% endif %}" href="{{ url_for('dashboard.dashboard') }}"><span class="nav-icon">⌂</span>Dashboard</a>
+    <a class="{% if endpoint.startswith('legal.') %}is-active{% endif %}" href="{{ url_for('legal.legal_home') }}"><span class="nav-icon">⌕</span>Law Lookup</a>
     <details class="mcpd-sidebar-admin" {% if reports_active %}open{% endif %}>
-      <summary>Reports</summary>
+      <summary><span class="nav-icon">□</span>Reports</summary>
       <a href="{{ url_for('reports.list_reports') }}">All Reports</a>
       <a href="{{ url_for('bodycam.library') }}">Bodycam Footage</a>
       <a href="{{ url_for('bodycam.narrative_tool') }}">Narrative / 5W Builder</a>
       <a href="{{ url_for('reports.accidents') }}">Accident Tools</a>
       <a href="{{ url_for('reconstruction.case_list') }}">Reconstruction Cases</a>
     </details>
-    <a class="{% if forms_active %}is-active{% endif %}" href="{{ url_for('forms.list_forms') }}">Forms</a>
-    <a class="{% if orders_active %}is-active{% endif %}" href="{{ url_for('orders.reference_search') }}">Orders &amp; Memos</a>
-    <a class="{% if training_active %}is-active{% endif %}" href="{{ url_for('training.training_menu') }}">Training</a>
+    <a class="{% if forms_active %}is-active{% endif %}" href="{{ url_for('forms.list_forms') }}"><span class="nav-icon">▤</span>Forms</a>
+    <a class="{% if orders_active %}is-active{% endif %}" href="{{ url_for('orders.reference_search') }}"><span class="nav-icon">▥</span>Orders &amp; Memos</a>
+    <a class="{% if training_active %}is-active{% endif %}" href="{{ url_for('training.training_menu') }}"><span class="nav-icon">▴</span>Training</a>
     {% if user.can_manage_team() %}
       <a class="{% if personnel_active %}is-active{% endif %}" href="{{ url_for('auth.manage_users') }}">
-        Personnel
+        <span class="nav-icon">◇</span>Personnel
         {% if portal_pending_approvals %}<span class="nav-pending-badge">{{ portal_pending_approvals }}</span>{% endif %}
       </a>
     {% else %}
-      <a class="{% if endpoint.startswith('officers.') %}is-active{% endif %}" href="{{ url_for('officers.profile') }}">Personnel</a>
+      <a class="{% if endpoint.startswith('officers.') %}is-active{% endif %}" href="{{ url_for('officers.profile') }}"><span class="nav-icon">◇</span>Personnel</a>
     {% endif %}
-    <a class="{% if saved_work_active %}is-active{% endif %}" href="{{ url_for('forms.saved_forms') }}">Saved Work</a>
+    <a class="{% if saved_work_active %}is-active{% endif %}" href="{{ url_for('forms.saved_forms') }}"><span class="nav-icon">☆</span>Saved Work</a>
     {% if portal_effective_role == 'WEBSITE_CONTROLLER' %}
       <details class="mcpd-sidebar-admin" {% if endpoint.startswith('admin.') or endpoint in ['forms.call_type_rules_manager', 'forms.forms_manager'] or endpoint == 'reference.incident_paperwork_guide_manage' %}open{% endif %}>
-        <summary>Administration</summary>
+        <summary><span class="nav-icon">⚙</span>Administration</summary>
         <a href="{{ url_for('forms.call_type_rules_manager') }}">Call Types</a>
         <a href="{{ url_for('forms.forms_manager') }}">Forms Manager</a>
         <a href="{{ url_for('reference.incident_paperwork_guide_manage') }}">Navigator Editor</a>
@@ -63,7 +65,7 @@
       </details>
     {% endif %}
     {% if portal_can_access_builder_mode %}
-      <a class="{% if endpoint == 'admin.site_builder' %}is-active{% endif %}" href="{{ url_for('admin.site_builder') }}">Site Builder</a>
+      <a class="{% if endpoint == 'admin.site_builder' %}is-active{% endif %}" href="{{ url_for('admin.site_builder') }}"><span class="nav-icon">✦</span>Site Builder</a>
     {% endif %}
   </nav>
   <div class="mcpd-sidebar-help">

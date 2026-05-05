@@ -14114,3 +14114,306 @@ body[data-theme="dark"] .saved-form-role-notes {
   outline-offset: 3px !important;
   box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.18) !important;
 }
+
+/* ==========================================================================
+   MCPD final command-portal stabilization overrides
+   ========================================================================== */
+.mcpd-mobile-menu svg,
+.mobile-tab svg,
+.mcpd-action-icon svg,
+.mcpd-mobile-tile-icon svg {
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.nav-icon {
+  align-items: center;
+  display: inline-flex;
+  justify-content: center;
+  margin-right: 10px;
+  min-width: 18px;
+}
+
+.mcpd-command-sidebar a,
+.mcpd-sidebar-admin summary {
+  justify-content: flex-start;
+}
+
+.mcpd-command-sidebar a .nav-pending-badge {
+  margin-left: auto;
+}
+
+.mcpd-action-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.mcpd-action-card {
+  min-height: 156px;
+}
+
+.mcpd-action-icon {
+  align-items: center;
+  display: inline-flex;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+}
+
+.mcpd-action-icon svg {
+  width: 48px;
+  height: 48px;
+}
+
+.mcpd-header-user {
+  white-space: nowrap;
+}
+
+.mcpd-theme-toggle {
+  cursor: pointer;
+}
+
+body.view-desktop .mcpd-command-sidebar {
+  transform: none;
+}
+
+body.view-desktop .page-wrap,
+body.view-desktop .dashboard,
+body.view-desktop .recon-layout {
+  margin-left: 250px !important;
+}
+
+body[data-theme="dark"] .text-dark,
+body[data-theme="dark"] label,
+body[data-theme="dark"] .form-label,
+body[data-theme="dark"] .list-group-item,
+body[data-theme="dark"] .dropdown-item {
+  color: var(--text) !important;
+}
+
+body[data-theme="dark"] .table,
+body[data-theme="dark"] .table td,
+body[data-theme="dark"] .table th {
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
+
+body[data-theme="dark"] .list-group-item,
+body[data-theme="dark"] .modal-content,
+body[data-theme="dark"] .dropdown-menu {
+  background: var(--card) !important;
+  border-color: var(--border) !important;
+}
+
+.forms-toolbar,
+.form-action-footer,
+.form-action-group,
+.report-hub-actions,
+.bodycam-control-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.form-action-footer {
+  align-items: center;
+  bottom: 0;
+  justify-content: space-between;
+  padding: 12px;
+}
+
+.form-action-footer .btn,
+.forms-toolbar .btn,
+.report-hub-actions .btn {
+  min-height: 40px;
+  white-space: normal;
+}
+
+.forms-fill-layout {
+  align-items: start;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 340px) !important;
+}
+
+.forms-fill-main,
+.forms-fill-side,
+.form-side-card,
+.saved-form-field-card,
+.role-entry-card {
+  min-width: 0;
+}
+
+.forms-fill-side {
+  position: sticky;
+  top: 88px;
+}
+
+.sig-widget canvas {
+  max-width: 100%;
+}
+
+.reports-split-workspace {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
+  align-items: start;
+}
+
+.reports-main-column {
+  min-width: 0;
+}
+
+.reports-reference-rail {
+  display: grid;
+  gap: 12px;
+  position: sticky;
+  top: 88px;
+}
+
+.reports-rail-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.reports-rail-tabs a {
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 900;
+  padding: 10px 8px;
+  text-decoration: none;
+}
+
+.reports-rail-tabs a.is-active {
+  color: var(--primary);
+  border-bottom: 2px solid var(--primary);
+}
+
+.mobile-tab-bar {
+  background: var(--header);
+  border-top: 1px solid rgba(255,255,255,0.14);
+  bottom: 0;
+  left: 0;
+  position: sticky;
+  right: 0;
+  z-index: 80;
+}
+
+.mobile-tab-strip {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0;
+  padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
+}
+
+.mobile-tab {
+  align-items: center;
+  border-radius: 12px;
+  color: #cbd5e1;
+  display: grid;
+  font-size: 11px;
+  font-weight: 900;
+  gap: 3px;
+  justify-items: center;
+  min-height: 50px;
+  text-decoration: none;
+}
+
+.mobile-tab svg {
+  width: 20px;
+  height: 20px;
+}
+
+.mobile-tab.is-active {
+  background: rgba(59, 130, 246, 0.22);
+  color: #fff;
+}
+
+.mcpd-mobile-home {
+  padding-bottom: calc(78px + env(safe-area-inset-bottom));
+}
+
+.mcpd-mobile-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 90;
+}
+
+.mcpd-mobile-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.mcpd-mobile-grid a {
+  min-height: 112px;
+}
+
+.mcpd-mobile-tile-icon {
+  color: var(--primary);
+}
+
+.mobile-shell {
+  overflow-x: hidden;
+}
+
+.mobile-main {
+  padding-bottom: calc(78px + env(safe-area-inset-bottom));
+}
+
+@media (max-width: 1100px) {
+  .mcpd-action-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .reports-split-workspace,
+  .forms-fill-layout {
+    grid-template-columns: 1fr !important;
+  }
+
+  .reports-reference-rail,
+  .forms-fill-side {
+    position: static;
+  }
+}
+
+@media (max-width: 640px) {
+  html,
+  body {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .mcpd-header-user > div {
+    display: none;
+  }
+
+  .mcpd-theme-toggle {
+    min-height: 34px;
+    padding: 0 9px;
+  }
+
+  .mcpd-action-grid,
+  .mcpd-dashboard-panels {
+    grid-template-columns: 1fr;
+  }
+
+  .mcpd-mobile-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .form-action-footer {
+    position: static;
+  }
+
+  .form-action-group,
+  .form-action-footer .btn,
+  .form-action-footer a.btn {
+    width: 100%;
+  }
+
+  .row {
+    --bs-gutter-x: 0.75rem;
+  }
+}

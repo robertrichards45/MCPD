@@ -27,9 +27,9 @@
     var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
     var theme = stored || (prefersDark ? 'dark' : 'light');
     document.body.setAttribute('data-theme', theme);
-    if (localStorage.getItem('mcpd-view') === 'mobile') {
-      document.body.classList.add('force-mobile-view');
-    }
+    var viewMode = localStorage.getItem('mcpdViewMode') || localStorage.getItem('mcpd-view') || 'auto';
+    if (viewMode === 'mobile') document.body.classList.add('force-mobile-view', 'view-mobile');
+    if (viewMode === 'desktop') document.body.classList.add('view-desktop');
   }());
   </script>
   {% with messages = get_flashed_messages(with_categories=true) %}
@@ -76,17 +76,26 @@
         button.textContent = theme === 'dark' ? 'Light' : 'Dark';
       });
     }
-    function setView(mobile) {
-      document.body.classList.toggle('force-mobile-view', mobile);
-      localStorage.setItem('mcpd-view', mobile ? 'mobile' : 'desktop');
+    function syncViewLabels() {
+      var mobile = document.body.classList.contains('force-mobile-view');
       document.querySelectorAll('[data-view-toggle]').forEach(function (btn) {
-        btn.textContent = mobile ? 'Desktop' : 'Mobile';
+        btn.textContent = mobile ? 'Desktop Mode' : 'Mobile Mode';
+        btn.setAttribute('aria-label', mobile ? 'Switch to desktop mode' : 'Switch to mobile mode');
       });
+    }
+    function setView(mode) {
+      var mobile = mode === 'mobile';
+      document.body.classList.toggle('force-mobile-view', mobile);
+      document.body.classList.toggle('view-mobile', mobile);
+      document.body.classList.toggle('view-desktop', !mobile);
+      localStorage.setItem('mcpdViewMode', mobile ? 'mobile' : 'desktop');
+      localStorage.setItem('mcpd-view', mobile ? 'mobile' : 'desktop');
+      syncViewLabels();
     }
     document.addEventListener('click', function (event) {
       var viewBtn = event.target.closest('[data-view-toggle]');
       if (viewBtn) {
-        setView(!document.body.classList.contains('force-mobile-view'));
+        setView(document.body.classList.contains('force-mobile-view') ? 'desktop' : 'mobile');
         return;
       }
       var button = event.target.closest('[data-theme-toggle]');
@@ -94,16 +103,11 @@
         var next = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
         setTheme(next);
       }
-      var navToggle = event.target.closest('[data-nav-toggle]');
-      if (navToggle) {
-        var sidebar = document.querySelector('[data-nav-menu]');
-        if (sidebar) sidebar.classList.toggle('is-open');
-      }
     });
     setTheme(document.body.getAttribute('data-theme') || 'light');
+    syncViewLabels();
   }());
   </script>
   {% block scripts %}{% endblock %}
 </body>
 </html>
-
