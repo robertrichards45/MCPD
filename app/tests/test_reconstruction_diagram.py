@@ -1,5 +1,8 @@
 import base64
 import json
+import os
+import tempfile
+from pathlib import Path
 
 from app import create_app
 from app.extensions import db
@@ -17,11 +20,24 @@ TINY_PNG = (
 
 
 def _logged_in_client():
+    db_fd, db_path = tempfile.mkstemp(prefix="mcpd-reconstruction-diagram-", suffix=".db")
+    os.close(db_fd)
+    os.environ["MCPD_DATABASE_URL"] = f"sqlite:///{Path(db_path).as_posix()}"
+    os.environ["REQUIRE_PERSISTENT_DATABASE"] = "0"
     app = create_app()
     app.config["TESTING"] = True
+    app.config["_TEST_DB_PATH"] = db_path
     with app.app_context():
-        user = User.query.filter(User.username.ilike("robertrichards")).first() or User.query.first()
-        assert user is not None
+        db.create_all()
+        user = User(
+            username="reconstruction-diagram-test",
+            name="Reconstruction Diagram Test Officer",
+            role="website_controller",
+            active=True,
+            password_hash="not-used-in-session-test",
+        )
+        db.session.add(user)
+        db.session.commit()
         client = app.test_client()
         with client.session_transaction() as session:
             session["_user_id"] = str(user.id)
@@ -33,6 +49,12 @@ def _dispose_app(app):
     with app.app_context():
         db.session.remove()
         db.engine.dispose()
+    db_path = app.config.get("_TEST_DB_PATH")
+    if db_path:
+        try:
+            os.remove(db_path)
+        except FileNotFoundError:
+            pass
 
 
 def test_professional_scene_diagram_replaces_legacy_cartoon_tool():
