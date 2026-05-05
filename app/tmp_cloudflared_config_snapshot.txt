@@ -1,9 +1,0 @@
-tunnel: 1356082a-09eb-4023-aaf3-102a9c9bd9ef
-credentials-file: C:\Users\rober\.cloudflared\1356082a-09eb-4023-aaf3-102a9c9bd9ef.json
-
-ingress:
-  - hostname: vetassistance.org
-    service: http://127.0.0.1:8080
-  - hostname: www.vetassistance.org
-    service: http://127.0.0.1:8080
-  - service: http_status:404

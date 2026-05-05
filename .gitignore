@@ -13,6 +13,7 @@ app/.deps314/
 app/.caddy/
 app/.caddy-data/
 app/app/
+app/tmp_*
 tmp_barcode_vendor/
 tmp_crypt/
 tmp_py/
