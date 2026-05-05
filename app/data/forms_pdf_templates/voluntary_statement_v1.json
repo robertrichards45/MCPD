@@ -1,0 +1,89 @@
+{
+  "template_id": "voluntary_statement_v1",
+  "description": "Auto-generated from form_field_registry \u2014 voluntary statement",
+  "field_map": {
+    "VicName": "form1.VicName",
+    "Date": "form1.Date",
+    "RespTime": "form1.RespTime",
+    "Location": "form1.Location",
+    "Statement": "Statement",
+    "Initials": "Initials",
+    "Signature": "Signature",
+    "WitnessSign": "WitnessSign",
+    "OfficerSign": "OfficerSign"
+  },
+  "ui_fields": [
+    {
+      "name": "VicName",
+      "label": "Name",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Date",
+      "label": "Date",
+      "type": "date",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "RespTime",
+      "label": "Time",
+      "type": "time",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Location",
+      "label": "Location",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Statement",
+      "label": "Statement",
+      "type": "textarea",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Initials",
+      "label": "Declarant Initials",
+      "type": "initial",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Signature",
+      "label": "Declarant Signature",
+      "type": "signature",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "WitnessSign",
+      "label": "Witness Signature",
+      "type": "signature",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "OfficerSign",
+      "label": "Officer Signature",
+      "type": "signature",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    }
+  ]
+}

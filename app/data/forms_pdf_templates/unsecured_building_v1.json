@@ -1,0 +1,143 @@
+{
+  "template_id": "unsecured_building_v1",
+  "description": "Auto-generated from form_field_registry \u2014 unsecured building",
+  "field_map": {
+    "TO": "TO",
+    "TIMEDATE FOUND UNSECURED": "TIMEDATE FOUND UNSECURED",
+    "TIME THIS BUILDING HAS BEEN FOUND UNSECURED SINCE": "TIME THIS BUILDING HAS BEEN FOUND UNSECURED SINCE",
+    "REPORTING PERSON": "REPORTING PERSON",
+    "PERSON CONTACTED": "PERSON CONTACTED",
+    "TIMEDATE NOTIFIED": "TIMEDATE NOTIFIED",
+    "NAME RANK SSN": "NAME RANK SSN",
+    "UNIT ADDRESS PHONE": "UNIT ADDRESS PHONE",
+    "DATE TIME SECURED": "DATE TIME SECURED",
+    "ACTIONS TAKEN 1": "ACTIONS TAKEN BY MARINE CORPS POLICE 1",
+    "ACTIONS TAKEN 2": "ACTIONS TAKEN BY MARINE CORPS POLICE 2",
+    "ACTIONS TAKEN 3": "ACTIONS TAKEN BY MARINE CORPS POLICE 3",
+    "ACTIONS TAKEN 4": "ACTIONS TAKEN BY MARINE CORPS POLICE 4",
+    "DATE": "DATE",
+    "SIGNATURE OF REVIEWING OFFICAL": "SIGNATURE OF REVIEWING OFFICAL"
+  },
+  "ui_fields": [
+    {
+      "name": "TO",
+      "label": "To (Unit / Command)",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "TIMEDATE FOUND UNSECURED",
+      "label": "Time/Date Found Unsecured",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "TIME THIS BUILDING HAS BEEN FOUND UNSECURED SINCE",
+      "label": "Number of Times Found Unsecured",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "REPORTING PERSON",
+      "label": "Reporting Person",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "PERSON CONTACTED",
+      "label": "Person Contacted",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "TIMEDATE NOTIFIED",
+      "label": "Time/Date Notified",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "NAME RANK SSN",
+      "label": "Name / Rank / SSN (Person Contacted)",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "UNIT ADDRESS PHONE",
+      "label": "Unit / Address / Phone",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "DATE TIME SECURED",
+      "label": "Date/Time Secured",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "ACTIONS TAKEN 1",
+      "label": "Actions Taken by Police (1)",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "ACTIONS TAKEN 2",
+      "label": "Actions Taken by Police (2)",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "ACTIONS TAKEN 3",
+      "label": "Actions Taken by Police (3)",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "ACTIONS TAKEN 4",
+      "label": "Actions Taken by Police (4)",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "DATE",
+      "label": "Review Date",
+      "type": "date",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "SIGNATURE OF REVIEWING OFFICAL",
+      "label": "Reviewing Official Signature",
+      "type": "signature",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    }
+  ]
+}

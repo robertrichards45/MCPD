@@ -1,0 +1,98 @@
+{
+  "template_id": "voluntary_statement_traffic_v1",
+  "description": "Auto-generated from form_field_registry \u2014 voluntary statement traffic",
+  "field_map": {
+    "CCN": "CCN",
+    "1 PLACE": "1 PLACE",
+    "2 DATE": "2 DATE",
+    "I Name": "I Name",
+    "SSN": "SSN",
+    "free and voluntary statement to": "free and voluntary statement to",
+    "concerning my knowledge of a Traffic Accident that occurred on Date": "concerning my knowledge of a Traffic Accident that occurred on Date",
+    "Time": "Time",
+    "A": "A",
+    "Initials of person making statement": "Initials of person making statement"
+  },
+  "ui_fields": [
+    {
+      "name": "CCN",
+      "label": "CCN / Case Number",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "1 PLACE",
+      "label": "Place",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "2 DATE",
+      "label": "Date",
+      "type": "date",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "I Name",
+      "label": "Name of Declarant",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "SSN",
+      "label": "SSN",
+      "type": "text",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "free and voluntary statement to",
+      "label": "Statement Given To (Officer)",
+      "type": "text",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "concerning my knowledge of a Traffic Accident that occurred on Date",
+      "label": "Date of Traffic Accident",
+      "type": "date",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Time",
+      "label": "Time of Accident",
+      "type": "time",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "A",
+      "label": "Statement (Page 1)",
+      "type": "textarea",
+      "required": true,
+      "section": "Form Fields",
+      "placeholder": ""
+    },
+    {
+      "name": "Initials of person making statement",
+      "label": "Declarant Initials",
+      "type": "initial",
+      "required": false,
+      "section": "Form Fields",
+      "placeholder": ""
+    }
+  ]
+}
