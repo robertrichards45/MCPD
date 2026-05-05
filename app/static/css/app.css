@@ -2545,6 +2545,8 @@ body:not(.mobile-foundation) .app-shell,
   border-right: 1px solid rgba(255, 255, 255, 0.08);
   bottom: 0;
   color: #e7eef8;
+  display: flex;
+  flex-direction: column;
   left: 0;
   padding: 88px 14px 16px;
   position: fixed;
@@ -2555,7 +2557,11 @@ body:not(.mobile-foundation) .app-shell,
 
 .mcpd-command-sidebar nav {
   display: grid;
-  gap: 6px;
+  flex: 1;
+  gap: 4px;
+  min-height: 0;
+  overflow-y: auto;
+  padding-bottom: 8px;
 }
 
 .mcpd-command-sidebar a,
@@ -2594,14 +2600,12 @@ body:not(.mobile-foundation) .app-shell,
 .mcpd-sidebar-help {
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 10px;
-  bottom: 64px;
   color: #dbeafe;
   display: grid;
+  flex-shrink: 0;
   gap: 2px;
-  left: 14px;
+  margin-top: 12px;
   padding: 12px;
-  position: absolute;
-  right: 14px;
 }
 
 .mcpd-sidebar-help span {
@@ -2610,10 +2614,8 @@ body:not(.mobile-foundation) .app-shell,
 }
 
 .mcpd-sidebar-logout {
-  bottom: 16px;
-  left: 14px;
-  position: absolute;
-  right: 14px;
+  flex-shrink: 0;
+  margin-top: 8px;
 }
 
 .mcpd-sidebar-logout button {
