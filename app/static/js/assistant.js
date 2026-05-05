@@ -37,6 +37,7 @@
   var showSettings = false;
   var audioQueue   = null;
   var recognition  = null;
+  var speechRunId  = 0;
   var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
   // ── Build DOM ──────────────────────────────────────────────────────────────
@@ -196,6 +197,9 @@
       buildVoiceList();
       sp.classList.remove('ai-settings-hidden');
       msgs.style.display = 'none';
+    } else if (mode === 'instant') {
+      el.textContent = 'Instant browser voice active';
+      el.style.color = '#4ade80';
     } else {
       sp.classList.add('ai-settings-hidden');
       msgs.style.display = '';
@@ -289,6 +293,13 @@
     return bubble;
   }
 
+  function updateMessage(bubble, text) {
+    if (!bubble) return;
+    bubble.textContent = text;
+    var msgs = document.getElementById('ai-messages');
+    if (msgs) msgs.scrollTop = msgs.scrollHeight;
+  }
+
   function showTyping() {
     var msgs   = document.getElementById('ai-messages');
     var bubble = document.createElement('div');
@@ -318,10 +329,17 @@
   function submitMessage(text) {
     if (!isOpen) openPanel();
     stopListening();
+    stopAudio();
+    var currentSpeechRun = ++speechRunId;
     appendMessage('user', text);
     isThinking = true;
     updateUI();
-    showTyping();
+    var thinkingBubble = appendMessage('assistant', 'Thinking...');
+    var processingTimer = setTimeout(function () {
+      if (isThinking && currentSpeechRun === speechRunId) {
+        browserSpeak('Processing request', getSavedVoice(), null, { cancel: false, rate: 1.15 });
+      }
+    }, 1500);
 
     fetch('/api/assistant/ask', {
       method: 'POST',
@@ -330,6 +348,7 @@
     })
       .then(function (r) { return r.json(); })
       .then(function (data) {
+        clearTimeout(processingTimer);
         hideTyping();
         isThinking = false;
         var reply = (data && data.reply) ? data.reply : 'Sorry, I could not get a response.';
@@ -337,7 +356,7 @@
           var label = document.getElementById('ai-status-label');
           if (label) label.textContent = 'Local assist';
         }
-        appendMessage('assistant', reply);
+        updateMessage(thinkingBubble, reply);
         history.push({ role: 'user',      content: text  });
         history.push({ role: 'assistant', content: reply });
         if (history.length > 20) history = history.slice(history.length - 20);
@@ -345,10 +364,11 @@
         speakText(reply);
       })
       .catch(function () {
+        clearTimeout(processingTimer);
         hideTyping();
         isThinking = false;
         updateUI();
-        appendMessage('assistant', 'Connection error. Please try again.');
+        updateMessage(thinkingBubble, 'Connection error. Please try again.');
         if (voiceMode) scheduleAutoListen();
       });
   }
@@ -370,6 +390,9 @@
   function speakText(text) {
     if (!text) { if (voiceMode) scheduleAutoListen(); return; }
     stopAudio();
+    setTTSStatus('instant');
+    browserSpeak(text, getSavedVoice(), function () { if (voiceMode) scheduleAutoListen(); });
+    return;
 
     fetch('/api/assistant/speak', {
       method: 'POST',
@@ -423,17 +446,20 @@
     verse:   { pitch: 0.95, rate: 1.10, gender: 'neutral'},
   };
 
-  function browserSpeak(text, voiceId, onDone) {
-    if (!window.speechSynthesis) { if (onDone) onDone(); return; }
-    window.speechSynthesis.cancel();
-    var utt = new SpeechSynthesisUtterance(text);
+  function splitSpeechText(text) {
+    var clean = String(text || '').replace(/\s+/g, ' ').trim();
+    if (!clean) return [];
+    return (clean.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [clean])
+      .map(function (part) { return part.trim(); })
+      .filter(Boolean);
+  }
+
+  function pickBrowserVoice(voiceId) {
     var profile = BROWSER_VOICE_PROFILES[voiceId] || BROWSER_VOICE_PROFILES.coral;
-    utt.rate  = profile.rate;
-    utt.pitch = profile.pitch;
     var voices = window.speechSynthesis.getVoices();
     var isFemale = profile.gender === 'female';
     var isMale   = profile.gender === 'male';
-    var preferred = voices.find(function (v) {
+    return voices.find(function (v) {
       if (!/en/i.test(v.lang)) return false;
       var n = v.name.toLowerCase();
       if (isFemale) return /samantha|zira|susan|karen|victoria|moira|fiona|tessa/.test(n);
@@ -441,10 +467,31 @@
       return false;
     }) || voices.find(function (v) { return /en[-_]US/i.test(v.lang); })
       || voices.find(function (v) { return /en/i.test(v.lang); });
-    if (preferred) utt.voice = preferred;
-    utt.onend   = function () { if (onDone) onDone(); };
-    utt.onerror = function () { if (onDone) onDone(); };
-    window.speechSynthesis.speak(utt);
+  }
+
+  function browserSpeak(text, voiceId, onDone, options) {
+    if (!window.speechSynthesis) { if (onDone) onDone(); return; }
+    options = options || {};
+    if (options.cancel !== false) window.speechSynthesis.cancel();
+
+    var profile = BROWSER_VOICE_PROFILES[voiceId] || BROWSER_VOICE_PROFILES.coral;
+    var preferred = pickBrowserVoice(voiceId);
+    var parts = splitSpeechText(text);
+    var index = 0;
+
+    function speakNext() {
+      if (index >= parts.length) { if (onDone) onDone(); return; }
+      var utt = new SpeechSynthesisUtterance(parts[index]);
+      index += 1;
+      utt.rate  = options.rate || Math.max(profile.rate, 1.25);
+      utt.pitch = profile.pitch;
+      if (preferred) utt.voice = preferred;
+      utt.onend = speakNext;
+      utt.onerror = speakNext;
+      window.speechSynthesis.speak(utt);
+    }
+
+    speakNext();
   }
 
   // ── Auto-listen loop ───────────────────────────────────────────────────────
