@@ -1,4 +1,4 @@
-const MCPD_CACHE = 'mcpd-portal-shell-v1';
+const MCPD_CACHE = 'mcpd-portal-shell-v2';
 const MCPD_ASSETS = [
   '/manifest.webmanifest',
   '/static/icons/mcpd-icon-192.png',

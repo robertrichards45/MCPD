@@ -1,8 +1,11 @@
 import json
+import logging
 import os
 from datetime import datetime, timedelta, timezone
 
 import requests
+
+_log = logging.getLogger(__name__)
 
 _AI_DISABLED_MESSAGE = ''
 _AI_DISABLED_UNTIL = None
@@ -164,7 +167,7 @@ def ask_openai(prompt, api_key):
     if not prompt:
         return 'Enter a question before using the AI assistant.'
     if not api_key:
-        return 'AI is not configured. Contact admin to set OPENAI_API_KEY.'
+        return 'AI is not configured. In Railway, add OPENAI_API_KEY to the service Variables tab (not Shared Variables), then redeploy.'
     if _AI_DISABLED_MESSAGE and _AI_DISABLED_UNTIL and datetime.now(timezone.utc) < _AI_DISABLED_UNTIL:
         return f'{_AI_DISABLED_MESSAGE} AI search assist is temporarily disabled until the portal is restarted or the cooldown expires.'
     if _AI_DISABLED_UNTIL and datetime.now(timezone.utc) >= _AI_DISABLED_UNTIL:
@@ -244,7 +247,7 @@ def ask_openai_with_system(prompt, system_prompt, api_key, history=None):
     if not prompt:
         return 'Enter a question before using the AI assistant.'
     if not api_key:
-        return 'AI is not configured. Contact admin to set OPENAI_API_KEY.'
+        return 'AI is not configured. In Railway, add OPENAI_API_KEY to the service Variables tab (not Shared Variables), then redeploy.'
     if _AI_DISABLED_MESSAGE and _AI_DISABLED_UNTIL and datetime.now(timezone.utc) < _AI_DISABLED_UNTIL:
         return f'{_AI_DISABLED_MESSAGE} AI search assist is temporarily disabled until the portal is restarted or the cooldown expires.'
     if _AI_DISABLED_UNTIL and datetime.now(timezone.utc) >= _AI_DISABLED_UNTIL:
@@ -343,6 +346,7 @@ def openai_tts(text, api_key, voice='coral'):
         )
         if response.status_code == 200:
             return response.content
-    except Exception:
-        pass
+        _log.warning('TTS request failed: HTTP %s', response.status_code)
+    except Exception as exc:
+        _log.warning('TTS request error: %s', exc)
     return None

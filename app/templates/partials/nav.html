@@ -1,5 +1,5 @@
 {% set endpoint = request.endpoint or '' %}
-{% set reports_active = endpoint.startswith('reports.') or endpoint.startswith('cleo_api.') or endpoint == 'dashboard.cleo' %}
+{% set reports_active = endpoint.startswith('reports.') or endpoint.startswith('cleo_api.') or endpoint == 'dashboard.cleo' or endpoint.startswith('reconstruction.') %}
 {% set forms_active = endpoint.startswith('forms.') and endpoint not in ['forms.saved_forms'] and not endpoint.startswith('forms.view_saved_form') and not endpoint.startswith('forms.preview_saved_form') and not endpoint.startswith('forms.download_saved_form') and not endpoint.startswith('forms.email_saved_form') %}
 {% set saved_work_active = endpoint == 'forms.saved_forms' or endpoint.startswith('forms.view_saved_form') or endpoint.startswith('forms.preview_saved_form') or endpoint.startswith('forms.download_saved_form') or endpoint.startswith('forms.email_saved_form') %}
 {% set orders_active = endpoint.startswith('orders.') or endpoint.startswith('reference.') %}
@@ -20,7 +20,7 @@
   </form>
   <div class="mcpd-header-user">
     <button class="mcpd-theme-toggle" type="button" data-theme-toggle>Dark</button>
-    <span class="mcpd-alert-dot" aria-hidden="true">1</span>
+    <button class="mcpd-theme-toggle" type="button" data-view-toggle>Mobile</button>
     <div>
       <strong>{{ user.display_name }}</strong>
       <small>{{ portal_effective_role_label }}</small>
@@ -32,7 +32,12 @@
   <nav aria-label="Main navigation">
     <a class="{% if endpoint == 'dashboard.dashboard' %}is-active{% endif %}" href="{{ url_for('dashboard.dashboard') }}">Dashboard</a>
     <a class="{% if endpoint.startswith('legal.') %}is-active{% endif %}" href="{{ url_for('legal.legal_home') }}">Law Lookup</a>
-    <a class="{% if reports_active %}is-active{% endif %}" href="{{ url_for('reports.list_reports') }}">Reports</a>
+    <details class="mcpd-sidebar-admin" {% if reports_active %}open{% endif %}>
+      <summary>Reports</summary>
+      <a href="{{ url_for('reports.list_reports') }}">All Reports</a>
+      <a href="{{ url_for('reconstruction.accidents') }}">Accident Tools</a>
+      <a href="{{ url_for('reconstruction.case_list') }}">Reconstruction Cases</a>
+    </details>
     <a class="{% if forms_active %}is-active{% endif %}" href="{{ url_for('forms.list_forms') }}">Forms</a>
     <a class="{% if orders_active %}is-active{% endif %}" href="{{ url_for('orders.reference_search') }}">Orders &amp; Memos</a>
     <a class="{% if training_active %}is-active{% endif %}" href="{{ url_for('training.training_menu') }}">Training</a>

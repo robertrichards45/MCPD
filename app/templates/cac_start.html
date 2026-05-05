@@ -20,11 +20,11 @@
           <input type="hidden" name="next" value="{{ next_url }}" />
         {% endif %}
         <input type="hidden" name="action" value="create" />
-        <div class="mb-2">
+        <div class="mb-3">
           <label class="form-label">First Name</label>
           <input type="text" name="first_name" class="form-control" required />
         </div>
-        <div class="mb-2">
+        <div class="mb-3">
           <label class="form-label">Last Name</label>
           <input type="text" name="last_name" class="form-control" required />
         </div>
@@ -36,14 +36,14 @@
       </form>
     </div>
 
-    <div class="mb-2">
+    <div class="mb-3">
       <h5>Link CAC to Existing Account</h5>
       <form method="post" action="{{ url_for('auth.cac_account_start') }}">
         {% if next_url %}
           <input type="hidden" name="next" value="{{ next_url }}" />
         {% endif %}
         <input type="hidden" name="action" value="link" />
-        <div class="mb-2">
+        <div class="mb-3">
           <label class="form-label">Officer Number</label>
           <input type="text" name="officer_number" class="form-control" required />
         </div>

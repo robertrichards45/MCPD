@@ -30,7 +30,7 @@
         </div>
         <form method="post" action="{{ url_for('training.training_sign', roster_id=roster.id) }}" onsubmit="return submitSig()">
           <input type="hidden" name="signature_data" id="signature_data" />
-          <div class="mb-2">
+          <div class="mb-3">
             <label class="form-label text-dark">Comment (optional)</label>
             <input class="form-control" name="comment" />
           </div>

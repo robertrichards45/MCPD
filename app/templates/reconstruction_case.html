@@ -36,21 +36,40 @@
         </div>
         <div class="recon-body">
           <div class="recon-palette" data-palette>
-            <div class="recon-pal-title">Professional Tools</div>
-            <button type="button" class="recon-pal-btn" data-template="rear_end">Rear-End</button>
+            <div class="recon-pal-title">Drag to Place</div>
+
+            <div class="recon-pal-group">Roads</div>
             <button type="button" class="recon-pal-btn" data-item="road">Road</button>
             <button type="button" class="recon-pal-btn" data-item="intersection">Intersection</button>
-            <button type="button" class="recon-pal-btn" data-item="curve_left">Curve Left</button>
-            <button type="button" class="recon-pal-btn" data-item="curve_right">Curve Right</button>
+            <button type="button" class="recon-pal-btn" data-item="curve_left">Curve L</button>
+            <button type="button" class="recon-pal-btn" data-item="curve_right">Curve R</button>
+
+            <div class="recon-pal-group">Vehicles</div>
             <button type="button" class="recon-pal-btn" data-item="car">Car</button>
-            <button type="button" class="recon-pal-btn" data-item="animal_marker">Animal Marker</button>
+            <button type="button" class="recon-pal-btn" data-item="truck">Truck</button>
+            <button type="button" class="recon-pal-btn" data-item="motorcycle">Motorcycle</button>
+            <button type="button" class="recon-pal-btn" data-item="person">Person</button>
+            <button type="button" class="recon-pal-btn" data-item="deer">Deer/Animal</button>
+
+            <div class="recon-pal-group">Signs &amp; Signals</div>
+            <button type="button" class="recon-pal-btn" data-item="traffic_light">Traffic Light</button>
+            <button type="button" class="recon-pal-btn" data-item="stop_sign">Stop Sign</button>
+            <button type="button" class="recon-pal-btn" data-item="yield_sign">Yield Sign</button>
             <button type="button" class="recon-pal-btn" data-item="cone">Cone</button>
+
+            <div class="recon-pal-group">Markers &amp; Notes</div>
+            <button type="button" class="recon-pal-btn" data-item="waypoint">Waypoint</button>
+            <button type="button" class="recon-pal-btn" data-item="callout">Callout</button>
             <button type="button" class="recon-pal-btn" data-item="arrow">Arrow</button>
-            <button type="button" class="recon-pal-btn" data-item="point">Point of Impact</button>
-            <button type="button" class="recon-pal-btn" data-item="text">Text</button>
-            <label class="small text-muted mt-2 d-block"><input type="checkbox" checked> Show editing grid</label>
-            <label class="small text-muted mt-1 d-block"><input type="checkbox" checked> Snap objects to grid</label>
-            <div class="small text-muted mt-2">Tip: drag to place or click to add center.</div>
+            <button type="button" class="recon-pal-btn" data-item="skid">Skid Mark</button>
+            <button type="button" class="recon-pal-btn" data-item="impact">Impact</button>
+            <button type="button" class="recon-pal-btn" data-item="compass">Compass</button>
+            <button type="button" class="recon-pal-btn" data-item="text">Text Box</button>
+            <button type="button" class="recon-pal-btn" data-item="point">Point</button>
+
+            <div class="small text-muted mt-2" style="font-size:10px;line-height:1.4;">
+              Click to add center &bull; Drag to place &bull; R rotates &bull; L edits label &bull; Double-click edits &bull; Del removes
+            </div>
           </div>
           <div class="recon-canvas" data-canvas-wrap>
             <canvas></canvas>
@@ -64,15 +83,15 @@
         <details class="card p-3 collapse-card mb-3" open>
           <summary>Case Info</summary>
           <form method="post" action="{{ url_for('reconstruction.case_update', case_id=case.id) }}">
-            <div class="mb-2">
+            <div class="mb-3">
               <label class="form-label text-dark">Title</label>
               <input class="form-control" name="title" value="{{ case.title }}" />
             </div>
-            <div class="mb-2">
+            <div class="mb-3">
               <label class="form-label text-dark">Incident Date (YYYY-MM-DD)</label>
               <input class="form-control" name="incident_date" value="{{ case.incident_date or '' }}" />
             </div>
-            <div class="mb-2">
+            <div class="mb-3">
               <label class="form-label text-dark">Location</label>
               <input class="form-control" name="location" value="{{ case.location or '' }}" />
             </div>
@@ -83,19 +102,19 @@
         <details class="card p-3 collapse-card mb-3">
           <summary>Add Vehicle</summary>
           <form method="post" action="{{ url_for('reconstruction.add_vehicle', case_id=case.id) }}">
-            <div class="mb-2">
+            <div class="mb-3">
               <label class="form-label text-dark">Unit</label>
               <input class="form-control" name="unit" placeholder="Vehicle 1" />
             </div>
-            <div class="mb-2">
+            <div class="mb-3">
               <label class="form-label text-dark">Make/Model</label>
               <input class="form-control" name="make_model" placeholder="Toyota Camry" />
             </div>
-            <div class="mb-2">
+            <div class="mb-3">
               <label class="form-label text-dark">Direction</label>
               <input class="form-control" name="direction" placeholder="N/B" />
             </div>
-            <div class="mb-2">
+            <div class="mb-3">
               <label class="form-label text-dark">Notes</label>
               <input class="form-control" name="notes" placeholder="Damage or rest position notes" />
             </div>
@@ -106,21 +125,21 @@
         <details class="card p-3 collapse-card">
           <summary>Add Measurement</summary>
           <form method="post" action="{{ url_for('reconstruction.add_measurement', case_id=case.id) }}">
-            <div class="mb-2">
+            <div class="mb-3">
               <label class="form-label text-dark">Label</label>
               <input class="form-control" name="label" placeholder="Skid mark length" />
             </div>
             <div class="row">
-              <div class="col-md-6 mb-2">
+              <div class="col-md-6 mb-3">
                 <label class="form-label text-dark">Value</label>
                 <input class="form-control" name="value" placeholder="132" />
               </div>
-              <div class="col-md-6 mb-2">
+              <div class="col-md-6 mb-3">
                 <label class="form-label text-dark">Units</label>
                 <input class="form-control" name="units" placeholder="ft" />
               </div>
             </div>
-            <div class="mb-2">
+            <div class="mb-3">
               <label class="form-label text-dark">Notes</label>
               <input class="form-control" name="notes" placeholder="Surface or direction details" />
             </div>
@@ -133,7 +152,7 @@
         <details class="card p-3 collapse-card mb-3" open>
           <summary>Uploads</summary>
           <form method="post" action="{{ url_for('reconstruction.upload', case_id=case.id) }}" enctype="multipart/form-data" class="row">
-            <div class="col-md-6 mb-2">
+            <div class="col-md-6 mb-3">
               <label class="form-label text-dark">Kind</label>
               <select class="form-control" name="kind">
                 <option value="">(general)</option>
@@ -143,7 +162,7 @@
                 <option value="diagram">diagram</option>
               </select>
             </div>
-            <div class="col-md-6 mb-2">
+            <div class="col-md-6 mb-3">
               <label class="form-label text-dark">File</label>
               <input class="form-control" type="file" name="file" />
             </div>
@@ -221,5 +240,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/recon_editor.js', v='2026-02-10-3') }}"></script>
+<script src="{{ url_for('static', filename='js/recon_editor.js', v='2026-05-04-1') }}"></script>
 {% endblock %}

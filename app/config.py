@@ -3,10 +3,11 @@ from datetime import timedelta
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 ROOT_DIR = os.path.abspath(os.path.join(BASE_DIR, '..'))
-DATA_DIR = os.path.join(ROOT_DIR, 'data')
+_VOLUME_PATH = os.environ.get('RAILWAY_VOLUME_MOUNT_PATH', '').strip()
+DATA_DIR = _VOLUME_PATH if _VOLUME_PATH else os.path.join(ROOT_DIR, 'data')
 UPLOAD_ROOT = os.environ.get('UPLOAD_ROOT', os.path.join(DATA_DIR, 'uploads'))
 DEFAULT_DATABASE_URI = f"sqlite:///{os.path.join(DATA_DIR, 'app.db').replace(os.sep, '/')}"
-RAILWAY_VOLUME_MOUNT_PATH = os.environ.get('RAILWAY_VOLUME_MOUNT_PATH', '/data')
+RAILWAY_VOLUME_MOUNT_PATH = _VOLUME_PATH or '/data'
 
 
 def _database_url_from_env():
@@ -24,6 +25,11 @@ def _database_url_from_env():
         if os.environ.get(key) and os.environ.get(key).strip()
     ]
     if not candidates:
+        # On Railway with a mounted volume, automatically use the volume for
+        # SQLite so officer data survives redeploys without needing Postgres.
+        volume = os.environ.get('RAILWAY_VOLUME_MOUNT_PATH', '').strip()
+        if volume and (os.environ.get('RAILWAY_ENVIRONMENT') or os.environ.get('RAILWAY_PROJECT_ID')):
+            return f"sqlite:///{volume}/app.db"
         return ''
 
     # Railway can sometimes keep a stale DATABASE_URL around. In production,
@@ -36,7 +42,6 @@ def _database_url_from_env():
                 return value
 
     return candidates[0][1]
-    return ''
 
 
 def _header_list(value):

@@ -55,7 +55,7 @@
           <h5>Create Log Entry</h5>
           <p class="text-muted">Manual entry for the current day.</p>
           <form method="post" action="{{ url_for('ops_modules.truck_gate_log_create') }}">
-            <div class="mb-2">
+            <div class="mb-3">
               <label class="form-label text-dark">Driver</label>
               <select class="form-control" name="driver_id" required>
                 <option value="">Select a driver</option>
@@ -65,7 +65,7 @@
               </select>
               <input type="hidden" name="log_date" value="{{ current_log_date }}" />
             </div>
-            <div class="mb-2">
+            <div class="mb-3">
               <label class="form-label text-dark">Inspection Type</label>
               <select class="form-control" name="inspection_type">
                 <option value="">Select inspection type</option>
@@ -75,11 +75,11 @@
                 <option value="Denied Entry">Denied Entry</option>
               </select>
             </div>
-            <div class="mb-2">
+            <div class="mb-3">
               <label class="form-label text-dark">Scan Token / Card ID</label>
               <input class="form-control" name="scan_token" placeholder="Optional token or card id" />
             </div>
-            <div class="mb-2">
+            <div class="mb-3">
               <label class="form-label text-dark">Notes</label>
               <textarea class="form-control" name="notes" rows="2" placeholder="Inspection notes"></textarea>
             </div>
@@ -156,7 +156,7 @@
           <h5>Truck Gate Data Import</h5>
           <p class="text-muted">Default source is the desktop workbook on this PC.</p>
           <form method="post" action="{{ url_for('ops_modules.truck_gate_import_preview') }}">
-            <div class="mb-2">
+            <div class="mb-3">
               <label class="form-label text-dark">Source Workbook</label>
               <input class="form-control" name="source_path" value="{{ import_preview.source_path if import_preview else default_source_path }}" />
             </div>

@@ -1,6 +1,6 @@
 from flask import Flask, Response, g, redirect, render_template, request, send_file, session, url_for
 from flask_login import current_user
-from dotenv import load_dotenv
+from dotenv import dotenv_values, load_dotenv
 from datetime import datetime, timezone
 import hmac
 import logging
@@ -98,7 +98,9 @@ def _enforce_persistent_database_config(app):
         + details
     )
     logging.getLogger(__name__).critical(message)
-    raise RuntimeError(message)
+    # Log the warning but do not crash — a running app with ephemeral storage
+    # is better than a completely unreachable site. Fix the volume mount or
+    # DATABASE_URL in Railway Variables to make storage persistent.
 
 
 def _refresh_runtime_environment_config(app):
@@ -729,7 +731,7 @@ def create_app():
         if current_user.can_manage_team():
             try:
                 q = User.query.filter_by(pending_approval=True, active=False)
-                if not is_site_controller(current_user):
+                if not is_site_controller(current_user) and current_user.installation:
                     q = q.filter_by(installation=current_user.installation)
                 pending_approvals_count = q.count()
             except Exception:
@@ -798,15 +800,23 @@ def create_app():
         response.headers['Cache-Control'] = 'no-cache'
         return response
 
+    from .config import DATA_DIR, UPLOAD_ROOT
+    for _dir in (DATA_DIR, UPLOAD_ROOT):
+        try:
+            os.makedirs(_dir, exist_ok=True)
+        except Exception:
+            pass
+
     with app.app_context():
         try:
             db.create_all()
             ensure_schema()
             seed_roles()
             seed_admin()
-        except OperationalError as exc:
-            if 'readonly database' not in str(exc).lower():
-                raise
+        except Exception as exc:
+            logging.getLogger(__name__).critical(
+                'Database initialization failed — app will start but may be non-functional: %s', exc
+            )
 
     return app
 

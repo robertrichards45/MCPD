@@ -185,22 +185,23 @@ def _field_leaf_name(name: str) -> str:
 
 
 def _clean_pdf_label(label: str, fallback: str = '') -> str:
+    import re as _re
     text = ' '.join(str(label or '').replace('_', ' ').split()).strip()
     fallback_text = ' '.join(str(fallback or '').replace('_', ' ').split()).strip()
-    row_match = re.search(r'\bRow\s*([0-9]+)\b', text, flags=re.IGNORECASE)
+    row_match = _re.search(r'\bRow\s*([0-9]+)\b', text, flags=_re.IGNORECASE)
     if row_match and len(text) > 80:
         return f'Statement Row {row_match.group(1)}'
 
-    click_match = re.match(
+    click_match = _re.match(
         r'^([0-9]+[.)])?\s*Click here to select\s+"?([^",.]+)"?,?\s*(.*)$',
         text,
-        flags=re.IGNORECASE,
+        flags=_re.IGNORECASE,
     )
     if click_match:
         prefix = (click_match.group(1) or '').strip()
         option = (click_match.group(2) or '').strip()
         context = (click_match.group(3) or '').strip(' .')
-        context = re.sub(r'^(as|for)\s+', '', context, flags=re.IGNORECASE)
+        context = _re.sub(r'^(as|for)\s+', '', context, flags=_re.IGNORECASE)
         context = context.replace('the status of ', '')
         context = context.replace('one of the two appropriate boxes for ', '')
         cleaned = f'{prefix} {option}'.strip()
@@ -208,7 +209,11 @@ def _clean_pdf_label(label: str, fallback: str = '') -> str:
             cleaned = f'{cleaned} - {context}'
         return cleaned.strip(' .') or fallback_text or 'Field'
 
-    return text.rstrip(':') or fallback_text or 'Field'
+    resolved = text.rstrip(':') or fallback_text or 'Field'
+    # Purely numeric label (e.g. PDF field named "1", "2", "3") — prefix with "Field"
+    if _re.match(r'^[0-9]+$', resolved):
+        return f'Field {resolved}'
+    return resolved
 
 
 def _field_sort_key(item: dict):

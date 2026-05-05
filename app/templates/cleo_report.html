@@ -67,7 +67,7 @@
                           <td>
                             {% if field.annotations %}
                               {% for annotation in field.annotations %}
-                                <div class="mb-2">
+                                <div class="mb-3">
                                   <span class="badge bg-warning text-dark">{{ annotation.severity.replace('_', ' ') }}</span>
                                   <div class="small">{{ annotation.note }}</div>
                                 </div>
@@ -105,22 +105,22 @@
           <div class="card p-3 mb-3">
             <h4 class="mb-2">Grade Mock Report</h4>
             <form method="post" action="{{ url_for('cleo_api.cleo_report_grade', report_id=report.id) }}" id="gradeForm">
-              <div class="mb-2">
+              <div class="mb-3">
                 <label class="form-label">Disposition</label>
                 <select class="form-control" name="disposition">
                   <option value="RETURNED">Return for Corrections</option>
                   <option value="GRADED">Mark Graded / Final Review Complete</option>
                 </select>
               </div>
-              <div class="mb-2">
+              <div class="mb-3">
                 <label class="form-label">Score</label>
                 <input class="form-control" name="score" placeholder="0-100" />
               </div>
-              <div class="mb-2">
+              <div class="mb-3">
                 <label class="form-label">Summary</label>
                 <textarea class="form-control" name="summary" rows="4" placeholder="Overall grading summary"></textarea>
               </div>
-              <div class="mb-2">
+              <div class="mb-3">
                 <label class="form-label">Officer Review Notes</label>
                 <textarea class="form-control" name="officer_notes" rows="4" placeholder="Read-only notes the officer should review after grading"></textarea>
               </div>

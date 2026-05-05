@@ -33,7 +33,7 @@
           <h5>{{ module_title }} PIN Verification</h5>
           <p class="text-muted">Set or reset an officer PIN for {{ module_title }} verification.</p>
           <form method="post" action="{{ url_for('ops_modules.rfi_set_pin') }}">
-            <div class="mb-2">
+            <div class="mb-3">
               <label class="form-label text-dark">Officer</label>
               <select class="form-control" name="user_id" required>
                 <option value="">Select officer</option>
@@ -42,7 +42,7 @@
                 {% endfor %}
               </select>
             </div>
-            <div class="mb-2">
+            <div class="mb-3">
               <label class="form-label text-dark">PIN</label>
               <input class="form-control" name="pin_value" inputmode="numeric" pattern="[0-9]{4,6}" minlength="4" maxlength="6" required />
             </div>
@@ -54,7 +54,7 @@
           <h5>{{ module_title }} Card</h5>
           <p class="text-muted">Issue or reissue a revocable QR card token for an officer used at the {{ module_title }} station.</p>
           <form method="post" action="{{ url_for('ops_modules.rfi_card_issue') }}">
-            <div class="mb-2">
+            <div class="mb-3">
               <label class="form-label text-dark">Officer</label>
               <select class="form-control" name="user_id" required>
                 <option value="">Select officer</option>
@@ -337,7 +337,7 @@
           </form>
           <form method="post" action="{{ url_for('ops_modules.rfi_asset_save') }}">
             <div class="row">
-              <div class="col-md-3 mb-2">
+              <div class="col-md-3 mb-3">
                 <label class="form-label text-dark">Asset Type</label>
                 <select class="form-control" name="asset_type" required>
                   <option value="">Select type</option>
@@ -348,23 +348,23 @@
                   <option value="OC">OC</option>
                 </select>
               </div>
-              <div class="col-md-3 mb-2">
+              <div class="col-md-3 mb-3">
                 <label class="form-label text-dark">Label</label>
                 <input class="form-control" name="label" required />
               </div>
-              <div class="col-md-2 mb-2">
+              <div class="col-md-2 mb-3">
                 <label class="form-label text-dark">Rack #</label>
                 <input class="form-control" name="rack_number" />
               </div>
-              <div class="col-md-4 mb-2">
+              <div class="col-md-4 mb-3">
                 <label class="form-label text-dark">Serial #</label>
                 <input class="form-control" name="serial_number" required />
               </div>
-              <div class="col-md-3 mb-2">
+              <div class="col-md-3 mb-3">
                 <label class="form-label text-dark">Radio ID</label>
                 <input class="form-control" name="radio_identifier" />
               </div>
-              <div class="col-md-3 mb-2">
+              <div class="col-md-3 mb-3">
                 <label class="form-label text-dark">OC ID</label>
                 <input class="form-control" name="oc_identifier" />
               </div>
@@ -430,7 +430,7 @@
           </div>
           <form method="post" action="{{ url_for('ops_modules.rfi_transaction_save') }}">
             <div class="row">
-              <div class="col-md-4 mb-2">
+              <div class="col-md-4 mb-3">
                 <label class="form-label text-dark">Officer</label>
                 <select class="form-control" name="user_id" required>
                   <option value="">Select officer</option>
@@ -439,7 +439,7 @@
                   {% endfor %}
                 </select>
               </div>
-              <div class="col-md-4 mb-2">
+              <div class="col-md-4 mb-3">
                 <label class="form-label text-dark">Asset</label>
                 <select class="form-control" name="asset_id" required>
                   <option value="">Select asset</option>
@@ -448,22 +448,22 @@
                   {% endfor %}
                 </select>
               </div>
-              <div class="col-md-2 mb-2">
+              <div class="col-md-2 mb-3">
                 <label class="form-label text-dark">Action</label>
                 <select class="form-control" name="action" required>
                   <option value="ISSUE">Issue</option>
                   <option value="RETURN">Return</option>
                 </select>
               </div>
-              <div class="col-md-2 mb-2">
+              <div class="col-md-2 mb-3">
                 <label class="form-label text-dark">Rounds</label>
                 <input class="form-control" name="rounds_count" inputmode="numeric" />
               </div>
-              <div class="col-md-4 mb-2">
+              <div class="col-md-4 mb-3">
                 <label class="form-label text-dark">Officer PIN</label>
                 <input class="form-control" name="officer_pin" inputmode="numeric" pattern="[0-9]{4,6}" required />
               </div>
-              <div class="col-md-8 mb-2">
+              <div class="col-md-8 mb-3">
                 <label class="form-label text-dark">Notes</label>
                 <input class="form-control" name="notes" />
               </div>

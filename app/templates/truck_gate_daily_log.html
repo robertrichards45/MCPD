@@ -74,7 +74,7 @@
       <form method="post" action="{{ url_for('ops_modules.truck_gate_log_create') }}">
         <input type="hidden" name="log_date" value="{{ current_log_date }}" />
         <div class="row">
-          <div class="col-md-4 mb-2">
+          <div class="col-md-4 mb-3">
             <label class="form-label text-dark">Driver</label>
             <select class="form-control" name="driver_id" required>
               <option value="">Select a driver</option>
@@ -83,7 +83,7 @@
               {% endfor %}
             </select>
           </div>
-          <div class="col-md-3 mb-2">
+          <div class="col-md-3 mb-3">
             <label class="form-label text-dark">Inspection Type</label>
             <select class="form-control" name="inspection_type">
               <option value="">Select inspection type</option>
@@ -93,11 +93,11 @@
               <option value="Denied Entry">Denied Entry</option>
             </select>
           </div>
-          <div class="col-md-5 mb-2">
+          <div class="col-md-5 mb-3">
             <label class="form-label text-dark">Scan Token / Card ID</label>
             <input class="form-control" name="scan_token" placeholder="Optional token or card id" />
           </div>
-          <div class="col-md-12 mb-2">
+          <div class="col-md-12 mb-3">
             <label class="form-label text-dark">Notes</label>
             <textarea class="form-control" name="notes" rows="2" placeholder="Inspection notes for this daily file"></textarea>
           </div>

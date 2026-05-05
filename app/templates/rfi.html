@@ -80,7 +80,7 @@
         <h5>Build Entries From Appointment Letter Info</h5>
         <p class="text-muted">Use the file only to stage officer info into the pending list. No copy is kept.</p>
         <form method="post" action="{{ url_for('ops_modules.rfi_appointment_letter_upload') }}" enctype="multipart/form-data">
-          <div class="mb-2">
+          <div class="mb-3">
             <label class="form-label text-dark">Appointment Letter Files (Info Only)</label>
             <input class="form-control" type="file" name="appointment_letters" multiple accept=".jpg,.jpeg,.png,.heic,.pdf" />
           </div>
@@ -97,19 +97,19 @@
             <input type="hidden" name="profile_id" value="{{ editing_profile.id }}" />
           {% endif %}
           <div class="row">
-            <div class="col-md-3 mb-2">
+            <div class="col-md-3 mb-3">
               <label class="form-label text-dark">First Name</label>
               <input class="form-control" name="first_name" value="{{ editing_profile.first_name if editing_profile else '' }}" required />
             </div>
-            <div class="col-md-3 mb-2">
+            <div class="col-md-3 mb-3">
               <label class="form-label text-dark">Last Name</label>
               <input class="form-control" name="last_name" value="{{ editing_profile.last_name if editing_profile else '' }}" required />
             </div>
-            <div class="col-md-2 mb-2">
+            <div class="col-md-2 mb-3">
               <label class="form-label text-dark">Officer #</label>
               <input class="form-control" name="officer_number" value="{{ editing_profile.officer_number if editing_profile else '' }}" />
             </div>
-            <div class="col-md-4 mb-2">
+            <div class="col-md-4 mb-3">
               <label class="form-label text-dark">Role Level</label>
               <select class="form-control" name="role_level">
                 <option value="">Standard Officer</option>
@@ -118,23 +118,23 @@
                 {% endfor %}
               </select>
             </div>
-            <div class="col-md-2 mb-2">
+            <div class="col-md-2 mb-3">
               <label class="form-label text-dark">Rack #</label>
               <input class="form-control" name="rack_number" value="{{ editing_profile.rack_number if editing_profile else '' }}" />
             </div>
-            <div class="col-md-3 mb-2">
+            <div class="col-md-3 mb-3">
               <label class="form-label text-dark">Weapon Serial #</label>
               <input class="form-control" name="weapon_serial_number" value="{{ editing_profile.weapon_serial_number if editing_profile else '' }}" />
             </div>
-            <div class="col-md-3 mb-2">
+            <div class="col-md-3 mb-3">
               <label class="form-label text-dark">Weapon Type</label>
               <input class="form-control" name="weapon_type" value="{{ editing_profile.weapon_type if editing_profile else '' }}" />
             </div>
-            <div class="col-md-2 mb-2">
+            <div class="col-md-2 mb-3">
               <label class="form-label text-dark">OC Identifier</label>
               <input class="form-control" name="oc_identifier" value="{{ editing_profile.oc_identifier if editing_profile else '' }}" placeholder="Leave blank for default" />
             </div>
-            <div class="col-md-2 mb-2">
+            <div class="col-md-2 mb-3">
               <label class="form-label text-dark">Radio Identifier</label>
               <input class="form-control" name="radio_identifier" value="{{ editing_profile.radio_identifier if editing_profile else '' }}" placeholder="Leave blank for default" />
             </div>
