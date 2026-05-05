@@ -108,6 +108,7 @@ class User(UserMixin, db.Model):
     active = db.Column(db.Boolean, default=True)
     pending_approval = db.Column(db.Boolean, default=False, nullable=False)
     installation = db.Column(db.String(100), nullable=True)
+    preferred_legal_state = db.Column(db.String(2), nullable=True)
     created_at = db.Column(db.DateTime, default=utcnow_naive)
     supervisor = db.relationship('User', remote_side=[id], backref='direct_reports', foreign_keys=[supervisor_id])
     roles = db.relationship('Role', secondary='user_role', back_populates='users')

@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell">
+  {% include 'partials/nav.html' %}
+  <div class="page-wrap">
+    <div class="card p-3 mb-3 page-head">
+      <h2 class="mb-1">Accident Tools</h2>
+      <p class="text-muted mb-0">Select a tool based on your role and the complexity of the incident.</p>
+    </div>
+
+    <div class="row g-4 mb-4">
+      <div class="col-md-6">
+        <div class="card p-4 h-100 accident-tool-card">
+          <div class="accident-tool-badge accident-tool-badge--officer">Officer</div>
+          <h3 class="mt-3 mb-2">Accident Diagram</h3>
+          <p class="text-muted mb-3">
+            For responding officers. Quickly sketch the crash scene: position vehicles, place waypoints to mark the sequence of events, add callout notes, and generate a diagram for the case packet. Works on tablet or desktop.
+          </p>
+          <ul class="accident-tool-features mb-4">
+            <li>Drag-and-drop vehicles, signs, and road elements</li>
+            <li>Numbered waypoints for event sequence</li>
+            <li>Callout annotation boxes</li>
+            <li>Traffic lights, stop signs, skid marks, impact markers</li>
+            <li>Export PNG attached to the case record</li>
+          </ul>
+          <div class="mt-auto d-flex gap-2 flex-wrap">
+            <a class="btn btn-primary" href="{{ url_for('reconstruction.case_list') }}">Open Diagram Tool</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="card p-4 h-100 accident-tool-card accident-tool-card--advanced">
+          <div class="accident-tool-badge accident-tool-badge--investigator">Investigator</div>
+          <h3 class="mt-3 mb-2">Accident Reconstruction</h3>
+          <p class="text-muted mb-3">
+            For trained accident investigators. Full case management with vehicles, precise measurements, photo and evidence uploads, and a reconstruction packet PDF for submission.
+          </p>
+          <ul class="accident-tool-features mb-4">
+            <li>All diagram features plus precise measurements</li>
+            <li>Skid length, yaw radius, impact point logging</li>
+            <li>Photo, video, and PDF evidence attachment</li>
+            <li>Multi-vehicle case record with notes</li>
+            <li>Downloadable reconstruction packet PDF</li>
+          </ul>
+          <div class="mt-auto d-flex gap-2 flex-wrap">
+            <a class="btn btn-primary" href="{{ url_for('reconstruction.case_list') }}">Open Reconstruction Tool</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card p-3">
+      <h5 class="mb-2">Recent Cases</h5>
+      {% if recent_cases %}
+        <div class="list-group">
+          {% for c in recent_cases %}
+            <a class="list-group-item list-group-item-action" href="{{ url_for('reconstruction.case_detail', case_id=c.id) }}">
+              <div class="d-flex justify-content-between align-items-center">
+                <strong>#{{ c.id }} {{ c.title }}</strong>
+                <span class="small text-muted">{{ c.updated_at.strftime('%Y-%m-%d') if c.updated_at else '' }}</span>
+              </div>
+              <div class="small text-muted">
+                {{ c.incident_date or '' }}{% if c.location %} &bull; {{ c.location }}{% endif %}
+              </div>
+            </a>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-muted mb-0">No cases yet. Use one of the tools above to start.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

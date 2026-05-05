@@ -10,6 +10,7 @@ import sys
 
 from flask import Blueprint, Response, abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
+import os
 
 from ..extensions import db
 from ..models import AuditLog, StatCategory, StatsUpload
@@ -885,4 +886,29 @@ def legal_federal_review():
         selected_code=selected_code,
         summary=summary,
         weak_federal_queries=weak_federal_counter.most_common(40),
+    )
+
+
+@bp.route('/admin/system-status')
+@login_required
+def system_status():
+    require_admin()
+    api_key_raw = os.environ.get('OPENAI_API_KEY', '')
+    ai_key_set = bool(api_key_raw.strip())
+    ai_key_preview = f'{api_key_raw[:8]}…' if ai_key_set else '(not set)'
+    from ..services.ai_client import _AI_DISABLED_MESSAGE, _AI_DISABLED_UNTIL
+    from datetime import datetime, timezone as tz
+    ai_cooldown_active = bool(
+        _AI_DISABLED_MESSAGE
+        and _AI_DISABLED_UNTIL
+        and datetime.now(tz.utc) < _AI_DISABLED_UNTIL
+    )
+    return render_template(
+        'admin_system_status.html',
+        user=current_user,
+        ai_key_set=ai_key_set,
+        ai_key_preview=ai_key_preview,
+        ai_cooldown_active=ai_cooldown_active,
+        ai_cooldown_message=_AI_DISABLED_MESSAGE if ai_cooldown_active else '',
+        railway_env=os.environ.get('RAILWAY_ENVIRONMENT', ''),
     )

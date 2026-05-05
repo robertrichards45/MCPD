@@ -1,6 +1,6 @@
 from flask import Flask, Response, g, redirect, render_template, request, send_file, session, url_for
 from flask_login import current_user
-from dotenv import load_dotenv
+from dotenv import dotenv_values
 from datetime import datetime, timezone
 import hmac
 import logging
@@ -729,7 +729,7 @@ def create_app():
         if current_user.can_manage_team():
             try:
                 q = User.query.filter_by(pending_approval=True, active=False)
-                if not is_site_controller(current_user):
+                if not is_site_controller(current_user) and current_user.installation:
                     q = q.filter_by(installation=current_user.installation)
                 pending_approvals_count = q.count()
             except Exception:

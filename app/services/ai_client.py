@@ -164,7 +164,7 @@ def ask_openai(prompt, api_key):
     if not prompt:
         return 'Enter a question before using the AI assistant.'
     if not api_key:
-        return 'AI is not configured. Contact admin to set OPENAI_API_KEY.'
+        return 'AI is not configured. In Railway, add OPENAI_API_KEY to the service Variables tab (not Shared Variables), then redeploy.'
     if _AI_DISABLED_MESSAGE and _AI_DISABLED_UNTIL and datetime.now(timezone.utc) < _AI_DISABLED_UNTIL:
         return f'{_AI_DISABLED_MESSAGE} AI search assist is temporarily disabled until the portal is restarted or the cooldown expires.'
     if _AI_DISABLED_UNTIL and datetime.now(timezone.utc) >= _AI_DISABLED_UNTIL:
@@ -244,7 +244,7 @@ def ask_openai_with_system(prompt, system_prompt, api_key, history=None):
     if not prompt:
         return 'Enter a question before using the AI assistant.'
     if not api_key:
-        return 'AI is not configured. Contact admin to set OPENAI_API_KEY.'
+        return 'AI is not configured. In Railway, add OPENAI_API_KEY to the service Variables tab (not Shared Variables), then redeploy.'
     if _AI_DISABLED_MESSAGE and _AI_DISABLED_UNTIL and datetime.now(timezone.utc) < _AI_DISABLED_UNTIL:
         return f'{_AI_DISABLED_MESSAGE} AI search assist is temporarily disabled until the portal is restarted or the cooldown expires.'
     if _AI_DISABLED_UNTIL and datetime.now(timezone.utc) >= _AI_DISABLED_UNTIL:
