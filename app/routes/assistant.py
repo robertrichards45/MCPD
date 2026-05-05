@@ -17,6 +17,13 @@ _SYSTEM_PROMPT = (
     "Avoid unnecessary filler phrases. Speak plainly as if briefing another officer."
 )
 
+_RADIO_SYSTEM_PROMPT = (
+    "You are MCPD Assistant in radio mode. Respond like a professional field communications assistant. "
+    "Use short, clear, command-style sentences. Keep responses brief. Do not use filler. "
+    "For navigation or workflow questions, give the next action first. For report or legal questions, give concise guidance and tell the officer to verify facts and policy. "
+    "Do not invent facts, charges, evidence, statements, or policy."
+)
+
 
 def _local_assistant_reply(message: str) -> str:
     """Reliable MCPD fallback when premium AI is not configured or unavailable."""
@@ -89,13 +96,15 @@ def assistant_ask():
     body = request.get_json(silent=True) or {}
     message = (body.get('message') or '').strip()
     history = body.get('history') or []
+    voice_mode = (body.get('voice') or '').strip().lower()
 
     if not message:
         return jsonify({'ok': False, 'error': 'No message provided.'}), 400
 
     api_key = os.environ.get('OPENAI_API_KEY', '')
-    answer = ask_openai_with_system(message, _SYSTEM_PROMPT, api_key, history=history)
-    mode = 'premium'
+    system_prompt = _RADIO_SYSTEM_PROMPT if voice_mode == 'dispatcher' else _SYSTEM_PROMPT
+    answer = ask_openai_with_system(message, system_prompt, api_key, history=history)
+    mode = 'premium_radio' if voice_mode == 'dispatcher' else 'premium'
     if is_ai_unavailable_message(answer):
         answer = _local_assistant_reply(message)
         mode = 'local_fallback'
