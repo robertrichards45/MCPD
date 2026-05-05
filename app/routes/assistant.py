@@ -1,5 +1,6 @@
 import hmac
 import os
+import re
 
 from flask import Blueprint, Response, g, jsonify, request, session, url_for
 from flask_login import current_user, login_required
@@ -20,9 +21,60 @@ _SYSTEM_PROMPT = (
 _RADIO_SYSTEM_PROMPT = (
     "You are MCPD Assistant in radio mode. Respond like a professional field communications assistant. "
     "Use short, clear, command-style sentences. Keep responses brief. Do not use filler. "
+    "Address the officer by their role, call sign, or unit label when provided. "
     "For navigation or workflow questions, give the next action first. For report or legal questions, give concise guidance and tell the officer to verify facts and policy. "
     "Do not invent facts, charges, evidence, statements, or policy."
 )
+
+
+def _safe_user_context():
+    """Build a small, non-sensitive context block from the logged-in portal user."""
+    if not getattr(current_user, 'is_authenticated', False):
+        return ''
+    pieces = []
+    display_name = getattr(current_user, 'display_name', '') or getattr(current_user, 'username', '') or ''
+    role_label = getattr(current_user, 'role_label', '') or getattr(current_user, 'role', '') or ''
+    officer_number = getattr(current_user, 'officer_number', '') or getattr(current_user, 'badge_employee_id', '') or ''
+    section_unit = getattr(current_user, 'section_unit', '') or ''
+    if display_name:
+        pieces.append(f'Officer name/display: {display_name}')
+    if role_label:
+        pieces.append(f'Officer role: {role_label}')
+    if officer_number:
+        pieces.append(f'Officer/unit identifier: {officer_number}')
+    if section_unit:
+        pieces.append(f'Section/unit: {section_unit}')
+    return '; '.join(pieces)
+
+
+def _extract_spoken_unit_label(message: str) -> str:
+    """Detect simple spoken unit labels such as Unit 2, Unit 12, Desk, or Watch Commander."""
+    text = (message or '').strip()
+    patterns = [
+        r'\b(unit\s*[0-9A-Za-z-]{1,10})\b',
+        r'\b(patrol\s*[0-9A-Za-z-]{1,10})\b',
+        r'\b(post\s*[0-9A-Za-z-]{1,10})\b',
+        r'\b(watch\s+commander)\b',
+        r'\b(desk\s+sergeant|desk\s+sgt|desk)\b',
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, text, flags=re.IGNORECASE)
+        if match:
+            return ' '.join(match.group(1).split()).title()
+    return ''
+
+
+def _build_radio_prompt(message: str) -> str:
+    user_context = _safe_user_context()
+    spoken_unit = _extract_spoken_unit_label(message)
+    context_parts = []
+    if user_context:
+        context_parts.append('Logged-in officer context: ' + user_context + '.')
+    if spoken_unit:
+        context_parts.append('Use this call sign/unit label when appropriate: ' + spoken_unit + '.')
+    if context_parts:
+        return _RADIO_SYSTEM_PROMPT + ' ' + ' '.join(context_parts)
+    return _RADIO_SYSTEM_PROMPT
 
 
 def _local_assistant_reply(message: str) -> str:
@@ -102,9 +154,9 @@ def assistant_ask():
         return jsonify({'ok': False, 'error': 'No message provided.'}), 400
 
     api_key = os.environ.get('OPENAI_API_KEY', '')
-    system_prompt = _RADIO_SYSTEM_PROMPT if voice_mode == 'dispatcher' else _SYSTEM_PROMPT
+    system_prompt = _build_radio_prompt(message) if voice_mode == 'dispatcher' else _SYSTEM_PROMPT
     answer = ask_openai_with_system(message, system_prompt, api_key, history=history)
-    mode = 'premium_radio' if voice_mode == 'dispatcher' else 'premium'
+    mode = 'premium_radio_unit_aware' if voice_mode == 'dispatcher' else 'premium'
     if is_ai_unavailable_message(answer):
         answer = _local_assistant_reply(message)
         mode = 'local_fallback'
