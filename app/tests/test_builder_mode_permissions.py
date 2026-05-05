@@ -4,10 +4,11 @@ from app.models import AuditLog, ROLE_PATROL_OFFICER, ROLE_WEBSITE_CONTROLLER, U
 from app.permissions import can_access_builder_mode, is_site_owner
 
 
-def _login(client, user):
+def _login(client, user_or_id):
+    user_id = user_or_id if isinstance(user_or_id, int) else user_or_id.id
     with client.session_transaction() as session:
         session.clear()
-        session['_user_id'] = str(user.id)
+        session['_user_id'] = str(user_id)
         session['_fresh'] = True
 
 
@@ -40,16 +41,20 @@ def test_site_builder_owner_only_by_default():
         non_owner_admin = _make_user('builder_non_owner_admin', ROLE_WEBSITE_CONTROLLER)
         assert is_site_owner(non_owner_admin) is False
         assert can_access_builder_mode(non_owner_admin) is False
+        owner_id = owner.id
+        non_owner_admin_id = non_owner_admin.id
 
-        non_owner_client = app.test_client()
-        _login(non_owner_client, non_owner_admin)
-        assert non_owner_client.get('/admin/site-builder').status_code == 403
-        assert 'Site Builder' not in non_owner_client.get('/dashboard').get_data(as_text=True)
+    non_owner_client = app.test_client()
+    _login(non_owner_client, non_owner_admin_id)
+    assert non_owner_client.get('/admin/site-builder').status_code == 403
+    assert 'Site Builder' not in non_owner_client.get('/dashboard').get_data(as_text=True)
 
-        owner_client = app.test_client()
-        _login(owner_client, owner)
-        assert owner_client.get('/admin/site-builder').status_code == 200
+    owner_client = app.test_client()
+    _login(owner_client, owner_id)
+    assert owner_client.get('/admin/site-builder').status_code == 200
 
+    with app.app_context():
+        non_owner_admin = db.session.get(User, non_owner_admin_id)
         db.session.delete(non_owner_admin)
         db.session.commit()
 
