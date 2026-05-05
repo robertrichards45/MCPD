@@ -201,7 +201,7 @@ def _disable_ai_temporarily(message, minutes=1):
 
 def ask_openai(prompt, api_key):
     global _AI_DISABLED_MESSAGE, _AI_DISABLED_UNTIL
-    api_key = (api_key or os.environ.get('OPENAI_API_KEY') or '').strip()
+    api_key = configured_openai_api_key(api_key)
     prompt = (prompt or '').strip()
 
     if not prompt:
@@ -219,7 +219,7 @@ def ask_openai(prompt, api_key):
         'Content-Type': 'application/json',
     }
     payload = {
-        'model': 'gpt-4.1-mini',
+        'model': configured_openai_model(),
         'input': [
             {
                 'role': 'system',
@@ -281,7 +281,7 @@ def ask_openai_with_system(prompt, system_prompt, api_key, history=None):
     Returns the assistant's reply string (may be an error message).
     """
     global _AI_DISABLED_MESSAGE, _AI_DISABLED_UNTIL
-    api_key = (api_key or os.environ.get('OPENAI_API_KEY') or '').strip()
+    api_key = configured_openai_api_key(api_key)
     prompt = (prompt or '').strip()
 
     if not prompt:
@@ -307,7 +307,7 @@ def ask_openai_with_system(prompt, system_prompt, api_key, history=None):
         'Content-Type': 'application/json',
     }
     payload = {
-        'model': 'gpt-4.1-mini',
+        'model': configured_openai_model(),
         'input': input_messages,
     }
 
@@ -357,8 +357,8 @@ _ALLOWED_VOICES = {'alloy', 'ash', 'coral', 'echo', 'fable', 'nova', 'onyx', 'sh
 
 
 def openai_tts(text, api_key, voice='coral'):
-    """Call OpenAI TTS (tts-1-hd for higher quality) and return raw audio bytes (MP3), or None on failure."""
-    api_key = (api_key or os.environ.get('OPENAI_API_KEY') or '').strip()
+    """Call OpenAI TTS and return raw audio bytes (MP3), or None on failure."""
+    api_key = configured_openai_api_key(api_key)
     text = (text or '').strip()
     if not text or not api_key:
         return None
@@ -372,7 +372,7 @@ def openai_tts(text, api_key, voice='coral'):
         'Content-Type': 'application/json',
     }
     payload = {
-        'model': 'tts-1-hd',   # higher-quality model — noticeably more natural
+        'model': configured_openai_tts_model(),
         'input': text[:4096],
         'voice': voice,
     }
