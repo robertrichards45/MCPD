@@ -4,11 +4,12 @@ import os
 import re
 from datetime import datetime
 
-from flask import Blueprint, Response, g, jsonify, request, session, url_for
+from flask import Blueprint, Response, g, jsonify, request, session, url_for, render_template, send_from_directory
 from flask_login import current_user, login_required
 
 from ..permissions import can_manage_site
 from ..services.ai_client import _ALLOWED_VOICES, ask_openai_with_system, is_ai_unavailable_message, openai_key_status, openai_tts
+from ..services.smart_filing import allowed_file, build_storage_path, classify_document, smart_title
 
 bp = Blueprint('assistant', __name__)
 
@@ -27,6 +28,20 @@ _RADIO_SYSTEM_PROMPT = (
     "For navigation or workflow questions, give the next action first. For report or legal questions, give concise guidance and tell the officer to verify facts and policy. "
     "Do not invent facts, charges, evidence, statements, or policy."
 )
+
+ROLE_LEARNING_AREAS = {
+    'WATCH_COMMANDER': 'Watch Commander',
+    'DESK_SGT': 'Desk Sergeant',
+    'FIELD_TRAINING_OFFICER': 'Field Training Officer',
+    'ACCIDENT_INVESTIGATOR': 'Accident Investigator',
+    'SRT': 'Special Reaction Team',
+    'K9': 'K9',
+    'ASSISTANT_OPERATIONS_OFFICER': 'Assistant Operations Officer',
+    'OPERATIONS_OFFICER': 'Operations Officer',
+    'DEPUTY_CHIEF': 'Deputy Chief',
+    'CHIEF': 'Chief',
+    'WEBSITE_CONTROLLER': 'Website Controller',
+}
 
 
 def _safe_user_context():
@@ -138,15 +153,25 @@ def _save_json_store(filename, data):
         json.dump(data, handle, indent=2)
 
 
+def _current_role_key():
+    return (getattr(current_user, 'normalized_role', '') or getattr(current_user, 'role', '') or '').upper()
+
+
 def _is_supervisor():
-    role = (getattr(current_user, 'normalized_role', '') or getattr(current_user, 'role', '') or '').upper()
-    return role in {'WEBSITE_CONTROLLER', 'WATCH_COMMANDER', 'DESK_SGT', 'FIELD_TRAINING_OFFICER'} or can_manage_site(current_user)
+    role = _current_role_key()
+    return role in set(ROLE_LEARNING_AREAS.keys()) or can_manage_site(current_user)
 
 
 def _require_supervisor_json():
     if not _is_supervisor():
         return jsonify({'ok': False, 'error': 'Supervisor access required.'}), 403
     return None
+
+
+def _admin_storage_root():
+    root = os.path.join(os.getcwd(), 'instance', 'wc_admin_files')
+    os.makedirs(root, exist_ok=True)
+    return root
 
 
 def _build_counseling_text(data):
@@ -157,16 +182,11 @@ def _build_counseling_text(data):
     standard = data.get('standard') or 'Officer is expected to comply with MCPD standards, post orders, lawful instructions, and professional conduct requirements.'
     corrective = data.get('corrective_action') or 'Officer will correct the deficiency immediately and comply with all future instructions and standards.'
     followup = data.get('follow_up') or 'Supervisor will monitor future performance and document additional issues if necessary.'
+    role = ROLE_LEARNING_AREAS.get(_current_role_key(), 'Supervisor')
     return (
-        f'{ctype}\n\n'
-        f'Officer: {officer}\n'
-        f'Category: {category}\n'
-        f'Date: {datetime.utcnow().strftime("%Y-%m-%d")}\n\n'
-        f'Facts/Reason for Counseling:\n{facts}\n\n'
-        f'Standard/Expectation:\n{standard}\n\n'
-        f'Corrective Action/Plan:\n{corrective}\n\n'
-        f'Follow-Up:\n{followup}\n\n'
-        'This counseling documents the supervisor guidance provided and does not replace any required LER, HR, command, or administrative action when applicable.'
+        f'{ctype}\n\nOfficer: {officer}\nRole/Prepared By: {role}\nCategory: {category}\nDate: {datetime.utcnow().strftime("%Y-%m-%d")}\n\n'
+        f'Facts/Reason for Counseling:\n{facts}\n\nStandard/Expectation:\n{standard}\n\nCorrective Action/Plan:\n{corrective}\n\nFollow-Up:\n{followup}\n\n'
+        'This counseling documents supervisor guidance and does not replace any required LER, HR, command, or administrative action when applicable.'
     )
 
 
@@ -176,14 +196,37 @@ def _build_award_text(data):
     impact = data.get('impact') or 'positively impacted department operations and mission readiness'
     actions = data.get('actions') or 'performed duties above the expected standard'
     period = data.get('period') or 'the reporting period'
+    role = ROLE_LEARNING_AREAS.get(_current_role_key(), 'Supervisor')
     return (
-        f'{award_type} Recommendation\n\n'
-        f'Nominee: {officer}\n'
-        f'Period: {period}\n\n'
+        f'{award_type} Recommendation\n\nNominee: {officer}\nPrepared By Role: {role}\nPeriod: {period}\n\n'
         f'Recommended Narrative:\nDuring {period}, {officer} {actions}. These actions {impact}. '
-        'The officer demonstrated initiative, professionalism, and commitment to mission accomplishment. '
+        f'{officer} demonstrated initiative, professionalism, and commitment to mission accomplishment. '
         f'Recommend approval of a {award_type.lower()} in recognition of this contribution.'
     )
+
+
+def _file_index():
+    return _load_json_store('file_index.json', [])
+
+
+def _save_file_index(items):
+    _save_json_store('file_index.json', items[:2000])
+
+
+@bp.get('/admin/watch-commander')
+@login_required
+def admin_console():
+    if not _is_supervisor():
+        return 'Forbidden', 403
+    return render_template('wc_admin_console.html')
+
+
+@bp.get('/admin/officer-files')
+@login_required
+def officer_file_console():
+    if not _is_supervisor():
+        return 'Forbidden', 403
+    return render_template('wc_officer_files.html')
 
 
 @bp.post('/api/assistant/ask')
@@ -241,44 +284,46 @@ def assistant_status():
     return jsonify({'ok': True, 'openai': status})
 
 
-@bp.post('/api/admin/narrative-learning/submit')
+@bp.post('/api/admin/learning/submit')
 @login_required
-def submit_narrative_learning():
+def submit_learning():
     body = request.get_json(silent=True) or {}
-    items = _load_json_store('narrative_learning_pending.json', [])
+    items = _load_json_store('learning_pending.json', [])
     entry = {
-        'id': f'nl-{int(datetime.utcnow().timestamp())}-{len(items)+1}',
-        'incidentType': body.get('incidentType', 'general'),
+        'id': f'learn-{int(datetime.utcnow().timestamp())}-{len(items)+1}',
+        'system': body.get('system', 'general'),
+        'role': body.get('role') or _current_role_key(),
         'original': body.get('original', ''),
         'edited': body.get('edited', ''),
+        'notes': body.get('notes', ''),
         'submittedBy': getattr(current_user, 'username', 'unknown'),
         'status': 'pending',
         'createdAt': datetime.utcnow().isoformat(),
     }
     items.insert(0, entry)
-    _save_json_store('narrative_learning_pending.json', items[:200])
+    _save_json_store('learning_pending.json', items[:500])
     return jsonify({'ok': True, 'entry': entry})
 
 
-@bp.get('/api/admin/narrative-learning/pending')
+@bp.get('/api/admin/learning/pending')
 @login_required
-def list_narrative_learning_pending():
+def list_learning_pending():
     denied = _require_supervisor_json()
     if denied:
         return denied
-    return jsonify({'ok': True, 'items': _load_json_store('narrative_learning_pending.json', [])})
+    return jsonify({'ok': True, 'items': _load_json_store('learning_pending.json', [])})
 
 
-@bp.post('/api/admin/narrative-learning/approve')
+@bp.post('/api/admin/learning/approve')
 @login_required
-def approve_narrative_learning():
+def approve_learning():
     denied = _require_supervisor_json()
     if denied:
         return denied
     body = request.get_json(silent=True) or {}
     entry_id = body.get('id')
-    pending = _load_json_store('narrative_learning_pending.json', [])
-    approved = _load_json_store('narrative_learning_approved.json', [])
+    pending = _load_json_store('learning_pending.json', [])
+    approved = _load_json_store('learning_approved.json', [])
     remaining = []
     approved_entry = None
     for item in pending:
@@ -292,9 +337,27 @@ def approve_narrative_learning():
     if not approved_entry:
         return jsonify({'ok': False, 'error': 'Entry not found.'}), 404
     approved.insert(0, approved_entry)
-    _save_json_store('narrative_learning_pending.json', remaining)
-    _save_json_store('narrative_learning_approved.json', approved[:200])
+    _save_json_store('learning_pending.json', remaining)
+    _save_json_store('learning_approved.json', approved[:500])
     return jsonify({'ok': True, 'entry': approved_entry})
+
+
+@bp.post('/api/admin/narrative-learning/submit')
+@login_required
+def submit_narrative_learning():
+    return submit_learning()
+
+
+@bp.get('/api/admin/narrative-learning/pending')
+@login_required
+def list_narrative_learning_pending():
+    return list_learning_pending()
+
+
+@bp.post('/api/admin/narrative-learning/approve')
+@login_required
+def approve_narrative_learning():
+    return approve_learning()
 
 
 @bp.post('/api/admin/counseling/generate')
@@ -313,6 +376,7 @@ def generate_counseling():
         'category': body.get('category', ''),
         'generatedText': text,
         'createdBy': getattr(current_user, 'username', 'unknown'),
+        'role': _current_role_key(),
         'createdAt': datetime.utcnow().isoformat(),
     }
     records.insert(0, record)
@@ -335,8 +399,79 @@ def generate_award():
         'awardType': body.get('award_type', ''),
         'generatedText': text,
         'createdBy': getattr(current_user, 'username', 'unknown'),
+        'role': _current_role_key(),
         'createdAt': datetime.utcnow().isoformat(),
     }
     records.insert(0, record)
     _save_json_store('award_records.json', records[:500])
     return jsonify({'ok': True, 'record': record, 'text': text})
+
+
+@bp.post('/api/admin/files/upload')
+@login_required
+def admin_file_upload():
+    denied = _require_supervisor_json()
+    if denied:
+        return denied
+    area = request.form.get('area', 'officer_files')
+    officer_id = request.form.get('officer_id') or 'unassigned'
+    description = request.form.get('description', '')
+    files = request.files.getlist('files') or request.files.getlist('file')
+    index = _file_index()
+    saved = []
+    for upload in files:
+        if not upload or not upload.filename or not allowed_file(upload.filename):
+            continue
+        category = classify_document(upload.filename, description, area=area)
+        title = smart_title(upload.filename, description)
+        full_path, stored_name = build_storage_path(_admin_storage_root(), officer_id, category, upload.filename, area=area)
+        upload.save(full_path)
+        rel_path = os.path.relpath(full_path, _admin_storage_root()).replace('\\', '/')
+        item = {
+            'id': f'file-{int(datetime.utcnow().timestamp())}-{len(index)+len(saved)+1}',
+            'title': title,
+            'filename': upload.filename,
+            'storedName': stored_name,
+            'relativePath': rel_path,
+            'area': area,
+            'officerId': officer_id,
+            'category': category,
+            'description': description,
+            'uploadedBy': getattr(current_user, 'username', 'unknown'),
+            'uploadedAt': datetime.utcnow().isoformat(),
+        }
+        index.insert(0, item)
+        saved.append(item)
+    _save_file_index(index)
+    return jsonify({'ok': True, 'saved': saved})
+
+
+@bp.get('/api/admin/files')
+@login_required
+def admin_files_list():
+    denied = _require_supervisor_json()
+    if denied:
+        return denied
+    officer_id = request.args.get('officer_id')
+    area = request.args.get('area')
+    items = _file_index()
+    if officer_id:
+        items = [item for item in items if str(item.get('officerId')) == str(officer_id)]
+    if area:
+        items = [item for item in items if item.get('area') == area]
+    return jsonify({'ok': True, 'items': items[:500]})
+
+
+@bp.get('/api/admin/files/download/<path:rel_path>')
+@login_required
+def admin_file_download(rel_path):
+    denied = _require_supervisor_json()
+    if denied:
+        return denied
+    root = _admin_storage_root()
+    full = os.path.abspath(os.path.join(root, rel_path))
+    if not full.startswith(os.path.abspath(root)) or not os.path.exists(full):
+        return 'Not found', 404
+    directory = os.path.dirname(full)
+    filename = os.path.basename(full)
+    return send_from_directory(directory, filename, as_attachment=True)
