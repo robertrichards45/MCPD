@@ -4,10 +4,14 @@
 <div class="login-bg">
   <div class="login-panel login-panel--professional">
     <section class="login-panel__brand">
-      <div class="login-badge">MCPD Secure Access</div>
-      <img src="{{ url_for('usmc_emblem') }}" alt="USMC Emblem" class="login-emblem" />
-      <h1>MCPD Portal</h1>
-      <p class="subtitle">Operations, reporting, and field support for authorized personnel.</p>
+      <div class="login-brand-row">
+        <img src="{{ url_for('usmc_emblem') }}" alt="USMC Emblem" class="login-emblem" />
+        <div>
+          <div class="login-badge">MCPD Secure Access</div>
+          <h1>MCPD Portal</h1>
+        </div>
+      </div>
+      <p class="subtitle">Command portal access for reports, forms, law lookup, orders, training, and field workflows.</p>
       <div class="login-status-row" aria-label="Portal status">
         <span class="login-status-pill">
           Mode
@@ -20,7 +24,7 @@
       </div>
       <div class="login-callout">
         <h2>Authorized Use Only</h2>
-        <p>Use your MCPD account to access reporting, references, and command workflows.</p>
+        <p>Use your MCPD account to access protected law-enforcement tools. Activity may be reviewed by command staff.</p>
       </div>
     </section>
     <section class="login-panel__auth">
@@ -50,7 +54,7 @@
       </form>
       <div class="login-help-note">
         <strong>Need access?</strong>
-        <a href="{{ url_for('auth.register') }}">Create an account request</a> — a Watch Commander at your installation will activate it.
+        <a href="{{ url_for('auth.register') }}">Create an account request</a> - a Watch Commander at your installation will activate it.
       </div>
     </section>
   </div>
