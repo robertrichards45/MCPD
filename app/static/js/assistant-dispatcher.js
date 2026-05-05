@@ -11,13 +11,15 @@
     try { localStorage.setItem(VOICE_STORAGE_KEY, value); } catch (e) {}
   }
 
-  function radioPreview() {
-    if (!window.speechSynthesis) return;
-    window.speechSynthesis.cancel();
-    var utt = new SpeechSynthesisUtterance('Dispatcher mode selected. Standing by.');
-    utt.rate = 1.32;
-    utt.pitch = 0.78;
-    window.speechSynthesis.speak(utt);
+  function speakRadio(text) {
+    if (!window.speechSynthesis || !text) return;
+    try {
+      window.speechSynthesis.cancel();
+      var utt = new SpeechSynthesisUtterance(text);
+      utt.rate = 1.32;
+      utt.pitch = 0.78;
+      window.speechSynthesis.speak(utt);
+    } catch (e) {}
   }
 
   function addDispatcherVoiceCard() {
@@ -33,15 +35,39 @@
       list.querySelectorAll('.ai-voice-card').forEach(function (c) {
         c.classList.toggle('ai-voice-selected', c.getAttribute('data-voice') === 'dispatcher');
       });
-      radioPreview();
+      speakRadio('Dispatcher mode selected. Standing by.');
     });
     list.insertBefore(card, list.firstChild);
+  }
+
+  function patchAssistantFetch() {
+    var originalFetch = window.fetch;
+    if (!originalFetch || originalFetch.mcpdDispatcherPatch) return;
+
+    function patchedFetch(input, init) {
+      try {
+        var url = (typeof input === 'string') ? input : ((input && input.url) || '');
+        if (url.indexOf('/api/assistant/ask') !== -1 && init && init.body) {
+          var payload = JSON.parse(init.body);
+          payload.voice = getSavedVoice();
+          init.body = JSON.stringify(payload);
+          if (payload.voice === 'dispatcher') {
+            speakRadio('Copy. Stand by.');
+          }
+        }
+      } catch (e) {}
+      return originalFetch.apply(this, arguments);
+    }
+
+    patchedFetch.mcpdDispatcherPatch = true;
+    window.fetch = patchedFetch;
   }
 
   document.addEventListener('click', function () {
     setTimeout(addDispatcherVoiceCard, 50);
   });
   window.addEventListener('load', function () {
+    patchAssistantFetch();
     addDispatcherVoiceCard();
     setInterval(addDispatcherVoiceCard, 1500);
   });
