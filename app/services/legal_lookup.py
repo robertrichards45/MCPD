@@ -1353,9 +1353,14 @@ SCENARIO_PACKS = {
             'exposed himself',
             'exposed herself',
             'lewd conduct',
+            'public defecation',
+            'defecating in public',
+            'pooping in public',
+            'pooping in the street',
         ),
         'codes': (
             'OCGA 16-6-8',
+            'OCGA 16-11-39',
         ),
     },
     'disrespect': {
@@ -1535,6 +1540,10 @@ INTENT_PHRASE_CODES = {
     'indecent exposure': ('OCGA 16-6-8',),
     'streaking': ('OCGA 16-6-8',),
     'public nudity': ('OCGA 16-6-8',),
+    'public defecation': ('OCGA 16-11-39', 'OCGA 16-6-8'),
+    'defecating in public': ('OCGA 16-11-39', 'OCGA 16-6-8'),
+    'pooping in public': ('OCGA 16-11-39', 'OCGA 16-6-8'),
+    'pooping in the street': ('OCGA 16-11-39', 'OCGA 16-6-8'),
     'parking in handicap without sticker': ('OCGA 40-6-221',),
     'handicap parking': ('OCGA 40-6-221',),
     'ran stop sign': ('OCGA 40-6-20', 'OCGA 40-6-72'),
@@ -1694,6 +1703,10 @@ PHRASE_ALIASES = {
     'indecent exposure': ('public indecency',),
     'streaking': ('public indecency', 'indecent exposure', 'public nudity'),
     'public nudity': ('public indecency', 'indecent exposure', 'streaking'),
+    'public defecation': ('disorderly conduct', 'public indecency', 'public nuisance'),
+    'defecating in public': ('disorderly conduct', 'public indecency', 'public nuisance'),
+    'pooping in public': ('disorderly conduct', 'public indecency', 'public nuisance'),
+    'pooping in the street': ('disorderly conduct', 'public indecency', 'public nuisance'),
     'parking in handicap without sticker': ('handicap parking', 'disabled parking'),
     'ran stop sign': ('stop sign', 'traffic control device'),
     'mclb traffic': ('base traffic', 'installation traffic'),
@@ -3366,7 +3379,7 @@ def search_entries(query: str, source: str = 'ALL', strict_gating: bool = True) 
     speed_phrase = bool(re.search(r'\b\d{1,3}\s*(?:in|/)\s*(?:a\s*)?\d{1,3}\b', normalized_query))
     dui_phrase = bool(re.search(r'\bdui\b|impaired|drunk|alcohol|refus\w+\s+(?:breath|blood|test)|implied consent|less safe|weav\w+', normalized_query))
     sexual_phrase = bool(re.search(r'\brape\w*\b|sexual assault|sexual battery|nonconsensual|forced sex', normalized_query))
-    public_indecency_phrase = bool(re.search(r'\bsex in public\b|\bpublic sex\b|public indecency|indecent exposure|lewd conduct|exposed (himself|herself)', normalized_query))
+    public_indecency_phrase = bool(re.search(r'\bsex in public\b|\bpublic sex\b|public indecency|indecent exposure|lewd conduct|exposed (himself|herself)|public defecation|defecat\w+ in public|poop\w+ in (?:public|the street|street)', normalized_query))
     handicap_phrase = bool(re.search(r'handicap parking|disabled parking|parking in handicap', normalized_query))
     stop_sign_phrase = bool(re.search(r'ran stop sign|stop sign', normalized_query))
     drug_phrase = bool(re.search(r'drug|drugs|narcotic|cocaine|meth|methamphetamine|marijuana|weed|cannabis|paraphernalia|prescription|pill|fentanyl', normalized_query))
@@ -3414,7 +3427,7 @@ def search_entries(query: str, source: str = 'ALL', strict_gating: bool = True) 
         speed_codes.add('OCGA 40-6-397')
     dui_codes = {'OCGA 40-6-391', 'OCGA 40-5-67.1', 'OCGA 40-6-392', 'OCGA 40-6-48'}
     sexual_codes = {'OCGA 16-6-1', 'OCGA 16-6-22', 'Article 120'}
-    public_indecency_codes = {'OCGA 16-6-8'}
+    public_indecency_codes = {'OCGA 16-6-8', 'OCGA 16-11-39'}
     vehicle_theft_codes = {'OCGA 16-8-2', 'OCGA 16-8-60'}
     retail_theft_codes = {'OCGA 16-8-14', 'OCGA 16-8-2'}
     nonviolent_person_crime_codes = {'OCGA 16-5-40', 'OCGA 16-5-41', 'OCGA 16-5-21'}

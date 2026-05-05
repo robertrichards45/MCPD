@@ -1334,6 +1334,18 @@ def _read_temp_payload(form_id, token, purge=False):
     return payload
 
 
+def _is_test_form_record(form) -> bool:
+    title = str(getattr(form, 'title', '') or '').strip().lower()
+    file_path = str(getattr(form, 'file_path', '') or '').strip().lower().replace('\\', '/')
+    return (
+        title.startswith('test ')
+        or ' test form' in title
+        or title.startswith('navigator pickable test')
+        or '/test-' in file_path
+        or 'navigator-pickable-test' in file_path
+    )
+
+
 @bp.route('/forms')
 @login_required
 def list_forms():
@@ -1348,7 +1360,9 @@ def list_forms():
     if category:
         query = query.filter(Form.category == category)
     forms = query.order_by(Form.uploaded_at.desc()).all()
-    categories = [row[0] for row in db.session.query(Form.category).filter(Form.is_active.is_(True), Form.category.isnot(None)).distinct().order_by(Form.category.asc()).all() if row[0]]
+    if not current_app.config.get('TESTING'):
+        forms = [form for form in forms if not _is_test_form_record(form)]
+    categories = sorted({form.category for form in forms if form.category})
     return render_template(
         'forms.html',
         forms=forms,

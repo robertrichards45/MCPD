@@ -1,0 +1,18 @@
+{% extends 'mobile_shell.html' %}
+{% block mobile_content %}
+<section class="mobile-section-block mobile-more-menu">
+  <div class="mobile-section-head">
+    <h3>More tools</h3>
+  </div>
+  <div class="mobile-more-stack">
+    {% if portal_is_site_controller or portal_is_watch_commander_view %}
+    <a class="mobile-more-link mobile-more-link-strong" href="{{ url_for('mobile.supervisor_officers') }}">Approve / Assign Officers</a>
+    <a class="mobile-more-link" href="{{ url_for('mobile.supervisor_dashboard') }}">Command Dashboard</a>
+    {% endif %}
+    <a class="mobile-more-link" href="{{ url_for('reports.list_reports') }}">Reports Center</a>
+    <a class="mobile-more-link" href="{{ url_for('forms.saved_forms') }}">Saved Work</a>
+    <a class="mobile-more-link" href="{{ url_for('forms.call_type_rules_manager') }}">Scenario Builder</a>
+    <a class="mobile-more-link" href="{{ url_for('dashboard.dashboard') }}">Desktop Dashboard</a>
+  </div>
+</section>
+{% endblock %}

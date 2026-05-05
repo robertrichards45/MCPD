@@ -1,6 +1,8 @@
 (function () {
   const STORAGE_KEY = 'mcpd.mobile.incident.state';
   let stateCache = null;
+  let draftSyncTimer = null;
+  let draftHydrated = false;
   const jsonScriptCache = {};
 
   const defaultCallTypeRules = {
@@ -400,9 +402,50 @@
     }
   }
 
+  function isMeaningfulIncidentState(current) {
+    const state = current || {};
+    const basics = state.incidentBasics || {};
+    return !!(
+      state.callType
+      || Object.values(basics).some((value) => String(value || '').trim())
+      || (Array.isArray(state.persons) && state.persons.length)
+      || (Array.isArray(state.facts) && state.facts.some((entry) => entry && String(entry.value || '').trim()))
+      || String(state.narrative || '').trim()
+    );
+  }
+
+  function scheduleDraftSync(nextState) {
+    if (!draftHydrated || !isMeaningfulIncidentState(nextState)) return;
+    window.clearTimeout(draftSyncTimer);
+    draftSyncTimer = window.setTimeout(() => {
+      fetch('/mobile/api/incident/draft', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ incident: nextState }),
+      }).catch(() => {});
+    }, 350);
+  }
+
+  async function hydrateDraftFromServer() {
+    if (draftHydrated) return;
+    draftHydrated = true;
+    try {
+      const local = readState();
+      if (isMeaningfulIncidentState(local)) return;
+      const response = await fetch('/mobile/api/incident/draft', { credentials: 'same-origin' });
+      const payload = await response.json().catch(() => ({}));
+      const serverState = payload && payload.draft && payload.draft.state;
+      if (serverState && isMeaningfulIncidentState(serverState)) {
+        writeState(serverState);
+      }
+    } catch (_error) {}
+  }
+
   function writeState(nextState) {
     stateCache = Object.assign(clone(defaultState), nextState || {});
     window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(stateCache));
+    scheduleDraftSync(stateCache);
     return clone(stateCache);
   }
 
@@ -985,8 +1028,30 @@
     return String(statement.witnessingSignatureDataUrl || statement.officerSignature || statement.witnessSignature || '').trim();
   }
 
-    async function detectBarcodeTextFromImageFile(file) {
-      if (!file) return '';
+  function readZxingResultText(result) {
+    if (!result) return '';
+    if (typeof result.getText === 'function') return String(result.getText() || '').trim();
+    return String(result.text || '').trim();
+  }
+
+  let zxingLoadPromise = null;
+  function loadZxingLibrary() {
+    if (window.ZXingBrowser) return Promise.resolve(window.ZXingBrowser);
+    if (zxingLoadPromise) return zxingLoadPromise;
+    const src = window.MCPD_ZXING_SRC || '/static/vendor/zxing-browser.min.js';
+    zxingLoadPromise = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = src;
+      script.async = true;
+      script.onload = () => resolve(window.ZXingBrowser || null);
+      script.onerror = () => reject(new Error('Scanner library unavailable'));
+      document.head.appendChild(script);
+    });
+    return zxingLoadPromise;
+  }
+
+  async function detectBarcodeTextFromImageFile(file) {
+    if (!file) return '';
     if (typeof BarcodeDetector !== 'undefined') {
       const detector = new BarcodeDetector({
         formats: ['pdf417', 'qr_code', 'code_128', 'code_39', 'ean_13', 'upc_a'],
@@ -1001,12 +1066,12 @@
       }
     }
 
-    function readZxingResultText(result) {
-      if (!result) return '';
-      if (typeof result.getText === 'function') return String(result.getText() || '').trim();
-      return String(result.text || '').trim();
+    let zxing = null;
+    try {
+      zxing = await loadZxingLibrary();
+    } catch (_error) {
+      zxing = null;
     }
-    const zxing = window.ZXingBrowser;
     if (!zxing || typeof zxing.BrowserPDF417Reader !== 'function' || typeof URL === 'undefined' || typeof URL.createObjectURL !== 'function') {
       return '';
     }
@@ -1315,7 +1380,9 @@
         </div>
         <div class="mobile-wizard-actions">
           ${options.backHref ? `<a class="mobile-wizard-link" href="${escapeHtml(options.backHref)}">${escapeHtml(options.backLabel || 'Back')}</a>` : ''}
-          ${options.nextHref ? `<a class="mobile-wizard-cta ${options.disabled ? 'is-disabled' : ''}" href="${options.disabled ? '#' : escapeHtml(options.nextHref)}">${escapeHtml(options.nextLabel || 'Next')}</a>` : ''}
+          ${options.disabled ? `<button class="mobile-wizard-cta is-disabled" type="button" disabled>${escapeHtml(options.nextLabel || 'Next')}</button>` : ''}
+          ${!options.disabled && options.nextHref && options.nextHref !== '#' ? `<a class="mobile-wizard-cta" href="${escapeHtml(options.nextHref)}">${escapeHtml(options.nextLabel || 'Next')}</a>` : ''}
+          ${!options.disabled && options.nextHref === '#' ? `<button class="mobile-wizard-cta" type="button">${escapeHtml(options.nextLabel || 'Next')}</button>` : ''}
         </div>
       </div>
     `;
@@ -1380,6 +1447,10 @@
   function clearSessionAfterSend() {
     stateCache = null;
     window.sessionStorage.removeItem(STORAGE_KEY);
+    fetch('/mobile/api/incident/draft', {
+      method: 'DELETE',
+      credentials: 'same-origin',
+    }).catch(() => {});
   }
 
   function packetValidationCard(title, items, variant) {
@@ -2330,13 +2401,20 @@
           liveScanner.hidden = false;
           scanStatus.textContent = 'Opening live scanner...';
           try {
-            const zxing = window.ZXingBrowser;
-            if (!window.isSecureContext || !zxing || typeof zxing.BrowserPDF417Reader !== 'function') {
-              openCaptureFallback();
+            if (!window.isSecureContext) {
+              scanStatus.textContent = 'Live scanner requires HTTPS on phones. Use the HTTPS launcher, paste scan text, or use Photo Fallback.';
+              stopLiveScanner();
+              return;
+            }
+            const zxing = await loadZxingLibrary().catch(() => null);
+            if (!zxing || typeof zxing.BrowserPDF417Reader !== 'function') {
+              scanStatus.textContent = 'Live scan not supported on this device. Use photo upload.';
+              stopLiveScanner();
               return;
             }
             if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== 'function') {
-              openCaptureFallback();
+              scanStatus.textContent = 'Live scan not supported on this device. Use photo upload.';
+              stopLiveScanner();
               return;
             }
             liveScannerReader = new zxing.BrowserPDF417Reader();
@@ -2355,9 +2433,17 @@
                 }
               }
             });
-            scanStatus.textContent = 'Scanner is live. Hold the barcode side of the ID steady inside the frame.';
-          } catch (_error) {
-            openCaptureFallback();
+            scanStatus.textContent = 'Camera ready. Hold the barcode side of the ID steady inside the frame.';
+          } catch (error) {
+            const errorName = error && error.name ? String(error.name) : '';
+            if (errorName === 'NotAllowedError' || errorName === 'PermissionDeniedError') {
+              scanStatus.textContent = 'Permission denied. Use upload instead.';
+            } else if (errorName === 'NotFoundError' || errorName === 'DevicesNotFoundError') {
+              scanStatus.textContent = 'Live scan not supported on this device. Use photo upload.';
+            } else {
+              scanStatus.textContent = 'Scan failed. Use upload instead.';
+            }
+            stopLiveScanner();
           } finally {
             liveScannerOpening = false;
           }
@@ -3367,9 +3453,10 @@
     `;
   }
 
-  function mountIncidentPages() {
+  async function mountIncidentPages() {
     const root = document.querySelector('.mobile-incident-app');
     if (!root) return;
+    await hydrateDraftFromServer();
     const page = root.getAttribute('data-mobile-incident-page') || 'start';
     const urls = {
       home: root.getAttribute('data-mobile-home-url') || '/mobile/home',

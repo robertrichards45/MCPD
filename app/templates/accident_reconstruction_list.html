@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell reconstruction-command-shell">
+  {% include 'partials/nav.html' %}
+  <div class="recon-layout">
+    {% include 'partials/reports_sidebar.html' %}
+    <main class="recon-workspace">
+      <section class="recon-page-head">
+        <div>
+          <div class="recon-breadcrumb">Reports / Accident Reconstruction</div>
+          <h1>Accident Reconstruction</h1>
+          <p>Build report-ready crash diagrams, measurements, evidence timelines, and reconstruction packets.</p>
+        </div>
+        <a class="btn btn-primary" href="{{ url_for('reports.accident_reconstruction_new') }}">New Reconstruction</a>
+      </section>
+
+      <section class="recon-card">
+        <div class="recon-table-head">
+          <strong>Active Reconstruction Reports</strong>
+          <span>{{ rows|length }} record{{ '' if rows|length == 1 else 's' }}</span>
+        </div>
+        <div class="recon-list">
+          {% for row in rows %}
+          <a class="recon-list-row" href="{{ url_for('reports.accident_reconstruction_detail', reconstruction_id=row.id) }}">
+            <div>
+              <strong>{{ row.incident_number or ('AR-' ~ row.id) }} / {{ row.title }}</strong>
+              <span>{{ row.location or 'Location pending' }}</span>
+            </div>
+            <div>
+              <span>{{ row.status }}</span>
+              <small>{{ row.updated_at.strftime('%Y-%m-%d %H:%M') if row.updated_at else '' }}</small>
+            </div>
+          </a>
+          {% else %}
+          <div class="recon-empty">No accident reconstruction reports yet.</div>
+          {% endfor %}
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+{% endblock %}

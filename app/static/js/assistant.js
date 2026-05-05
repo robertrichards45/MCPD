@@ -91,7 +91,7 @@
       // Settings panel (hidden by default)
       '<div id="ai-settings-panel" class="ai-settings-panel ai-settings-hidden">',
       '  <div class="ai-settings-title">Choose a Voice</div>',
-      '  <div class="ai-settings-subtitle">All voices use OpenAI high-quality TTS</div>',
+      '  <div id="ai-tts-status" class="ai-settings-subtitle">Checking voice engine…</div>',
       '  <div id="ai-voice-list" class="ai-voice-list"></div>',
       '  <button id="ai-settings-done" class="btn btn-sm btn-primary w-100 mt-2">Done</button>',
       '</div>',
@@ -175,6 +175,7 @@
     })
       .then(function (r) { return r.ok ? r.blob() : Promise.reject(); })
       .then(function (blob) {
+        setTTSStatus('openai');
         var url = URL.createObjectURL(blob);
         var audio = new Audio(url);
         audioQueue = audio;
@@ -182,7 +183,8 @@
         audio.play().catch(function () {});
       })
       .catch(function () {
-        browserSpeak(previewText, null);
+        setTTSStatus('browser');
+        browserSpeak(previewText, voiceId, null);
       });
   }
 
@@ -331,6 +333,10 @@
         hideTyping();
         isThinking = false;
         var reply = (data && data.reply) ? data.reply : 'Sorry, I could not get a response.';
+        if (data && data.mode === 'local_fallback') {
+          var label = document.getElementById('ai-status-label');
+          if (label) label.textContent = 'Local assist';
+        }
         appendMessage('assistant', reply);
         history.push({ role: 'user',      content: text  });
         history.push({ role: 'assistant', content: reply });
@@ -349,6 +355,18 @@
 
   // ── TTS ────────────────────────────────────────────────────────────────────
 
+  function setTTSStatus(mode) {
+    var el = document.getElementById('ai-tts-status');
+    if (!el) return;
+    if (mode === 'openai') {
+      el.textContent = '✓ OpenAI TTS active — high-quality voices';
+      el.style.color = '#4ade80';
+    } else {
+      el.textContent = '⚠ Browser fallback — set OPENAI_API_KEY in Railway for real voices';
+      el.style.color = '#fbbf24';
+    }
+  }
+
   function speakText(text) {
     if (!text) { if (voiceMode) scheduleAutoListen(); return; }
     stopAudio();
@@ -359,23 +377,32 @@
       body: JSON.stringify({ text: text, voice: getSavedVoice() }),
     })
       .then(function (r) {
-        if (!r.ok) throw new Error('tts-unavailable');
+        if (!r.ok) {
+          console.warn('[MCPD TTS] Server returned', r.status, '— falling back to browser voice');
+          setTTSStatus('browser');
+          throw new Error('tts-unavailable');
+        }
         return r.blob();
       })
       .then(function (blob) {
         var url   = URL.createObjectURL(blob);
         var audio = new Audio(url);
         audioQueue = audio;
+        setTTSStatus('openai');
         audio.onended = function () {
           URL.revokeObjectURL(url);
           audioQueue = null;
           if (voiceMode) scheduleAutoListen();
         };
         audio.onerror = function () { audioQueue = null; if (voiceMode) scheduleAutoListen(); };
-        audio.play().catch(function () { if (voiceMode) scheduleAutoListen(); });
+        audio.play().catch(function (e) {
+          console.warn('[MCPD TTS] Audio play blocked:', e);
+          if (voiceMode) scheduleAutoListen();
+        });
       })
       .catch(function () {
-        browserSpeak(text, function () { if (voiceMode) scheduleAutoListen(); });
+        setTTSStatus('browser');
+        browserSpeak(text, getSavedVoice(), function () { if (voiceMode) scheduleAutoListen(); });
       });
   }
 
@@ -384,15 +411,36 @@
     if (window.speechSynthesis) window.speechSynthesis.cancel();
   }
 
-  function browserSpeak(text, onDone) {
+  var BROWSER_VOICE_PROFILES = {
+    coral:   { pitch: 1.10, rate: 1.00, gender: 'female' },
+    nova:    { pitch: 1.25, rate: 1.05, gender: 'female' },
+    shimmer: { pitch: 1.35, rate: 1.10, gender: 'female' },
+    ash:     { pitch: 0.90, rate: 0.97, gender: 'male'   },
+    onyx:    { pitch: 0.70, rate: 0.90, gender: 'male'   },
+    echo:    { pitch: 1.00, rate: 1.00, gender: 'male'   },
+    fable:   { pitch: 1.10, rate: 1.05, gender: 'male'   },
+    alloy:   { pitch: 1.00, rate: 1.00, gender: 'neutral'},
+    verse:   { pitch: 0.95, rate: 1.10, gender: 'neutral'},
+  };
+
+  function browserSpeak(text, voiceId, onDone) {
     if (!window.speechSynthesis) { if (onDone) onDone(); return; }
     window.speechSynthesis.cancel();
     var utt = new SpeechSynthesisUtterance(text);
-    utt.rate = 1.0; utt.pitch = 1.0;
+    var profile = BROWSER_VOICE_PROFILES[voiceId] || BROWSER_VOICE_PROFILES.coral;
+    utt.rate  = profile.rate;
+    utt.pitch = profile.pitch;
     var voices = window.speechSynthesis.getVoices();
+    var isFemale = profile.gender === 'female';
+    var isMale   = profile.gender === 'male';
     var preferred = voices.find(function (v) {
-      return /en[-_]US/i.test(v.lang) && /natural|samantha|alex|karen|daniel|zira/i.test(v.name);
-    }) || voices.find(function (v) { return /en/i.test(v.lang); });
+      if (!/en/i.test(v.lang)) return false;
+      var n = v.name.toLowerCase();
+      if (isFemale) return /samantha|zira|susan|karen|victoria|moira|fiona|tessa/.test(n);
+      if (isMale)   return /alex|daniel|david|fred|james|oliver|rishi/.test(n);
+      return false;
+    }) || voices.find(function (v) { return /en[-_]US/i.test(v.lang); })
+      || voices.find(function (v) { return /en/i.test(v.lang); });
     if (preferred) utt.voice = preferred;
     utt.onend   = function () { if (onDone) onDone(); };
     utt.onerror = function () { if (onDone) onDone(); };

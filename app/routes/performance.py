@@ -89,6 +89,7 @@ def my_stats():
         pending_count=pending_count,
         can_approve=_can_approve(current_user),
         can_manage=_can_manage_elements(current_user),
+        user=current_user,
     )
 
 
@@ -140,6 +141,7 @@ def submit_entry():
         elements=elements,
         preselect=preselect,
         year=year,
+        user=current_user,
     )
 
 
@@ -163,6 +165,7 @@ def my_history():
         PERF_STATUS_PENDING=PERF_STATUS_PENDING,
         PERF_STATUS_APPROVED=PERF_STATUS_APPROVED,
         PERF_STATUS_REJECTED=PERF_STATUS_REJECTED,
+        user=current_user,
     )
 
 
@@ -202,6 +205,7 @@ def pending():
         officers=officers,
         filter_officer=filter_officer,
         year=year,
+        user=current_user,
     )
 
 
@@ -287,6 +291,7 @@ def team_overview():
         filter_element=filter_element,
         year=year,
         can_manage=_can_manage_elements(current_user),
+        user=current_user,
     )
 
 
@@ -318,6 +323,7 @@ def elements():
         year=year,
         cycle=cycle,
         past_years=[r[0] for r in past_years],
+        user=current_user,
     )
 
 
@@ -345,7 +351,7 @@ def element_new():
             db.session.commit()
             flash(f'"{name}" added for {year}.', 'success')
             return redirect(url_for('performance.elements'))
-    return render_template('perf_element_form.html', title='New Element', el=None, year=year)
+    return render_template('perf_element_form.html', title='New Element', el=None, year=year, user=current_user)
 
 
 @bp.route('/performance/elements/<int:el_id>/edit', methods=['GET', 'POST'])
@@ -363,7 +369,7 @@ def element_edit(el_id):
         db.session.commit()
         flash('Element updated.', 'success')
         return redirect(url_for('performance.elements'))
-    return render_template('perf_element_form.html', title='Edit Element', el=el, year=el.year)
+    return render_template('perf_element_form.html', title='Edit Element', el=el, year=el.year, user=current_user)
 
 
 @bp.route('/performance/elements/<int:el_id>/deactivate', methods=['POST'])
@@ -436,4 +442,5 @@ def year_reset():
         current_year=current_year,
         next_year=current_year + 1,
         cycles=cycles,
+        user=current_user,
     )

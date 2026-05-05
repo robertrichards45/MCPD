@@ -473,6 +473,27 @@ class ReportGrade(db.Model):
     graded_at = db.Column(db.DateTime, default=utcnow_naive)
 
 
+class AccidentReconstruction(db.Model):
+    __tablename__ = 'accident_reconstruction'
+    id = db.Column(db.Integer, primary_key=True)
+    incident_number = db.Column(db.String(80), nullable=True, index=True)
+    title = db.Column(db.String(200), nullable=False)
+    location = db.Column(db.String(255), nullable=True)
+    date_time = db.Column(db.DateTime, nullable=True)
+    report_id = db.Column(db.Integer, db.ForeignKey('report.id'), nullable=True, index=True)
+    officer_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    status = db.Column(db.String(30), default='DRAFT', nullable=False, index=True)
+    weather = db.Column(db.String(120), nullable=True)
+    road_surface = db.Column(db.String(120), nullable=True)
+    notes = db.Column(db.Text, nullable=True)
+    diagram_data_json = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=utcnow_naive)
+    updated_at = db.Column(db.DateTime, default=utcnow_naive, onupdate=utcnow_naive)
+
+    officer = db.relationship('User', foreign_keys=[officer_id], backref='accident_reconstructions')
+    report = db.relationship('Report', foreign_keys=[report_id], backref='accident_reconstructions')
+
+
 class ReconstructionCase(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
@@ -486,20 +507,88 @@ class ReconstructionCase(db.Model):
 class ReconstructionVehicle(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     case_id = db.Column(db.Integer, db.ForeignKey('reconstruction_case.id'))
+    reconstruction_id = db.Column(db.Integer, db.ForeignKey('accident_reconstruction.id'), nullable=True, index=True)
+    label = db.Column(db.String(40), nullable=True)
+    type = db.Column(db.String(80), nullable=True)
+    pre_crash_speed = db.Column(db.Float, nullable=True)
+    impact_speed = db.Column(db.Float, nullable=True)
+    post_crash_speed = db.Column(db.Float, nullable=True)
+    x_position = db.Column(db.Float, default=160)
+    y_position = db.Column(db.Float, default=160)
+    rotation = db.Column(db.Float, default=0)
+    driver = db.Column(db.String(120), nullable=True)
+    damage_notes = db.Column(db.Text, nullable=True)
     unit = db.Column(db.String(50), nullable=True)  # Vehicle 1 / Unit 12 / etc
     make_model = db.Column(db.String(120), nullable=True)
     direction = db.Column(db.String(50), nullable=True)
     notes = db.Column(db.Text, nullable=True)
 
+    reconstruction = db.relationship('AccidentReconstruction', foreign_keys=[reconstruction_id], backref='vehicles')
+
+
+class ReconstructionObject(db.Model):
+    __tablename__ = 'reconstruction_object'
+    id = db.Column(db.Integer, primary_key=True)
+    reconstruction_id = db.Column(db.Integer, db.ForeignKey('accident_reconstruction.id'), nullable=False, index=True)
+    object_type = db.Column(db.String(60), nullable=False, default='object')
+    label = db.Column(db.String(80), nullable=True)
+    x_position = db.Column(db.Float, default=240)
+    y_position = db.Column(db.Float, default=220)
+    rotation = db.Column(db.Float, default=0)
+    notes = db.Column(db.Text, nullable=True)
+
+    reconstruction = db.relationship('AccidentReconstruction', foreign_keys=[reconstruction_id], backref='objects')
+
 
 class ReconstructionMeasurement(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     case_id = db.Column(db.Integer, db.ForeignKey('reconstruction_case.id'))
+    reconstruction_id = db.Column(db.Integer, db.ForeignKey('accident_reconstruction.id'), nullable=True, index=True)
+    measurement_type = db.Column(db.String(60), nullable=True)
     label = db.Column(db.String(120), nullable=False)
     value = db.Column(db.String(50), nullable=True)
     units = db.Column(db.String(20), nullable=True)  # ft, m, mph, deg, etc.
+    start_x = db.Column(db.Float, nullable=True)
+    start_y = db.Column(db.Float, nullable=True)
+    end_x = db.Column(db.Float, nullable=True)
+    end_y = db.Column(db.Float, nullable=True)
     notes = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=utcnow_naive)
+
+    reconstruction = db.relationship('AccidentReconstruction', foreign_keys=[reconstruction_id], backref='measurements')
+
+
+class ReconstructionMedia(db.Model):
+    __tablename__ = 'reconstruction_media'
+    id = db.Column(db.Integer, primary_key=True)
+    reconstruction_id = db.Column(db.Integer, db.ForeignKey('accident_reconstruction.id'), nullable=False, index=True)
+    file_path = db.Column(db.String(255), nullable=False)
+    file_name = db.Column(db.String(255), nullable=False)
+    media_type = db.Column(db.String(40), nullable=True)
+    description = db.Column(db.Text, nullable=True)
+    uploaded_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    timestamp = db.Column(db.DateTime, default=utcnow_naive)
+    linked_x = db.Column(db.Float, nullable=True)
+    linked_y = db.Column(db.Float, nullable=True)
+
+    reconstruction = db.relationship('AccidentReconstruction', foreign_keys=[reconstruction_id], backref='media_items')
+    uploader = db.relationship('User', foreign_keys=[uploaded_by])
+
+
+class ReconstructionTimelineItem(db.Model):
+    __tablename__ = 'reconstruction_timeline_item'
+    id = db.Column(db.Integer, primary_key=True)
+    reconstruction_id = db.Column(db.Integer, db.ForeignKey('accident_reconstruction.id'), nullable=False, index=True)
+    event_time = db.Column(db.String(40), nullable=True)
+    event_type = db.Column(db.String(80), nullable=True)
+    description = db.Column(db.Text, nullable=False)
+    linked_vehicle_id = db.Column(db.Integer, db.ForeignKey('reconstruction_vehicle.id'), nullable=True)
+    linked_media_id = db.Column(db.Integer, db.ForeignKey('reconstruction_media.id'), nullable=True)
+    created_at = db.Column(db.DateTime, default=utcnow_naive)
+
+    reconstruction = db.relationship('AccidentReconstruction', foreign_keys=[reconstruction_id], backref='timeline_items')
+    linked_vehicle = db.relationship('ReconstructionVehicle', foreign_keys=[linked_vehicle_id])
+    linked_media = db.relationship('ReconstructionMedia', foreign_keys=[linked_media_id])
 
 
 class ReconstructionAttachment(db.Model):
@@ -746,6 +835,21 @@ class IncidentPacket(db.Model):
 
     officer = db.relationship('User', foreign_keys=[officer_user_id], backref='incident_packets')
     reviewer = db.relationship('User', foreign_keys=[reviewer_user_id], backref='reviewed_packets')
+
+
+class IncidentDraft(db.Model):
+    """Active cross-device incident draft for the officer workflow."""
+    id = db.Column(db.Integer, primary_key=True)
+    officer_user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    status = db.Column(db.String(20), default='ACTIVE', nullable=False, index=True)
+    call_type = db.Column(db.String(80), nullable=True)
+    location = db.Column(db.String(255), nullable=True)
+    summary = db.Column(db.String(500), nullable=True)
+    draft_json = db.Column(db.Text, nullable=False, default='{}')
+    created_at = db.Column(db.DateTime, default=utcnow_naive, nullable=False, index=True)
+    updated_at = db.Column(db.DateTime, default=utcnow_naive, onupdate=utcnow_naive, nullable=False, index=True)
+
+    officer = db.relationship('User', foreign_keys=[officer_user_id], backref='incident_drafts')
 
 
 BOLO_STATUS_ACTIVE = 'ACTIVE'

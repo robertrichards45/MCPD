@@ -1,0 +1,139 @@
+{% extends 'mobile_shell.html' %}
+{% block mobile_content %}
+<section class="mobile-command-summary">
+  <div class="mobile-command-stat">
+    <strong>{{ pending_officers|length }}</strong>
+    <span>Need Approval</span>
+  </div>
+  <div class="mobile-command-stat">
+    <strong>{{ unassigned_officers|length }}</strong>
+    <span>Unassigned</span>
+  </div>
+  <div class="mobile-command-stat">
+    <strong>{{ assigned_officers|length }}</strong>
+    <span>Assigned</span>
+  </div>
+</section>
+
+{% macro officer_card(officer, title_label) %}
+<article class="mobile-officer-card">
+  <div class="mobile-officer-card-head">
+    <div>
+      <p class="mobile-officer-kicker">{{ title_label }}</p>
+      <h3>{{ officer.display_name }}</h3>
+      <p>{{ officer.username }}{% if officer.officer_number %} / #{{ officer.officer_number }}{% endif %}</p>
+    </div>
+    <span class="mobile-officer-status {{ 'is-pending' if officer.pending_approval or not officer.active else 'is-active' }}">
+      {{ 'Pending' if officer.pending_approval else ('Disabled' if not officer.active else 'Active') }}
+    </span>
+  </div>
+
+  <form class="mobile-officer-form" method="post" action="{{ url_for('mobile.supervisor_officer_update', user_id=officer.id) }}">
+    <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}" />
+
+    <label>
+      <span>Role</span>
+      <select name="role">
+        {% for role in assignable_roles %}
+        <option value="{{ role }}" {% if officer.normalized_role == role %}selected{% endif %}>{{ role_labels.get(role, role) }}</option>
+        {% endfor %}
+      </select>
+    </label>
+
+    <label>
+      <span>Shift / Watch</span>
+      <input name="section_unit" value="{{ officer.section_unit or current_user.section_unit or '' }}" placeholder="Alpha Shift" />
+    </label>
+
+    {% if portal_is_site_controller %}
+    <label>
+      <span>Installation</span>
+      <select name="installation">
+        <option value="">No change</option>
+        {% for key, label in installations %}
+        <option value="{{ key }}" {% if officer.installation == key %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </label>
+
+    <label>
+      <span>Watch Commander</span>
+      <select name="supervisor_id">
+        <option value="">Unassigned</option>
+        {% for wc in watch_commanders %}
+        <option value="{{ wc.id }}" {% if officer.supervisor_id == wc.id %}selected{% endif %}>{{ wc.display_name }}{% if wc.section_unit %} / {{ wc.section_unit }}{% endif %}</option>
+        {% endfor %}
+      </select>
+    </label>
+    {% else %}
+    <div class="mobile-officer-fixed">
+      <span>Installation</span>
+      <strong>{{ installation_labels.get(current_user.installation, current_user.installation or 'Not set') }}</strong>
+    </div>
+    <div class="mobile-officer-fixed">
+      <span>Watch Commander</span>
+      <strong>{{ current_user.display_name }}</strong>
+    </div>
+    {% endif %}
+
+    <label class="mobile-officer-check">
+      <input type="checkbox" name="active" value="1" {% if officer.active and not officer.pending_approval %}checked{% endif %} />
+      <span>Approve account and allow login</span>
+    </label>
+
+    <button class="mobile-officer-save" type="submit">Save Assignment</button>
+  </form>
+</article>
+{% endmacro %}
+
+{% if pending_officers %}
+<section class="mobile-section-block">
+  <div class="mobile-section-head">
+    <h3>Approve First</h3>
+    <p>These officers cannot log in until approved.</p>
+  </div>
+  <div class="mobile-officer-stack">
+    {% for officer in pending_officers %}
+      {{ officer_card(officer, 'Approval Required') }}
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if unassigned_officers %}
+<section class="mobile-section-block">
+  <div class="mobile-section-head">
+    <h3>Place On Watch</h3>
+    <p>Assign unassigned officers to a commander and shift.</p>
+  </div>
+  <div class="mobile-officer-stack">
+    {% for officer in unassigned_officers %}
+      {{ officer_card(officer, 'Unassigned') }}
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if assigned_officers %}
+<section class="mobile-section-block">
+  <div class="mobile-section-head">
+    <h3>Current Watch</h3>
+    <p>Adjust roles, shift, or active status as needed.</p>
+  </div>
+  <div class="mobile-officer-stack">
+    {% for officer in assigned_officers %}
+      {{ officer_card(officer, 'Assigned') }}
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if not officers %}
+<section class="mobile-section-block">
+  <div class="mobile-section-head">
+    <h3>No Officers To Manage</h3>
+    <p>No pending or assignable officers are currently in your mobile command scope.</p>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

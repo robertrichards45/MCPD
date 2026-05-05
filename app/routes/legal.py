@@ -16,7 +16,7 @@ from flask import Blueprint, Response, abort, current_app, flash, make_response,
 from flask_login import current_user, login_required
 
 from ..extensions import db
-from ..services.legal_lookup import _source_file_candidates, LegalMatch, corpus_status, export_corpus_payload, get_entry, import_corpus_payload, reference_download_info, search_entries
+from ..services.legal_lookup import STOPWORDS, _source_file_candidates, _tokenize, LegalMatch, corpus_status, export_corpus_payload, get_entry, import_corpus_payload, reference_download_info, search_entries
 from ..services.ai_client import ask_openai, is_ai_unavailable_message
 
 
@@ -886,7 +886,29 @@ def _order_reference_matches(query: str, related_terms: tuple[str, ...] | list[s
     ).strip()
     documents, _strategy = search_orders_with_ai_assist(combined_query, status_filter='ACTIVE')
     matches = []
-    for document in documents[:limit]:
+    query_terms = {
+        term for term in _tokenize(clean_query)
+        if len(term) >= 3 and term not in STOPWORDS
+    }
+    for document in documents:
+        reasons = list(getattr(document, 'match_reasons', []) or [])[:4]
+        searchable_text = ' '.join((
+            document.title or '',
+            document.summary or '',
+            document.match_snippet or '',
+            document.order_number or '',
+            document.memo_number or '',
+        ))
+        document_terms = set(_tokenize(searchable_text))
+        meaningful_overlap = query_terms & document_terms
+        stopword_only_reason = bool(reasons) and not meaningful_overlap and all(
+            re.fullmatch(r'matched "[a-z]+" in the title', reason.strip().lower())
+            for reason in reasons
+        )
+        if stopword_only_reason:
+            continue
+        if not meaningful_overlap and getattr(document, 'search_confidence', 0) < 70:
+            continue
         matches.append(
             {
                 'id': document.id,
@@ -895,10 +917,12 @@ def _order_reference_matches(query: str, related_terms: tuple[str, ...] | list[s
                 'order_number': document.order_number or document.memo_number or '',
                 'snippet': document.match_snippet or document.summary or '',
                 'confidence': getattr(document, 'search_confidence', 0),
-                'reasons': list(getattr(document, 'match_reasons', []) or [])[:4],
+                'reasons': reasons,
                 'download_available': bool(getattr(document, 'download_available', False)),
             }
         )
+        if len(matches) >= limit:
+            break
     return matches
 
 

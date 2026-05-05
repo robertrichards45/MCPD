@@ -1,8 +1,11 @@
 import json
+import logging
 import os
 from datetime import datetime, timedelta, timezone
 
 import requests
+
+_log = logging.getLogger(__name__)
 
 _AI_DISABLED_MESSAGE = ''
 _AI_DISABLED_UNTIL = None
@@ -44,7 +47,7 @@ def _friendly_error_message(status_code, payload):
     error_type, error_code, error_message = _extract_error_details(payload)
 
     if status_code == 401 or error_code == 'invalid_api_key':
-        return 'AI authentication failed. The configured OPENAI_API_KEY is invalid. Update it in .env and restart the portal.'
+        return 'AI authentication failed. OpenAI rejected the configured OPENAI_API_KEY. Verify the exact key value in Railway Variables or local .env, then redeploy/restart the portal.'
 
     if status_code == 429 and error_code == 'insufficient_quota':
         return 'AI quota has been exhausted for the configured OpenAI account. Add billing or switch to a funded API key.'
@@ -85,6 +88,68 @@ def is_ai_unavailable_message(text):
             'ai search assist is temporarily disabled',
         )
     )
+
+
+def openai_key_status(api_key=None):
+    """Return a safe diagnostic summary for the configured OpenAI key."""
+    key = (api_key or os.environ.get('OPENAI_API_KEY') or '').strip()
+    if not key:
+        return {
+            'configured': False,
+            'keyPrefix': '',
+            'keyLength': 0,
+            'ok': False,
+            'statusCode': None,
+            'errorCode': 'missing_key',
+            'message': 'OPENAI_API_KEY is not visible to the running app.',
+        }
+
+    summary = {
+        'configured': True,
+        'keyPrefix': key[:7],
+        'keyLength': len(key),
+        'ok': False,
+        'statusCode': None,
+        'errorCode': None,
+        'message': '',
+    }
+    headers = {
+        'Authorization': f'Bearer {key}',
+        'Content-Type': 'application/json',
+    }
+    payload = {
+        'model': 'gpt-4.1-mini',
+        'input': 'Reply with exactly: ok',
+        'max_output_tokens': 8,
+    }
+    try:
+        response = requests.post(
+            'https://api.openai.com/v1/responses',
+            headers=headers,
+            data=json.dumps(payload),
+            timeout=15,
+        )
+    except requests.Timeout:
+        summary['message'] = 'OpenAI diagnostic request timed out.'
+        return summary
+    except requests.RequestException as exc:
+        summary['message'] = f'OpenAI diagnostic request failed: {exc.__class__.__name__}.'
+        return summary
+
+    summary['statusCode'] = response.status_code
+    try:
+        data = response.json()
+    except ValueError:
+        data = {}
+    if response.status_code < 400:
+        summary['ok'] = True
+        summary['message'] = 'OpenAI accepted the configured key.'
+        return summary
+
+    _error_type, error_code, error_message = _extract_error_details(data)
+    summary['errorCode'] = error_code
+    summary['message'] = error_message or _friendly_error_message(response.status_code, data)
+    return summary
 
 
 def _disable_ai_temporarily(message, minutes=1):
@@ -281,6 +346,7 @@ def openai_tts(text, api_key, voice='coral'):
         )
         if response.status_code == 200:
             return response.content
-    except Exception:
-        pass
+        _log.warning('TTS request failed: HTTP %s', response.status_code)
+    except Exception as exc:
+        _log.warning('TTS request error: %s', exc)
     return None

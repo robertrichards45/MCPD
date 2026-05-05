@@ -9,3 +9,4 @@ reportlab==4.1.0
 Pillow==10.4.0
 requests==2.31.0
 waitress==3.0.2
+openai==1.55.3

@@ -1,136 +1,71 @@
-<nav class="top-nav">
-  {% set endpoint = request.endpoint or '' %}
-  {% set forms_active = endpoint.startswith('forms.') and endpoint not in ['forms.saved_forms'] and not endpoint.startswith('forms.view_saved_form') and not endpoint.startswith('forms.preview_saved_form') and not endpoint.startswith('forms.download_saved_form') and not endpoint.startswith('forms.email_saved_form') %}
-  {% set saved_work_active = endpoint == 'forms.saved_forms' or endpoint.startswith('forms.view_saved_form') or endpoint.startswith('forms.preview_saved_form') or endpoint.startswith('forms.download_saved_form') or endpoint.startswith('forms.email_saved_form') %}
-  {% set reports_active = endpoint.startswith('reports.') or endpoint.startswith('cleo_api.') or endpoint == 'dashboard.cleo' or endpoint == 'reconstruction.accidents' %}
-  {% set reference_active = endpoint.startswith('legal.') or endpoint.startswith('orders.') or (endpoint.startswith('reference.') and endpoint not in ['reference.incident_paperwork_guide', 'reference.incident_paperwork_guide_manage']) %}
-  {% set bolo_active = endpoint.startswith('bolo.') %}
-  {% set operations_active = endpoint.startswith('ops_modules.') or endpoint.startswith('training.') or endpoint.startswith('qual_tracker.') or endpoint.startswith('performance.') or endpoint.startswith('stats.') or endpoint.startswith('announcements.') or endpoint.startswith('officers.') or endpoint.startswith('annual_ai.') %}
-  <div class="brand">
-    <img src="{{ url_for('usmc_emblem') }}" alt="USMC" />
-    <div class="brand-copy">
-      <span class="brand-kicker">Operations</span>
-      <span class="brand-title">MCPD Portal</span>
+{% set endpoint = request.endpoint or '' %}
+{% set reports_active = endpoint.startswith('reports.') or endpoint.startswith('cleo_api.') or endpoint == 'dashboard.cleo' or endpoint.startswith('reconstruction.') %}
+{% set forms_active = endpoint.startswith('forms.') and endpoint not in ['forms.saved_forms'] and not endpoint.startswith('forms.view_saved_form') and not endpoint.startswith('forms.preview_saved_form') and not endpoint.startswith('forms.download_saved_form') and not endpoint.startswith('forms.email_saved_form') %}
+{% set saved_work_active = endpoint == 'forms.saved_forms' or endpoint.startswith('forms.view_saved_form') or endpoint.startswith('forms.preview_saved_form') or endpoint.startswith('forms.download_saved_form') or endpoint.startswith('forms.email_saved_form') %}
+{% set orders_active = endpoint.startswith('orders.') or endpoint.startswith('reference.') %}
+{% set training_active = endpoint.startswith('training.') or endpoint.startswith('qual_tracker.') %}
+{% set personnel_active = endpoint.startswith('officers.') or endpoint == 'auth.manage_users' or endpoint == 'auth.edit_user' %}
+
+<header class="mcpd-command-header">
+  <div class="mcpd-header-brand">
+    <button class="mcpd-mobile-menu" type="button" aria-label="Open navigation" data-nav-toggle>☰</button>
+    <img src="{{ url_for('usmc_emblem') }}" alt="" />
+    <strong>MCPD PORTAL</strong>
+  </div>
+  <form class="mcpd-header-search" method="get" action="{{ url_for('legal.legal_lookup') }}">
+    <input type="hidden" name="source" value="ALL">
+    <input type="hidden" name="state" value="GA">
+    <input name="q" type="search" placeholder="Search laws, reports, forms, orders..." aria-label="Search MCPD Portal">
+    <button type="submit">Search</button>
+  </form>
+  <div class="mcpd-header-user">
+    <button class="mcpd-theme-toggle" type="button" data-theme-toggle>Dark</button>
+    <button class="mcpd-theme-toggle" type="button" data-view-toggle>Mobile</button>
+    <div>
+      <strong>{{ user.display_name }}</strong>
+      <small>{{ portal_effective_role_label }}</small>
     </div>
   </div>
-  <button
-    class="nav-toggle"
-    type="button"
-    aria-expanded="false"
-    aria-controls="portal-nav-menu"
-    data-nav-toggle
-  >
-    Menu
-  </button>
-  <div class="nav-menu" id="portal-nav-menu" data-nav-menu>
-    <div class="nav-links">
-      <a class="{% if endpoint == 'dashboard.dashboard' %}is-active{% endif %}" href="{{ url_for('dashboard.dashboard') }}">Dashboard</a>
-      <a class="{% if endpoint in ['reference.incident_paperwork_guide', 'reference.incident_paperwork_guide_manage'] %}is-active{% endif %}" href="{{ url_for('reference.incident_paperwork_guide') }}">Navigator</a>
-      <a class="{% if forms_active %}is-active{% endif %}" href="{{ url_for('forms.list_forms') }}">Forms</a>
-      <a class="{% if saved_work_active %}is-active{% endif %}" href="{{ url_for('forms.saved_forms') }}">Saved Work</a>
-      <details class="nav-more nav-menu-group {% if reports_active %}has-active{% endif %}">
-        <summary>Reports</summary>
-        <div class="nav-more-menu">
-          <a class="{% if endpoint.startswith('reports.') or endpoint.startswith('cleo_api.') or endpoint == 'dashboard.cleo' %}is-active{% endif %}" href="{{ url_for('reports.list_reports') }}">All Reports</a>
-          <a class="{% if endpoint == 'reconstruction.accidents' %}is-active{% endif %}" href="{{ url_for('reconstruction.accidents') }}">Accident Tools</a>
-          <a class="{% if endpoint.startswith('reconstruction.') and endpoint != 'reconstruction.accidents' %}is-active{% endif %}" href="{{ url_for('reconstruction.case_list') }}">Reconstruction Cases</a>
-        </div>
-      </details>
-      <a class="{% if bolo_active %}is-active{% endif %} nav-bolo-link" href="{{ url_for('bolo.bolo_board') }}">BOLO</a>
-      <details class="nav-more nav-menu-group {% if reference_active %}has-active{% endif %}">
-        <summary>Authority</summary>
-        <div class="nav-more-menu">
-          <a class="{% if endpoint.startswith('legal.') %}is-active{% endif %}" href="{{ url_for('legal.legal_home') }}">Law Lookup</a>
-          <a class="{% if endpoint.startswith('orders.') %}is-active{% endif %}" href="{{ url_for('orders.reference_search') }}">Orders Desk</a>
-          <a class="{% if endpoint.startswith('reference.') and endpoint not in ['reference.incident_paperwork_guide', 'reference.incident_paperwork_guide_manage'] %}is-active{% endif %}" href="{{ url_for('reference.officer_handbook') }}">Officer Handbook</a>
-        </div>
-      </details>
-      <details class="nav-more nav-menu-group {% if operations_active %}has-active{% endif %}">
-        <summary>Operations</summary>
-        <div class="nav-more-menu">
-          <a class="{% if endpoint.startswith('ops_modules.') %}is-active{% endif %}" href="{{ url_for('ops_modules.vehicle_inspections') }}">Inspections</a>
-          <a class="{% if endpoint.startswith('training.') %}is-active{% endif %}" href="{{ url_for('training.training_menu') }}">Training</a>
-          <a class="{% if endpoint.startswith('qual_tracker.') %}is-active{% endif %}" href="{{ url_for('qual_tracker.tracker_personal') }}">Qualifications</a>
-          <a class="{% if endpoint.startswith('performance.') %}is-active{% endif %}" href="{{ url_for('performance.my_stats') }}">My Elements</a>
-          <a class="{% if endpoint.startswith('announcements.') %}is-active{% endif %}" href="{{ url_for('announcements.board') }}">Notices</a>
-          <a class="{% if endpoint.startswith('stats.') %}is-active{% endif %}" href="{{ url_for('stats.stats_home') }}">Stats</a>
-          <a class="{% if endpoint.startswith('officers.') %}is-active{% endif %}" href="{{ url_for('officers.profile') }}">Profile</a>
-          <a class="{% if endpoint.startswith('annual_ai.') %}is-active{% endif %}" href="{{ url_for('annual_ai.page') }}">Assistant</a>
-          {% if config.CAC_AUTH_ENABLED %}
-            <a href="{{ url_for('auth.account_link_cac') }}">Link CAC</a>
-          {% endif %}
-        </div>
-      </details>
-      {% if user.can_manage_team() %}
-      <a class="{% if endpoint == 'auth.manage_users' %}is-active{% endif %} nav-personnel-link" href="{{ url_for('auth.manage_users') }}">
+</header>
+
+<aside class="mcpd-command-sidebar" data-nav-menu>
+  <nav aria-label="Main navigation">
+    <a class="{% if endpoint == 'dashboard.dashboard' %}is-active{% endif %}" href="{{ url_for('dashboard.dashboard') }}">Dashboard</a>
+    <a class="{% if endpoint.startswith('legal.') %}is-active{% endif %}" href="{{ url_for('legal.legal_home') }}">Law Lookup</a>
+    <details class="mcpd-sidebar-admin" {% if reports_active %}open{% endif %}>
+      <summary>Reports</summary>
+      <a href="{{ url_for('reports.list_reports') }}">All Reports</a>
+      <a href="{{ url_for('reconstruction.accidents') }}">Accident Tools</a>
+      <a href="{{ url_for('reconstruction.case_list') }}">Reconstruction Cases</a>
+    </details>
+    <a class="{% if forms_active %}is-active{% endif %}" href="{{ url_for('forms.list_forms') }}">Forms</a>
+    <a class="{% if orders_active %}is-active{% endif %}" href="{{ url_for('orders.reference_search') }}">Orders &amp; Memos</a>
+    <a class="{% if training_active %}is-active{% endif %}" href="{{ url_for('training.training_menu') }}">Training</a>
+    {% if user.can_manage_team() %}
+      <a class="{% if personnel_active %}is-active{% endif %}" href="{{ url_for('auth.manage_users') }}">
         Personnel
-        {% if portal_pending_approvals %}
-          <span class="nav-pending-badge">{{ portal_pending_approvals }}</span>
-        {% endif %}
+        {% if portal_pending_approvals %}<span class="nav-pending-badge">{{ portal_pending_approvals }}</span>{% endif %}
       </a>
-      {% endif %}
-      {% if portal_effective_role == 'WEBSITE_CONTROLLER' %}
-      <details class="nav-more {% if endpoint.startswith('admin.') or endpoint in ['forms.call_type_rules_manager', 'forms.forms_manager'] or endpoint == 'reference.incident_paperwork_guide_manage' %}has-active{% endif %}">
-        <summary>Admin</summary>
-        <div class="nav-more-menu">
-          <a class="{% if endpoint == 'admin.stats_categories' %}is-active{% endif %}" href="{{ url_for('admin.stats_categories') }}">Targets</a>
-          <a class="{% if endpoint == 'admin.stats_targets_upload' %}is-active{% endif %}" href="{{ url_for('admin.stats_targets_upload') }}">Upload</a>
-          <a class="{% if endpoint == 'admin.stats_uploads' %}is-active{% endif %}" href="{{ url_for('admin.stats_uploads') }}">Uploads</a>
-          <a class="{% if endpoint == 'forms.call_type_rules_manager' %}is-active{% endif %}" href="{{ url_for('forms.call_type_rules_manager') }}">Call Types</a>
-          <a class="{% if endpoint == 'forms.forms_manager' %}is-active{% endif %}" href="{{ url_for('forms.forms_manager') }}">Forms Manager</a>
-          <a class="{% if endpoint == 'reference.incident_paperwork_guide_manage' %}is-active{% endif %}" href="{{ url_for('reference.incident_paperwork_guide_manage') }}">Navigator Editor</a>
-          <a class="{% if endpoint == 'admin.legal_corpus_admin' %}is-active{% endif %}" href="{{ url_for('admin.legal_corpus_admin') }}">Legal QA</a>
-          <a class="{% if endpoint == 'admin.legal_analytics' %}is-active{% endif %}" href="{{ url_for('admin.legal_analytics') }}">Legal Analytics</a>
-          <a class="{% if endpoint == 'admin.system_status' %}is-active{% endif %}" href="{{ url_for('admin.system_status') }}">System Status</a>
-        </div>
+    {% else %}
+      <a class="{% if endpoint.startswith('officers.') %}is-active{% endif %}" href="{{ url_for('officers.profile') }}">Personnel</a>
+    {% endif %}
+    <a class="{% if saved_work_active %}is-active{% endif %}" href="{{ url_for('forms.saved_forms') }}">Saved Work</a>
+    {% if portal_effective_role == 'WEBSITE_CONTROLLER' %}
+      <details class="mcpd-sidebar-admin" {% if endpoint.startswith('admin.') or endpoint in ['forms.call_type_rules_manager', 'forms.forms_manager'] or endpoint == 'reference.incident_paperwork_guide_manage' %}open{% endif %}>
+        <summary>Administration</summary>
+        <a href="{{ url_for('forms.call_type_rules_manager') }}">Call Types</a>
+        <a href="{{ url_for('forms.forms_manager') }}">Forms Manager</a>
+        <a href="{{ url_for('reference.incident_paperwork_guide_manage') }}">Navigator Editor</a>
+        <a href="{{ url_for('admin.legal_corpus_admin') }}">Legal QA</a>
+        <a href="{{ url_for('admin.legal_analytics') }}">Legal Analytics</a>
       </details>
-      {% endif %}
-    </div>
-    <div class="nav-right">
-      <div class="nav-user-panel">
-        <div class="nav-user-identity">
-          <span class="nav-user-label">Signed in as</span>
-          <span class="user-name">{{ user.display_name }}</span>
-        </div>
-        <div class="nav-user-badges">
-          <span class="badge bg-dark">{{ portal_effective_role_label }}</span>
-        {% if portal_show_origin_banner %}
-          <span class="badge bg-warning text-dark">{{ portal_origin_label }}</span>
-        {% endif %}
-        {% if portal_is_site_controller %}
-          <small class="text-light">Role: {{ user.role_label }}</small>
-        {% endif %}
-        </div>
-      </div>
-      {% if portal_is_site_controller %}
-      <details class="nav-more nav-role-switch">
-        <summary>Scope</summary>
-        <div class="nav-more-menu nav-scope-menu">
-          <form method="post" action="{{ url_for('auth.switch_role', role_key='WEBSITE_CONTROLLER') }}">
-            <input type="hidden" name="next" value="{{ request.path }}" />
-            <button class="btn btn-outline-light btn-sm w-100">Controller View</button>
-          </form>
-          <form method="post" action="{{ url_for('auth.switch_role', role_key='WATCH_COMMANDER') }}">
-            <input type="hidden" name="next" value="{{ request.path }}" />
-            <button class="btn btn-outline-light btn-sm w-100">Watch Commander View</button>
-          </form>
-          <form method="post" action="{{ url_for('auth.switch_role_scope') }}">
-            <input type="hidden" name="next" value="{{ request.path }}" />
-            <select class="form-select form-select-sm" name="watch_commander_id" onchange="this.form.submit()">
-              <option value="">My Scope</option>
-              {% for watch_commander in portal_watch_commanders %}
-                <option value="{{ watch_commander.id }}" {% if portal_watch_commander_scope_id == watch_commander.id %}selected{% endif %}>
-                  {{ watch_commander.display_name }}
-                </option>
-              {% endfor %}
-            </select>
-          </form>
-        </div>
-      </details>
-      {% endif %}
-      <form method="post" action="{{ url_for('auth.logout') }}" class="nav-logout-form">
-        <button class="btn btn-outline-light btn-sm">Logout</button>
-      </form>
-    </div>
+    {% endif %}
+  </nav>
+  <div class="mcpd-sidebar-help">
+    <strong>Need Help?</strong>
+    <span>Support Center</span>
   </div>
-</nav>
+  <form method="post" action="{{ url_for('auth.logout') }}" class="mcpd-sidebar-logout">
+    <button type="submit">Logout</button>
+  </form>
+</aside>

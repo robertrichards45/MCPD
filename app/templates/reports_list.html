@@ -28,10 +28,42 @@
 
       <div class="forms-toolbar">
         <a class="btn btn-primary" href="{{ url_for('reports.new_report') }}">New Standard Report</a>
+        <a class="btn btn-outline-primary" href="{{ url_for('mobile.incident_start') }}">
+          {% if active_incident_draft %}Continue Field Draft{% else %}Start Field Workflow{% endif %}
+        </a>
+        <a class="btn btn-outline-secondary" href="{{ url_for('reports.accident_reconstruction_list') }}">Accident Reconstruction</a>
         <button class="btn btn-outline-secondary" type="button" onclick="createCleoReport()">New Mock Report</button>
           <a class="btn btn-outline-secondary" href="{{ url_for('reference.incident_paperwork_guide') }}">Paperwork Navigator</a>
       </div>
     </section>
+
+    {% if active_incident_draft %}
+    <section class="card p-3 report-center-panel mb-3">
+      <div class="report-panel-head">
+        <div>
+          <h3 class="mb-1">Active Field Draft</h3>
+          <p class="text-muted mb-0">This draft is synced between desktop and mobile for your signed-in account.</p>
+        </div>
+        <span class="badge bg-primary">Synced</span>
+      </div>
+      <article class="result-card report-hub-card">
+        <div class="result-head">
+          <h4>{{ active_incident_draft.call_type or 'Incident draft' }}</h4>
+          <span class="badge bg-dark">DRAFT</span>
+        </div>
+        <p class="result-sub">
+          {{ active_incident_draft.location or 'Location not entered' }}
+          {% if active_incident_draft.updated_at %} / Updated {{ active_incident_draft.updated_at.strftime('%Y-%m-%d %H:%M') }}{% endif %}
+        </p>
+        {% if active_incident_draft.summary %}
+          <p class="text-muted mb-2">{{ active_incident_draft.summary }}</p>
+        {% endif %}
+        <div class="report-hub-actions">
+          <a class="btn btn-sm btn-primary" href="{{ url_for('mobile.incident_start') }}">Open Synced Draft</a>
+        </div>
+      </article>
+    </section>
+    {% endif %}
 
     <div class="report-center-grid">
       <section class="card p-3 report-center-panel">

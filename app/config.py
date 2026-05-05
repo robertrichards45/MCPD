@@ -3,9 +3,45 @@ from datetime import timedelta
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 ROOT_DIR = os.path.abspath(os.path.join(BASE_DIR, '..'))
-DATA_DIR = os.path.join(ROOT_DIR, 'data')
+_VOLUME_PATH = os.environ.get('RAILWAY_VOLUME_MOUNT_PATH', '').strip()
+DATA_DIR = _VOLUME_PATH if _VOLUME_PATH else os.path.join(ROOT_DIR, 'data')
 UPLOAD_ROOT = os.environ.get('UPLOAD_ROOT', os.path.join(DATA_DIR, 'uploads'))
 DEFAULT_DATABASE_URI = f"sqlite:///{os.path.join(DATA_DIR, 'app.db').replace(os.sep, '/')}"
+RAILWAY_VOLUME_MOUNT_PATH = _VOLUME_PATH or '/data'
+
+
+def _database_url_from_env():
+    keys = (
+        'MCPD_DATABASE_URL',
+        'DATABASE_URL',
+        'DATABASE_PRIVATE_URL',
+        'POSTGRES_URL',
+        'POSTGRES_PRIVATE_URL',
+        'RAILWAY_DATABASE_URL',
+    )
+    candidates = [
+        (key, os.environ.get(key).strip())
+        for key in keys
+        if os.environ.get(key) and os.environ.get(key).strip()
+    ]
+    if not candidates:
+        # On Railway with a mounted volume, automatically use the volume for
+        # SQLite so officer data survives redeploys without needing Postgres.
+        volume = os.environ.get('RAILWAY_VOLUME_MOUNT_PATH', '').strip()
+        if volume and (os.environ.get('RAILWAY_ENVIRONMENT') or os.environ.get('RAILWAY_PROJECT_ID')):
+            return f"sqlite:///{volume}/app.db"
+        return ''
+
+    # Railway can sometimes keep a stale DATABASE_URL around. In production,
+    # a Postgres URL is always safer than an app-filesystem SQLite URL, so
+    # prefer any Postgres candidate before falling back to declaration order.
+    if os.environ.get('RAILWAY_ENVIRONMENT') or os.environ.get('RAILWAY_PROJECT_ID'):
+        for _key, value in candidates:
+            normalized = _normalize_database_uri(value)
+            if normalized.startswith('postgresql://'):
+                return value
+
+    return candidates[0][1]
 
 
 def _header_list(value):
@@ -24,6 +60,8 @@ def _normalize_database_uri(value):
     raw = str(value or '').strip()
     if not raw:
         return DEFAULT_DATABASE_URI
+    if raw.startswith('postgres://'):
+        return 'postgresql://' + raw[len('postgres://'):]
     if not raw.startswith('sqlite:///') or raw.startswith('sqlite:////'):
         return raw
 
@@ -38,7 +76,7 @@ def _normalize_database_uri(value):
 
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY', 'change-me')
-    SQLALCHEMY_DATABASE_URI = _normalize_database_uri(os.environ.get('DATABASE_URL'))
+    SQLALCHEMY_DATABASE_URI = _normalize_database_uri(_database_url_from_env())
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     REMEMBER_COOKIE_DURATION = timedelta(days=7)
     UPLOAD_ROOT = UPLOAD_ROOT
@@ -105,3 +143,7 @@ class Config:
     CAC_CN_HEADER = os.environ.get('CAC_CN_HEADER', 'X-CAC-CN')
     OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', '')
     CLEO_URL = os.environ.get('CLEO_URL', '')
+    REQUIRE_PERSISTENT_DATABASE = os.environ.get(
+        'REQUIRE_PERSISTENT_DATABASE',
+        '1' if os.environ.get('RAILWAY_ENVIRONMENT') or os.environ.get('RAILWAY_PROJECT_ID') else '0',
+    ).lower() in {'1', 'true', 'yes', 'on'}

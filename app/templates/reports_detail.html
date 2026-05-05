@@ -9,6 +9,31 @@
     </div>
     <p class="text-muted">Owner: {{ report_owner.display_name }}</p>
 
+    <div class="card p-3 mb-3">
+      <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap">
+        <div>
+          <h5 class="mb-1">Scene Diagram / Accident Reconstruction</h5>
+          <p class="text-muted mb-0">Create or open a report-connected accident reconstruction diagram for crash, DUI crash, hit-and-run, pedestrian strike, or vehicle-related reports.</p>
+        </div>
+        <a class="btn btn-primary" href="{{ url_for('reports.report_scene_diagram', report_id=report.id) }}">Open Diagram</a>
+      </div>
+      {% if accident_reconstructions %}
+        <div class="list-group mt-3">
+          {% for recon in accident_reconstructions %}
+            <div class="list-group-item d-flex justify-content-between align-items-center gap-2 flex-wrap">
+              <span><strong>{{ recon.incident_number or ('AR-' ~ recon.id) }}</strong> {{ recon.title }}</span>
+              <span class="d-flex gap-2">
+                <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('reports.accident_reconstruction_diagram', reconstruction_id=recon.id) }}">Diagram</a>
+                <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('reports.accident_reconstruction_export', reconstruction_id=recon.id) }}">Export PDF</a>
+              </span>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="text-muted mt-3">Scene Diagram: not attached yet.</div>
+      {% endif %}
+    </div>
+
     <div class="row">
       <div class="col-md-6">
         <div class="card p-3 mb-3">

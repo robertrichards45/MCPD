@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell">
+  {% include 'partials/nav.html' %}
+  <div class="page-wrap personnel-edit-page">
+    <section class="card p-3 mb-3 page-head">
+      <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
+        <div>
+          <h2 class="mb-1">Edit Officer</h2>
+          <p class="text-muted mb-0">Update profile details, installation, shift, supervisor, role, and account status.</p>
+        </div>
+        <a class="btn btn-outline-secondary" href="{{ url_for('auth.manage_users') }}">Back to Personnel</a>
+      </div>
+    </section>
+
+    {% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+
+    <form class="card p-3 personnel-edit-card" method="post">
+      <div class="personnel-edit-identity">
+        <div class="personnel-avatar">{{ (target_user.first_name or target_user.username or 'O')[:1] }}{{ (target_user.last_name or '')[:1] }}</div>
+        <div>
+          <h3>{{ target_user.display_name }}</h3>
+          <p>@{{ target_user.username }} / {{ target_user.role_label }}</p>
+        </div>
+      </div>
+
+      <div class="personnel-edit-grid">
+        <label>First Name
+          <input class="form-control" name="first_name" value="{{ target_user.first_name or '' }}" required>
+        </label>
+        <label>Last Name
+          <input class="form-control" name="last_name" value="{{ target_user.last_name or '' }}" required>
+        </label>
+        <label class="personnel-edit-wide">Display Name Override
+          <input class="form-control" name="display_name" value="{{ target_user.display_name_override or '' }}" placeholder="Optional">
+        </label>
+        <label>Email
+          <input class="form-control" type="email" name="email" value="{{ target_user.email or '' }}">
+        </label>
+        <label>Phone
+          <input class="form-control" name="phone_number" value="{{ target_user.phone_number or '' }}">
+        </label>
+        <label class="personnel-edit-wide">Address
+          <textarea class="form-control" name="address" rows="2">{{ target_user.address or '' }}</textarea>
+        </label>
+        <label>Officer Number
+          <input class="form-control" name="officer_number" value="{{ target_user.officer_number or '' }}">
+        </label>
+        <label>EDIPI
+          <input class="form-control" name="edipi" value="{{ target_user.edipi or '' }}" inputmode="numeric" maxlength="10" {% if not user.can_manage_site() %}readonly{% endif %}>
+        </label>
+        <label>Badge / Employee ID
+          <input class="form-control" name="badge_employee_id" value="{{ target_user.badge_employee_id or '' }}">
+        </label>
+        <label>Shift / Section
+          <input class="form-control" name="section_unit" value="{{ target_user.section_unit or '' }}" placeholder="Alpha Shift, Day Watch, Gate 1">
+        </label>
+        <label>Installation
+          <select class="form-control" name="installation" {% if not user.can_manage_site() %}disabled{% endif %}>
+            <option value="">Unassigned</option>
+            {% for key, label in installations %}
+              <option value="{{ key }}" {% if target_user.installation == key %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+          {% if not user.can_manage_site() %}
+            <input type="hidden" name="installation" value="{{ target_user.installation or user.installation or '' }}">
+          {% endif %}
+        </label>
+        <label>Supervisor / Watch Commander
+          <select class="form-control" name="supervisor_id">
+            <option value="">Unassigned</option>
+            {% for supervisor in supervisors %}
+              <option value="{{ supervisor.id }}" {% if target_user.supervisor_id == supervisor.id %}selected{% endif %}>{{ supervisor.display_name }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label>Role
+          <select class="form-control" name="role">
+            {% for role in role_options %}
+              <option value="{{ role }}" {% if target_user.normalized_role == role %}selected{% endif %}>{{ role_labels.get(role, role.replace('_', ' ').title()) }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label>Account Status
+          <select class="form-control" name="active">
+            <option value="1" {% if target_user.active %}selected{% endif %}>Active</option>
+            <option value="0" {% if not target_user.active %}selected{% endif %}>Disabled</option>
+          </select>
+        </label>
+        <label class="personnel-edit-check">
+          <input type="checkbox" name="can_grade_cleoc_reports" value="1" {% if target_user.can_grade_cleoc_reports %}checked{% endif %}>
+          Can review mock reports
+        </label>
+      </div>
+
+      <div class="personnel-edit-actions">
+        <a class="btn btn-outline-secondary" href="{{ url_for('auth.manage_users') }}">Cancel</a>
+        <button class="btn btn-primary">Save Officer</button>
+      </div>
+    </form>
+
+    {% if target_user.id != user.id %}
+    <form class="card p-3 mt-3 border-danger" method="post" onsubmit="return confirm('Permanently delete {{ target_user.display_name }}? This cannot be undone.');">
+      <input type="hidden" name="action" value="delete">
+      <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
+        <div>
+          <h4 class="mb-1 text-danger">Delete Account</h4>
+          <p class="text-muted mb-0">Permanently remove this account if it was created by mistake or the officer should not have portal access.</p>
+        </div>
+        <button class="btn btn-danger">Delete {{ target_user.display_name }}</button>
+      </div>
+    </form>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

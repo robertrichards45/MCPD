@@ -9,6 +9,7 @@ import json
 import secrets
 import weakref
 import warnings
+from urllib.parse import urlparse
 from sqlalchemy import inspect, text
 from sqlalchemy.exc import OperationalError
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -24,19 +25,92 @@ warnings.filterwarnings(
     category=CryptographyDeprecationWarning,
 )
 
-# Load .env file into the environment.  Variables already set to a non-empty
-# value (e.g. by the shell or Railway) take precedence; but if Railway injected
-# a blank value for a key (common when the variable was added but left empty),
-# the .env file value fills it in so credentials are never silently lost.
-for _env_key, _env_val in dotenv_values().items():
-    if _env_val and not os.environ.get(_env_key):
-        os.environ[_env_key] = _env_val
+# Let local shells use .env, but never let committed machine-local .env values
+# override Railway service variables or accidentally point production at SQLite.
+if not (os.environ.get('RAILWAY_ENVIRONMENT') or os.environ.get('RAILWAY_PROJECT_ID')):
+    load_dotenv(override=False)
 
-from .config import Config
+from .config import Config, _database_url_from_env, _normalize_database_uri
 from .extensions import db, login_manager
 from .models import ALL_PORTAL_ROLES, ROLE_LABELS, ROLE_WEBSITE_CONTROLLER, ROLE_WATCH_COMMANDER, Role, User
 
 _CREATED_APPS = weakref.WeakSet()
+
+
+def _database_uri_is_ephemeral(uri):
+    raw = str(uri or '').strip()
+    if not raw.startswith('sqlite:///'):
+        return False
+    if raw == 'sqlite:///:memory:':
+        return True
+    path = raw[len('sqlite:///'):]
+    if not os.path.isabs(path):
+        path = os.path.abspath(path)
+    persistent_roots = [
+        os.environ.get('RAILWAY_VOLUME_MOUNT_PATH', ''),
+        os.environ.get('PERSISTENT_DATA_DIR', ''),
+    ]
+    persistent_roots = [os.path.abspath(root) for root in persistent_roots if root]
+    if any(os.path.abspath(path).startswith(root + os.sep) or os.path.abspath(path) == root for root in persistent_roots):
+        return False
+    return True
+
+
+def _enforce_persistent_database_config(app):
+    if app.config.get('TESTING') or not app.config.get('REQUIRE_PERSISTENT_DATABASE'):
+        return
+    database_uri = app.config.get('SQLALCHEMY_DATABASE_URI')
+    if not _database_uri_is_ephemeral(database_uri):
+        return
+    configured_db_vars = [
+        key for key in (
+            'MCPD_DATABASE_URL',
+            'DATABASE_URL',
+            'DATABASE_PRIVATE_URL',
+            'POSTGRES_URL',
+            'POSTGRES_PRIVATE_URL',
+            'RAILWAY_DATABASE_URL',
+        )
+        if os.environ.get(key)
+    ]
+    configured_db_summaries = []
+    for key in configured_db_vars:
+        parsed_value = urlparse(_normalize_database_uri(os.environ.get(key)))
+        summary = f"{key}:{parsed_value.scheme or 'none'}"
+        if parsed_value.hostname:
+            summary += f"@{parsed_value.hostname}"
+        configured_db_summaries.append(summary)
+    parsed_database_uri = urlparse(str(database_uri or ''))
+    database_summary = f"active database scheme={parsed_database_uri.scheme or 'none'}"
+    if parsed_database_uri.hostname:
+        database_summary += f", host={parsed_database_uri.hostname}"
+    if parsed_database_uri.path:
+        database_summary += f", path={parsed_database_uri.path}"
+    details = (
+        f" Detected database environment variables: {', '.join(configured_db_vars) or 'none'}."
+        f" Variable summaries: {', '.join(configured_db_summaries) or 'none'}."
+        f" {database_summary}."
+    )
+    message = (
+        'Unsafe production database configuration: this deployment is using SQLite on the app filesystem. '
+        'That can wipe officer accounts on rebuild/update. Set DATABASE_URL to Railway Postgres, or mount a '
+        'persistent volume and use sqlite:////data/app.db. Set REQUIRE_PERSISTENT_DATABASE=0 only for throwaway testing.'
+        + details
+    )
+    logging.getLogger(__name__).critical(message)
+    raise RuntimeError(message)
+
+
+def _refresh_runtime_environment_config(app):
+    database_url = _database_url_from_env()
+    if database_url is not None:
+        app.config['SQLALCHEMY_DATABASE_URI'] = _normalize_database_uri(database_url)
+    require_persistent = os.environ.get('REQUIRE_PERSISTENT_DATABASE')
+    if require_persistent is not None:
+        app.config['REQUIRE_PERSISTENT_DATABASE'] = require_persistent.lower() in {'1', 'true', 'yes', 'on'}
+    elif os.environ.get('RAILWAY_ENVIRONMENT') or os.environ.get('RAILWAY_PROJECT_ID'):
+        app.config['REQUIRE_PERSISTENT_DATABASE'] = True
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -81,74 +155,77 @@ def _safe_schema_execute(statement, params=None):
         return False
 
 
+def _quoted_identifier(name):
+    return db.engine.dialect.identifier_preparer.quote(name)
+
+
 def ensure_schema():
     inspector = inspect(db.engine)
     table_names = set(inspector.get_table_names())
     user_columns = {column['name'] for column in inspector.get_columns('user')}
     user_indexes = {index['name'] for index in inspector.get_indexes('user')}
+    user_table = _quoted_identifier('user')
     if 'edipi' not in user_columns:
-        _safe_schema_execute('ALTER TABLE user ADD COLUMN edipi VARCHAR(20)')
+        _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN edipi VARCHAR(20)')
     if 'first_name' not in user_columns:
-        _safe_schema_execute('ALTER TABLE user ADD COLUMN first_name VARCHAR(80)')
+        _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN first_name VARCHAR(80)')
     if 'last_name' not in user_columns:
-        _safe_schema_execute('ALTER TABLE user ADD COLUMN last_name VARCHAR(80)')
+        _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN last_name VARCHAR(80)')
     if 'officer_number' not in user_columns:
-        _safe_schema_execute('ALTER TABLE user ADD COLUMN officer_number VARCHAR(30)')
+        _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN officer_number VARCHAR(30)')
     if 'display_name_override' not in user_columns:
-        _safe_schema_execute('ALTER TABLE user ADD COLUMN display_name_override VARCHAR(120)')
+        _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN display_name_override VARCHAR(120)')
     if 'email' not in user_columns:
-        _safe_schema_execute('ALTER TABLE user ADD COLUMN email VARCHAR(120)')
+        _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN email VARCHAR(120)')
     if 'phone_number' not in user_columns:
-        _safe_schema_execute('ALTER TABLE user ADD COLUMN phone_number VARCHAR(30)')
+        _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN phone_number VARCHAR(30)')
     if 'badge_employee_id' not in user_columns:
-        _safe_schema_execute('ALTER TABLE user ADD COLUMN badge_employee_id VARCHAR(40)')
+        _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN badge_employee_id VARCHAR(40)')
     if 'section_unit' not in user_columns:
-        _safe_schema_execute('ALTER TABLE user ADD COLUMN section_unit VARCHAR(120)')
+        _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN section_unit VARCHAR(120)')
     if 'profile_image_path' not in user_columns:
-        _safe_schema_execute('ALTER TABLE user ADD COLUMN profile_image_path VARCHAR(255)')
+        _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN profile_image_path VARCHAR(255)')
     if 'address' not in user_columns:
-        _safe_schema_execute('ALTER TABLE user ADD COLUMN address VARCHAR(255)')
+        _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN address VARCHAR(255)')
     if 'cac_identifier' not in user_columns:
-        _safe_schema_execute('ALTER TABLE user ADD COLUMN cac_identifier VARCHAR(255)')
+        _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN cac_identifier VARCHAR(255)')
     if 'cac_enabled' not in user_columns:
-        if _safe_schema_execute('ALTER TABLE user ADD COLUMN cac_enabled BOOLEAN'):
-            _safe_schema_execute('UPDATE user SET cac_enabled = 0 WHERE cac_enabled IS NULL')
+        if _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN cac_enabled BOOLEAN'):
+            _safe_schema_execute(f'UPDATE {user_table} SET cac_enabled = 0 WHERE cac_enabled IS NULL')
     if 'cac_linked_at' not in user_columns:
-        _safe_schema_execute('ALTER TABLE user ADD COLUMN cac_linked_at DATETIME')
+        _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN cac_linked_at DATETIME')
     if 'pin_hash' not in user_columns:
-        _safe_schema_execute('ALTER TABLE user ADD COLUMN pin_hash VARCHAR(255)')
+        _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN pin_hash VARCHAR(255)')
     if 'can_grade_cleoc_reports' not in user_columns:
-        if _safe_schema_execute('ALTER TABLE user ADD COLUMN can_grade_cleoc_reports BOOLEAN'):
-            _safe_schema_execute('UPDATE user SET can_grade_cleoc_reports = 0 WHERE can_grade_cleoc_reports IS NULL')
+        if _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN can_grade_cleoc_reports BOOLEAN'):
+            _safe_schema_execute(f'UPDATE {user_table} SET can_grade_cleoc_reports = 0 WHERE can_grade_cleoc_reports IS NULL')
     if 'supervisor_id' not in user_columns:
-        _safe_schema_execute('ALTER TABLE user ADD COLUMN supervisor_id INTEGER')
+        _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN supervisor_id INTEGER')
     if 'pending_approval' not in user_columns:
-        if _safe_schema_execute('ALTER TABLE user ADD COLUMN pending_approval BOOLEAN'):
-            _safe_schema_execute('UPDATE user SET pending_approval = 0 WHERE pending_approval IS NULL')
+        if _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN pending_approval BOOLEAN'):
+            _safe_schema_execute(f'UPDATE {user_table} SET pending_approval = 0 WHERE pending_approval IS NULL')
     if 'installation' not in user_columns:
-        _safe_schema_execute('ALTER TABLE user ADD COLUMN installation VARCHAR(100)')
-    if 'preferred_legal_state' not in user_columns:
-        _safe_schema_execute('ALTER TABLE user ADD COLUMN preferred_legal_state VARCHAR(2)')
-    admin_count = db.session.execute(text("SELECT COUNT(*) FROM user WHERE role = 'ADMIN'")).scalar() or 0
+        _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN installation VARCHAR(100)')
+    admin_count = db.session.execute(text(f"SELECT COUNT(*) FROM {user_table} WHERE role = 'ADMIN'")).scalar() or 0
     if admin_count:
         _safe_schema_execute(
-            "UPDATE user SET role = :controller WHERE role = 'ADMIN'",
+            f"UPDATE {user_table} SET role = :controller WHERE role = 'ADMIN'",
             {'controller': ROLE_WEBSITE_CONTROLLER},
         )
-    officer_count = db.session.execute(text("SELECT COUNT(*) FROM user WHERE role = 'OFFICER'")).scalar() or 0
+    officer_count = db.session.execute(text(f"SELECT COUNT(*) FROM {user_table} WHERE role = 'OFFICER'")).scalar() or 0
     if officer_count:
         _safe_schema_execute(
-            "UPDATE user SET role = :patrol WHERE role = 'OFFICER'",
+            f"UPDATE {user_table} SET role = :patrol WHERE role = 'OFFICER'",
             {'patrol': 'PATROL_OFFICER'},
         )
     if 'ix_user_edipi_unique' not in user_indexes:
-        _safe_schema_execute('CREATE UNIQUE INDEX IF NOT EXISTS ix_user_edipi_unique ON user (edipi) WHERE edipi IS NOT NULL')
+        _safe_schema_execute(f'CREATE UNIQUE INDEX IF NOT EXISTS ix_user_edipi_unique ON {user_table} (edipi) WHERE edipi IS NOT NULL')
     if 'ix_user_officer_number_unique' not in user_indexes:
-        _safe_schema_execute('CREATE UNIQUE INDEX IF NOT EXISTS ix_user_officer_number_unique ON user (officer_number) WHERE officer_number IS NOT NULL')
+        _safe_schema_execute(f'CREATE UNIQUE INDEX IF NOT EXISTS ix_user_officer_number_unique ON {user_table} (officer_number) WHERE officer_number IS NOT NULL')
     if 'ix_user_cac_identifier_unique' not in user_indexes:
-        _safe_schema_execute('CREATE UNIQUE INDEX IF NOT EXISTS ix_user_cac_identifier_unique ON user (cac_identifier) WHERE cac_identifier IS NOT NULL')
+        _safe_schema_execute(f'CREATE UNIQUE INDEX IF NOT EXISTS ix_user_cac_identifier_unique ON {user_table} (cac_identifier) WHERE cac_identifier IS NOT NULL')
     if 'ix_user_email_unique' not in user_indexes:
-        _safe_schema_execute('CREATE UNIQUE INDEX IF NOT EXISTS ix_user_email_unique ON user (email) WHERE email IS NOT NULL')
+        _safe_schema_execute(f'CREATE UNIQUE INDEX IF NOT EXISTS ix_user_email_unique ON {user_table} (email) WHERE email IS NOT NULL')
 
     if 'truck_gate_log' in table_names:
         truck_gate_log_columns = {column['name'] for column in inspector.get_columns('truck_gate_log')}
@@ -269,11 +346,53 @@ def ensure_schema():
             "UPDATE cleo_report SET status = 'SUBMITTED' WHERE status = 'LEVEL_2'"
         )
 
+    if 'accident_reconstruction' in table_names:
+        accident_columns = {column['name'] for column in inspector.get_columns('accident_reconstruction')}
+        if 'report_id' not in accident_columns:
+            _safe_schema_execute("ALTER TABLE accident_reconstruction ADD COLUMN report_id INTEGER")
+        if 'diagram_data_json' not in accident_columns:
+            _safe_schema_execute("ALTER TABLE accident_reconstruction ADD COLUMN diagram_data_json TEXT")
+
+    if 'reconstruction_vehicle' in table_names:
+        recon_vehicle_columns = {column['name'] for column in inspector.get_columns('reconstruction_vehicle')}
+        vehicle_additions = {
+            'reconstruction_id': 'INTEGER',
+            'label': 'VARCHAR(40)',
+            'type': 'VARCHAR(80)',
+            'pre_crash_speed': 'FLOAT',
+            'impact_speed': 'FLOAT',
+            'post_crash_speed': 'FLOAT',
+            'x_position': 'FLOAT',
+            'y_position': 'FLOAT',
+            'rotation': 'FLOAT',
+            'driver': 'VARCHAR(120)',
+            'damage_notes': 'TEXT',
+        }
+        for column_name, column_type in vehicle_additions.items():
+            if column_name not in recon_vehicle_columns:
+                _safe_schema_execute(f"ALTER TABLE reconstruction_vehicle ADD COLUMN {column_name} {column_type}")
+
+    if 'reconstruction_measurement' in table_names:
+        recon_measurement_columns = {column['name'] for column in inspector.get_columns('reconstruction_measurement')}
+        measurement_additions = {
+            'reconstruction_id': 'INTEGER',
+            'measurement_type': 'VARCHAR(60)',
+            'start_x': 'FLOAT',
+            'start_y': 'FLOAT',
+            'end_x': 'FLOAT',
+            'end_y': 'FLOAT',
+        }
+        for column_name, column_type in measurement_additions.items():
+            if column_name not in recon_measurement_columns:
+                _safe_schema_execute(f"ALTER TABLE reconstruction_measurement ADD COLUMN {column_name} {column_type}")
+
 
 def create_app():
     app = Flask(__name__)
     _CREATED_APPS.add(app)
     app.config.from_object(Config)
+    _refresh_runtime_environment_config(app)
+    _enforce_persistent_database_config(app)
     # Respect environment/config-driven cookie and scheme settings so local
     # LAN access can use HTTP while production stays on secure cookies/HTTPS.
     app.config["PREFERRED_URL_SCHEME"] = app.config.get("PREFERRED_URL_SCHEME", "http")
@@ -659,6 +778,25 @@ def create_app():
     app.register_blueprint(reference.bp)
     app.register_blueprint(announcements.bp)
     app.register_blueprint(mobile.bp)
+
+    @app.get('/manifest.webmanifest')
+    def pwa_manifest():
+        return send_file(
+            os.path.join(app.static_folder, 'manifest.webmanifest'),
+            mimetype='application/manifest+json',
+            max_age=3600,
+        )
+
+    @app.get('/service-worker.js')
+    def service_worker():
+        response = send_file(
+            os.path.join(app.static_folder, 'service-worker.js'),
+            mimetype='application/javascript',
+            max_age=0,
+        )
+        response.headers['Service-Worker-Allowed'] = '/'
+        response.headers['Cache-Control'] = 'no-cache'
+        return response
 
     with app.app_context():
         try:

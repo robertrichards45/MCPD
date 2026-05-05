@@ -11,7 +11,7 @@ import re
 import functools
 import hmac
 
-from flask import Blueprint, current_app, g, jsonify, render_template, request, session, url_for
+from flask import Blueprint, abort, current_app, flash, g, jsonify, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_required
 from werkzeug.utils import secure_filename
 
@@ -19,15 +19,23 @@ from ..extensions import db
 from ..models import (
     AuditLog,
     Form,
+    IncidentDraft,
     IncidentPacket,
     PACKET_APPROVAL_APPROVED,
     PACKET_APPROVAL_NEEDS_CORRECTION,
     PACKET_APPROVAL_PENDING,
     SavedForm,
+    Report,
     User,
+    INSTALLATION_LABELS,
+    ROLE_LABELS,
+    ROLE_WEBSITE_CONTROLLER,
+    ROLE_WATCH_COMMANDER,
+    ROLE_PATROL_OFFICER,
+    USMC_INSTALLATIONS,
     utcnow_naive,
 )
-from ..permissions import can_supervisor_review
+from ..permissions import assignable_roles, can_manage_team, can_manage_user, can_supervisor_review, is_site_controller, is_watch_commander, watch_commander_scope_id
 from ..services.ai_client import ask_openai, is_ai_unavailable_message
 from ..services.call_type_rules import load_call_type_rules
 from ..services.forms_pdf_renderer import inspect_xfa_fields, render_form_pdf
@@ -35,6 +43,88 @@ from ..services.mobile_incident_documents import build_narrative_draft, build_pa
 from ..services.mobile_form_catalog import build_mobile_form_catalog
 
 bp = Blueprint('mobile', __name__)
+
+
+def _active_incident_draft():
+    return (
+        IncidentDraft.query
+        .filter_by(officer_user_id=current_user.id, status='ACTIVE')
+        .order_by(IncidentDraft.updated_at.desc())
+        .first()
+    )
+
+
+def _state_summary_fields(state):
+    if not isinstance(state, dict):
+        state = {}
+    basics = state.get('incidentBasics') if isinstance(state.get('incidentBasics'), dict) else {}
+    facts = state.get('facts') if isinstance(state.get('facts'), list) else []
+    summary = str(basics.get('summary') or '').strip()
+    if not summary:
+        for fact in facts:
+            if isinstance(fact, dict) and str(fact.get('value') or '').strip():
+                summary = str(fact.get('value') or '').strip()
+                break
+    return {
+        'call_type': str(state.get('callType') or '')[:80] or None,
+        'location': str(basics.get('location') or '')[:255] or None,
+        'summary': summary[:500] or None,
+    }
+
+
+@bp.route('/mobile/api/incident/draft', methods=['GET', 'POST', 'DELETE'])
+@login_required
+def incident_draft_api():
+    if request.method == 'GET':
+        draft = _active_incident_draft()
+        if not draft:
+            return jsonify({'ok': True, 'draft': None})
+        try:
+            state = json.loads(draft.draft_json or '{}')
+        except Exception:
+            state = {}
+        return jsonify(
+            {
+                'ok': True,
+                'draft': {
+                    'id': draft.id,
+                    'state': state,
+                    'updatedAt': draft.updated_at.isoformat() if draft.updated_at else None,
+                    'callType': draft.call_type,
+                    'location': draft.location,
+                    'summary': draft.summary,
+                },
+            }
+        )
+
+    if request.method == 'DELETE':
+        draft = _active_incident_draft()
+        if draft:
+            draft.status = 'CLEARED'
+            draft.updated_at = utcnow_naive()
+            db.session.add(draft)
+            db.session.add(AuditLog(actor_id=current_user.id, action='mobile_incident_draft_clear', details=str(draft.id)))
+            db.session.commit()
+        return jsonify({'ok': True})
+
+    payload = request.get_json(silent=True) or {}
+    state = payload.get('incident') if isinstance(payload.get('incident'), dict) else payload.get('state')
+    if not isinstance(state, dict):
+        return jsonify({'ok': False, 'error': 'Invalid incident draft.'}), 400
+    draft = _active_incident_draft()
+    if not draft:
+        draft = IncidentDraft(officer_user_id=current_user.id)
+    fields = _state_summary_fields(state)
+    draft.call_type = fields['call_type']
+    draft.location = fields['location']
+    draft.summary = fields['summary']
+    draft.draft_json = json.dumps(state, default=str)
+    draft.status = 'ACTIVE'
+    draft.updated_at = utcnow_naive()
+    db.session.add(draft)
+    db.session.add(AuditLog(actor_id=current_user.id, action='mobile_incident_draft_save', details=draft.call_type or 'draft'))
+    db.session.commit()
+    return jsonify({'ok': True, 'draftId': draft.id, 'updatedAt': draft.updated_at.isoformat() if draft.updated_at else None})
 
 
 def _require_csrf(f):
@@ -50,6 +140,12 @@ def _require_csrf(f):
             return jsonify({'ok': False, 'error': 'CSRF validation failed.'}), 403
         return f(*args, **kwargs)
     return wrapper
+
+
+def _form_csrf_valid():
+    token = request.form.get('_csrf_token', '')
+    expected = session.get('_csrf_token', '')
+    return bool(expected) and hmac.compare_digest(str(token), str(expected))
 
 
 PACKET_ALLOWED_FORM_STATUSES = {'COMPLETED', 'SUBMITTED'}
@@ -1042,6 +1138,9 @@ def _smtp_send_packet(recipient, cc_list, subject, body, attachments):
 @bp.route('/mobile/home')
 @login_required
 def home():
+    saved_forms_count = SavedForm.query.filter_by(officer_user_id=current_user.id).count()
+    report_count = Report.query.filter_by(owner_id=current_user.id).count()
+    active_incident_draft = _active_incident_draft()
     primary_cards = [
         {
             'title': 'Start Incident',
@@ -1073,8 +1172,133 @@ def home():
         primary_cards=primary_cards,
         feature_cards=feature_cards,
         action_cards=primary_cards + feature_cards,
+        dashboard_saved_forms_count=saved_forms_count,
+        dashboard_report_count=report_count,
+        active_incident_draft=active_incident_draft,
         **_shell_context('Home', 'home'),
     )
+
+
+@bp.route('/mobile/more')
+@login_required
+def more():
+    return render_template('mobile_more.html', **_shell_context('More', 'more'))
+
+
+def _mobile_manageable_officers():
+    if not can_manage_team(current_user):
+        abort(403)
+    users = User.query.order_by(User.pending_approval.desc(), User.active.asc(), User.last_name.asc(), User.first_name.asc(), User.username.asc()).all()
+    return [
+        user for user in users
+        if user.id != current_user.id and can_manage_user(current_user, user)
+    ]
+
+
+def _mobile_officer_assignment_context():
+    officers = _mobile_manageable_officers()
+    pending = [officer for officer in officers if officer.pending_approval or not officer.active]
+    unassigned = [officer for officer in officers if officer.active and not officer.pending_approval and officer.supervisor_id is None]
+    assigned = [officer for officer in officers if officer.active and not officer.pending_approval and officer.supervisor_id is not None]
+    watch_commanders = [
+        user for user in User.query.filter(User.active.is_(True)).order_by(User.first_name.asc(), User.last_name.asc(), User.username.asc()).all()
+        if user.has_role(ROLE_WATCH_COMMANDER) and (is_site_controller(current_user) or user.installation == current_user.installation)
+    ]
+    return {
+        'officers': officers,
+        'pending_officers': pending,
+        'unassigned_officers': unassigned,
+        'assigned_officers': assigned,
+        'watch_commanders': watch_commanders,
+        'assignable_roles': assignable_roles(current_user),
+        'role_labels': ROLE_LABELS,
+        'installations': USMC_INSTALLATIONS,
+        'installation_labels': INSTALLATION_LABELS,
+    }
+
+
+@bp.route('/mobile/supervisor/officers')
+@login_required
+def supervisor_officers():
+    context = _mobile_officer_assignment_context()
+    return render_template(
+        'mobile_supervisor_officers.html',
+        mobile_header_kicker='Officer Assignment',
+        mobile_header_note='Approve accounts and place officers on watch',
+        mobile_incident_boot=False,
+        mobile_incident_page='supervisor_officers',
+        **context,
+        **_shell_context('Officer Assignment', 'more'),
+    )
+
+
+@bp.route('/mobile/supervisor/officers/<int:user_id>', methods=['POST'])
+@login_required
+def supervisor_officer_update(user_id):
+    if not can_manage_team(current_user):
+        abort(403)
+    if not _form_csrf_valid():
+        abort(403)
+    target = db.session.get(User, user_id)
+    if target is None:
+        abort(404)
+    if not can_manage_user(current_user, target):
+        abort(403)
+
+    role = request.form.get('role', '').strip() or target.normalized_role or ROLE_PATROL_OFFICER
+    if role not in assignable_roles(current_user):
+        flash('That role is outside your mobile assignment authority.', 'error')
+        return redirect(url_for('mobile.supervisor_officers'))
+
+    section_unit = request.form.get('section_unit', '').strip()
+    installation = request.form.get('installation', '').strip()
+    supervisor_id = request.form.get('supervisor_id', '').strip()
+    active = request.form.get('active') == '1'
+
+    target.role = role
+    target.active = active
+    if active:
+        target.pending_approval = False
+    if section_unit:
+        target.section_unit = section_unit
+    elif target.normalized_role == ROLE_WATCH_COMMANDER and not target.section_unit:
+        target.section_unit = f'{target.display_name} Watch'
+
+    if is_watch_commander(current_user):
+        target.installation = current_user.installation
+        target.supervisor_id = watch_commander_scope_id(current_user)
+        if not target.section_unit:
+            target.section_unit = current_user.section_unit or f'{current_user.display_name} Watch'
+    else:
+        if installation:
+            target.installation = installation
+        if supervisor_id:
+            try:
+                supervisor_id_int = int(supervisor_id)
+            except ValueError:
+                flash('Supervisor selection is invalid.', 'error')
+                return redirect(url_for('mobile.supervisor_officers'))
+            supervisor = db.session.get(User, supervisor_id_int)
+            if not supervisor or not supervisor.has_role(ROLE_WATCH_COMMANDER):
+                flash('Select a valid Watch Commander.', 'error')
+                return redirect(url_for('mobile.supervisor_officers'))
+            target.supervisor_id = supervisor.id
+            if not target.section_unit:
+                target.section_unit = supervisor.section_unit or f'{supervisor.display_name} Watch'
+        else:
+            target.supervisor_id = None
+
+    db.session.add(
+        AuditLog(
+            actor_id=current_user.id,
+            action='mobile_officer_assignment_update',
+            details=f'user_id={target.id}|active={target.active}|role={target.role}|supervisor_id={target.supervisor_id}',
+        )
+    )
+    db.session.add(target)
+    db.session.commit()
+    flash(f'{target.display_name} updated for mobile assignment.', 'success')
+    return redirect(url_for('mobile.supervisor_officers'))
 
 
 @bp.route('/mobile/fast-capture')
@@ -1518,6 +1742,11 @@ def send_packet_api():
         db.session.add(packet_record)
     except Exception:
         pass
+    draft = _active_incident_draft()
+    if draft:
+        draft.status = 'SENT'
+        draft.updated_at = utcnow_naive()
+        db.session.add(draft)
     db.session.commit()
     return jsonify(
         {

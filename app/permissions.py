@@ -126,7 +126,11 @@ def can_view_user(user, target_user):
         return True
     scope_id = watch_commander_scope_id(user)
     if scope_id:
-        return target_user.supervisor_id == scope_id or target_user.id == scope_id
+        same_installation = (
+            getattr(user, 'installation', None)
+            and getattr(target_user, 'installation', None) == getattr(user, 'installation', None)
+        )
+        return target_user.supervisor_id == scope_id or target_user.id == scope_id or same_installation
     return False
 
 
@@ -137,7 +141,20 @@ def can_manage_user(user, target_user):
         return True
     scope_id = watch_commander_scope_id(user)
     if scope_id:
-        return target_user.supervisor_id == scope_id and target_user.id != scope_id
+        if target_user.id == scope_id or target_user.normalized_role == ROLE_WEBSITE_CONTROLLER:
+            return False
+        same_installation = (
+            getattr(user, 'installation', None)
+            and getattr(target_user, 'installation', None) == getattr(user, 'installation', None)
+        )
+        return target_user.supervisor_id == scope_id or (
+            same_installation
+            and (
+                target_user.supervisor_id is None
+                or not getattr(target_user, 'active', True)
+                or getattr(target_user, 'pending_approval', False)
+            )
+        )
     return False
 
 

@@ -48,8 +48,9 @@ def test_dashboard_keeps_desktop_user_agents_on_desktop_dashboard():
     )
     assert response.status_code == 200
     html = response.get_data(as_text=True)
-    assert 'MCPD Command Desk' in html
-    assert 'Choose the work. Move fast. Stay grounded.' in html
+    assert 'Welcome back' in html
+    assert 'Start New Report' in html
+    assert 'Forms Library' in html
 
 
 def test_mobile_home_rebuild_has_only_primary_field_actions():
@@ -57,13 +58,25 @@ def test_mobile_home_rebuild_has_only_primary_field_actions():
     response = client.get('/mobile/home')
     assert response.status_code == 200
     html = response.get_data(as_text=True)
-    assert 'MCPD Portal' in html
-    assert 'Ready to start a call?' in html
-    assert 'Start New Incident' in html
-    assert 'Continue Incident' in html
-    assert 'Laws / Orders' in html
-    assert 'Quick Reference' in html
+    assert 'MCPD' in html
+    assert 'Law Lookup' in html
+    assert 'Start Report' in html
+    assert 'Officer Stats' in html
+    assert 'Contact Info' in html
+    assert 'Edit' in html
     assert 'Operations Board' not in html
     assert 'Shift Workflow' not in html
     assert 'Command Radar' not in html
     assert 'Resume The Mission' not in html
+
+
+def test_mobile_home_menu_link_opens_more_tools():
+    client = _logged_in_client()
+    response = client.get('/mobile/home')
+    html = response.get_data(as_text=True)
+    assert response.status_code == 200
+    assert '/mobile/more' in html
+
+    more_response = client.get('/mobile/more')
+    assert more_response.status_code == 200
+    assert 'More tools' in more_response.get_data(as_text=True)

@@ -124,6 +124,7 @@ def tracker_personal():
         rows=rows,
         warnings=warnings,
         can_log=can_supervisor_review(current_user),
+        user=current_user,
     )
 
 
@@ -166,6 +167,7 @@ def tracker_readiness():
         grid=grid,
         total=total,
         issues=issues,
+        user=current_user,
     )
 
 
@@ -216,6 +218,7 @@ def tracker_log():
         preselect_officer=preselect_officer,
         preselect_cat=preselect_cat,
         today=_today(),
+        user=current_user,
     )
 
 
