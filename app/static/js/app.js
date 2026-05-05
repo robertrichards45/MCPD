@@ -160,6 +160,29 @@ window.addEventListener('load', () => {
 
   const nav = document.querySelector('.top-nav');
   const navToggle = document.querySelector('[data-nav-toggle]');
+  const sidebar = document.querySelector('.mcpd-command-sidebar[data-nav-menu]');
+
+  // Current sidebar nav (mcpd-command-sidebar)
+  if (sidebar && navToggle) {
+    navToggle.addEventListener('click', () => {
+      const isOpen = sidebar.classList.toggle('is-open');
+      navToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+    sidebar.querySelectorAll('a').forEach((link) => {
+      link.addEventListener('click', () => {
+        sidebar.classList.remove('is-open');
+        navToggle.setAttribute('aria-expanded', 'false');
+      });
+    });
+    document.addEventListener('click', (event) => {
+      if (!sidebar.classList.contains('is-open')) return;
+      if (sidebar.contains(event.target) || navToggle.contains(event.target)) return;
+      sidebar.classList.remove('is-open');
+      navToggle.setAttribute('aria-expanded', 'false');
+    });
+  }
+
+  // Legacy top-nav (kept for any pages still using it)
   if (nav && navToggle) {
     navToggle.addEventListener('click', () => {
       const isOpen = nav.classList.toggle('nav-open');
