@@ -117,9 +117,13 @@ def load_user(user_id):
     return db.session.get(User, int(user_id))
 
 def seed_admin():
-    username = (os.environ.get('ADMIN_USERNAME') or '').strip()
+    logger = logging.getLogger(__name__)
+    username = (os.environ.get('ADMIN_USERNAME') or os.environ.get('SITE_OWNER_USERNAME') or '').strip()
     password = os.environ.get('ADMIN_PASSWORD')
     if not username or not password:
+        logger.warning(
+            'Website Controller bootstrap skipped: ADMIN_USERNAME/SITE_OWNER_USERNAME and ADMIN_PASSWORD must be set.'
+        )
         return
     try:
         user = User.query.filter(func.lower(User.username) == username.lower()).first()
@@ -141,8 +145,10 @@ def seed_admin():
             user.set_password(password)
             db.session.add(user)
         db.session.commit()
+        logger.info('Website Controller bootstrap synced for username=%s', username)
     except Exception:
         db.session.rollback()
+        logger.exception('Website Controller bootstrap failed for username=%s', username)
         return
 
 
