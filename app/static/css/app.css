@@ -13252,3 +13252,326 @@ body.mobile-foundation .spr-training-warn {
   0%, 100% { opacity: 1; }
   50% { opacity: .6; }
 }
+
+/* ============================================================
+   2026-05-05 Stabilization: contrast, forms spacing, mobile icons
+   Keep current MCPD look, but prevent broken-looking overlaps/readability.
+   ============================================================ */
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  color: var(--text);
+}
+
+.card,
+.portal-card,
+.result-card,
+.forms-result-card,
+.form-side-card,
+.scan-intro-card,
+.scan-review-card,
+.scan-upload-card,
+.saved-form-field-card,
+.saved-form-role-card,
+.saved-form-audit-item,
+.report-empty-state,
+.form-action-footer,
+.collapse-card,
+.search-panel {
+  background-color: var(--card);
+  color: var(--text);
+}
+
+.text-muted,
+.small,
+.form-text,
+.result-sub,
+.forms-card-sub,
+.form-side-item span,
+.saved-form-field-label,
+.scan-summary-item span,
+.saved-form-role-meta span {
+  color: var(--muted) !important;
+}
+
+.form-label,
+.forms-filter-label,
+label,
+summary,
+.form-side-card h4,
+.form-field-block > label {
+  color: var(--text) !important;
+}
+
+.form-control,
+.form-select,
+input,
+select,
+textarea {
+  background-color: var(--panel) !important;
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+}
+
+.form-control::placeholder,
+textarea::placeholder,
+input::placeholder {
+  color: color-mix(in srgb, var(--muted) 78%, transparent) !important;
+  opacity: 1;
+}
+
+.btn-outline-secondary,
+.btn-outline-dark {
+  background-color: transparent;
+  border-color: color-mix(in srgb, var(--border) 85%, var(--text)) !important;
+  color: var(--text) !important;
+}
+
+.btn-outline-secondary:hover,
+.btn-outline-dark:hover {
+  background-color: color-mix(in srgb, var(--primary) 12%, var(--panel)) !important;
+  color: var(--text) !important;
+}
+
+.btn-primary {
+  background: var(--primary) !important;
+  border-color: var(--primary) !important;
+  color: #ffffff !important;
+}
+
+.forms-fill-page {
+  overflow-x: clip;
+}
+
+.forms-fill-shell {
+  position: relative;
+  overflow: visible;
+}
+
+.forms-fill-layout {
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
+}
+
+.forms-fill-main,
+.forms-fill-side {
+  min-width: 0;
+}
+
+.forms-fill-side {
+  align-self: start;
+  position: sticky;
+  top: 92px;
+  max-width: 100%;
+}
+
+.form-section-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+}
+
+.form-field-type-textarea,
+.form-field-type-signature,
+.form-field-type-initial {
+  grid-column: 1 / -1;
+}
+
+.form-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--layout-control-radius, 12px);
+  background: var(--panel);
+}
+
+.form-check-input {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+}
+
+.form-check-label {
+  color: var(--text) !important;
+}
+
+.sig-widget {
+  display: grid;
+  gap: 8px;
+  max-width: 100%;
+}
+
+.sig-canvas {
+  display: block;
+  width: 100% !important;
+  max-width: 100%;
+  min-height: 72px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #ffffff;
+  touch-action: none;
+}
+
+.sig-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.sig-clear-btn {
+  min-height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--panel);
+  color: var(--text);
+  font-weight: 800;
+  padding: 6px 12px;
+}
+
+.sig-hint,
+.sig-empty {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.form-action-footer {
+  position: sticky;
+  bottom: 12px;
+  z-index: 12;
+  max-width: 100%;
+}
+
+.form-action-group {
+  align-items: stretch;
+}
+
+.form-action-group .btn {
+  min-width: 0;
+  white-space: normal;
+}
+
+.mcpd-mobile-grid a {
+  min-width: 0;
+  color: var(--text);
+}
+
+.mcpd-mobile-tile-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #e8f1ff;
+  color: #0d5db8 !important;
+}
+
+.mcpd-mobile-tile-icon svg {
+  width: 28px;
+  height: 28px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+body[data-theme="dark"] .mcpd-mobile-tile-icon {
+  background: rgba(79, 142, 232, 0.18);
+  color: #9cc7ff !important;
+}
+
+body[data-theme="dark"] .mcpd-mobile-grid span:not(.mcpd-mobile-tile-icon),
+body[data-theme="dark"] .mcpd-mobile-officer-panel span {
+  color: var(--muted);
+}
+
+body[data-theme="dark"] .form-side-card,
+body[data-theme="dark"] .scan-intro-card,
+body[data-theme="dark"] .scan-review-card,
+body[data-theme="dark"] .scan-upload-card,
+body[data-theme="dark"] .saved-form-field-card,
+body[data-theme="dark"] .saved-form-role-card,
+body[data-theme="dark"] .saved-form-audit-item,
+body[data-theme="dark"] .role-entry-card,
+body[data-theme="dark"] .form-action-footer,
+body[data-theme="dark"] .form-side-item,
+body[data-theme="dark"] .scan-summary-item,
+body[data-theme="dark"] .role-entry-empty,
+body[data-theme="dark"] .saved-form-role-notes {
+  background: var(--card) !important;
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+}
+
+@media (max-width: 1100px) {
+  .forms-fill-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .forms-fill-side {
+    position: static;
+    order: 2;
+  }
+}
+
+@media (max-width: 820px) {
+  .forms-fill-page,
+  .forms-fill-shell,
+  .forms-fill-layout,
+  .forms-fill-main,
+  .forms-fill-side {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .form-section-grid,
+  .scan-controls-grid,
+  .scan-summary-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .form-action-footer {
+    position: static;
+    margin-top: 6px;
+    padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  .form-action-group,
+  .form-action-group-secondary {
+    width: 100%;
+  }
+
+  .form-action-group .btn,
+  .form-action-group a.btn {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  .mcpd-mobile-grid {
+    gap: 12px;
+  }
+
+  .mcpd-mobile-grid a {
+    min-height: 112px;
+    padding: 14px 10px;
+  }
+}
+
+@media (max-width: 420px) {
+  .mcpd-mobile-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mcpd-mobile-tile-icon {
+    width: 38px;
+    height: 38px;
+  }
+}
