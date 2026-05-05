@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request
+from flask import Blueprint, current_app, render_template, request
 from flask_login import current_user, login_required
 
 from ..extensions import db
@@ -31,7 +31,7 @@ def ask():
     answer = ask_openai_with_system(
         question,
         'You are an MCPD law enforcement assistant helping with reports, training, and procedures.',
-        api_key='',
+        api_key=current_app.config.get('OPENAI_API_KEY', ''),
     )
     if is_ai_unavailable_message(answer):
         answer = (

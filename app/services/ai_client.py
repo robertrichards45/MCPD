@@ -1,8 +1,11 @@
 import json
+import logging
 import os
 from datetime import datetime, timedelta, timezone
 
 import requests
+
+_log = logging.getLogger(__name__)
 
 _AI_DISABLED_MESSAGE = ''
 _AI_DISABLED_UNTIL = None
@@ -343,6 +346,7 @@ def openai_tts(text, api_key, voice='coral'):
         )
         if response.status_code == 200:
             return response.content
-    except Exception:
-        pass
+        _log.warning('TTS request failed: HTTP %s', response.status_code)
+    except Exception as exc:
+        _log.warning('TTS request error: %s', exc)
     return None
