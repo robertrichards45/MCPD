@@ -1,6 +1,6 @@
 from flask import Flask, Response, g, redirect, render_template, request, send_file, session, url_for
 from flask_login import current_user
-from dotenv import dotenv_values
+from dotenv import dotenv_values, load_dotenv
 from datetime import datetime, timezone
 import hmac
 import logging
