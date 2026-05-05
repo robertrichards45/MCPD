@@ -7995,3 +7995,4 @@
 {"ts_utc": "2026-05-05T19:07:15.774168+00:00", "query": "Article 128b", "source": "ALL", "result_count": 1, "top_codes": ["Article 128b"], "top_confidence": 99, "weak_result": false, "quality": "strong"}
 {"ts_utc": "2026-05-05T19:07:15.927515+00:00", "query": "Domestic Violence", "source": "ALL", "result_count": 2, "top_codes": ["Article 128b", "18 USC 2261"], "top_confidence": 99, "weak_result": false, "quality": "strong"}
 {"ts_utc": "2026-05-05T19:07:16.922796+00:00", "query": "Punishes domestic violence offenses under the UCMJ, including", "source": "ALL", "result_count": 2, "top_codes": ["Article 128b", "18 USC 2261"], "top_confidence": 99, "weak_result": false, "quality": "strong"}
+{"ts_utc": "2026-05-05T20:11:46.999648+00:00", "query": "pooping in the street", "source": "ALL", "result_count": 2, "top_codes": ["OCGA 16-11-39", "OCGA 16-6-8"], "top_confidence": 81, "weak_result": false, "quality": "strong"}
