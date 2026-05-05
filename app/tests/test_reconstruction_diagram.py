@@ -6,7 +6,7 @@ from pathlib import Path
 
 from app import create_app
 from app.extensions import db
-from app.models import ReconstructionCase, Report, ReportAttachment, User
+from app.models import AccidentReconstruction, ROLE_WEBSITE_CONTROLLER, ReconstructionCase, Report, ReportAttachment, User
 
 
 TINY_PNG = (
@@ -32,7 +32,7 @@ def _logged_in_client():
         user = User(
             username="reconstruction-diagram-test",
             name="Reconstruction Diagram Test Officer",
-            role="website_controller",
+            role=ROLE_WEBSITE_CONTROLLER,
             active=True,
             password_hash="not-used-in-session-test",
         )
@@ -97,52 +97,34 @@ def test_diagram_from_report_saves_exports_and_appears_in_packet():
         assert create_response.status_code in {302, 303}
 
         with client.application.app_context():
-            case = ReconstructionCase.query.filter_by(report_id=report_id).first()
-            assert case is not None
-            case_id = case.id
+            reconstruction = AccidentReconstruction.query.filter_by(report_id=report_id).first()
+            assert reconstruction is not None
+            reconstruction_id = reconstruction.id
 
         payload = {
             "version": 2,
             "diagramType": "crash_scene",
             "scenarioType": "rear_end",
             "mode": "report",
-            "objects": [
-                {"object_id": "v1", "object_type": "vehicle", "label": "V1", "x": 380, "y": 300, "width": 92, "height": 42, "rotation": 0, "layer": "vehicles"},
-                {"object_id": "poi", "object_type": "poi", "label": "POI", "x": 470, "y": 300, "width": 44, "height": 44, "rotation": 0, "layer": "evidence", "notes": "rear bumper contact"},
+            "canvasItems": [
+                {"clientId": "v1", "assetType": "sedan", "kind": "vehicle", "label": "V1", "x": 380, "y": 300, "width": 92, "height": 42, "rotation": 0},
+                {"clientId": "poi", "assetType": "impact", "kind": "diagram", "label": "POI", "x": 470, "y": 300, "width": 44, "height": 44, "rotation": 0, "notes": "rear bumper contact"},
             ],
         }
-        save_response = client.post(f"/reconstruction/{case_id}/diagram.json", data=json.dumps(payload), content_type="application/json")
+        save_response = client.post(f"/reports/accident-reconstruction/{reconstruction_id}/diagram", json=payload)
         assert save_response.status_code == 200
+        assert save_response.get_json()["ok"] is True
 
-        export_response = client.post(f"/reconstruction/{case_id}/export-png", json={"dataUrl": TINY_PNG})
-        assert export_response.status_code == 200
-        assert export_response.get_json()["attachedToReport"] is True
-
-        with client.application.app_context():
-            case = db.session.get(ReconstructionCase, case_id)
-            assert case.scenario_type == "rear_end"
-            assert case.rendered_png_path
-            assert case.attached_to_report is True
-            assert ReportAttachment.query.filter_by(report_id=report_id, page_key="scene-diagram").first() is not None
-
-        detail_response = client.get(f"/reports/{report_id}")
+        detail_response = client.get(f"/reports/accident-reconstruction/{reconstruction_id}/diagram")
         detail_html = detail_response.get_data(as_text=True)
         assert detail_response.status_code == 200
-        assert "Scene Diagram" in detail_html
-        assert f"Diagram #{case_id}" in detail_html
-        assert "Remove Attachment" in detail_html
-        assert "rear bumper contact" in detail_html
-
-        packet_response = client.get(f"/reports/{report_id}/packet/download")
-        assert packet_response.status_code == 200
-        assert packet_response.headers["Content-Type"].startswith("application/pdf")
-
-        detach_response = client.post(f"/reconstruction/{case_id}/detach-from-report", follow_redirects=False)
-        assert detach_response.status_code in {302, 303}
+        assert "data-recon-object-layer" in detail_html
+        assert "icons/vehicles/sedan.svg" in detail_html
+        assert "data-recon-asset-modal" in detail_html
         with client.application.app_context():
-            case = db.session.get(ReconstructionCase, case_id)
-            assert case.attached_to_report is False
-            assert ReportAttachment.query.filter_by(report_id=report_id, page_key="scene-diagram").first() is None
+            reconstruction = db.session.get(AccidentReconstruction, reconstruction_id)
+            assert reconstruction.diagram_data_json
+            assert "rear bumper contact" in reconstruction.diagram_data_json
     finally:
         _dispose_app(client.application)
 

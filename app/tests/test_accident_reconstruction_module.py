@@ -8,6 +8,7 @@ from app import create_app
 from app.extensions import db
 from app.models import (
     AccidentReconstruction,
+    ROLE_WEBSITE_CONTROLLER,
     ReconstructionMeasurement,
     ReconstructionMedia,
     ReconstructionObject,
@@ -31,7 +32,7 @@ def _logged_in_client():
         user = User(
             username="accident-recon-test",
             name="Accident Recon Test Officer",
-            role="website_controller",
+            role=ROLE_WEBSITE_CONTROLLER,
             active=True,
             password_hash="not-used-in-session-test",
         )
