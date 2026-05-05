@@ -1,6 +1,9 @@
+import logging
+
 from flask import Blueprint, render_template, redirect, url_for, make_response, request
 from flask_login import login_required, current_user
 
+from ..extensions import db
 from ..models import (
     Announcement,
     CleoReport,
@@ -12,6 +15,7 @@ from ..models import (
 )
 
 bp = Blueprint('dashboard', __name__)
+_log = logging.getLogger(__name__)
 
 
 def _is_test_report_title(title: str) -> bool:
@@ -56,14 +60,32 @@ def _visible_announcements_query():
     )
 
 
+def _safe_count(label, query):
+    try:
+        return query.count()
+    except Exception as exc:
+        db.session.rollback()
+        _log.warning('Dashboard count failed for %s: %s', label, exc.__class__.__name__)
+        return 0
+
+
+def _safe_recent_announcements(query):
+    try:
+        return query.order_by(Announcement.created_at.desc(), Announcement.id.desc()).limit(3).all()
+    except Exception as exc:
+        db.session.rollback()
+        _log.warning('Dashboard announcements failed: %s', exc.__class__.__name__)
+        return []
+
+
 def _dashboard_snapshot():
     visible_announcements = _visible_announcements_query()
-    saved_forms_count = SavedForm.query.filter_by(officer_user_id=current_user.id).count()
-    report_count = _production_report_query().filter_by(owner_id=current_user.id).count()
-    cleo_report_count = CleoReport.query.filter_by(user_id=current_user.id).count()
-    orders_count = OrderDocument.query.filter(OrderDocument.is_active.is_(True)).count()
-    training_count = TrainingRoster.query.filter_by(status='ACTIVE').count()
-    notice_count = visible_announcements.count()
+    saved_forms_count = _safe_count('saved_forms', SavedForm.query.filter_by(officer_user_id=current_user.id))
+    report_count = _safe_count('reports', _production_report_query().filter_by(owner_id=current_user.id))
+    cleo_report_count = _safe_count('cleo_reports', CleoReport.query.filter_by(user_id=current_user.id))
+    orders_count = _safe_count('orders', OrderDocument.query.filter(OrderDocument.is_active.is_(True)))
+    training_count = _safe_count('training', TrainingRoster.query.filter_by(status='ACTIVE'))
+    notice_count = _safe_count('announcements', visible_announcements)
 
     metrics = [
         {
@@ -96,12 +118,7 @@ def _dashboard_snapshot():
         'orders_count': orders_count,
         'training_count': training_count,
         'notice_count': notice_count,
-        'announcements': (
-            visible_announcements
-            .order_by(Announcement.created_at.desc(), Announcement.id.desc())
-            .limit(3)
-            .all()
-        ),
+        'announcements': _safe_recent_announcements(visible_announcements),
     }
 
 @bp.route('/dashboard')
