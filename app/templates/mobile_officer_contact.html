@@ -1,0 +1,46 @@
+{% extends 'mobile_shell.html' %}
+{% block mobile_content %}
+<form class="mobile-section-block mobile-contact-form" method="post">
+  <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}" />
+  <div class="mobile-section-head">
+    <h3>Contact Info</h3>
+    <p>Keep your mobile and desktop profile information synced.</p>
+  </div>
+
+  <label>
+    <span>Duty Phone</span>
+    <input class="mobile-text-input" name="phone_number" value="{{ user.phone_number or '' }}" inputmode="tel" autocomplete="tel" />
+  </label>
+  <label>
+    <span>MCPD Email</span>
+    <input class="mobile-text-input" name="email" value="{{ user.email or '' }}" inputmode="email" autocomplete="email" />
+  </label>
+  <label>
+    <span>Unit / Shift</span>
+    <input class="mobile-text-input" name="section_unit" value="{{ user.section_unit or '' }}" placeholder="Alpha Shift, Bravo Shift..." />
+  </label>
+  <label>
+    <span>Rank / Title</span>
+    <input class="mobile-text-input" name="rank" value="{{ profile.rank or '' }}" />
+  </label>
+  <label>
+    <span>Assigned Unit</span>
+    <input class="mobile-text-input" name="unit" value="{{ profile.unit or user.section_unit or '' }}" />
+  </label>
+  <label>
+    <span>Alternate Duty Phone</span>
+    <input class="mobile-text-input" name="duty_phone" value="{{ profile.duty_phone or '' }}" inputmode="tel" />
+  </label>
+  <label>
+    <span>Personal Phone</span>
+    <input class="mobile-text-input" name="personal_phone" value="{{ profile.personal_phone or '' }}" inputmode="tel" />
+  </label>
+  <label>
+    <span>Personal Email</span>
+    <input class="mobile-text-input" name="personal_email" value="{{ profile.personal_email or '' }}" inputmode="email" />
+  </label>
+
+  <button class="mobile-send-button" type="submit">Save Contact Info</button>
+  <a class="mobile-action-link" href="{{ url_for('mobile.home') }}">Back to Mobile Home</a>
+</form>
+{% endblock %}

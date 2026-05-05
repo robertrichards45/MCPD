@@ -472,3 +472,62 @@ def test_mobile_more_links_watch_commander_to_officer_approval():
         with app.app_context():
             _delete_user(wc_username)
         _dispose_app(app)
+
+
+def test_mobile_contact_update_syncs_to_user_profile():
+    app = create_app()
+    app.config["TESTING"] = True
+    username = "pytest_mobile_contact"
+    try:
+        with app.app_context():
+            _delete_user(username)
+            officer = User(
+                username=username,
+                first_name="Mobile",
+                last_name="Contact",
+                role=ROLE_PATROL_OFFICER,
+                active=True,
+                section_unit="Old Shift",
+            )
+            officer.set_password("TempPass123!")
+            db.session.add(officer)
+            db.session.commit()
+            officer_id = officer.id
+
+        client = app.test_client()
+        with client.session_transaction() as session:
+            session["_user_id"] = str(officer_id)
+            session["_fresh"] = True
+
+        page = client.get("/mobile/contact")
+        assert page.status_code == 200
+        with client.session_transaction() as session:
+            csrf = session["_csrf_token"]
+
+        response = client.post(
+            "/mobile/contact",
+            data={
+                "_csrf_token": csrf,
+                "phone_number": "555-0101",
+                "email": "mobile.contact@example.test",
+                "section_unit": "Bravo Shift",
+                "rank": "Cpl",
+                "unit": "Patrol",
+                "duty_phone": "555-0102",
+                "personal_phone": "555-0103",
+                "personal_email": "personal@example.test",
+            },
+            follow_redirects=True,
+        )
+        assert response.status_code == 200
+        assert "Contact information saved." in response.get_data(as_text=True)
+
+        with app.app_context():
+            saved = db.session.get(User, officer_id)
+            assert saved.phone_number == "555-0101"
+            assert saved.email == "mobile.contact@example.test"
+            assert saved.section_unit == "Bravo Shift"
+    finally:
+        with app.app_context():
+            _delete_user(username)
+        _dispose_app(app)

@@ -64,6 +64,8 @@ def test_mobile_home_rebuild_has_only_primary_field_actions():
     assert 'Officer Stats' in html
     assert 'Contact Info' in html
     assert 'Edit' in html
+    assert '/mobile/stats' in html
+    assert '/mobile/contact' in html
     assert 'Operations Board' not in html
     assert 'Shift Workflow' not in html
     assert 'Command Radar' not in html
@@ -80,3 +82,23 @@ def test_mobile_home_menu_link_opens_more_tools():
     more_response = client.get('/mobile/more')
     assert more_response.status_code == 200
     assert 'More tools' in more_response.get_data(as_text=True)
+
+
+def test_mobile_stats_and_contact_pages_work_without_desktop_shell():
+    client = _logged_in_client()
+
+    stats_response = client.get('/mobile/stats')
+    assert stats_response.status_code == 200
+    stats_html = stats_response.get_data(as_text=True)
+    assert 'My Stats' in stats_html
+    assert 'Reports' in stats_html
+    assert 'Saved Forms' in stats_html
+    assert 'Desktop Dashboard' not in stats_html
+
+    contact_response = client.get('/mobile/contact')
+    assert contact_response.status_code == 200
+    contact_html = contact_response.get_data(as_text=True)
+    assert 'Contact Info' in contact_html
+    assert 'Save Contact Info' in contact_html
+    assert 'name="phone_number"' in contact_html
+    assert 'name="email"' in contact_html

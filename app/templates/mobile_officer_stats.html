@@ -1,0 +1,40 @@
+{% extends 'mobile_shell.html' %}
+{% block mobile_content %}
+<section class="mobile-section-block">
+  <div class="mobile-section-head">
+    <h3>My Stats</h3>
+    <p>Quick view of your current MCPD work.</p>
+  </div>
+  <div class="mobile-stat-grid">
+    <div class="mobile-stat-card">
+      <strong>{{ stats.reports }}</strong>
+      <span>Reports</span>
+    </div>
+    <div class="mobile-stat-card">
+      <strong>{{ stats.saved_forms }}</strong>
+      <span>Saved Forms</span>
+    </div>
+    <div class="mobile-stat-card">
+      <strong>{{ stats.drafts }}</strong>
+      <span>Drafts</span>
+    </div>
+    <div class="mobile-stat-card">
+      <strong>{{ stats.packets }}</strong>
+      <span>Packets</span>
+    </div>
+  </div>
+</section>
+
+<section class="mobile-section-block">
+  <div class="mobile-section-head">
+    <h3>Officer Details</h3>
+  </div>
+  <div class="mobile-profile-list">
+    <div><span>Name</span><strong>{{ user.display_name }}</strong></div>
+    <div><span>Role</span><strong>{{ portal_effective_role_label }}</strong></div>
+    <div><span>Unit / Shift</span><strong>{{ user.section_unit or 'Unassigned' }}</strong></div>
+    <div><span>Installation</span><strong>{{ user.installation or 'Unassigned' }}</strong></div>
+  </div>
+  <a class="mobile-action-link" href="{{ url_for('mobile.officer_contact') }}">Edit Contact Info</a>
+</section>
+{% endblock %}

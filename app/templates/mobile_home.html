@@ -68,7 +68,7 @@
         <strong>Officer Stats</strong>
         <span>Forms: {{ dashboard_saved_forms_count|default(0) }} / Reports: {{ dashboard_report_count|default(0) }}</span>
       </div>
-      <a href="{{ url_for('performance.my_stats') }}">View Stats</a>
+      <a href="{{ url_for('mobile.officer_stats') }}">View Stats</a>
     </section>
 
     <section class="mcpd-mobile-officer-panel">
@@ -76,7 +76,7 @@
         <strong>Contact Info</strong>
         <span>{{ user.phone_number or 'Phone not set' }}{% if user.email %} / {{ user.email }}{% endif %}</span>
       </div>
-      <a href="{{ url_for('officers.profile') }}">Edit</a>
+      <a href="{{ url_for('mobile.officer_contact') }}">Edit</a>
     </section>
   </main>
 

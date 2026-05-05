@@ -21,6 +21,7 @@ from ..models import (
     Form,
     IncidentDraft,
     IncidentPacket,
+    OfficerProfile,
     PACKET_APPROVAL_APPROVED,
     PACKET_APPROVAL_NEEDS_CORRECTION,
     PACKET_APPROVAL_PENDING,
@@ -1185,6 +1186,66 @@ def more():
     return render_template('mobile_more.html', **_shell_context('More', 'more'))
 
 
+def _current_officer_profile():
+    profile = OfficerProfile.query.filter_by(user_id=current_user.id).first()
+    if profile is None:
+        profile = OfficerProfile(user_id=current_user.id)
+        db.session.add(profile)
+        db.session.flush()
+    return profile
+
+
+@bp.route('/mobile/stats')
+@login_required
+def officer_stats():
+    saved_forms_count = SavedForm.query.filter_by(officer_user_id=current_user.id).count()
+    report_count = Report.query.filter_by(owner_id=current_user.id).count()
+    draft_count = IncidentDraft.query.filter_by(officer_user_id=current_user.id).count()
+    packet_count = IncidentPacket.query.filter_by(officer_user_id=current_user.id).count()
+    return render_template(
+        'mobile_officer_stats.html',
+        stats={
+            'saved_forms': saved_forms_count,
+            'reports': report_count,
+            'drafts': draft_count,
+            'packets': packet_count,
+        },
+        mobile_header_kicker='Officer Stats',
+        mobile_header_note='Your current MCPD work summary',
+        mobile_incident_boot=False,
+        **_shell_context('Officer Stats', 'home'),
+    )
+
+
+@bp.route('/mobile/contact', methods=['GET', 'POST'])
+@login_required
+def officer_contact():
+    profile = _current_officer_profile()
+    if request.method == 'POST':
+        if not _form_csrf_valid():
+            abort(403)
+        current_user.phone_number = (request.form.get('phone_number') or '').strip() or None
+        current_user.email = (request.form.get('email') or '').strip() or None
+        current_user.section_unit = (request.form.get('section_unit') or '').strip() or current_user.section_unit
+        profile.rank = (request.form.get('rank') or '').strip() or None
+        profile.unit = (request.form.get('unit') or '').strip() or current_user.section_unit
+        profile.duty_phone = (request.form.get('duty_phone') or '').strip() or None
+        profile.personal_phone = (request.form.get('personal_phone') or '').strip() or None
+        profile.personal_email = (request.form.get('personal_email') or '').strip() or None
+        db.session.add(AuditLog(actor_id=current_user.id, action='mobile_contact_update', details=current_user.username))
+        db.session.commit()
+        flash('Contact information saved.', 'success')
+        return redirect(url_for('mobile.officer_contact'))
+    return render_template(
+        'mobile_officer_contact.html',
+        profile=profile,
+        mobile_header_kicker='Contact Info',
+        mobile_header_note='Update your phone, email, and unit details',
+        mobile_incident_boot=False,
+        **_shell_context('Contact Info', 'home'),
+    )
+
+
 def _mobile_manageable_officers():
     if not can_manage_team(current_user):
         abort(403)
@@ -2043,4 +2104,3 @@ def supervisor_packet_action(packet_id):
     )
     db.session.commit()
     return jsonify({'ok': True, 'approval_status': packet.approval_status})
-
