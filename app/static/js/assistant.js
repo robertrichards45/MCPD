@@ -19,6 +19,7 @@
   ];
 
   var VOICE_STORAGE_KEY = 'mcpd.assistant.voice';
+  var HISTORY_STORAGE_KEY = 'mcpd.assistant.history';
   var DEFAULT_VOICE     = 'coral';
 
   function getSavedVoice() {
@@ -27,9 +28,20 @@
   function saveVoice(v) {
     try { localStorage.setItem(VOICE_STORAGE_KEY, v); } catch (e) {}
   }
+  function loadHistory() {
+    try {
+      var saved = JSON.parse(localStorage.getItem(HISTORY_STORAGE_KEY) || '[]');
+      return Array.isArray(saved) ? saved.slice(-20) : [];
+    } catch (e) {
+      return [];
+    }
+  }
+  function saveHistory() {
+    try { localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(history.slice(-20))); } catch (e) {}
+  }
 
   // ── State ──────────────────────────────────────────────────────────────────
-  var history      = [];
+  var history      = loadHistory();
   var isOpen       = false;
   var isListening  = false;
   var isThinking   = false;
@@ -249,6 +261,7 @@
 
   function clearHistory() {
     history = [];
+    saveHistory();
     document.getElementById('ai-messages').innerHTML = '';
     appendMessage('assistant', 'Conversation cleared. How can I help you?');
     if (voiceMode && !isThinking) startListening();
@@ -428,8 +441,63 @@
       return;
     }
     if (action.type === 'navigate' && action.url) {
-      setTimeout(function () { window.location.assign(action.url); }, 900);
+      setTimeout(function () { window.location.assign(action.url); }, 1400);
     }
+  }
+
+  function normalizedCommandText(text) {
+    return String(text || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+
+  function isElementVisible(el) {
+    if (!el || el.disabled || el.getAttribute('aria-disabled') === 'true') return false;
+    var rect = el.getBoundingClientRect();
+    var style = window.getComputedStyle(el);
+    return rect.width > 0 && rect.height > 0 && style.visibility !== 'hidden' && style.display !== 'none';
+  }
+
+  function labelForInteractive(el) {
+    return normalizedCommandText(
+      el.getAttribute('aria-label')
+      || el.getAttribute('title')
+      || el.textContent
+      || el.value
+      || ''
+    );
+  }
+
+  function findInteractiveByLabel(label) {
+    var wanted = normalizedCommandText(label);
+    if (!wanted) return null;
+    var candidates = Array.prototype.slice.call(document.querySelectorAll('a[href], button, summary, [role="button"], input[type="submit"], input[type="button"]'));
+    var visible = candidates.filter(isElementVisible).map(function (el) {
+      return { el: el, label: labelForInteractive(el) };
+    }).filter(function (item) { return item.label; });
+    var exact = visible.find(function (item) { return item.label === wanted; });
+    if (exact) return exact.el;
+    var contains = visible.find(function (item) { return item.label.indexOf(wanted) !== -1 || wanted.indexOf(item.label) !== -1; });
+    return contains ? contains.el : null;
+  }
+
+  function tryDirectInterfaceCommand(text) {
+    var match = String(text || '').match(/^(?:click|tap|press|select|choose|open)\s+(.+)$/i);
+    if (!match) return false;
+    var targetLabel = match[1].replace(/\b(button|link|tab|menu|page)\b/ig, '').trim();
+    var target = findInteractiveByLabel(targetLabel);
+    appendMessage('user', text);
+    if (!target) {
+      speakAssistantLine('I could not find a visible control named ' + targetLabel + ' on this screen.');
+      return true;
+    }
+    target.focus({ preventScroll: false });
+    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    target.classList.add('ai-command-target');
+    setTimeout(function () {
+      target.classList.remove('ai-command-target');
+      target.click();
+    }, 250);
+    speakAssistantLine('Selecting ' + targetLabel + '.');
+    return true;
   }
 
   // ── Send ───────────────────────────────────────────────────────────────────
@@ -442,6 +510,7 @@
     voiceMode = false;
     if (formInterview.active && handleFormInterviewAnswer(text)) return;
     if (maybeStartLocalFormInterview(text)) return;
+    if (tryDirectInterfaceCommand(text)) return;
     submitMessage(text);
   }
 
@@ -475,12 +544,14 @@
           var label = document.getElementById('ai-status-label');
           if (label) label.textContent = 'Local assist';
         }
+        stopAudio();
+        speakText(reply);
         updateMessage(thinkingBubble, reply);
         history.push({ role: 'user',      content: text  });
         history.push({ role: 'assistant', content: reply });
         if (history.length > 20) history = history.slice(history.length - 20);
+        saveHistory();
         updateUI();
-        speakText(reply);
         applyAssistantAction(data && data.action);
       })
       .catch(function () {
@@ -646,7 +717,9 @@
       updateUI();
       if (transcript) {
         if (formInterview.active) handleFormInterviewAnswer(transcript);
-        else if (!maybeStartLocalFormInterview(transcript)) submitMessage(transcript);
+        else if (maybeStartLocalFormInterview(transcript)) return;
+        else if (tryDirectInterfaceCommand(transcript)) return;
+        else submitMessage(transcript);
       }
     };
     recognition.onerror = function (e) {

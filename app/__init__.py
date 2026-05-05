@@ -208,6 +208,8 @@ def ensure_schema():
             _safe_schema_execute(f'UPDATE {user_table} SET pending_approval = 0 WHERE pending_approval IS NULL')
     if 'installation' not in user_columns:
         _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN installation VARCHAR(100)')
+    if 'preferred_legal_state' not in user_columns:
+        _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN preferred_legal_state VARCHAR(2)')
     admin_count = db.session.execute(text(f"SELECT COUNT(*) FROM {user_table} WHERE role = 'ADMIN'")).scalar() or 0
     if admin_count:
         _safe_schema_execute(

@@ -13785,3 +13785,8 @@ body[data-theme="dark"] .saved-form-role-notes {
   height: 56px;
   object-fit: contain;
 }
+.ai-command-target {
+  outline: 3px solid var(--primary, #2563eb) !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.18) !important;
+}
