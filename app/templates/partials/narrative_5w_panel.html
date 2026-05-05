@@ -1,21 +1,25 @@
-<section class="narrative-5w-grid">
+<section class="narrative-5w-grid narrative-5w-grid-single">
   <article class="card p-3 narrative-5w-card">
-    <h3>5W Facts</h3>
-    <label>Who<textarea id="n5w-who" class="form-control mobile-input" rows="2" placeholder="Victim, suspect, witnesses, officers"></textarea></label>
-    <label>What<textarea id="n5w-what" class="form-control mobile-input" rows="3" placeholder="What happened, stated plainly"></textarea></label>
-    <label>When<input id="n5w-when" class="form-control mobile-input" placeholder="Date/time or approximate timeframe"></label>
-    <label>Where<input id="n5w-where" class="form-control mobile-input" placeholder="Location"></label>
-    <label>Why / How<textarea id="n5w-why" class="form-control mobile-input" rows="2" placeholder="Reason, method, sequence, or unknown"></textarea></label>
-    <label>Officer Actions<textarea id="n5w-actions" class="form-control mobile-input" rows="3" placeholder="Arrival, observations, statements, evidence, disposition"></textarea></label>
+    <h3>Incident Information</h3>
+    <p class="text-muted mb-2">Put everything you know in one box. The tool will organize it into Who, What, When, Where, Why/How, and Officer Actions.</p>
+    <label>
+      Incident notes
+      <textarea id="n5w-intake" class="form-control mobile-input" rows="12" placeholder="Example: On 05/05/2026 at 1430, I responded to the PX for a larceny. Subject John Smith concealed items in a backpack. Witness Jane Doe saw him pass all points of sale. I detained him outside, recovered the property, photographed the items, and notified the Watch Commander."></textarea>
+    </label>
     <div class="bodycam-control-row">
-      <button id="n5w-build" class="btn btn-primary mobile-primary-action" type="button">Generate Draft</button>
+      <button id="n5w-build" class="btn btn-primary mobile-primary-action" type="button">Generate 5W Summary</button>
       <button id="n5w-clear" class="btn btn-outline-secondary mobile-secondary-action" type="button">Clear</button>
     </div>
   </article>
 
   <article class="card p-3 narrative-5w-card">
-    <h3>Professional Narrative Draft</h3>
-    <textarea id="n5w-output" class="form-control mobile-input" rows="16" placeholder="Draft narrative will appear here. Do not submit without officer review."></textarea>
+    <h3>5W Summary</h3>
+    <textarea id="n5w-output" class="form-control mobile-input" rows="16" placeholder="The organized 5W summary will appear here. Review before texting, emailing, or using in a report."></textarea>
+    <div class="bodycam-control-row">
+      <button id="n5w-copy" class="btn btn-outline-secondary mobile-secondary-action" type="button">Copy</button>
+      <a id="n5w-text" class="btn btn-outline-secondary mobile-secondary-action" href="#">Text</a>
+      <a id="n5w-email" class="btn btn-outline-secondary mobile-secondary-action" href="#">Email</a>
+    </div>
     <div class="bodycam-warning mt-2">
       <strong>Review required</strong>
       <span>This tool organizes facts only. It must not invent evidence, statements, charges, or probable cause.</span>

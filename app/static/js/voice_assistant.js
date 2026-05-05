@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  var SPEEDS = { normal: 1.35, fast: 1.45, veryfast: 1.5 };
+  var SPEEDS = { normal: 1.0, fast: 1.18, veryfast: 1.32 };
   var STORAGE_ENABLED = 'mcpd.voice.enabled';
   var STORAGE_SPEED = 'mcpd.voice.speed';
   var queue = [];
@@ -31,17 +31,17 @@
   }
 
   function getVoiceSpeed() {
-    try { return localStorage.getItem(STORAGE_SPEED) || 'fast'; } catch (e) { return 'fast'; }
+    try { return localStorage.getItem(STORAGE_SPEED) || 'normal'; } catch (e) { return 'normal'; }
   }
 
   function setVoiceSpeed(speed) {
-    var next = SPEEDS[speed] ? speed : 'fast';
+    var next = SPEEDS[speed] ? speed : 'normal';
     try { localStorage.setItem(STORAGE_SPEED, next); } catch (e) {}
     return next;
   }
 
   function currentRate() {
-    return SPEEDS[getVoiceSpeed()] || SPEEDS.fast;
+    return SPEEDS[getVoiceSpeed()] || SPEEDS.normal;
   }
 
   function startVoiceStatus(text) {
@@ -179,6 +179,7 @@
     replayLastVoice: replayLastVoice,
     setVoiceSpeed: setVoiceSpeed,
     getVoiceSpeed: getVoiceSpeed,
+    getVoiceRate: currentRate,
     toggleVoice: toggleVoice,
     getVoiceEnabled: getVoiceEnabled,
     isVoiceSupported: supportsVoice,

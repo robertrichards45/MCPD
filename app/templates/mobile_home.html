@@ -82,9 +82,12 @@
     <section class="mcpd-mobile-officer-panel">
       <div>
         <strong>Field Tools</strong>
-        <span>Body cam mode and Narrative / 5W Builder are under More.</span>
+        <span>Body cam mode and Narrative / 5W Builder are ready for field use.</span>
       </div>
-      <a href="{{ url_for('mobile.more') }}">More</a>
+      <span class="mcpd-mobile-panel-actions">
+        <a href="{{ url_for('bodycam.mobile_recording') }}">Body Cam</a>
+        <a href="{{ url_for('bodycam.mobile_narrative_tool') }}">5W</a>
+      </span>
     </section>
   </main>
 

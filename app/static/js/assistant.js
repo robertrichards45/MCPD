@@ -156,6 +156,8 @@
     });
     document.getElementById('ai-voice-speed').addEventListener('change', function (event) {
       if (Voice.setVoiceSpeed) Voice.setVoiceSpeed(event.target.value);
+      if (Voice.stopVoice) Voice.stopVoice();
+      syncVoiceControls();
     });
     document.getElementById('ai-text-input').addEventListener('keydown', function (e) {
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendText(); }
@@ -247,9 +249,6 @@
       buildVoiceList();
       sp.classList.remove('ai-settings-hidden');
       msgs.style.display = 'none';
-    } else if (mode === 'unsupported') {
-      el.textContent = 'Voice playback is not supported on this device/browser.';
-      el.style.color = '#fbbf24';
     } else {
       sp.classList.add('ai-settings-hidden');
       msgs.style.display = '';
@@ -579,7 +578,7 @@
     var thinkingBubble = appendMessage('assistant', 'Thinking...');
     var processingTimer = Voice.speakProcessingIfDelayed ? Voice.speakProcessingIfDelayed(1000) : setTimeout(function () {
       if (isThinking && currentSpeechRun === speechRunId) {
-        browserSpeak('Processing request.', getSavedVoice(), null, { cancel: false, rate: 1.35 });
+        browserSpeak('Processing request.', getSavedVoice(), null, { cancel: false });
       }
     }, 1000);
 
@@ -634,6 +633,9 @@
     } else if (mode === 'instant') {
       el.textContent = 'Instant browser voice active';
       el.style.color = '#4ade80';
+    } else if (mode === 'unsupported') {
+      el.textContent = 'Voice playback is not supported on this device/browser.';
+      el.style.color = '#fbbf24';
     } else {
       el.textContent = '⚠ Browser fallback — set OPENAI_API_KEY in Railway for real voices';
       el.style.color = '#fbbf24';
@@ -741,7 +743,7 @@
       if (index >= parts.length) { if (onDone) onDone(); return; }
       var utt = new SpeechSynthesisUtterance(parts[index]);
       index += 1;
-      utt.rate  = options.rate || Math.max(profile.rate, 1.25);
+      utt.rate  = options.rate || (Voice.getVoiceRate ? Voice.getVoiceRate() : profile.rate);
       utt.pitch = profile.pitch;
       if (preferred) utt.voice = preferred;
       utt.onend = speakNext;

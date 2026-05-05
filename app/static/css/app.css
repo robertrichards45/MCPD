@@ -3230,6 +3230,13 @@ body[data-theme="dark"] .mcpd-mobile-officer-panel {
   text-decoration: none;
 }
 
+.mcpd-mobile-panel-actions {
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
 .mobile-stat-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
