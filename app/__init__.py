@@ -172,12 +172,19 @@ def _quoted_identifier(name):
     return db.engine.dialect.identifier_preparer.quote(name)
 
 
+def _schema_datetime_type():
+    if db.engine.dialect.name == 'postgresql':
+        return 'TIMESTAMP'
+    return 'DATETIME'
+
+
 def ensure_schema():
     inspector = inspect(db.engine)
     table_names = set(inspector.get_table_names())
     user_columns = {column['name'] for column in inspector.get_columns('user')}
     user_indexes = {index['name'] for index in inspector.get_indexes('user')}
     user_table = _quoted_identifier('user')
+    datetime_type = _schema_datetime_type()
     if 'edipi' not in user_columns:
         _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN edipi VARCHAR(20)')
     if 'first_name' not in user_columns:
@@ -206,7 +213,7 @@ def ensure_schema():
         if _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN cac_enabled BOOLEAN'):
             _safe_schema_execute(f'UPDATE {user_table} SET cac_enabled = 0 WHERE cac_enabled IS NULL')
     if 'cac_linked_at' not in user_columns:
-        _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN cac_linked_at DATETIME')
+        _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN cac_linked_at {datetime_type}')
     if 'pin_hash' not in user_columns:
         _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN pin_hash VARCHAR(255)')
     if 'can_grade_cleoc_reports' not in user_columns:
@@ -227,7 +234,7 @@ def ensure_schema():
     if 'builder_mode_granted_by' not in user_columns:
         _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN builder_mode_granted_by INTEGER')
     if 'builder_mode_granted_at' not in user_columns:
-        _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN builder_mode_granted_at DATETIME')
+        _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN builder_mode_granted_at {datetime_type}')
     admin_count = db.session.execute(text(f"SELECT COUNT(*) FROM {user_table} WHERE role = 'ADMIN'")).scalar() or 0
     if admin_count:
         _safe_schema_execute(
@@ -274,9 +281,9 @@ def ensure_schema():
         if 'issuing_authority' not in order_columns:
             _safe_schema_execute("ALTER TABLE order_document ADD COLUMN issuing_authority VARCHAR(120)")
         if 'issue_date' not in order_columns:
-            _safe_schema_execute("ALTER TABLE order_document ADD COLUMN issue_date DATETIME")
+            _safe_schema_execute(f"ALTER TABLE order_document ADD COLUMN issue_date {datetime_type}")
         if 'revision_date' not in order_columns:
-            _safe_schema_execute("ALTER TABLE order_document ADD COLUMN revision_date DATETIME")
+            _safe_schema_execute(f"ALTER TABLE order_document ADD COLUMN revision_date {datetime_type}")
         if 'source_version' not in order_columns:
             _safe_schema_execute("ALTER TABLE order_document ADD COLUMN source_version VARCHAR(80)")
         if 'audience_tags' not in order_columns:
@@ -290,7 +297,7 @@ def ensure_schema():
         if 'superseded_by_id' not in order_columns:
             _safe_schema_execute("ALTER TABLE order_document ADD COLUMN superseded_by_id INTEGER")
         if 'last_indexed_at' not in order_columns:
-            _safe_schema_execute("ALTER TABLE order_document ADD COLUMN last_indexed_at DATETIME")
+            _safe_schema_execute(f"ALTER TABLE order_document ADD COLUMN last_indexed_at {datetime_type}")
 
     if 'saved_form' in table_names:
         saved_form_columns = {column['name'] for column in inspector.get_columns('saved_form')}
@@ -328,7 +335,7 @@ def ensure_schema():
         if 'official_source_hash' not in form_columns:
             _safe_schema_execute("ALTER TABLE form ADD COLUMN official_source_hash VARCHAR(64)")
         if 'official_source_last_checked_at' not in form_columns:
-            _safe_schema_execute("ALTER TABLE form ADD COLUMN official_source_last_checked_at DATETIME")
+            _safe_schema_execute(f"ALTER TABLE form ADD COLUMN official_source_last_checked_at {datetime_type}")
         if 'official_source_last_status' not in form_columns:
             _safe_schema_execute("ALTER TABLE form ADD COLUMN official_source_last_status TEXT")
         if 'source_auto_update_enabled' not in form_columns:
@@ -340,7 +347,7 @@ def ensure_schema():
         if 'correction_reason' not in vehicle_inspection_columns:
             _safe_schema_execute("ALTER TABLE vehicle_inspection ADD COLUMN correction_reason VARCHAR(255)")
         if 'returned_at' not in vehicle_inspection_columns:
-            _safe_schema_execute("ALTER TABLE vehicle_inspection ADD COLUMN returned_at DATETIME")
+            _safe_schema_execute(f"ALTER TABLE vehicle_inspection ADD COLUMN returned_at {datetime_type}")
 
     if 'rfi_appointment_upload' in table_names:
         rfi_upload_columns = {column['name'] for column in inspector.get_columns('rfi_appointment_upload')}
@@ -350,15 +357,15 @@ def ensure_schema():
     if 'cleo_report' in table_names:
         cleo_report_columns = {column['name'] for column in inspector.get_columns('cleo_report')}
         if 'submitted_at' not in cleo_report_columns:
-            _safe_schema_execute("ALTER TABLE cleo_report ADD COLUMN submitted_at DATETIME")
+            _safe_schema_execute(f"ALTER TABLE cleo_report ADD COLUMN submitted_at {datetime_type}")
         if 'submitted_by' not in cleo_report_columns:
             _safe_schema_execute("ALTER TABLE cleo_report ADD COLUMN submitted_by INTEGER")
         if 'returned_at' not in cleo_report_columns:
-            _safe_schema_execute("ALTER TABLE cleo_report ADD COLUMN returned_at DATETIME")
+            _safe_schema_execute(f"ALTER TABLE cleo_report ADD COLUMN returned_at {datetime_type}")
         if 'returned_by' not in cleo_report_columns:
             _safe_schema_execute("ALTER TABLE cleo_report ADD COLUMN returned_by INTEGER")
         if 'graded_at' not in cleo_report_columns:
-            _safe_schema_execute("ALTER TABLE cleo_report ADD COLUMN graded_at DATETIME")
+            _safe_schema_execute(f"ALTER TABLE cleo_report ADD COLUMN graded_at {datetime_type}")
         if 'graded_by' not in cleo_report_columns:
             _safe_schema_execute("ALTER TABLE cleo_report ADD COLUMN graded_by INTEGER")
         _safe_schema_execute(
