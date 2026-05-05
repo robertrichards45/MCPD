@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell mcpd-command-app">
+  {% include 'partials/nav.html' %}
+  <main class="page-wrap">
+    <section class="card p-3 mb-3 page-head ops-head-card">
+      <div class="ops-head-grid">
+        <div class="ops-head-copy">
+          <div class="eyebrow">Evidence Workspace</div>
+          <h2 class="mb-1">Bodycam Footage</h2>
+          <p class="text-muted mb-0">Saved body cam recordings and officer-verified transcripts.</p>
+        </div>
+        <div class="forms-toolbar">
+          <a class="btn btn-primary" href="{{ url_for('bodycam.new_recording') }}">New Recording</a>
+          <a class="btn btn-outline-primary" href="{{ url_for('bodycam.narrative_tool') }}">Narrative / 5W Builder</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="report-hub-list">
+      {% for item in items %}
+      <article class="result-card report-hub-card">
+        <div class="result-head">
+          <h4>{{ item.title }}</h4>
+          <span class="badge bg-dark">{{ item.status }}</span>
+        </div>
+        <p class="result-sub">
+          {{ item.created_at.strftime('%Y-%m-%d %H:%M') if item.created_at else '' }}
+          {% if item.location %} / {{ item.location }}{% endif %}
+          {% if item.incident_number %} / {{ item.incident_number }}{% endif %}
+        </p>
+        {% if item.transcript_text %}
+        <p class="text-muted mb-2">{{ item.transcript_text[:220] }}{% if item.transcript_text|length > 220 %}...{% endif %}</p>
+        {% endif %}
+        <div class="report-hub-actions">
+          <a class="btn btn-sm btn-primary" href="{{ url_for('bodycam.detail', footage_id=item.id) }}">Open</a>
+          <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('bodycam.download', footage_id=item.id) }}">Download Video</a>
+        </div>
+      </article>
+      {% else %}
+      <div class="report-empty-state">No bodycam footage has been saved yet.</div>
+      {% endfor %}
+    </section>
+  </main>
+</div>
+{% endblock %}

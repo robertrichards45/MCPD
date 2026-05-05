@@ -1,0 +1,24 @@
+<section class="narrative-5w-grid">
+  <article class="card p-3 narrative-5w-card">
+    <h3>5W Facts</h3>
+    <label>Who<textarea id="n5w-who" class="form-control mobile-input" rows="2" placeholder="Victim, suspect, witnesses, officers"></textarea></label>
+    <label>What<textarea id="n5w-what" class="form-control mobile-input" rows="3" placeholder="What happened, stated plainly"></textarea></label>
+    <label>When<input id="n5w-when" class="form-control mobile-input" placeholder="Date/time or approximate timeframe"></label>
+    <label>Where<input id="n5w-where" class="form-control mobile-input" placeholder="Location"></label>
+    <label>Why / How<textarea id="n5w-why" class="form-control mobile-input" rows="2" placeholder="Reason, method, sequence, or unknown"></textarea></label>
+    <label>Officer Actions<textarea id="n5w-actions" class="form-control mobile-input" rows="3" placeholder="Arrival, observations, statements, evidence, disposition"></textarea></label>
+    <div class="bodycam-control-row">
+      <button id="n5w-build" class="btn btn-primary mobile-primary-action" type="button">Generate Draft</button>
+      <button id="n5w-clear" class="btn btn-outline-secondary mobile-secondary-action" type="button">Clear</button>
+    </div>
+  </article>
+
+  <article class="card p-3 narrative-5w-card">
+    <h3>Professional Narrative Draft</h3>
+    <textarea id="n5w-output" class="form-control mobile-input" rows="16" placeholder="Draft narrative will appear here. Do not submit without officer review."></textarea>
+    <div class="bodycam-warning mt-2">
+      <strong>Review required</strong>
+      <span>This tool organizes facts only. It must not invent evidence, statements, charges, or probable cause.</span>
+    </div>
+  </article>
+</section>

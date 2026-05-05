@@ -45,8 +45,9 @@
         </div>
         <div class="mcpd-list">
           <a href="{{ url_for('reports.list_reports') }}"><strong>Reports Center</strong><span>{{ dashboard_metrics[0].detail if dashboard_metrics else 'Open reports and packets' }}</span></a>
+          <a href="{{ url_for('bodycam.library') }}"><strong>Bodycam Footage</strong><span>Recordings and transcripts</span></a>
+          <a href="{{ url_for('bodycam.narrative_tool') }}"><strong>Narrative / 5W Builder</strong><span>Standalone report writing tool</span></a>
           <a href="{{ url_for('reports.accident_reconstruction_list') }}"><strong>Accident Reconstruction</strong><span>Scene diagrams and crash reports</span></a>
-          <a href="{{ url_for('reference.incident_paperwork_guide') }}"><strong>Paperwork Navigator</strong><span>Required / likely paperwork</span></a>
         </div>
       </article>
 

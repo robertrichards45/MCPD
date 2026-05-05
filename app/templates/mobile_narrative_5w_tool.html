@@ -1,0 +1,11 @@
+{% extends 'mobile_shell.html' %}
+{% block mobile_content %}
+<section class="mobile-section-block">
+  <div class="mobile-section-head">
+    <h3>Narrative / 5W Builder</h3>
+    <p>Build a clean draft from who, what, when, where, why/how, and officer actions.</p>
+  </div>
+</section>
+{% include 'partials/narrative_5w_panel.html' %}
+<script src="{{ url_for('static', filename='js/narrative_5w_tool.js', v='2026-05-05-1') }}"></script>
+{% endblock %}

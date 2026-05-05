@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell mcpd-command-app">
+  {% include 'partials/nav.html' %}
+  <main class="page-wrap narrative-tool-page">
+    <section class="card p-3 mb-3 page-head ops-head-card">
+      <div class="ops-head-copy">
+        <div class="eyebrow">Report Writing</div>
+        <h2 class="mb-1">Narrative Creator / 5W Builder</h2>
+        <p class="text-muted mb-0">Standalone tool for building 5W facts and a professional draft narrative. Officer must review before use.</p>
+      </div>
+    </section>
+    {% include 'partials/narrative_5w_panel.html' %}
+  </main>
+</div>
+<script src="{{ url_for('static', filename='js/narrative_5w_tool.js', v='2026-05-05-1') }}"></script>
+{% endblock %}

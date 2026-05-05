@@ -1,0 +1,35 @@
+{% extends 'mobile_shell.html' %}
+{% block mobile_content %}
+<section class="mobile-section-block bodycam-mobile-card">
+  <div class="mobile-section-head">
+    <h3>Body Cam Mode</h3>
+    <p>Use device Do Not Disturb / Focus first. Browser apps cannot block phone calls.</p>
+  </div>
+  <video id="bodycam-preview" class="bodycam-preview" playsinline muted></video>
+  <div id="bodycam-status" class="bodycam-status">Camera not started.</div>
+  <div class="mobile-action-list">
+    <button id="bodycam-start-camera" class="mobile-primary-action" type="button">Start Camera</button>
+    <button id="bodycam-record" class="mobile-secondary-action" type="button" disabled>Start Recording</button>
+    <button id="bodycam-stop" class="mobile-danger-action" type="button" disabled>Stop</button>
+  </div>
+</section>
+
+<section class="mobile-section-block">
+  <div class="mobile-section-head"><h3>Save Details</h3></div>
+  <label class="mobile-field-label">Title<input id="bodycam-title" class="mobile-input" value="Bodycam Recording"></label>
+  <label class="mobile-field-label">Incident Number<input id="bodycam-incident" class="mobile-input" placeholder="Optional"></label>
+  <label class="mobile-field-label">Location<input id="bodycam-location" class="mobile-input" placeholder="Optional"></label>
+  <label class="mobile-field-label">Notes<textarea id="bodycam-notes" class="mobile-input" rows="3" placeholder="Optional notes"></textarea></label>
+  <button id="bodycam-save" class="mobile-primary-action" type="button" disabled>Save Footage</button>
+  <a id="bodycam-open-saved" class="mobile-secondary-action" href="{{ url_for('bodycam.mobile_library') }}" hidden>Open Saved Footage</a>
+</section>
+
+<section class="mobile-section-block">
+  <div class="mobile-section-head">
+    <h3>Live Transcript</h3>
+    <p><span id="bodycam-transcript-mode">Checking transcription support.</span></p>
+  </div>
+  <textarea id="bodycam-transcript" class="mobile-input" rows="7" placeholder="Transcript will appear here when supported. Verify before saving."></textarea>
+</section>
+<script src="{{ url_for('static', filename='js/bodycam.js', v='2026-05-05-1') }}"></script>
+{% endblock %}

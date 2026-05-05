@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell mcpd-command-app">
+  {% include 'partials/nav.html' %}
+  <main class="page-wrap bodycam-page">
+    <section class="card p-3 mb-3">
+      <div class="report-panel-head">
+        <div>
+          <div class="eyebrow">Bodycam Footage</div>
+          <h1>{{ item.title }}</h1>
+          <p class="text-muted mb-0">
+            {{ item.created_at.strftime('%Y-%m-%d %H:%M') if item.created_at else '' }}
+            {% if item.location %} / {{ item.location }}{% endif %}
+          </p>
+        </div>
+        <div class="forms-toolbar">
+          <a class="btn btn-outline-secondary" href="{{ url_for('bodycam.library') }}">Back to Library</a>
+          <a class="btn btn-primary" href="{{ url_for('bodycam.download', footage_id=item.id) }}">Download Video</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="bodycam-grid">
+      <article class="card p-3">
+        <video class="bodycam-preview" controls playsinline src="{{ url_for('bodycam.media', footage_id=item.id) }}"></video>
+      </article>
+      <aside class="card p-3 bodycam-meta-card">
+        <h2>Metadata</h2>
+        <dl class="bodycam-dl">
+          <dt>Officer</dt><dd>{{ item.officer.display_name if item.officer else item.officer_user_id }}</dd>
+          <dt>Incident</dt><dd>{{ item.incident_number or 'Not linked' }}</dd>
+          <dt>Duration</dt><dd>{{ item.duration_seconds or 'Unknown' }} seconds</dd>
+          <dt>Status</dt><dd>{{ item.status }}</dd>
+        </dl>
+        {% if item.notes %}<p class="text-muted">{{ item.notes }}</p>{% endif %}
+      </aside>
+    </section>
+
+    <section class="card p-3 mt-3">
+      <h2>Transcript</h2>
+      <pre class="bodycam-transcript-read">{{ item.transcript_text or 'No transcript was saved for this footage.' }}</pre>
+    </section>
+  </main>
+</div>
+{% endblock %}

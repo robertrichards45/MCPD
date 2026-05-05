@@ -1,0 +1,30 @@
+{% extends 'mobile_shell.html' %}
+{% block mobile_content %}
+<section class="mobile-section-block">
+  <div class="mobile-section-head">
+    <h3>Bodycam Footage</h3>
+    <p>Saved recordings and verified transcripts.</p>
+  </div>
+  <div class="mobile-action-list">
+    <a class="mobile-primary-action" href="{{ url_for('bodycam.mobile_recording') }}">New Body Cam Recording</a>
+    <a class="mobile-secondary-action" href="{{ url_for('bodycam.mobile_narrative_tool') }}">Narrative / 5W Builder</a>
+  </div>
+</section>
+
+<section class="mobile-card-list">
+  {% for item in items %}
+  <article class="mobile-action-card">
+    <div class="mobile-step-copy">
+      <h4>{{ item.title }}</h4>
+      <p>{{ item.created_at.strftime('%Y-%m-%d %H:%M') if item.created_at else '' }}{% if item.location %} / {{ item.location }}{% endif %}</p>
+    </div>
+    <div class="mobile-action-list">
+      <a class="mobile-secondary-action" href="{{ url_for('bodycam.detail', footage_id=item.id) }}">Open</a>
+      <a class="mobile-secondary-action" href="{{ url_for('bodycam.download', footage_id=item.id) }}">Download</a>
+    </div>
+  </article>
+  {% else %}
+  <div class="mobile-empty-state">No bodycam footage has been saved yet.</div>
+  {% endfor %}
+</section>
+{% endblock %}

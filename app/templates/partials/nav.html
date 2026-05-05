@@ -1,5 +1,5 @@
 {% set endpoint = request.endpoint or '' %}
-{% set reports_active = endpoint.startswith('reports.') or endpoint.startswith('cleo_api.') or endpoint == 'dashboard.cleo' or endpoint.startswith('reconstruction.') %}
+{% set reports_active = endpoint.startswith('reports.') or endpoint.startswith('cleo_api.') or endpoint == 'dashboard.cleo' or endpoint.startswith('reconstruction.') or endpoint.startswith('bodycam.') %}
 {% set forms_active = endpoint.startswith('forms.') and endpoint not in ['forms.saved_forms'] and not endpoint.startswith('forms.view_saved_form') and not endpoint.startswith('forms.preview_saved_form') and not endpoint.startswith('forms.download_saved_form') and not endpoint.startswith('forms.email_saved_form') %}
 {% set saved_work_active = endpoint == 'forms.saved_forms' or endpoint.startswith('forms.view_saved_form') or endpoint.startswith('forms.preview_saved_form') or endpoint.startswith('forms.download_saved_form') or endpoint.startswith('forms.email_saved_form') %}
 {% set orders_active = endpoint.startswith('orders.') or endpoint.startswith('reference.') %}
@@ -35,6 +35,8 @@
     <details class="mcpd-sidebar-admin" {% if reports_active %}open{% endif %}>
       <summary>Reports</summary>
       <a href="{{ url_for('reports.list_reports') }}">All Reports</a>
+      <a href="{{ url_for('bodycam.library') }}">Bodycam Footage</a>
+      <a href="{{ url_for('bodycam.narrative_tool') }}">Narrative / 5W Builder</a>
       <a href="{{ url_for('reports.accidents') }}">Accident Tools</a>
       <a href="{{ url_for('reconstruction.case_list') }}">Reconstruction Cases</a>
     </details>

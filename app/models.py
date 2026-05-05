@@ -452,6 +452,29 @@ class ReportAttachment(db.Model):
     uploaded_by = db.Column(db.Integer, db.ForeignKey('user.id'))
     uploaded_at = db.Column(db.DateTime, default=utcnow_naive)
 
+
+class BodycamFootage(db.Model):
+    __tablename__ = 'bodycam_footage'
+
+    id = db.Column(db.Integer, primary_key=True)
+    officer_user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    report_id = db.Column(db.Integer, db.ForeignKey('report.id'), nullable=True, index=True)
+    title = db.Column(db.String(200), nullable=False)
+    incident_number = db.Column(db.String(80), nullable=True, index=True)
+    location = db.Column(db.String(255), nullable=True)
+    file_path = db.Column(db.String(500), nullable=False)
+    file_name = db.Column(db.String(255), nullable=False)
+    mime_type = db.Column(db.String(120), nullable=True)
+    duration_seconds = db.Column(db.Integer, nullable=True)
+    transcript_text = db.Column(db.Text, nullable=True)
+    notes = db.Column(db.Text, nullable=True)
+    status = db.Column(db.String(30), default='RECORDED', nullable=False, index=True)
+    created_at = db.Column(db.DateTime, default=utcnow_naive, nullable=False, index=True)
+    updated_at = db.Column(db.DateTime, default=utcnow_naive, onupdate=utcnow_naive, nullable=False)
+
+    officer = db.relationship('User', foreign_keys=[officer_user_id], backref='bodycam_footage')
+    report = db.relationship('Report', foreign_keys=[report_id], backref='bodycam_footage')
+
 class ReportPerson(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     report_id = db.Column(db.Integer, db.ForeignKey('report.id'))
@@ -988,4 +1011,3 @@ class YearSubmission(db.Model):
 
     officer  = db.relationship('User', foreign_keys=[officer_id],  backref='perf_submissions')
     reviewer = db.relationship('User', foreign_keys=[reviewed_by], backref='perf_reviewed')
-

@@ -10,6 +10,9 @@
     <a class="mobile-more-link" href="{{ url_for('mobile.supervisor_dashboard') }}">Command Dashboard</a>
     {% endif %}
     <a class="mobile-more-link" href="{{ url_for('reports.list_reports') }}">Reports Center</a>
+    <a class="mobile-more-link mobile-more-link-strong" href="{{ url_for('bodycam.mobile_recording') }}">Body Cam Mode</a>
+    <a class="mobile-more-link" href="{{ url_for('bodycam.mobile_library') }}">Bodycam Footage</a>
+    <a class="mobile-more-link" href="{{ url_for('bodycam.mobile_narrative_tool') }}">Narrative / 5W Builder</a>
     <a class="mobile-more-link" href="{{ url_for('forms.saved_forms') }}">Saved Work</a>
     <a class="mobile-more-link" href="{{ url_for('forms.call_type_rules_manager') }}">Scenario Builder</a>
     <a class="mobile-more-link" href="{{ url_for('dashboard.dashboard') }}">Desktop Dashboard</a>

@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell mcpd-command-app">
+  {% include 'partials/nav.html' %}
+  <main class="page-wrap bodycam-page">
+    <section class="card p-3 bodycam-hero">
+      <div>
+        <div class="eyebrow">Field Recording</div>
+        <h1>Body Cam Mode</h1>
+        <p class="text-muted mb-0">Record video/audio from this device and save browser-supported transcription into Bodycam Footage.</p>
+      </div>
+      <div class="bodycam-actions">
+        <a class="btn btn-outline-secondary" href="{{ url_for('bodycam.library') }}">Bodycam Footage</a>
+      </div>
+    </section>
+
+    <section class="bodycam-grid">
+      <article class="card p-3 bodycam-recorder-card">
+        <div class="bodycam-warning">
+          <strong>Phone interruption notice</strong>
+          <span>Browsers cannot block calls or notifications. Turn on Do Not Disturb / Focus before recording according to department policy.</span>
+        </div>
+        <video id="bodycam-preview" class="bodycam-preview" playsinline muted></video>
+        <div id="bodycam-status" class="bodycam-status">Camera not started.</div>
+        <div class="bodycam-control-row">
+          <button id="bodycam-start-camera" class="btn btn-outline-primary" type="button">Start Camera</button>
+          <button id="bodycam-record" class="btn btn-primary" type="button" disabled>Start Recording</button>
+          <button id="bodycam-stop" class="btn btn-danger" type="button" disabled>Stop</button>
+        </div>
+      </article>
+
+      <aside class="card p-3 bodycam-meta-card">
+        <h2>Recording Details</h2>
+        <label>Title<input id="bodycam-title" class="form-control" value="Bodycam Recording"></label>
+        <label>Incident Number<input id="bodycam-incident" class="form-control" placeholder="Optional"></label>
+        <label>Location<input id="bodycam-location" class="form-control" placeholder="Optional"></label>
+        <label>Notes<textarea id="bodycam-notes" class="form-control" rows="4" placeholder="Optional notes"></textarea></label>
+        <button id="bodycam-save" class="btn btn-success w-100" type="button" disabled>Save Footage</button>
+        <a id="bodycam-open-saved" class="btn btn-outline-secondary w-100 mt-2" href="{{ url_for('bodycam.library') }}" hidden>Open Saved Footage</a>
+      </aside>
+    </section>
+
+    <section class="card p-3 mt-3">
+      <div class="report-panel-head">
+        <div>
+          <h2>Live Transcript</h2>
+          <p class="text-muted mb-0">Transcription depends on browser speech recognition support and should be verified before use.</p>
+        </div>
+        <span id="bodycam-transcript-mode" class="badge bg-dark">Checking</span>
+      </div>
+      <textarea id="bodycam-transcript" class="form-control bodycam-transcript" rows="8" placeholder="Transcript will appear here when supported. Officers may edit before saving."></textarea>
+    </section>
+  </main>
+</div>
+<script src="{{ url_for('static', filename='js/bodycam.js', v='2026-05-05-1') }}"></script>
+{% endblock %}

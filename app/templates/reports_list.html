@@ -31,6 +31,8 @@
         <a class="btn btn-outline-primary" href="{{ url_for('mobile.incident_start') }}">
           {% if active_incident_draft %}Continue Field Draft{% else %}Start Field Workflow{% endif %}
         </a>
+        <a class="btn btn-outline-secondary" href="{{ url_for('bodycam.library') }}">Bodycam Footage</a>
+        <a class="btn btn-outline-secondary" href="{{ url_for('bodycam.narrative_tool') }}">Narrative / 5W Builder</a>
         <a class="btn btn-outline-secondary" href="{{ url_for('reports.accident_reconstruction_list') }}">Accident Reconstruction</a>
         <button class="btn btn-outline-secondary" type="button" onclick="createCleoReport()">New Mock Report</button>
           <a class="btn btn-outline-secondary" href="{{ url_for('reference.incident_paperwork_guide') }}">Paperwork Navigator</a>
