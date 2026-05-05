@@ -13,8 +13,11 @@ _SYSTEM_PROMPT = (
     "You are MCPD Assistant, a knowledgeable and professional AI assistant built into the Marine Corps "
     "Police Department field portal. You help officers with questions about law, policy, report writing, "
     "incident procedures, UCMJ, use of force, traffic enforcement, and general police work. "
+    "You can also help officers move around the portal and complete forms by asking one clear question at a time. "
+    "Keep a natural multi-turn conversation like a professional voice assistant. "
     "Be concise, direct, and professional. When you don't know something with confidence, say so clearly. "
-    "Avoid unnecessary filler phrases. Speak plainly as if briefing another officer."
+    "Avoid unnecessary filler phrases. Speak plainly as if briefing another officer. "
+    "Never invent form answers, legal citations, evidence, statements, or report facts."
 )
 
 
@@ -70,6 +73,58 @@ def _local_assistant_reply(message: str) -> str:
     )
 
 
+def _message_has_any(text: str, terms: tuple[str, ...]) -> bool:
+    return any(term in text for term in terms)
+
+
+def _assistant_action_for(message: str, page: dict | None = None) -> dict | None:
+    """Return safe client actions for site navigation and guided form completion."""
+    text = (message or '').strip().lower()
+    path = str((page or {}).get('path') or '')
+    if not text:
+        return None
+
+    if path.startswith('/forms/') and '/fill' in path and _message_has_any(
+        text,
+        (
+            'fill this form',
+            'fill out this form',
+            'help me fill',
+            'ask me questions',
+            'walk me through',
+            'guided form',
+            'complete this form',
+        ),
+    ):
+        return {
+            'type': 'form_interview',
+            'message': 'I will ask the form questions one at a time and fill the matching fields on this page.',
+        }
+
+    navigation_targets = [
+        (('dashboard', 'home screen', 'main menu'), 'Dashboard', url_for('dashboard.dashboard')),
+        (('law lookup', 'legal lookup', 'look up law', 'search law', 'charges'), 'Law Lookup', url_for('legal.legal_lookup')),
+        (('start report', 'new report', 'incident report', 'write report'), 'Start Report', url_for('reports.new_report')),
+        (('reports center', 'all reports', 'reports page'), 'Reports Center', url_for('reports.list_reports')),
+        (('forms library', 'forms page', 'open forms', 'find form'), 'Forms Library', url_for('forms.list_forms')),
+        (('saved forms', 'saved work'), 'Saved Work', url_for('forms.saved_forms')),
+        (('orders', 'memos', 'orders and memos', 'orders & memos'), 'Orders & Memos', url_for('orders.library')),
+        (('training', 'roster', 'training roster'), 'Training', url_for('training.training_menu')),
+        (('personnel', 'officers', 'manage users', 'officer profiles'), 'Personnel', url_for('auth.manage_users')),
+        (('accident tools', 'crash tools', 'accident diagram'), 'Accident Tools', url_for('reports.accidents')),
+        (('mobile home', 'phone home', 'mobile page'), 'Mobile Home', url_for('mobile.home')),
+    ]
+    if _message_has_any(text, ('open ', 'go to ', 'take me to ', 'navigate', 'show me ', 'pull up ', 'launch ')):
+        for terms, label, target_url in navigation_targets:
+            if _message_has_any(text, terms):
+                return {'type': 'navigate', 'url': target_url, 'label': label}
+
+    if _message_has_any(text, ('fill a form', 'fill out a form', 'complete a form')):
+        return {'type': 'navigate', 'url': url_for('forms.list_forms'), 'label': 'Forms Library'}
+
+    return None
+
+
 def _check_csrf():
     token = (
         request.headers.get('X-CSRFToken')
@@ -89,17 +144,23 @@ def assistant_ask():
     body = request.get_json(silent=True) or {}
     message = (body.get('message') or '').strip()
     history = body.get('history') or []
+    page = body.get('page') if isinstance(body.get('page'), dict) else {}
 
     if not message:
         return jsonify({'ok': False, 'error': 'No message provided.'}), 400
 
+    action = _assistant_action_for(message, page)
     api_key = os.environ.get('OPENAI_API_KEY', '')
     answer = ask_openai_with_system(message, _SYSTEM_PROMPT, api_key, history=history)
     mode = 'premium'
     if is_ai_unavailable_message(answer):
         answer = _local_assistant_reply(message)
         mode = 'local_fallback'
-    return jsonify({'ok': True, 'reply': answer, 'mode': mode})
+    if action and action.get('type') == 'navigate':
+        answer = f"{answer}\n\nOpening {action.get('label')} now."
+    if action and action.get('type') == 'form_interview':
+        answer = action.get('message') or answer
+    return jsonify({'ok': True, 'reply': answer, 'mode': mode, 'action': action})
 
 
 @bp.post('/api/assistant/speak')

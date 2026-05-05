@@ -38,6 +38,7 @@
   var audioQueue   = null;
   var recognition  = null;
   var speechRunId  = 0;
+  var formInterview = { active: false, fields: [], index: 0 };
   var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
   // ── Build DOM ──────────────────────────────────────────────────────────────
@@ -197,9 +198,6 @@
       buildVoiceList();
       sp.classList.remove('ai-settings-hidden');
       msgs.style.display = 'none';
-    } else if (mode === 'instant') {
-      el.textContent = 'Instant browser voice active';
-      el.style.color = '#4ade80';
     } else {
       sp.classList.add('ai-settings-hidden');
       msgs.style.display = '';
@@ -315,6 +313,125 @@
     if (el) el.parentNode.removeChild(el);
   }
 
+  function getPageContext() {
+    var formHeading = document.querySelector('.forms-fill-page h2');
+    return {
+      path: window.location.pathname,
+      title: document.title || '',
+      formTitle: formHeading ? formHeading.textContent.trim() : '',
+    };
+  }
+
+  function normalizeLabel(text) {
+    return String(text || '').replace(/\*/g, '').replace(/Signature|Initials|Selected/g, '').replace(/\s+/g, ' ').trim();
+  }
+
+  function getFormInterviewFields() {
+    var seen = {};
+    return Array.prototype.slice.call(document.querySelectorAll('#form-fill-shell [name^="field_"]'))
+      .filter(function (el) {
+        if (!el.name || seen[el.name] || el.disabled || el.readOnly || el.type === 'hidden') return false;
+        seen[el.name] = true;
+        return true;
+      })
+      .map(function (el) {
+        var block = el.closest('.form-field-block') || el.parentElement;
+        var labelEl = block ? block.querySelector('label') : null;
+        var label = normalizeLabel(labelEl ? labelEl.textContent : el.name.replace(/^field_/, ''));
+        return {
+          element: el,
+          label: label || el.name.replace(/^field_/, ''),
+          type: (el.type || el.tagName || 'text').toLowerCase(),
+          required: !!el.required,
+        };
+      })
+      .filter(function (field) { return field.label; })
+      .sort(function (a, b) {
+        if (a.required !== b.required) return a.required ? -1 : 1;
+        return 0;
+      });
+  }
+
+  function formQuestionFor(field) {
+    if (field.type === 'checkbox') return field.label + '? Answer yes or no.';
+    if (field.type === 'date') return 'What date should I enter for ' + field.label + '?';
+    if (field.type === 'time') return 'What time should I enter for ' + field.label + '?';
+    return 'What should I enter for ' + field.label + '?';
+  }
+
+  function speakAssistantLine(text) {
+    appendMessage('assistant', text);
+    speakText(text);
+  }
+
+  function askCurrentFormQuestion() {
+    while (formInterview.index < formInterview.fields.length) {
+      var field = formInterview.fields[formInterview.index];
+      var value = field.element.type === 'checkbox' ? (field.element.checked ? 'yes' : '') : (field.element.value || '').trim();
+      if (!value) {
+        speakAssistantLine(formQuestionFor(field));
+        return;
+      }
+      formInterview.index += 1;
+    }
+    formInterview.active = false;
+    speakAssistantLine('The visible form questions are complete. Review the form, then use Preview, Download, Email, or Save.');
+  }
+
+  function startFormInterview() {
+    var fields = getFormInterviewFields();
+    if (!fields.length) {
+      speakAssistantLine('I do not see editable PDF-backed fields on this page. Open a fillable form first, then ask me to help fill it out.');
+      return;
+    }
+    formInterview = { active: true, fields: fields, index: 0 };
+    speakAssistantLine('I will walk you through this form one question at a time. Say or type skip if a field does not apply.');
+    askCurrentFormQuestion();
+  }
+
+  function handleFormInterviewAnswer(text) {
+    var field = formInterview.fields[formInterview.index];
+    if (!field) { formInterview.active = false; return false; }
+    var answer = String(text || '').trim();
+    appendMessage('user', answer);
+    if (/^(stop|cancel|quit|exit)$/i.test(answer)) {
+      formInterview.active = false;
+      speakAssistantLine('Form assistant stopped. Your current entries remain on the page.');
+      return true;
+    }
+    if (!/^(skip|na|n\/a|not applicable)$/i.test(answer)) {
+      if (field.element.type === 'checkbox') {
+        field.element.checked = /^(yes|y|true|check|checked|select|selected|1)$/i.test(answer);
+      } else {
+        field.element.value = answer;
+      }
+      field.element.dispatchEvent(new Event('input', { bubbles: true }));
+      field.element.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    formInterview.index += 1;
+    askCurrentFormQuestion();
+    return true;
+  }
+
+  function maybeStartLocalFormInterview(text) {
+    if (!document.getElementById('form-fill-shell')) return false;
+    if (!/fill|complete|walk me through|ask me questions|form assistant|help me/i.test(text || '')) return false;
+    appendMessage('user', text);
+    startFormInterview();
+    return true;
+  }
+
+  function applyAssistantAction(action) {
+    if (!action || !action.type) return;
+    if (action.type === 'form_interview') {
+      startFormInterview();
+      return;
+    }
+    if (action.type === 'navigate' && action.url) {
+      setTimeout(function () { window.location.assign(action.url); }, 900);
+    }
+  }
+
   // ── Send ───────────────────────────────────────────────────────────────────
 
   function sendText() {
@@ -323,6 +440,8 @@
     if (!text || isThinking) return;
     input.value = '';
     voiceMode = false;
+    if (formInterview.active && handleFormInterviewAnswer(text)) return;
+    if (maybeStartLocalFormInterview(text)) return;
     submitMessage(text);
   }
 
@@ -344,7 +463,7 @@
     fetch('/api/assistant/ask', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: text, history: history.slice() }),
+      body: JSON.stringify({ message: text, history: history.slice(), page: getPageContext() }),
     })
       .then(function (r) { return r.json(); })
       .then(function (data) {
@@ -362,6 +481,7 @@
         if (history.length > 20) history = history.slice(history.length - 20);
         updateUI();
         speakText(reply);
+        applyAssistantAction(data && data.action);
       })
       .catch(function () {
         clearTimeout(processingTimer);
@@ -380,6 +500,9 @@
     if (!el) return;
     if (mode === 'openai') {
       el.textContent = '✓ OpenAI TTS active — high-quality voices';
+      el.style.color = '#4ade80';
+    } else if (mode === 'instant') {
+      el.textContent = 'Instant browser voice active';
       el.style.color = '#4ade80';
     } else {
       el.textContent = '⚠ Browser fallback — set OPENAI_API_KEY in Railway for real voices';
@@ -521,7 +644,10 @@
       input.value = transcript;
       isListening = false;
       updateUI();
-      if (transcript) submitMessage(transcript);
+      if (transcript) {
+        if (formInterview.active) handleFormInterviewAnswer(transcript);
+        else if (!maybeStartLocalFormInterview(transcript)) submitMessage(transcript);
+      }
     };
     recognition.onerror = function (e) {
       isListening = false;
