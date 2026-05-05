@@ -6,6 +6,7 @@ import requests
 
 _AI_DISABLED_MESSAGE = ''
 _AI_DISABLED_UNTIL = None
+_ALLOWED_VOICES = {'alloy', 'ash', 'coral', 'echo', 'fable', 'nova', 'onyx', 'shimmer', 'verse'}
 
 
 def _extract_response_text(payload):
@@ -167,3 +168,80 @@ def ask_openai(prompt, api_key):
     if answer:
         return answer
     return 'AI returned no answer.'
+
+
+def ask_openai_with_system(prompt, system_prompt, api_key, history=None):
+    global _AI_DISABLED_MESSAGE, _AI_DISABLED_UNTIL
+    api_key = (api_key or os.environ.get('OPENAI_API_KEY') or '').strip()
+    prompt = (prompt or '').strip()
+    if not prompt:
+        return 'Enter a question before using the AI assistant.'
+    if not api_key:
+        return 'AI is not configured. Contact admin to set OPENAI_API_KEY.'
+    if _AI_DISABLED_MESSAGE and _AI_DISABLED_UNTIL and datetime.now(timezone.utc) < _AI_DISABLED_UNTIL:
+        return f'{_AI_DISABLED_MESSAGE} AI search assist is temporarily disabled until the portal is restarted or the cooldown expires.'
+    if _AI_DISABLED_UNTIL and datetime.now(timezone.utc) >= _AI_DISABLED_UNTIL:
+        _AI_DISABLED_MESSAGE = ''
+        _AI_DISABLED_UNTIL = None
+
+    input_items = [{'role': 'system', 'content': system_prompt or 'You are MCPD Assistant.'}]
+    for item in (history or [])[-10:]:
+        role = str(item.get('role') or '').strip()
+        content = str(item.get('content') or '').strip()
+        if role in {'user', 'assistant'} and content:
+            input_items.append({'role': role, 'content': content[:4000]})
+    input_items.append({'role': 'user', 'content': prompt})
+
+    headers = {'Authorization': f'Bearer {api_key}', 'Content-Type': 'application/json'}
+    payload = {'model': os.environ.get('OPENAI_MODEL', 'gpt-4.1-mini'), 'input': input_items}
+    try:
+        response = requests.post('https://api.openai.com/v1/responses', headers=headers, data=json.dumps(payload), timeout=30)
+    except requests.Timeout:
+        return 'AI request timed out. Try again.'
+    except requests.RequestException as exc:
+        status_code = getattr(getattr(exc, 'response', None), 'status_code', None)
+        payload = {}
+        if getattr(exc, 'response', None) is not None:
+            try:
+                payload = exc.response.json()
+            except ValueError:
+                payload = {}
+        return _friendly_error_message(status_code, payload)
+
+    try:
+        data = response.json()
+    except ValueError:
+        return 'AI returned an invalid response.'
+    if response.status_code >= 400:
+        message = _friendly_error_message(response.status_code, data)
+        error_type, error_code, _ = _extract_error_details(data)
+        if response.status_code in {401, 403, 404} or error_code in {'invalid_api_key', 'model_not_found', 'insufficient_quota'} or error_type in {'invalid_request_error'}:
+            return _disable_ai_temporarily(message)
+        return message
+    return _extract_response_text(data) or 'AI returned no answer.'
+
+
+def openai_key_status(api_key):
+    value = (api_key or os.environ.get('OPENAI_API_KEY') or '').strip()
+    if not value:
+        return {'configured': False, 'message': 'OPENAI_API_KEY is not set.'}
+    return {'configured': True, 'prefix': value[:7], 'message': 'OPENAI_API_KEY is configured.'}
+
+
+def openai_tts(text, api_key, voice='coral'):
+    api_key = (api_key or os.environ.get('OPENAI_API_KEY') or '').strip()
+    text = (text or '').strip()
+    voice = (voice or 'coral').strip().lower()
+    if voice not in _ALLOWED_VOICES:
+        voice = 'coral'
+    if not api_key or not text:
+        return None
+    headers = {'Authorization': f'Bearer {api_key}', 'Content-Type': 'application/json'}
+    payload = {'model': os.environ.get('OPENAI_TTS_MODEL', 'gpt-4o-mini-tts'), 'voice': voice, 'input': text[:4000]}
+    try:
+        response = requests.post('https://api.openai.com/v1/audio/speech', headers=headers, data=json.dumps(payload), timeout=30)
+    except requests.RequestException:
+        return None
+    if response.status_code >= 400:
+        return None
+    return response.content

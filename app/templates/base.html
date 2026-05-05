@@ -7,10 +7,32 @@
   <meta name="google-site-verification" content="{{ config.GOOGLE_SITE_VERIFICATION }}" />
   {% endif %}
   <title>{{ title if title else 'MCPD Portal' }}</title>
-  <link rel="icon" type="image/svg+xml" href="{{ url_for('usmc_emblem') }}" />
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css', v='2026-04-29-layout-rhythm-1') }}" />
+  <meta name="application-name" content="MCPD Portal" />
+  <meta name="theme-color" content="#071b33" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="MCPD Portal" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="csrf-token" content="{{ g.csrf_token|default('') }}" />
+  <link rel="manifest" href="{{ url_for('pwa_manifest') }}" />
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='icons/mcpd-icon-32.png') }}" />
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='icons/mcpd-icon.svg') }}" />
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='icons/mcpd-apple-touch-icon.png') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css', v='2026-05-05-stabilized') }}" />
+  {% block head %}{% endblock %}
 </head>
 <body class="{{ body_class|default('') }}">
+  <script>
+  (function () {
+    var stored = localStorage.getItem('mcpd-theme');
+    var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var theme = stored || (prefersDark ? 'dark' : 'light');
+    document.body.setAttribute('data-theme', theme);
+    if (localStorage.getItem('mcpd-view') === 'mobile') {
+      document.body.classList.add('force-mobile-view');
+    }
+  }());
+  </script>
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
     <div class="global-flash-stack">
@@ -21,8 +43,67 @@
     {% endif %}
   {% endwith %}
   {% block body %}{% endblock %}
-  <script src="{{ url_for('static', filename='js/app.js', v='2026-04-11-ops-refresh-1') }}"></script>
+  <script>
+  (function () {
+    var meta = document.querySelector('meta[name="csrf-token"]');
+    if (!meta) return;
+    var csrfToken = meta.getAttribute('content') || '';
+    var originalFetch = window.fetch;
+    window.fetch = function (input, init) {
+      init = init || {};
+      var method = (init.method || 'GET').toUpperCase();
+      if (['POST', 'PUT', 'PATCH', 'DELETE'].indexOf(method) !== -1) {
+        init.headers = init.headers || {};
+        if (typeof init.headers.set === 'function') {
+          init.headers.set('X-CSRFToken', csrfToken);
+        } else {
+          init.headers['X-CSRFToken'] = csrfToken;
+        }
+      }
+      return originalFetch.call(this, input, init);
+    };
+  }());
+  </script>
+  <script src="{{ url_for('static', filename='js/app.js', v='2026-05-05-stabilized') }}"></script>
+  <script src="{{ url_for('static', filename='js/voice_assistant.js', v='2026-05-05-realtime-voice') }}"></script>
+  <script src="{{ url_for('static', filename='js/assistant.js', v='2026-05-05-realtime-voice') }}"></script>
+  <script>
+  (function () {
+    function setTheme(theme) {
+      document.body.setAttribute('data-theme', theme);
+      localStorage.setItem('mcpd-theme', theme);
+      document.querySelectorAll('[data-theme-toggle]').forEach(function (button) {
+        button.setAttribute('aria-label', theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+        button.textContent = theme === 'dark' ? 'Light' : 'Dark';
+      });
+    }
+    function setView(mobile) {
+      document.body.classList.toggle('force-mobile-view', mobile);
+      localStorage.setItem('mcpd-view', mobile ? 'mobile' : 'desktop');
+      document.querySelectorAll('[data-view-toggle]').forEach(function (btn) {
+        btn.textContent = mobile ? 'Desktop' : 'Mobile';
+      });
+    }
+    document.addEventListener('click', function (event) {
+      var viewBtn = event.target.closest('[data-view-toggle]');
+      if (viewBtn) {
+        setView(!document.body.classList.contains('force-mobile-view'));
+        return;
+      }
+      var button = event.target.closest('[data-theme-toggle]');
+      if (button) {
+        var next = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        setTheme(next);
+      }
+      var navToggle = event.target.closest('[data-nav-toggle]');
+      if (navToggle) {
+        var sidebar = document.querySelector('[data-nav-menu]');
+        if (sidebar) sidebar.classList.toggle('is-open');
+      }
+    });
+    setTheme(document.body.getAttribute('data-theme') || 'light');
+  }());
+  </script>
   {% block scripts %}{% endblock %}
 </body>
 </html>
-
