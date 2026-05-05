@@ -3048,6 +3048,8 @@ def _required_codes_for_query(analysis: QueryAnalysis, source: str) -> tuple[str
         required.append('OCGA 16-6-22')
     if re.search(r'rape|forced sex|sexual assault|sexual battery|nonconsensual', normalized):
         required.extend(['OCGA 16-6-1', 'Article 120'])
+    if re.search(r'public defecation|defecat\w+ in public|poop\w+ in (?:public|the street|street)|poop\w+.*(?:road|sidewalk|street|public)', normalized):
+        required.extend(['OCGA 16-11-39', 'OCGA 16-6-8'])
     if re.search(r'\bdui\b|intoxicat|impaired|drunk|refus\w+.*(?:breath|blood|test)|implied consent|less safe|weav', normalized):
         required.append('OCGA 40-6-391')
         if re.search(r'refus\w+.*(?:breath|blood|test)|implied consent', normalized):
@@ -3117,7 +3119,7 @@ def _apply_result_overlays(results: list[LegalMatch], analysis: QueryAnalysis, s
             existing = by_code[code]
             by_code[code] = LegalMatch(
                 entry=existing.entry,
-                score=max(existing.score, seed - min(index * 3, 12)),
+                score=max(existing.score, 56, seed - min(index * 3, 12)),
                 reasons=tuple(_ordered_unique(existing.reasons + ('matched likely core reference path',))),
                 matched_terms=existing.matched_terms,
             )
@@ -4276,10 +4278,9 @@ def search_entries(query: str, source: str = 'ALL', strict_gating: bool = True) 
         if fallback_results:
             result_groups.append(fallback_results)
 
-    merged = _merge_search_passes(result_groups)
+    merged = _apply_result_overlays(_merge_search_passes(result_groups), analysis, source)
     if not merged:
         return []
-    merged = _apply_result_overlays(merged, analysis, source)
 
     top_score = merged[0].score
     floor = 22 if analysis.ocga_code or analysis.ocga_prefix or analysis.article_number else max(
