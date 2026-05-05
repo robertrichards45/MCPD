@@ -1,23 +1,45 @@
 {% extends 'mobile_shell.html' %}
+{% macro tool_icon(name) -%}
+  {% if name == 'officers' %}<svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M16 11h6"/></svg>
+  {% elif name == 'command' %}<svg viewBox="0 0 24 24"><path d="M4 5h16v14H4z"/><path d="M8 9h8M8 13h5"/></svg>
+  {% elif name == 'reports' %}<svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14h12a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>
+  {% elif name == 'camera' %}<svg viewBox="0 0 24 24"><path d="M4 7h11a3 3 0 0 1 3 3v4a3 3 0 0 1-3 3H4z"/><path d="m18 11 3-2v6l-3-2"/><circle cx="9" cy="12" r="2"/></svg>
+  {% elif name == 'library' %}<svg viewBox="0 0 24 24"><path d="M4 5h16v14H4z"/><path d="M8 5v14M16 5v14"/></svg>
+  {% elif name == 'narrative' %}<svg viewBox="0 0 24 24"><path d="M5 4h14v16H5z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+  {% elif name == 'saved' %}<svg viewBox="0 0 24 24"><path d="M6 4h12v17l-6-3-6 3V4Z"/></svg>
+  {% elif name == 'builder' %}<svg viewBox="0 0 24 24"><path d="m12 3 2.4 5 5.6.8-4 3.9.9 5.5-4.9-2.6-4.9 2.6.9-5.5-4-3.9 5.6-.8z"/></svg>
+  {% else %}<svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>{% endif %}
+{%- endmacro %}
+{% macro tool_card(title, desc, href, icon, strong=False) -%}
+  <a class="mobile-tool-card{% if strong %} mobile-tool-card-strong{% endif %}" href="{{ href }}">
+    <span class="mobile-tool-card-icon" aria-hidden="true">{{ tool_icon(icon) }}</span>
+    <span class="mobile-tool-card-copy">
+      <span class="mobile-tool-card-title">{{ title }}</span>
+      <span class="mobile-tool-card-desc">{{ desc }}</span>
+    </span>
+    <span class="mobile-tool-card-arrow" aria-hidden="true">›</span>
+  </a>
+{%- endmacro %}
 {% block mobile_content %}
-<section class="mobile-section-block mobile-more-menu">
+<section class="mobile-more-page">
   <div class="mobile-section-head">
     <h3>More tools</h3>
+    <p>Command, reporting, bodycam, saved work, and owner tools.</p>
   </div>
-  <div class="mobile-more-stack">
+  <div class="mobile-more-grid">
     {% if portal_is_site_controller or portal_is_watch_commander_view %}
-    <a class="mobile-more-link mobile-more-link-strong" href="{{ url_for('mobile.supervisor_officers') }}">Approve / Assign Officers</a>
-    <a class="mobile-more-link" href="{{ url_for('mobile.supervisor_dashboard') }}">Command Dashboard</a>
+      {{ tool_card('Approve / Assign Officers', 'Activate accounts and assign officers to watch or installation.', url_for('mobile.supervisor_officers'), 'officers', True) }}
+      {{ tool_card('Command Dashboard', 'Review packets, corrections, and supervisor workflow.', url_for('mobile.supervisor_dashboard'), 'command') }}
     {% endif %}
-    <a class="mobile-more-link" href="{{ url_for('reports.list_reports') }}">Reports Center</a>
-    <a class="mobile-more-link mobile-more-link-strong" href="{{ url_for('bodycam.mobile_recording') }}">Body Cam Mode</a>
-    <a class="mobile-more-link" href="{{ url_for('bodycam.mobile_library') }}">Bodycam Footage</a>
-    <a class="mobile-more-link" href="{{ url_for('bodycam.mobile_narrative_tool') }}">Narrative / 5W Builder</a>
-    <a class="mobile-more-link" href="{{ url_for('forms.saved_forms') }}">Saved Work</a>
+    {{ tool_card('Reports Center', 'Open reports, crash tools, packets, and report photos.', url_for('reports.list_reports'), 'reports') }}
+    {{ tool_card('Body Cam Mode', 'Record field video and transcript into MCPD storage.', url_for('bodycam.mobile_recording'), 'camera', True) }}
+    {{ tool_card('Bodycam Footage', 'View saved recordings and transcripts.', url_for('bodycam.mobile_library'), 'library') }}
+    {{ tool_card('Narrative / 5W Builder', 'Generate a reviewed 5W summary from one notes box.', url_for('bodycam.mobile_narrative_tool'), 'narrative') }}
+    {{ tool_card('Saved Work', 'Open saved forms, packets, and drafts.', url_for('forms.saved_forms'), 'saved') }}
     {% if portal_can_access_builder_mode %}
-    <a class="mobile-more-link" href="{{ url_for('admin.site_builder') }}">Site Builder</a>
+      {{ tool_card('Site Builder', 'Owner-controlled backend requests and build tools.', url_for('admin.site_builder'), 'builder') }}
     {% endif %}
-    <a class="mobile-more-link" href="{{ url_for('dashboard.dashboard') }}">Desktop Dashboard</a>
+    {{ tool_card('Desktop Dashboard', 'Switch to the full command portal workspace.', url_for('dashboard.dashboard'), 'desktop') }}
   </div>
 </section>
 {% endblock %}

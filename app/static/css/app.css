@@ -1052,6 +1052,120 @@ body.mobile-foundation {
   border-color: #0d5db8 !important;
 }
 
+.mobile-more-page {
+  display: grid;
+  gap: 14px;
+}
+
+.mobile-more-page .mobile-section-head {
+  margin: 0;
+  padding: 0 2px;
+}
+
+.mobile-more-page .mobile-section-head h3 {
+  color: #f8fafc;
+}
+
+.mobile-more-page .mobile-section-head p {
+  color: rgba(226, 232, 240, 0.72);
+}
+
+.mobile-more-grid,
+.mobile-more-stack {
+  display: grid;
+  gap: 12px;
+}
+
+.mobile-tool-card,
+.mobile-more-link {
+  align-items: center;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: 0 14px 34px rgba(2, 8, 23, 0.18);
+  color: var(--text) !important;
+  display: flex;
+  gap: 14px;
+  justify-content: space-between;
+  min-height: 74px;
+  padding: 16px;
+  text-decoration: none !important;
+  width: 100%;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-tool-card:hover,
+.mobile-tool-card:focus,
+.mobile-more-link:hover,
+.mobile-more-link:focus {
+  background: var(--panel);
+  color: var(--text) !important;
+  outline: 2px solid rgba(59, 130, 246, 0.28);
+  outline-offset: 2px;
+  text-decoration: none !important;
+}
+
+.mobile-tool-card-strong {
+  border-color: rgba(59, 130, 246, 0.42);
+  box-shadow: 0 16px 38px rgba(13, 93, 184, 0.18);
+}
+
+.mobile-tool-card-icon {
+  align-items: center;
+  background: rgba(59, 130, 246, 0.16);
+  border-radius: 14px;
+  color: var(--primary);
+  display: inline-grid;
+  flex: 0 0 auto;
+  height: 42px;
+  justify-content: center;
+  width: 42px;
+}
+
+.mobile-tool-card-icon svg {
+  display: block;
+  fill: none;
+  height: 24px;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.9;
+  width: 24px;
+}
+
+.mobile-tool-card-copy {
+  display: grid;
+  flex: 1 1 auto;
+  gap: 3px;
+  min-width: 0;
+}
+
+.mobile-tool-card-title,
+.mobile-more-link {
+  color: var(--text) !important;
+  font-weight: 900;
+}
+
+.mobile-tool-card-title {
+  font-size: 1rem;
+  line-height: 1.15;
+}
+
+.mobile-tool-card-desc {
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.25;
+}
+
+.mobile-tool-card-arrow {
+  color: var(--muted);
+  flex: 0 0 auto;
+  font-size: 1.75rem;
+  font-weight: 300;
+  line-height: 1;
+}
+
 .mobile-home-action {
   display: flex;
   align-items: center;
