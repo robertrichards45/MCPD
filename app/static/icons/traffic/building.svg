@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 84" role="img" aria-label="Building outline">
+  <rect x="12" y="10" width="76" height="64" rx="3" fill="#e7ebf0" stroke="#394556" stroke-width="4"/>
+  <path d="M28 24h12M60 24h12M28 40h12M60 40h12M28 56h12M60 56h12" stroke="#6b7788" stroke-width="4"/>
+  <path d="M45 74V58h10v16" fill="none" stroke="#394556" stroke-width="4"/>
+</svg>

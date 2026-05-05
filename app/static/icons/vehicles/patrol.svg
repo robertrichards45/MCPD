@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 124 62" role="img" aria-label="Top-down patrol car">
+  <path d="M18 17C26 8 40 5 62 5s36 3 44 12c5 7 8 18 8 26 0 8-6 13-14 13H24c-8 0-14-5-14-13 0-8 3-19 8-26Z" fill="#f8fafc" stroke="#092846" stroke-width="3"/>
+  <path d="M14 31h96" stroke="#0d5db8" stroke-width="8" opacity=".9"/>
+  <path d="M37 15c7-5 16-7 25-7s18 2 25 7l-8 12H45L37 15Z" fill="#3e5870" opacity=".55" stroke="#092846" stroke-width="2"/>
+  <path d="M42 37h40l8 13H34l8-13Z" fill="#3e5870" opacity=".42" stroke="#092846" stroke-width="2"/>
+  <rect x="55" y="27" width="14" height="6" rx="2" fill="#d92332"/><rect x="69" y="27" width="14" height="6" rx="2" fill="#1f6fd1"/>
+  <text x="62" y="47" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="700" fill="#092846">POLICE</text>
+  <path d="M18 23h11M95 23h11M18 45h11M95 45h11" stroke="#092846" stroke-width="4" stroke-linecap="round"/>
+</svg>

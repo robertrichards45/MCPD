@@ -34,7 +34,7 @@
       >
         <aside class="recon-tools-panel">
           <strong>Tools</strong>
-          {% for tool in ['Select','Vehicle','Pedestrian','Bicycle','Object','Point','Measure','Text','Arrow','Zone','Camera','Clear All'] %}
+          {% for tool in ['Select','Vehicle','Pedestrian','Officer','Stop Sign','Traffic Light','Cone','Barrier','Building','Tree','Measure','Text','Arrow','Skid','Impact','Clear All'] %}
           <button type="button" data-tool="{{ tool|lower|replace(' ', '-') }}">{{ tool }}</button>
           {% endfor %}
         </aside>
@@ -48,7 +48,10 @@
             <select data-units-select><option value="ft">Units: ft</option><option value="m">Units: m</option></select>
             <select data-zoom-select><option value="1">100%</option><option value="0.75">75%</option><option value="1.25">125%</option></select>
           </div>
-          <canvas class="accident-recon-canvas" width="980" height="580" data-recon-canvas></canvas>
+          <div class="accident-recon-stage" data-recon-stage>
+            <canvas class="accident-recon-canvas" width="980" height="580" data-recon-canvas></canvas>
+            <div class="accident-recon-object-layer" data-recon-object-layer aria-label="Diagram objects"></div>
+          </div>
         </div>
 
         <aside class="recon-inspector-panel">
@@ -90,10 +93,31 @@
               {"id": {{ measurement.id }}, "label": {{ measurement.label|tojson }}, "value": {{ (measurement.value or '')|tojson }}, "units": {{ (measurement.units or 'ft')|tojson }}, "startX": {{ measurement.start_x or 120 }}, "startY": {{ measurement.start_y or 120 }}, "endX": {{ measurement.end_x or 260 }}, "endY": {{ measurement.end_y or 140 }}}{% if not loop.last %},{% endif %}
               {% endfor %}
             ],
+            "canvasItems": {{ diagram.get('canvasItems', [])|tojson }},
             "units": "ft"
           }
         </script>
       </section>
+
+      <div class="recon-asset-modal" data-recon-asset-modal hidden>
+        <div class="recon-asset-modal-card" role="dialog" aria-modal="true" aria-labelledby="reconVehicleChooserTitle">
+          <div class="recon-asset-modal-head">
+            <div>
+              <div class="recon-breadcrumb">Diagram Asset</div>
+              <h2 id="reconVehicleChooserTitle">Select Vehicle Type</h2>
+            </div>
+            <button class="btn btn-outline-secondary" type="button" data-recon-asset-close>Close</button>
+          </div>
+          <div class="recon-asset-grid" data-recon-asset-grid>
+            <button type="button" data-asset-kind="vehicle" data-asset-type="sedan"><img src="{{ url_for('static', filename='icons/vehicles/sedan.svg') }}" alt="" />Sedan</button>
+            <button type="button" data-asset-kind="vehicle" data-asset-type="suv"><img src="{{ url_for('static', filename='icons/vehicles/suv.svg') }}" alt="" />SUV</button>
+            <button type="button" data-asset-kind="vehicle" data-asset-type="pickup"><img src="{{ url_for('static', filename='icons/vehicles/pickup.svg') }}" alt="" />Pickup</button>
+            <button type="button" data-asset-kind="vehicle" data-asset-type="patrol"><img src="{{ url_for('static', filename='icons/vehicles/patrol.svg') }}" alt="" />Patrol Car</button>
+            <button type="button" data-asset-kind="vehicle" data-asset-type="truck"><img src="{{ url_for('static', filename='icons/vehicles/truck.svg') }}" alt="" />Commercial Truck</button>
+            <button type="button" data-asset-kind="vehicle" data-asset-type="motorcycle"><img src="{{ url_for('static', filename='icons/vehicles/motorcycle.svg') }}" alt="" />Motorcycle</button>
+          </div>
+        </div>
+      </div>
     </main>
   </div>
 </div>

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 124 66" role="img" aria-label="Top-down SUV">
+  <path d="M17 13C25 6 39 4 62 4s37 2 45 9c5 5 8 17 8 32 0 9-6 15-15 15H24c-9 0-15-6-15-15 0-15 3-27 8-32Z" fill="#e8eef5" stroke="#0f3155" stroke-width="3"/>
+  <path d="M37 14c7-4 16-6 25-6s18 2 25 6l-7 15H44L37 14Z" fill="#46627c" opacity=".58" stroke="#0f3155" stroke-width="2"/>
+  <path d="M40 37h44l9 16H31l9-16Z" fill="#40586f" opacity=".45" stroke="#0f3155" stroke-width="2"/>
+  <path d="M19 22h12M93 22h12M18 50h13M93 50h13" stroke="#0f3155" stroke-width="5" stroke-linecap="round"/>
+  <path d="M13 33h12M99 33h12" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+</svg>

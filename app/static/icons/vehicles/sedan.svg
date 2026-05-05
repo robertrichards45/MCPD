@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 60" role="img" aria-label="Top-down sedan">
+  <defs><linearGradient id="body" x1="0" x2="1"><stop offset="0" stop-color="#dbe7f3"/><stop offset="1" stop-color="#f8fafc"/></linearGradient></defs>
+  <path d="M18 17C25 8 39 5 60 5s35 3 42 12c5 7 8 18 8 26 0 7-5 12-12 12H22c-7 0-12-5-12-12 0-8 3-19 8-26Z" fill="url(#body)" stroke="#0f3155" stroke-width="3"/>
+  <path d="M36 15c6-5 15-7 24-7s18 2 24 7l-8 12H44L36 15Z" fill="#56748f" opacity=".55" stroke="#0f3155" stroke-width="2"/>
+  <path d="M43 34h34l8 13H35l8-13Z" fill="#4c6378" opacity=".45" stroke="#0f3155" stroke-width="2"/>
+  <path d="M17 23h11M92 23h11M18 45h10M92 45h10" stroke="#0f3155" stroke-width="4" stroke-linecap="round"/>
+  <path d="M12 31h10M98 31h10" stroke="#f8fafc" stroke-width="3" stroke-linecap="round"/>
+</svg>

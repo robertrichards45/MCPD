@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 76 84" role="img" aria-label="Tree or pole">
+  <path d="M38 43v34" stroke="#5b3f23" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="38" cy="21" r="17" fill="#315f3c" stroke="#1f3f2a" stroke-width="3"/>
+  <circle cx="25" cy="34" r="14" fill="#386f47" stroke="#1f3f2a" stroke-width="3"/>
+  <circle cx="51" cy="35" r="14" fill="#386f47" stroke="#1f3f2a" stroke-width="3"/>
+</svg>

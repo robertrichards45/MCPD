@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Officer silhouette">
+  <path d="M21 9h22l-3 7H24l-3-7Z" fill="#071b33"/>
+  <circle cx="32" cy="20" r="7" fill="#111827"/>
+  <path d="M22 30h20l5 28h-9l-3-13h-6l-3 13h-9l5-28Z" fill="#071b33"/>
+  <path d="M24 32l8 7 8-7" fill="none" stroke="#9cc7ff" stroke-width="2"/>
+  <path d="M14 35l8-5M50 35l-8-5" stroke="#111827" stroke-width="6" stroke-linecap="round"/>
+</svg>
