@@ -108,6 +108,8 @@ def _refresh_runtime_environment_config(app):
     require_persistent = os.environ.get('REQUIRE_PERSISTENT_DATABASE')
     if require_persistent is not None:
         app.config['REQUIRE_PERSISTENT_DATABASE'] = require_persistent.lower() in {'1', 'true', 'yes', 'on'}
+    elif os.environ.get('RAILWAY_ENVIRONMENT') or os.environ.get('RAILWAY_PROJECT_ID'):
+        app.config['REQUIRE_PERSISTENT_DATABASE'] = True
 
 
 @login_manager.user_loader

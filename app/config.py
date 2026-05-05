@@ -139,5 +139,6 @@ class Config:
     OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', '')
     CLEO_URL = os.environ.get('CLEO_URL', '')
     REQUIRE_PERSISTENT_DATABASE = os.environ.get(
-        'REQUIRE_PERSISTENT_DATABASE', '0',
+        'REQUIRE_PERSISTENT_DATABASE',
+        '1' if os.environ.get('RAILWAY_ENVIRONMENT') or os.environ.get('RAILWAY_PROJECT_ID') else '0',
     ).lower() in {'1', 'true', 'yes', 'on'}
