@@ -1,108 +1,167 @@
 {% extends "base.html" %}
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/wc_admin.css', v='2026-05-05') }}" />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/wc_admin.css', v='2026-05-07-hub') }}" />
 {% endblock %}
 {% block body %}
-<div class="wc-admin-shell">
-  <header class="wc-admin-header">
-    <div>
-      <p class="eyebrow">Supervisor Tools</p>
-      <h1>Watch Commander Admin</h1>
-      <p>Generate supervisor documents, submit learning examples, and file officer records.</p>
-    </div>
-    <div class="wc-admin-actions">
-      <a class="btn btn-outline" href="{{ url_for('auth.manage_users') }}">Approve / Assign Officers</a>
-      <a class="btn btn-outline" href="{{ url_for('dashboard.dashboard') }}">Back to Dashboard</a>
-    </div>
-  </header>
-  <section class="wc-tool-grid" aria-label="Watch Commander quick tools">
-    <a class="wc-tool-card" href="{{ url_for('mobile.supervisor_dashboard') }}">
-      <strong>Command Dashboard</strong>
-      <span>Review packets, corrections, and supervisor workflow.</span>
-    </a>
-    <a class="wc-tool-card" href="{{ url_for('assistant.officer_files_console') }}">
-      <strong>Officer Files</strong>
-      <span>Upload, index, filter, and download officer documents.</span>
-    </a>
-    <a class="wc-tool-card" href="{{ url_for('performance.pending') }}">
-      <strong>Stats Approvals</strong>
-      <span>Approve or reject officer performance entries.</span>
-    </a>
-    <a class="wc-tool-card" href="{{ url_for('performance.team_overview') }}">
-      <strong>Team Stats</strong>
-      <span>View officer performance and completion progress.</span>
-    </a>
-    <a class="wc-tool-card" href="{{ url_for('qual_tracker.tracker_readiness') }}">
-      <strong>Readiness Tracker</strong>
-      <span>Track qualifications, expirations, and team readiness.</span>
-    </a>
-    <a class="wc-tool-card" href="{{ url_for('announcements.board') }}">
-      <strong>Command Notices</strong>
-      <span>Post and review notices for the watch.</span>
-    </a>
-    <a class="wc-tool-card" href="{{ url_for('bolo.bolo_board') }}">
-      <strong>BOLO Board</strong>
-      <span>Create and manage active BOLO information.</span>
-    </a>
-    <a class="wc-tool-card" href="{{ url_for('ops_modules.vehicle_inspections') }}">
-      <strong>Vehicle Inspections</strong>
-      <span>Review patrol vehicle inspection workflow.</span>
-    </a>
-  </section>
-  <section class="wc-admin-grid">
-    <article class="wc-card">
-      <h2>Counseling Generator</h2>
-      <form data-wc-form="counseling">
-        <input name="officer_name" placeholder="Officer name" />
-        <input name="counseling_type" placeholder="Counseling type" />
-        <input name="category" placeholder="Category" />
-        <textarea name="facts" placeholder="Facts"></textarea>
-        <textarea name="standard" placeholder="Standard"></textarea>
-        <textarea name="corrective_action" placeholder="Corrective action"></textarea>
-        <textarea name="follow_up" placeholder="Follow-up"></textarea>
-        <button class="btn btn-primary" type="submit">Generate Counseling</button>
-      </form>
-    </article>
-    <article class="wc-card">
-      <h2>Award Generator</h2>
-      <form data-wc-form="award">
-        <input name="officer_name" placeholder="Officer name" />
-        <input name="award_type" placeholder="Award type" />
-        <input name="period" placeholder="Period" />
-        <textarea name="actions" placeholder="Actions"></textarea>
-        <textarea name="impact" placeholder="Impact"></textarea>
-        <button class="btn btn-primary" type="submit">Generate Award</button>
-      </form>
-    </article>
-    <article class="wc-card">
-      <h2>Learning Submission</h2>
-      <form data-wc-form="learning">
-        <input name="category" placeholder="Category" />
-        <textarea name="prompt" placeholder="Officer prompt / scenario"></textarea>
-        <textarea name="approved_answer" placeholder="Approved answer or corrected wording"></textarea>
-        <textarea name="notes" placeholder="Supervisor notes"></textarea>
-        <button class="btn btn-primary" type="submit">Submit for Approval</button>
-      </form>
-      <button class="btn btn-outline" type="button" data-wc-load-learning>Load Pending Learning</button>
-    </article>
-    <article class="wc-card">
-      <h2>Officer File Upload</h2>
-      <form data-wc-form="files" enctype="multipart/form-data">
-        <input name="officer_id" placeholder="Officer ID" />
-        <input name="area" placeholder="Area, optional" />
-        <textarea name="description" placeholder="Description"></textarea>
-        <input name="files" type="file" multiple />
-        <button class="btn btn-primary" type="submit">Upload Files</button>
-      </form>
-      <button class="btn btn-outline" type="button" data-wc-load-files>Load File Index</button>
-    </article>
-  </section>
-  <section class="wc-output-card">
-    <h2>Output</h2>
-    <pre id="wc-admin-output">Ready.</pre>
-  </section>
+<div class="app-shell mcpd-command-app">
+  {% include 'partials/nav.html' %}
+  <main class="wc-admin-shell wc-hub-shell">
+    <section class="wc-hero">
+      <div class="wc-hero-copy">
+        <p class="eyebrow">Watch Commander Hub</p>
+        <h1>Command Watch Workspace</h1>
+        <p>Review packets, assign officers, track readiness, file officer documents, publish notices, and generate supervisor paperwork from one command page.</p>
+      </div>
+      <div class="wc-hero-actions">
+        <a class="btn btn-primary" href="{{ url_for('mobile.supervisor_dashboard') }}">Open Command Dashboard</a>
+        <a class="btn btn-outline" href="{{ url_for('auth.manage_users') }}">Approve / Assign Officers</a>
+      </div>
+    </section>
+
+    <section class="wc-status-row" aria-label="Watch Commander priority areas">
+      <a class="wc-status-card wc-status-primary" href="{{ url_for('mobile.supervisor_dashboard') }}">
+        <span>Packet Review</span>
+        <strong>Command Dashboard</strong>
+        <small>Pending packets, corrections, and supervisor review.</small>
+      </a>
+      <a class="wc-status-card" href="{{ url_for('auth.manage_users') }}">
+        <span>Personnel</span>
+        <strong>Approve / Assign</strong>
+        <small>Activate accounts, edit roles, assign watch, and update officer info.</small>
+      </a>
+      <a class="wc-status-card" href="{{ url_for('qual_tracker.tracker_readiness') }}">
+        <span>Readiness</span>
+        <strong>Qualifications</strong>
+        <small>Monitor expiring training, firearms, and readiness items.</small>
+      </a>
+      <a class="wc-status-card" href="{{ url_for('performance.pending') }}">
+        <span>Performance</span>
+        <strong>Stats Queue</strong>
+        <small>Approve officer stats and review team performance.</small>
+      </a>
+    </section>
+
+    <section class="wc-hub-grid">
+      <article class="wc-hub-panel wc-hub-panel-wide">
+        <div class="wc-section-head">
+          <div>
+            <p class="eyebrow">Command Operations</p>
+            <h2>Watch Tools</h2>
+          </div>
+          <a href="{{ url_for('mobile.supervisor_dashboard') }}">Supervisor dashboard</a>
+        </div>
+        <div class="wc-tool-grid wc-tool-grid-hub">
+          <a class="wc-tool-card" href="{{ url_for('assistant.officer_files_console') }}">
+            <strong>Officer Files</strong>
+            <span>Upload, classify, filter, and download officer records.</span>
+          </a>
+          <a class="wc-tool-card" href="{{ url_for('performance.team_overview') }}">
+            <strong>Team Stats</strong>
+            <span>View officer performance and completion progress.</span>
+          </a>
+          <a class="wc-tool-card" href="{{ url_for('announcements.board') }}">
+            <strong>Command Notices</strong>
+            <span>Post and manage notices for officers and watch staff.</span>
+          </a>
+          <a class="wc-tool-card" href="{{ url_for('bolo.bolo_board') }}">
+            <strong>BOLO Board</strong>
+            <span>Create, review, locate, and cancel active BOLO entries.</span>
+          </a>
+          <a class="wc-tool-card" href="{{ url_for('ops_modules.vehicle_inspections') }}">
+            <strong>Vehicle Inspections</strong>
+            <span>Review patrol vehicle inspection workflow and returns.</span>
+          </a>
+          <a class="wc-tool-card" href="{{ url_for('forms.saved_forms') }}">
+            <strong>Saved Work</strong>
+            <span>Review saved forms, drafts, and report packet work.</span>
+          </a>
+        </div>
+      </article>
+
+      <aside class="wc-hub-panel">
+        <div class="wc-section-head">
+          <div>
+            <p class="eyebrow">Shift Checklist</p>
+            <h2>Daily Watch</h2>
+          </div>
+        </div>
+        <div class="wc-check-list">
+          <a href="{{ url_for('mobile.supervisor_dashboard') }}">Review pending incident packets</a>
+          <a href="{{ url_for('auth.manage_users') }}">Assign unassigned officers</a>
+          <a href="{{ url_for('qual_tracker.tracker_readiness') }}">Check expiring qualifications</a>
+          <a href="{{ url_for('announcements.board') }}">Post watch notes or command updates</a>
+          <a href="{{ url_for('bolo.bolo_board') }}">Verify active BOLO status</a>
+        </div>
+      </aside>
+    </section>
+
+    <section class="wc-hub-grid">
+      <article class="wc-hub-panel wc-hub-panel-wide">
+        <div class="wc-section-head">
+          <div>
+            <p class="eyebrow">Supervisor Document Builder</p>
+            <h2>Counseling, Awards, and Learning</h2>
+          </div>
+          <button class="btn btn-outline" type="button" data-wc-load-learning>Load Pending Learning</button>
+        </div>
+        <div class="wc-admin-grid wc-document-grid">
+          <article class="wc-card">
+            <h3>Counseling Generator</h3>
+            <form data-wc-form="counseling">
+              <input name="officer_name" placeholder="Officer name" />
+              <input name="counseling_type" placeholder="Counseling type" />
+              <input name="category" placeholder="Category" />
+              <textarea name="facts" placeholder="Facts"></textarea>
+              <textarea name="standard" placeholder="Standard"></textarea>
+              <textarea name="corrective_action" placeholder="Corrective action"></textarea>
+              <textarea name="follow_up" placeholder="Follow-up"></textarea>
+              <button class="btn btn-primary" type="submit">Generate Counseling</button>
+            </form>
+          </article>
+          <article class="wc-card">
+            <h3>Award Generator</h3>
+            <form data-wc-form="award">
+              <input name="officer_name" placeholder="Officer name" />
+              <input name="award_type" placeholder="Award type" />
+              <input name="period" placeholder="Period" />
+              <textarea name="actions" placeholder="Actions"></textarea>
+              <textarea name="impact" placeholder="Impact"></textarea>
+              <button class="btn btn-primary" type="submit">Generate Award</button>
+            </form>
+          </article>
+          <article class="wc-card">
+            <h3>Learning Submission</h3>
+            <form data-wc-form="learning">
+              <input name="category" placeholder="Category" />
+              <textarea name="prompt" placeholder="Officer prompt / scenario"></textarea>
+              <textarea name="approved_answer" placeholder="Approved answer or corrected wording"></textarea>
+              <textarea name="notes" placeholder="Supervisor notes"></textarea>
+              <button class="btn btn-primary" type="submit">Submit for Approval</button>
+            </form>
+          </article>
+          <article class="wc-card">
+            <h3>Officer File Upload</h3>
+            <form data-wc-form="files" enctype="multipart/form-data">
+              <input name="officer_id" placeholder="Officer ID" />
+              <input name="area" placeholder="Area, optional" />
+              <textarea name="description" placeholder="Description"></textarea>
+              <input name="files" type="file" multiple />
+              <button class="btn btn-primary" type="submit">Upload Files</button>
+            </form>
+            <a class="btn btn-outline wc-inline-link" href="{{ url_for('assistant.officer_files_console') }}">Open full Officer Files</a>
+          </article>
+        </div>
+      </article>
+
+      <aside class="wc-output-card wc-hub-output">
+        <h2>Command Output</h2>
+        <p>Generated counseling, award text, learning entries, and file upload results appear here.</p>
+        <pre id="wc-admin-output">Ready.</pre>
+      </aside>
+    </section>
+  </main>
 </div>
 {% endblock %}
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/wc_admin.js', v='2026-05-05') }}"></script>
+<script src="{{ url_for('static', filename='js/wc_admin.js', v='2026-05-07-hub') }}"></script>
 {% endblock %}
