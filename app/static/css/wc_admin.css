@@ -257,6 +257,10 @@
   gap: 10px;
 }
 
+.wc-card form > * {
+  min-width: 0;
+}
+
 .wc-card input,
 .wc-card textarea,
 .wc-card select {

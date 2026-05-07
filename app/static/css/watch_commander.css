@@ -1,6 +1,12 @@
 .wc-page-shell {
   margin-left: var(--sidebar-width, 260px);
   padding: 96px 24px 40px;
+  width: min(100%, calc(100vw - var(--sidebar-width, 260px)));
+  overflow-x: hidden;
+}
+
+.wc-module {
+  min-height: 100vh;
 }
 
 .wc-page-header,
@@ -199,6 +205,15 @@
   gap: 8px;
 }
 
+.wc-inline-form > * {
+  flex: 1 1 160px;
+}
+
+.wc-inline-form .btn,
+.wc-inline-form button {
+  flex: 0 0 auto;
+}
+
 @media (max-width: 1100px) {
   .wc-summary-grid,
   .wc-action-grid {
@@ -214,6 +229,7 @@
   .wc-page-shell {
     margin-left: 0;
     padding: 92px 14px 96px;
+    width: 100%;
   }
 
   .wc-summary-grid,
