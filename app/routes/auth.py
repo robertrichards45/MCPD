@@ -17,6 +17,8 @@ from ..models import (
     ROLE_DESK_SGT,
     ROLE_FIELD_TRAINING,
     ROLE_PATROL_OFFICER,
+    ROLE_RFI_WATCH_COMMANDER,
+    ROLE_TRUCK_GATE_WATCH_COMMANDER,
     ROLE_WEBSITE_CONTROLLER,
     ROLE_WATCH_COMMANDER,
     USMC_INSTALLATIONS,
@@ -246,15 +248,37 @@ def _sync_user_name_fields(user, first_name, last_name):
     user.name = full_name or None
 
 
+SUPERVISOR_ASSIGNMENT_ROLES = {
+    ROLE_WEBSITE_CONTROLLER,
+    ROLE_WATCH_COMMANDER,
+    ROLE_DESK_SGT,
+    ROLE_TRUCK_GATE_WATCH_COMMANDER,
+    ROLE_RFI_WATCH_COMMANDER,
+}
+
+
+def _is_assignment_supervisor_candidate(user):
+    if not user or not getattr(user, 'active', False) or getattr(user, 'pending_approval', False):
+        return False
+    return bool(
+        getattr(user, 'normalized_role', None) in SUPERVISOR_ASSIGNMENT_ROLES
+        or any(role in getattr(user, 'role_keys', set()) for role in SUPERVISOR_ASSIGNMENT_ROLES)
+    )
+
+
 def _available_supervisors():
-    query = User.query.filter(User.active.is_(True))
+    query = User.query.filter(User.active.is_(True), User.pending_approval.is_(False))
     if is_site_controller(current_user):
-        query = query.filter(User.role == ROLE_WATCH_COMMANDER)
+        users = query.order_by(User.first_name, User.last_name, User.username).all()
+        supervisors = [user for user in users if _is_assignment_supervisor_candidate(user)]
+        if current_user.active and current_user not in supervisors:
+            supervisors.insert(0, current_user)
+        return supervisors
     elif is_watch_commander(current_user):
         query = query.filter(User.id == current_user.id)
     else:
         query = query.filter(User.id == current_user.id)
-    return query.order_by(User.first_name, User.last_name, User.username).all()
+    return [user for user in query.order_by(User.first_name, User.last_name, User.username).all() if _is_assignment_supervisor_candidate(user)]
 
 
 def _visible_users_query():
