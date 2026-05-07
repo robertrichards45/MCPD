@@ -30,6 +30,9 @@ from ..models import (
     User,
     INSTALLATION_LABELS,
     ROLE_LABELS,
+    ROLE_DESK_SGT,
+    ROLE_RFI_WATCH_COMMANDER,
+    ROLE_TRUCK_GATE_WATCH_COMMANDER,
     ROLE_WEBSITE_CONTROLLER,
     ROLE_WATCH_COMMANDER,
     ROLE_PATROL_OFFICER,
@@ -1262,15 +1265,44 @@ def _mobile_manageable_officers():
     ]
 
 
+MOBILE_SUPERVISOR_ASSIGNMENT_ROLES = {
+    ROLE_WEBSITE_CONTROLLER,
+    ROLE_WATCH_COMMANDER,
+    ROLE_DESK_SGT,
+    ROLE_TRUCK_GATE_WATCH_COMMANDER,
+    ROLE_RFI_WATCH_COMMANDER,
+}
+
+
+def _mobile_assignment_supervisors():
+    users = User.query.filter(User.active.is_(True), User.pending_approval.is_(False)).order_by(
+        User.first_name.asc(),
+        User.last_name.asc(),
+        User.username.asc(),
+    ).all()
+    supervisors = [
+        user for user in users
+        if (
+            user.normalized_role in MOBILE_SUPERVISOR_ASSIGNMENT_ROLES
+            or any(role in user.role_keys for role in MOBILE_SUPERVISOR_ASSIGNMENT_ROLES)
+        )
+        and (
+            is_site_controller(current_user)
+            or user.id == watch_commander_scope_id(current_user)
+            or user.installation == current_user.installation
+        )
+    ]
+    if is_site_controller(current_user) and current_user.active and current_user not in supervisors:
+        supervisors.insert(0, current_user)
+    return supervisors
+
+
 def _mobile_officer_assignment_context():
     officers = _mobile_manageable_officers()
     pending = [officer for officer in officers if officer.pending_approval or not officer.active]
     unassigned = [officer for officer in officers if officer.active and not officer.pending_approval and officer.supervisor_id is None]
     assigned = [officer for officer in officers if officer.active and not officer.pending_approval and officer.supervisor_id is not None]
-    watch_commanders = [
-        user for user in User.query.filter(User.active.is_(True)).order_by(User.first_name.asc(), User.last_name.asc(), User.username.asc()).all()
-        if user.has_role(ROLE_WATCH_COMMANDER) and (is_site_controller(current_user) or user.installation == current_user.installation)
-    ]
+    watch_commanders = _mobile_assignment_supervisors()
     return {
         'officers': officers,
         'pending_officers': pending,
