@@ -12,11 +12,37 @@
     <input name="end_time" placeholder="End time">
     <select name="status"><option>OPEN</option><option>CLOSED</option></select>
     <textarea name="notes" placeholder="Shift notes"></textarea>
+    <fieldset class="wc-fieldset">
+      <legend>Assign Officers To This Shift</legend>
+      <label class="wc-checkline">
+        <input type="checkbox" name="assign_self" value="1" checked>
+        Assign me to this shift
+      </label>
+      <label>
+        Assignment type
+        <select name="assignment_type">{% for t in assignment_types %}<option>{{ t }}</option>{% endfor %}</select>
+      </label>
+      <input name="assignment_location" placeholder="Post / zone / location">
+      <label>
+        Status
+        <select name="assignment_status">{% for s in statuses %}<option>{{ s }}</option>{% endfor %}</select>
+      </label>
+      <textarea name="assignment_notes" placeholder="Assignment notes"></textarea>
+      <label>
+        Add other officers
+        <select name="assigned_officer_ids" multiple size="8">
+          {% for o in officers %}
+          <option value="{{ o.id }}" {% if o.id == current_user.id %}selected{% endif %}>{{ o.display_name }} / {{ o.role_label }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <small>Tip: hold Ctrl on desktop to select multiple officers. On mobile, tap the officer list as your browser allows.</small>
+    </fieldset>
     <button class="btn btn-primary" type="submit">Save Shift</button>
   </form>
   <article class="wc-panel">
     <h2>Recent Shifts</h2>
-    <div class="wc-list">{% for s in shifts %}<a><strong>{{ s.shift_date }} / {{ s.shift_type }}</strong><span>{{ s.status }} / {{ s.start_time or 'No start' }} - {{ s.end_time or 'No end' }}</span></a>{% else %}<p>No shifts created.</p>{% endfor %}</div>
+    <div class="wc-list">{% for s in shifts %}<a><strong>{{ s.shift_date }} / {{ s.shift_type }}</strong><span>{{ s.status }} / {{ s.start_time or 'No start' }} - {{ s.end_time or 'No end' }}</span><span>{{ s.assignments|length }} assigned</span></a>{% else %}<p>No shifts created.</p>{% endfor %}</div>
   </article>
 </section>
 {% endblock %}

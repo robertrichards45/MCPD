@@ -138,11 +138,51 @@ def shift():
         item.status = (request.form.get('status') or 'OPEN').strip().upper()
         db.session.add(item)
         _audit('watch_shift_saved', f'shift_id={item.id or "new"}|status={item.status}')
+        db.session.flush()
+
+        assigned_officer_ids = set()
+        if request.form.get('assign_self'):
+            assigned_officer_ids.add(current_user.id)
+        for raw_id in request.form.getlist('assigned_officer_ids'):
+            try:
+                assigned_officer_ids.add(int(raw_id))
+            except (TypeError, ValueError):
+                continue
+
+        assignment_type = (request.form.get('assignment_type') or 'Patrol Zone').strip()
+        assignment_location = (request.form.get('assignment_location') or '').strip()
+        assignment_status = (request.form.get('assignment_status') or 'On Duty').strip()
+        for officer_id in assigned_officer_ids:
+            officer = db.session.get(User, officer_id)
+            if not officer or not officer.active:
+                continue
+            assignment = (
+                WatchAssignment.query.filter_by(shift_id=item.id, officer_id=officer.id)
+                .order_by(WatchAssignment.updated_at.desc(), WatchAssignment.id.desc())
+                .first()
+            ) or WatchAssignment(shift_id=item.id, officer_id=officer.id)
+            assignment.assignment_type = assignment_type
+            assignment.assignment_location = assignment_location
+            assignment.status = assignment_status
+            assignment.start_time = item.start_time
+            assignment.end_time = item.end_time
+            assignment.notes = (request.form.get('assignment_notes') or '').strip()
+            db.session.add(assignment)
+            _audit('watch_assignment_changed', f'officer_id={officer.id}|shift_id={item.id}|assignment={assignment.assignment_type}|status={assignment.status}')
+
         db.session.commit()
-        flash('Shift saved.', 'success')
+        flash('Shift saved and assignments updated.' if assigned_officer_ids else 'Shift saved.', 'success')
         return redirect(url_for('watch_commander.shift'))
     shifts = WatchShift.query.order_by(WatchShift.shift_date.desc(), WatchShift.created_at.desc()).limit(30).all()
-    return render_template('watch_commander/shift.html', title='Shift Management', user=current_user, shifts=shifts, officers=_officers())
+    return render_template(
+        'watch_commander/shift.html',
+        title='Shift Management',
+        user=current_user,
+        shifts=shifts,
+        officers=_officers(),
+        statuses=OFFICER_STATUSES,
+        assignment_types=ASSIGNMENT_TYPES,
+    )
 
 
 @bp.route('/officers', methods=['GET', 'POST'])

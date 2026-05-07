@@ -177,6 +177,42 @@
   min-height: 120px;
 }
 
+.wc-fieldset {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  display: grid;
+  gap: 10px;
+  margin: 4px 0;
+  padding: 14px;
+}
+
+.wc-fieldset legend {
+  color: var(--text);
+  font-weight: 900;
+  padding: 0 6px;
+}
+
+.wc-fieldset label {
+  color: var(--text);
+  display: grid;
+  gap: 6px;
+  font-weight: 750;
+}
+
+.wc-checkline {
+  align-items: center;
+  display: flex !important;
+  gap: 10px !important;
+}
+
+.wc-checkline input {
+  width: auto !important;
+}
+
+.wc-fieldset small {
+  color: var(--muted);
+}
+
 .wc-card-table {
   display: grid;
   gap: 12px;
