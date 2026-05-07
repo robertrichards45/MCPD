@@ -176,7 +176,13 @@ def download(footage_id):
 @bp.get('/tools/narrative')
 @login_required
 def narrative_tool():
-    return render_template('narrative_5w_tool.html', user=current_user, mobile_mode=False)
+    return render_template('narrative_5w_tool.html', user=current_user, mobile_mode=False, tool_mode='narrative')
+
+
+@bp.get('/tools/5w')
+@login_required
+def five_w_tool():
+    return render_template('narrative_5w_tool.html', user=current_user, mobile_mode=False, tool_mode='5w')
 
 
 @bp.get('/bodycam/narrative')
@@ -191,10 +197,27 @@ def mobile_narrative_tool():
     return render_template(
         'mobile_narrative_5w_tool.html',
         **{
-            'title': 'Narrative / 5W Builder | MCPD Mobile',
+            'title': 'Narrative Creator | MCPD Mobile',
             'body_class': 'mobile-foundation',
-            'mobile_title': 'Narrative / 5W',
+            'mobile_title': 'Narrative Creator',
             'mobile_active_tab': 'more',
             'user': current_user,
+            'tool_mode': 'narrative',
+        },
+    )
+
+
+@bp.get('/mobile/tools/5w')
+@login_required
+def mobile_five_w_tool():
+    return render_template(
+        'mobile_narrative_5w_tool.html',
+        **{
+            'title': '5W Builder | MCPD Mobile',
+            'body_class': 'mobile-foundation',
+            'mobile_title': '5W Builder',
+            'mobile_active_tab': 'more',
+            'user': current_user,
+            'tool_mode': '5w',
         },
     )

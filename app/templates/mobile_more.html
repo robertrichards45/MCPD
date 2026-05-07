@@ -34,7 +34,8 @@
     {{ tool_card('Reports Center', 'Open reports, crash tools, packets, and report photos.', url_for('reports.list_reports'), 'reports') }}
     {{ tool_card('Body Cam Mode', 'Record field video and transcript into MCPD storage.', url_for('bodycam.mobile_recording'), 'camera', True) }}
     {{ tool_card('Bodycam Footage', 'View saved recordings and transcripts.', url_for('bodycam.mobile_library'), 'library') }}
-    {{ tool_card('Narrative / 5W Builder', 'Generate a reviewed 5W summary from one notes box.', url_for('bodycam.mobile_narrative_tool'), 'narrative') }}
+    {{ tool_card('Narrative Creator', 'Turn field notes into a draft narrative for review.', url_for('bodycam.mobile_narrative_tool'), 'narrative') }}
+    {{ tool_card('5W Builder', 'Paste one notes block and extract who, what, when, where, and why.', url_for('bodycam.mobile_five_w_tool'), 'narrative') }}
     {{ tool_card('Saved Work', 'Open saved forms, packets, and drafts.', url_for('forms.saved_forms'), 'saved') }}
     {% if portal_can_access_builder_mode %}
       {{ tool_card('Site Builder', 'Owner-controlled backend requests and build tools.', url_for('admin.site_builder'), 'builder') }}

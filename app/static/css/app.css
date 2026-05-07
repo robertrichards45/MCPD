@@ -14747,3 +14747,38 @@ body[data-theme="dark"] .dropdown-menu {
     grid-template-columns: 1fr;
   }
 }
+
+/* Final nav contrast guard: sidebar links must stay readable in both themes. */
+.mcpd-command-sidebar,
+.mcpd-command-sidebar nav,
+.mcpd-command-sidebar a,
+.mcpd-sidebar-admin summary,
+.mcpd-sidebar-admin a,
+.mcpd-command-sidebar .nav-icon,
+.reports-command-sidebar,
+.reports-command-sidebar a,
+.reports-command-sidebar .nav-icon {
+  color: #f8fbff !important;
+}
+
+.mcpd-command-sidebar a span,
+.mcpd-command-sidebar a small,
+.reports-command-sidebar a span,
+.reports-command-sidebar a small {
+  color: #dbeafe !important;
+}
+
+.mcpd-sidebar-admin a {
+  background: rgba(255, 255, 255, 0.03);
+  opacity: 1 !important;
+}
+
+.mcpd-command-sidebar a:hover,
+.mcpd-command-sidebar a:focus,
+.mcpd-command-sidebar a.is-active,
+.mcpd-sidebar-admin[open] summary,
+.reports-command-sidebar a:hover,
+.reports-command-sidebar a:focus,
+.reports-command-sidebar a.is-active {
+  color: #ffffff !important;
+}

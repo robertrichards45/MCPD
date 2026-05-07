@@ -32,6 +32,9 @@ def test_report_camera_page_renders_from_report():
         assert 'Report Camera' in html
         assert 'does not save the photo to the phone camera roll' in html
         assert f'/reports/{report_id}/photo' in html
+        alias = client.get(f'/reports/camera/{report_id}', follow_redirects=True)
+        assert alias.status_code == 200
+        assert 'Report Camera' in alias.get_data(as_text=True)
     finally:
         with app.app_context():
             report = db.session.get(Report, report_id)

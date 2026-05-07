@@ -6,8 +6,13 @@
     <section class="card p-3 mb-3 page-head ops-head-card">
       <div class="ops-head-copy">
         <div class="eyebrow">Report Writing</div>
-        <h2 class="mb-1">Narrative Creator / 5W Builder</h2>
-        <p class="text-muted mb-0">Standalone tool for building 5W facts and a professional draft narrative. Officer must review before use.</p>
+        {% if tool_mode == '5w' %}
+          <h2 class="mb-1">5W Builder</h2>
+          <p class="text-muted mb-0">Organize officer notes into Who, What, When, Where, Why/How, and Officer Actions.</p>
+        {% else %}
+          <h2 class="mb-1">Narrative Creator</h2>
+          <p class="text-muted mb-0">Draft a professional narrative from officer-entered facts. Officer must review before use.</p>
+        {% endif %}
       </div>
     </section>
     {% include 'partials/narrative_5w_panel.html' %}

@@ -2,8 +2,13 @@
 {% block mobile_content %}
 <section class="mobile-section-block">
   <div class="mobile-section-head">
-    <h3>Narrative / 5W Builder</h3>
-    <p>Put the incident facts in one box and generate a clean 5W summary for review, text, or email.</p>
+    {% if tool_mode == '5w' %}
+      <h3>5W Builder</h3>
+      <p>Put the incident facts in one box and generate a clean 5W summary for review, text, or email.</p>
+    {% else %}
+      <h3>Narrative Creator</h3>
+      <p>Put the incident facts in one box and generate a draft narrative for officer review.</p>
+    {% endif %}
   </div>
 </section>
 {% include 'partials/narrative_5w_panel.html' %}

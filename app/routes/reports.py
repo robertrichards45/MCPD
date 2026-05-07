@@ -785,6 +785,12 @@ def report_camera(report_id):
     return render_template('report_camera.html', report=report, user=current_user)
 
 
+@bp.route('/reports/camera/<int:report_id>')
+@login_required
+def report_camera_alias(report_id):
+    return redirect(url_for('reports.report_camera', report_id=report_id))
+
+
 @bp.route('/reports/<int:report_id>/photo', methods=['POST'])
 @login_required
 def report_photo_upload(report_id):

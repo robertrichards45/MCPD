@@ -70,8 +70,13 @@
       </a>
       <a class="mcpd-action-card" href="{{ url_for('bodycam.narrative_tool') }}">
         <span class="mcpd-action-icon" aria-hidden="true">{{ dash_icon('forms') }}</span>
-        <strong>Narrative / 5W Builder</strong>
-        <small>Paste facts and generate a 5W summary</small>
+        <strong>Narrative Creator</strong>
+        <small>Turn report facts into a draft narrative</small>
+      </a>
+      <a class="mcpd-action-card" href="{{ url_for('bodycam.five_w_tool') }}">
+        <span class="mcpd-action-icon" aria-hidden="true">{{ dash_icon('forms') }}</span>
+        <strong>5W Builder</strong>
+        <small>Paste one notes block and extract the 5Ws</small>
       </a>
       {% if portal_can_access_builder_mode %}
       <a class="mcpd-action-card" href="{{ url_for('admin.site_builder') }}">
@@ -96,7 +101,8 @@
         <div class="mcpd-list">
           <a href="{{ url_for('reports.list_reports') }}"><strong>Reports Center</strong><span>{{ dashboard_metrics[0].detail if dashboard_metrics else 'Open reports and packets' }}</span></a>
           <a href="{{ url_for('bodycam.library') }}"><strong>Bodycam Footage</strong><span>Recordings and transcripts</span></a>
-          <a href="{{ url_for('bodycam.narrative_tool') }}"><strong>Narrative / 5W Builder</strong><span>Standalone report writing tool</span></a>
+          <a href="{{ url_for('bodycam.narrative_tool') }}"><strong>Narrative Creator</strong><span>Standalone report writing tool</span></a>
+          <a href="{{ url_for('bodycam.five_w_tool') }}"><strong>5W Builder</strong><span>Who, what, when, where, and why summary</span></a>
           <a href="{{ url_for('reports.accident_reconstruction_list') }}"><strong>Accident Reconstruction</strong><span>Scene diagrams and crash reports</span></a>
         </div>
       </article>

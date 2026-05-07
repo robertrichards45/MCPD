@@ -92,17 +92,46 @@
     return narrative.join('\n\n');
   }
 
+  function buildNarrativeFromNotes(notes) {
+    var clean = compact(notes);
+    if (!clean) {
+      return 'Narrative Draft:\n\nAdd incident notes first.\n\nOfficer Review: Verify all facts before using this narrative.';
+    }
+    var summary = buildFiveWsFromNotes(clean);
+    var starterMatch = summary.match(/Narrative Starter:\s*([\s\S]*?)(?:\n\nFull Officer Notes:|$)/);
+    var starter = starterMatch && starterMatch[1] ? compact(starterMatch[1]) : clean;
+    return [
+      'Narrative Draft:',
+      '',
+      starter,
+      '',
+      'Officer Review:',
+      'Review and edit this draft before adding it to a report. Do not add facts that were not entered by the officer.',
+      '',
+      'Source Notes:',
+      clean
+    ].join('\n');
+  }
+
   function updateShareLinks() {
     var output = value('n5w-output');
     var encoded = encodeURIComponent(output || 'No 5W summary generated yet.');
+    var mode = currentMode();
+    var title = mode === '5w' ? 'MCPD 5W Summary' : 'MCPD Narrative Draft';
     var textLink = byId('n5w-text');
     var emailLink = byId('n5w-email');
     if (textLink) textLink.href = 'sms:?&body=' + encoded;
-    if (emailLink) emailLink.href = 'mailto:?subject=' + encodeURIComponent('MCPD 5W Summary') + '&body=' + encoded;
+    if (emailLink) emailLink.href = 'mailto:?subject=' + encodeURIComponent(title) + '&body=' + encoded;
+  }
+
+  function currentMode() {
+    var build = byId('n5w-build');
+    return build ? String(build.getAttribute('data-tool-mode') || 'narrative').toLowerCase() : 'narrative';
   }
 
   function buildNarrative() {
-    setValue('n5w-output', buildFiveWsFromNotes(value('n5w-intake')));
+    var notes = value('n5w-intake');
+    setValue('n5w-output', currentMode() === '5w' ? buildFiveWsFromNotes(notes) : buildNarrativeFromNotes(notes));
     updateShareLinks();
   }
 
@@ -127,7 +156,7 @@
       var output = value('n5w-output');
       if (!output) return;
       event.preventDefault();
-      navigator.share({ title: 'MCPD 5W Summary', text: output }).catch(function () {
+      navigator.share({ title: currentMode() === '5w' ? 'MCPD 5W Summary' : 'MCPD Narrative Draft', text: output }).catch(function () {
         window.location.href = textLink.href;
       });
     });
