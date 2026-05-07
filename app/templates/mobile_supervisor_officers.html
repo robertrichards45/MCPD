@@ -57,7 +57,7 @@
     </label>
 
     <label>
-      <span>Watch Commander</span>
+      <span>Supervisor / Watch Commander</span>
       <select name="supervisor_id">
         <option value="">Unassigned</option>
         {% for wc in watch_commanders %}
@@ -71,7 +71,7 @@
       <strong>{{ installation_labels.get(current_user.installation, current_user.installation or 'Not set') }}</strong>
     </div>
     <div class="mobile-officer-fixed">
-      <span>Watch Commander</span>
+      <span>Supervisor / Watch Commander</span>
       <strong>{{ current_user.display_name }}</strong>
     </div>
     {% endif %}

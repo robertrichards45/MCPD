@@ -1292,7 +1292,7 @@ def _mobile_assignment_supervisors():
             or user.installation == current_user.installation
         )
     ]
-    if is_site_controller(current_user) and current_user.active and current_user not in supervisors:
+    if is_site_controller(current_user) and current_user.active and all(user.id != current_user.id for user in supervisors):
         supervisors.insert(0, current_user)
     return supervisors
 

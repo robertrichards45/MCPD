@@ -141,6 +141,45 @@
               <button type="button" data-direction-rotate="180">West</button>
             </div>
           </section>
+
+          <section class="officer-diagram-legend" aria-label="Officer accident diagram legend">
+            <h3>Diagram Legend</h3>
+            <div class="officer-legend-grid">
+              <div class="officer-legend-item">
+                <span class="officer-legend-symbol officer-legend-vehicle">V1</span>
+                <span><strong>Vehicle label</strong><small>V1, V2, patrol unit, motorcycle, or truck.</small></span>
+              </div>
+              <div class="officer-legend-item">
+                <span class="officer-legend-symbol officer-legend-arrow" aria-hidden="true"></span>
+                <span><strong>Direction of travel</strong><small>Shows the vehicle path before impact or final movement.</small></span>
+              </div>
+              <div class="officer-legend-item">
+                <span class="officer-legend-symbol officer-legend-impact" aria-hidden="true"></span>
+                <span><strong>Point of impact</strong><small>Primary collision or contact location.</small></span>
+              </div>
+              <div class="officer-legend-item">
+                <span class="officer-legend-symbol officer-legend-skid" aria-hidden="true"></span>
+                <span><strong>Skid / tire marks</strong><small>Observed tire marks, braking, or post-impact travel.</small></span>
+              </div>
+              <div class="officer-legend-item">
+                <span class="officer-legend-symbol officer-legend-measure" aria-hidden="true"></span>
+                <span><strong>Measurement</strong><small>Distance, lane width, final rest, or fixed-object reference.</small></span>
+              </div>
+              <div class="officer-legend-item">
+                <span class="officer-legend-symbol officer-legend-control" aria-hidden="true">STOP</span>
+                <span><strong>Traffic control</strong><small>Signs, cones, signals, barriers, gates, or scene controls.</small></span>
+              </div>
+              <div class="officer-legend-item">
+                <span class="officer-legend-symbol officer-legend-zone" aria-hidden="true"></span>
+                <span><strong>Scene zone</strong><small>Lane closure, perimeter, debris field, or marked area.</small></span>
+              </div>
+              <div class="officer-legend-item">
+                <span class="officer-legend-symbol officer-legend-north">N</span>
+                <span><strong>North / scale</strong><small>Orientation and scale marker shown on the diagram.</small></span>
+              </div>
+            </div>
+            <p class="officer-legend-note">Match labels and directions to the report narrative before attaching the diagram.</p>
+          </section>
           {% endif %}
 
           <h3>Vehicles</h3>
@@ -217,5 +256,5 @@
 {% endblock %}
 {% block scripts %}
   {{ super() }}
-  <script src="{{ url_for('static', filename='js/accident_reconstruction.js', v='2026-05-07-officer-details') }}"></script>
+  <script src="{{ url_for('static', filename='js/accident_reconstruction.js', v='2026-05-07-officer-legend') }}"></script>
 {% endblock %}

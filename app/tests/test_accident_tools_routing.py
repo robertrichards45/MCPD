@@ -66,6 +66,9 @@ def test_officer_diagram_and_reconstruction_pages_are_not_the_same():
         assert officer_response.status_code == 200
         assert "Officer Accident Diagram" in officer_html
         assert "Accident Information" in officer_html
+        assert "Diagram Legend" in officer_html
+        assert "Direction of travel" in officer_html
+        assert "Point of impact" in officer_html
         assert "Direction of Travel" in officer_html
         assert "data-accident-field=\"location\"" in officer_html
         assert "data-selected-field=\"directionOfTravel\"" in officer_html

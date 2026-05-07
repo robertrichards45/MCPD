@@ -30,6 +30,7 @@ from ..models import (
     AuditLog,
 )
 from ..permissions import can_manage_site, can_manage_team, can_view_user, can_grade_cleoc_reports
+from ..services.call_type_rules import load_call_type_rules
 
 bp = Blueprint('reports', __name__)
 REVIEWABLE_CLEO_STATUSES = ('SUBMITTED', 'RETURNED', 'GRADED')
@@ -318,6 +319,7 @@ def list_reports():
         cleo_reports=cleo_reports,
         cleo_review_reports=cleo_review_reports,
         active_incident_draft=active_incident_draft,
+        call_type_rules=load_call_type_rules(),
         report_count=len(reports),
         cleo_count=len(cleo_reports),
         cleo_review_count=len(cleo_review_reports),

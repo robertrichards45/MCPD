@@ -271,7 +271,7 @@ def _available_supervisors():
     if is_site_controller(current_user):
         users = query.order_by(User.first_name, User.last_name, User.username).all()
         supervisors = [user for user in users if _is_assignment_supervisor_candidate(user)]
-        if current_user.active and current_user not in supervisors:
+        if current_user.active and all(user.id != current_user.id for user in supervisors):
             supervisors.insert(0, current_user)
         return supervisors
     elif is_watch_commander(current_user):

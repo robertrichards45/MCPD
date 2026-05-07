@@ -27,16 +27,43 @@
       </div>
 
       <div class="forms-toolbar">
-        <a class="btn btn-primary" href="{{ url_for('reports.new_report') }}">New Standard Report</a>
-        <a class="btn btn-outline-primary" href="{{ url_for('mobile.incident_start') }}">
+        <a class="btn btn-primary" href="{{ url_for('mobile.incident_start') }}">
           {% if active_incident_draft %}Continue Field Draft{% else %}Start Field Workflow{% endif %}
         </a>
+        <a class="btn btn-outline-primary" href="{{ url_for('reports.new_report') }}">Quick Case Shell</a>
         <a class="btn btn-outline-secondary" href="{{ url_for('bodycam.library') }}">Bodycam Footage</a>
         <a class="btn btn-outline-secondary" href="{{ url_for('bodycam.narrative_tool') }}">Narrative Creator</a>
         <a class="btn btn-outline-secondary" href="{{ url_for('bodycam.five_w_tool') }}">5W Builder</a>
-        <a class="btn btn-outline-secondary" href="{{ url_for('reports.accident_reconstruction_list') }}">Accident Reconstruction</a>
+        <a class="btn btn-outline-secondary" href="{{ url_for('reports.accidents') }}">Accident Tools</a>
         <button class="btn btn-outline-secondary" type="button" onclick="createCleoReport()">New Mock Report</button>
           <a class="btn btn-outline-secondary" href="{{ url_for('reference.incident_paperwork_guide') }}">Paperwork Navigator</a>
+      </div>
+    </section>
+
+    <section class="card p-3 report-center-panel report-intake-panel">
+      <div class="report-panel-head">
+        <div>
+          <h3 class="mb-1">Start Report</h3>
+          <p class="text-muted mb-0">Same call-type workflow used on mobile: choose the incident type, then continue through basics, forms, parties, facts, narrative, and packet review.</p>
+        </div>
+        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('mobile.incident_start') }}">Open Full Workflow</a>
+      </div>
+      <div class="report-call-type-grid">
+        {% for slug, rule in call_type_rules.items() if rule.active is not defined or rule.active %}
+        <button
+          class="report-call-type-card"
+          type="button"
+          data-call-type="{{ rule.slug or slug }}"
+          data-next-url="{{ url_for('mobile.incident_basics') }}"
+        >
+          <span class="report-call-type-kicker">{{ rule.shortLabel or rule.title }}</span>
+          <strong>{{ rule.title }}</strong>
+          <p>{{ rule.description }}</p>
+          <span class="report-call-type-meta">
+            {{ (rule.recommendedForms or [])|length }} recommended / {{ (rule.optionalForms or [])|length }} optional
+          </span>
+        </button>
+        {% endfor %}
       </div>
     </section>
 
@@ -153,6 +180,46 @@
   </div>
 </div>
 <script>
+  const REPORT_CALL_TYPE_RULES = {{ call_type_rules|tojson }};
+
+  function startDesktopFieldWorkflow(slug, nextUrl) {
+    const rules = REPORT_CALL_TYPE_RULES || {};
+    const rule = rules[slug] || {};
+    const selectedForms = ['MCPD Stat Sheet'].concat((rule.recommendedForms || []).filter((name) => name !== 'MCPD Stat Sheet'));
+    const state = {
+      callType: slug,
+      incidentBasics: {
+        occurredDate: '',
+        occurredTime: '',
+        dispatchTime: '',
+        arrivalTime: '',
+        location: '',
+        reportingOfficer: '',
+        callSource: '',
+        summary: ''
+      },
+      timeline: [],
+      persons: [],
+      selectedForms,
+      statutes: rule.statutes || [],
+      checklist: (rule.checklistItems || []).map((text) => ({ text, completed: false })),
+      facts: [],
+      narrative: '',
+      narrativeApproved: false,
+      statements: [],
+      formDrafts: {},
+      packetStatus: 'not_started'
+    };
+    sessionStorage.setItem('mcpd.mobile.incident.state', JSON.stringify(state));
+    window.location.href = nextUrl || '{{ url_for("mobile.incident_basics") }}';
+  }
+
+  document.querySelectorAll('.report-call-type-card').forEach((button) => {
+    button.addEventListener('click', () => {
+      startDesktopFieldWorkflow(button.dataset.callType, button.dataset.nextUrl);
+    });
+  });
+
   async function createCleoReport() {
     const response = await fetch('{{ url_for("cleo_api.cleo_reports_create") }}', {
       method: 'POST',

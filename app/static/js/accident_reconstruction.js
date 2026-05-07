@@ -729,6 +729,28 @@
     });
   }
 
+  function exportLegendSvg() {
+    return '<g aria-label="Diagram Legend">' +
+      '<rect x="714" y="342" width="248" height="154" rx="10" fill="#ffffff" stroke="#cbd5e1"/>' +
+      '<text x="730" y="366" font-family="Arial" font-size="13" font-weight="800" fill="#0a2440">Diagram Legend</text>' +
+      '<rect x="730" y="381" width="30" height="18" rx="4" fill="#e8f1ff" stroke="#93c5fd"/>' +
+      '<text x="745" y="394" text-anchor="middle" font-family="Arial" font-size="10" font-weight="800" fill="#123b63">V1</text>' +
+      '<text x="770" y="394" font-family="Arial" font-size="10" fill="#334155">Vehicle label</text>' +
+      '<path d="M730 414H760" stroke="#1d4ed8" stroke-width="4" stroke-linecap="round"/>' +
+      '<path d="M760 414l-10 -6v12z" fill="#1d4ed8"/>' +
+      '<text x="770" y="418" font-family="Arial" font-size="10" fill="#334155">Direction of travel</text>' +
+      '<circle cx="744" cy="435" r="8" fill="#facc15" stroke="#dc2626" stroke-width="2"/>' +
+      '<path d="M744 421v-8M744 449v8M730 435h-8M758 435h8M734 425l-6 -6M754 425l6 -6M734 445l-6 6M754 445l6 6" stroke="#dc2626" stroke-width="2"/>' +
+      '<text x="770" y="439" font-family="Arial" font-size="10" fill="#334155">Point of impact</text>' +
+      '<path d="M730 457c11 -7 21 -7 31 0" stroke="#111827" stroke-width="3" stroke-linecap="round" opacity=".55" fill="none"/>' +
+      '<path d="M730 466c11 -7 21 -7 31 0" stroke="#111827" stroke-width="3" stroke-linecap="round" opacity=".35" fill="none"/>' +
+      '<text x="770" y="464" font-family="Arial" font-size="10" fill="#334155">Skid / tire marks</text>' +
+      '<path d="M730 482H762" stroke="#0f172a" stroke-width="2"/>' +
+      '<path d="M730 476v12M762 476v12" stroke="#0f172a" stroke-width="2"/>' +
+      '<text x="770" y="486" font-family="Arial" font-size="10" fill="#334155">Measurement line</text>' +
+      '</g>';
+  }
+
   function exportPng() {
     var items = allItems();
     Promise.all(items.map(function (item) { return fetchSvg(item.assetType); })).then(function (svgTexts) {
@@ -751,7 +773,7 @@
       var footer = '<rect x="16" y="510" width="420" height="54" rx="8" fill="#ffffff" stroke="#cbd5e1"/>' +
         '<text x="30" y="532" font-family="Arial" font-size="12" font-weight="800" fill="#0a2440">Officer Accident Diagram</text>' +
         '<text x="30" y="550" font-family="Arial" font-size="11" fill="#334155">' + escapeXml([details.incidentNumber, details.location, details.crashType].filter(Boolean).join(' | ')) + '</text>';
-      var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 580" width="1960" height="1160">' + roadSvg() + objectSvg + footer + '</svg>';
+      var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 580" width="1960" height="1160">' + roadSvg() + objectSvg + footer + exportLegendSvg() + '</svg>';
       var blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
       var url = URL.createObjectURL(blob);
       var image = new Image();
