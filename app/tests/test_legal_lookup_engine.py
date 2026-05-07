@@ -72,6 +72,16 @@ def test_public_defecation_query_does_not_surface_unrelated_shoplifting_order():
     assert not any('shoplifting' in title.lower() for title in titles)
 
 
+def test_drug_conduct_at_gate_prioritizes_controlled_substance_over_entry_context():
+    results = search_entries('weed in vehicle at the gate', 'ALL')
+    assert results
+    codes = [item.entry.code for item in results[:5]]
+    assert results[0].entry.code in {'OCGA 16-13-75', 'OCGA 16-13-30', 'Article 112a'}
+    assert 'OCGA 16-13-75' in codes
+    if '18 USC 1382' in codes:
+        assert codes.index('OCGA 16-13-75') < codes.index('18 USC 1382')
+
+
 def test_dui_refusal_scenario_keeps_core_charge_path_results():
     results = search_entries('driver was weaving and refused breath test', 'ALL')
     codes = [item.entry.code for item in results[:6]]

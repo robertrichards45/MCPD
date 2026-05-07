@@ -370,7 +370,7 @@ def ask_openai_with_system(prompt, system_prompt, api_key, history=None):
 _ALLOWED_VOICES = {'alloy', 'ash', 'coral', 'echo', 'fable', 'nova', 'onyx', 'shimmer', 'verse'}
 
 
-def openai_tts(text, api_key, voice='coral'):
+def openai_tts(text, api_key, voice='coral', speed=0.95):
     """Call OpenAI TTS and return raw audio bytes (MP3), or None on failure."""
     api_key = configured_openai_api_key(api_key)
     text = (text or '').strip()
@@ -380,6 +380,11 @@ def openai_tts(text, api_key, voice='coral'):
     # Sanitise voice — fall back to coral if caller passes an unknown value
     if voice not in _ALLOWED_VOICES:
         voice = 'coral'
+    try:
+        speed = float(speed)
+    except (TypeError, ValueError):
+        speed = 0.95
+    speed = max(0.75, min(1.35, speed))
 
     headers = {
         'Authorization': f'Bearer {api_key}',
@@ -389,6 +394,7 @@ def openai_tts(text, api_key, voice='coral'):
         'model': configured_openai_tts_model(),
         'input': text[:4096],
         'voice': voice,
+        'speed': speed,
     }
 
     try:

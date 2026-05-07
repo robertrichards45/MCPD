@@ -2,26 +2,114 @@
 {% block body %}
 <div class="app-shell">
   {% include 'partials/nav.html' %}
-  <main class="page-wrap">
+  <main class="page-wrap site-builder-page">
     <section class="card p-3 mb-3 page-head">
       <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
         <div>
           <h2 class="mb-1">Site Builder</h2>
-          <p class="text-muted mb-0">Owner-controlled Builder Mode for protected site change requests.</p>
+          <p class="text-muted mb-0">Owner-controlled change requests for MCPD Portal fixes and approved upgrades.</p>
         </div>
-        <span class="badge bg-warning text-dark">Restricted</span>
+        <span class="badge bg-warning text-dark">Restricted Builder Mode</span>
       </div>
     </section>
 
-    <section class="card p-3">
-      <h3>Builder Mode Access</h3>
-      <p>
-        This area is restricted to the Site Owner by default. Any additional access must be granted
-        by the Site Owner, confirmed multiple times, and recorded in the audit log.
-      </p>
-      <p class="text-muted mb-0">
-        Builder tools should be used only for approved MCPD Portal changes.
-      </p>
+    <section class="builder-grid">
+      <article class="card p-3 builder-request-card">
+        <div class="builder-section-head">
+          <div>
+            <h3>Create Builder Request</h3>
+            <p class="text-muted">Describe the issue or approved change. This does not edit code automatically; it creates a controlled request for review.</p>
+          </div>
+        </div>
+        <form method="post" action="{{ url_for('admin.create_builder_request') }}" class="builder-request-form">
+          <label>Title
+            <input class="form-control" name="title" maxlength="160" required placeholder="Example: Fix mobile report Back button">
+          </label>
+          <div class="builder-form-row">
+            <label>Request Type
+              <select class="form-control" name="request_type">
+                {% for option in request_type_options %}
+                  <option>{{ option }}</option>
+                {% endfor %}
+              </select>
+            </label>
+            <label>Priority
+              <select class="form-control" name="priority">
+                {% for option in priority_options %}
+                  <option {% if option == 'Medium' %}selected{% endif %}>{{ option }}</option>
+                {% endfor %}
+              </select>
+            </label>
+          </div>
+          <label>Area / Page
+            <input class="form-control" name="area" maxlength="120" placeholder="Dashboard, Forms, Law Lookup, Mobile More, etc.">
+          </label>
+          <label>What needs to happen?
+            <textarea class="form-control" name="description" rows="6" required placeholder="Explain the problem, where it happens, and what the correct behavior should be."></textarea>
+          </label>
+          <label>Acceptance Criteria
+            <textarea class="form-control" name="acceptance" rows="4" placeholder="How we prove it is fixed. Example: button routes correctly, mobile has no dead end, test passes."></textarea>
+          </label>
+          <button class="btn btn-primary" type="submit">Submit Builder Request</button>
+        </form>
+      </article>
+
+      <aside class="builder-side-stack">
+        <article class="card p-3">
+          <h3>Request Status</h3>
+          <div class="builder-stat-list">
+            <div><span>Total</span><strong>{{ builder_stats.total }}</strong></div>
+            <div><span>New</span><strong>{{ builder_stats.new }}</strong></div>
+            <div><span>Approved</span><strong>{{ builder_stats.approved }}</strong></div>
+            <div><span>Completed</span><strong>{{ builder_stats.completed }}</strong></div>
+          </div>
+        </article>
+        <article class="card p-3 builder-warning-card">
+          <h3>Controls</h3>
+          <p class="text-muted mb-0">Builder Mode is visible only to the Site Owner or users explicitly granted access. Requests are audit logged.</p>
+        </article>
+      </aside>
+    </section>
+
+    <section class="card p-3 mt-3">
+      <div class="builder-section-head">
+        <div>
+          <h3>Builder Requests</h3>
+          <p class="text-muted">Track requested changes without exposing developer tools to normal users.</p>
+        </div>
+      </div>
+      {% if builder_requests %}
+        <div class="builder-request-list">
+          {% for item in builder_requests %}
+            <article class="builder-request-item">
+              <div class="builder-request-main">
+                <div class="builder-request-kicker">
+                  <span>{{ item.request_type }}</span>
+                  <span>{{ item.priority }}</span>
+                  <span>{{ item.area or 'General' }}</span>
+                </div>
+                <h4>{{ item.title }}</h4>
+                <p>{{ item.description }}</p>
+                {% if item.acceptance %}
+                  <div class="builder-acceptance"><strong>Acceptance:</strong> {{ item.acceptance }}</div>
+                {% endif %}
+                <small class="text-muted">Created by {{ item.created_by_name or 'Builder' }} on {{ item.created_at }}</small>
+              </div>
+              <form method="post" action="{{ url_for('admin.update_builder_request_status', request_id=item.id) }}" class="builder-status-form">
+                <span class="builder-status-pill builder-status-{{ (item.status or 'NEW')|lower|replace('_', '-') }}">{{ item.status or 'NEW' }}</span>
+                <select class="form-control" name="status">
+                  {% for option in status_options %}
+                    <option value="{{ option }}" {% if option == item.status %}selected{% endif %}>{{ option.replace('_', ' ') }}</option>
+                  {% endfor %}
+                </select>
+                <button class="btn btn-outline-secondary" type="submit">Update</button>
+              </form>
+            </article>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="report-empty-state">No builder requests yet.</div>
+      {% endif %}
     </section>
   </main>
 </div>

@@ -37,6 +37,24 @@ from .models import ALL_PORTAL_ROLES, ROLE_LABELS, ROLE_WEBSITE_CONTROLLER, ROLE
 _CREATED_APPS = weakref.WeakSet()
 
 
+def _external_request_scheme():
+    forwarded_proto = (request.headers.get('X-Forwarded-Proto') or '').split(',')[0].strip().lower()
+    if forwarded_proto:
+        return forwarded_proto
+
+    cf_visitor_raw = (request.headers.get('Cf-Visitor') or '').strip()
+    if cf_visitor_raw:
+        try:
+            parsed = json.loads(cf_visitor_raw)
+            cf_scheme = (parsed.get('scheme') or '').strip().lower()
+            if cf_scheme:
+                return cf_scheme
+        except Exception:
+            pass
+
+    return (request.scheme or '').strip().lower()
+
+
 def _database_uri_is_ephemeral(uri):
     raw = str(uri or '').strip()
     if not raw.startswith('sqlite:///'):
@@ -119,7 +137,7 @@ def load_user(user_id):
 def seed_admin():
     logger = logging.getLogger(__name__)
     username = (os.environ.get('ADMIN_USERNAME') or os.environ.get('SITE_OWNER_USERNAME') or '').strip()
-    password = os.environ.get('ADMIN_PASSWORD')
+    password = (os.environ.get('ADMIN_PASSWORD') or '').strip()
     if not username or not password:
         logger.warning(
             'Website Controller bootstrap skipped: ADMIN_USERNAME/SITE_OWNER_USERNAME and ADMIN_PASSWORD must be set.'
@@ -560,11 +578,14 @@ def create_app():
                 cf_visitor_scheme = (parsed.get('scheme') or '').strip().lower()
             except Exception:
                 cf_visitor_scheme = ''
+        external_scheme = _external_request_scheme()
         payload = {
             "host": request.host,
             "url": request.url,
             "request_scheme": request.scheme,
             "request_is_secure": bool(request.is_secure),
+            "external_scheme": external_scheme,
+            "external_is_secure": external_scheme == 'https',
             "x_forwarded_proto": forwarded_proto,
             "cf_visitor_scheme": cf_visitor_scheme,
             "cf_ray": request.headers.get('Cf-Ray', ''),
@@ -661,7 +682,7 @@ def create_app():
 
     @app.before_request
     def enforce_https():
-        forwarded_proto = (request.headers.get('X-Forwarded-Proto') or '').split(',')[0].strip().lower()
+        external_scheme = _external_request_scheme()
 
         request_host = (request.host or '').split(':', 1)[0].strip().lower()
         if request_host == 'www.mclbpd.com':
@@ -671,7 +692,8 @@ def create_app():
                 target = f"{target}?{query}"
             if target == request.url:
                 return None
-            return redirect(target, code=301)
+            redirect_code = 301 if request.method in {'GET', 'HEAD'} else 308
+            return redirect(target, code=redirect_code)
 
         if app.config.get('APP_ENV') != 'prod':
             return None
@@ -679,7 +701,7 @@ def create_app():
             return None
         # Only enforce when a proxy explicitly reports original scheme as HTTP.
         # This avoids forcing local direct HTTP (127.0.0.1) into invalid HTTPS on Flask dev server.
-        if forwarded_proto != 'http':
+        if external_scheme != 'http':
             return None
         host = (request.host or '').strip()
         if not host:
@@ -690,7 +712,8 @@ def create_app():
             target = f"{target}?{query}"
         if target == request.url:
             return None
-        return redirect(target, code=301)
+        redirect_code = 301 if request.method in {'GET', 'HEAD'} else 308
+        return redirect(target, code=redirect_code)
 
     @app.after_request
     def add_security_headers(response):
@@ -702,7 +725,7 @@ def create_app():
             'camera=(self), microphone=(), geolocation=(), payment=(), usb=()',
         )
         response.headers.setdefault('Cross-Origin-Opener-Policy', 'same-origin')
-        if app.config.get('HSTS_ENABLED') and (request.is_secure or request.headers.get('X-Forwarded-Proto', '').lower() == 'https'):
+        if app.config.get('HSTS_ENABLED') and (request.is_secure or _external_request_scheme() == 'https'):
             response.headers.setdefault(
                 'Strict-Transport-Security',
                 'max-age={}; includeSubDomains'.format(app.config.get('HSTS_MAX_AGE', 31536000)),
@@ -737,7 +760,7 @@ def create_app():
                 'role_labels': ROLE_LABELS,
                 'portal_origin_label': host_display,
                 'portal_show_origin_banner': show_origin_banner,
-                'portal_write_limited_notice': 'Running in limited write mode' if app.config.get('APP_ENV') == 'prod' else '',
+                'portal_write_limited_notice': 'Running in limited write mode' if app.config.get('PORTAL_WRITE_LIMITED_MODE') else '',
             }
 
         from .permissions import (
@@ -775,7 +798,7 @@ def create_app():
             'role_labels': ROLE_LABELS,
             'portal_origin_label': host_display,
             'portal_show_origin_banner': show_origin_banner,
-            'portal_write_limited_notice': 'Running in limited write mode' if app.config.get('APP_ENV') == 'prod' else '',
+            'portal_write_limited_notice': 'Running in limited write mode' if app.config.get('PORTAL_WRITE_LIMITED_MODE') else '',
             'portal_effective_role': active_role,
             'portal_effective_role_label': ROLE_LABELS.get(active_role, current_user.role_label),
             'portal_is_site_controller': current_user.normalized_role == ROLE_WEBSITE_CONTROLLER,
@@ -833,7 +856,9 @@ def create_app():
             max_age=0,
         )
         response.headers['Service-Worker-Allowed'] = '/'
-        response.headers['Cache-Control'] = 'no-cache'
+        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
         return response
 
     from .config import DATA_DIR, UPLOAD_ROOT

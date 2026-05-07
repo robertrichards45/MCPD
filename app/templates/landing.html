@@ -56,6 +56,10 @@
         <strong>Need access?</strong>
         <a href="{{ url_for('auth.register') }}">Create an account request</a> - a Watch Commander at your installation will activate it.
       </div>
+      <div class="login-help-note login-help-note--quiet">
+        Trouble signing in on this device?
+        <a href="{{ url_for('auth.reset_login_device') }}">Reset this device login data</a>
+      </div>
     </section>
   </div>
 </div>

@@ -134,3 +134,24 @@ def test_openai_tts_uses_fast_default_model(monkeypatch):
 
     assert audio == b'audio'
     assert '"model": "tts-1"' in captured['data']
+    assert '"speed": 0.95' in captured['data']
+
+
+def test_openai_tts_accepts_safe_speed(monkeypatch):
+    captured = {}
+
+    class FakeResponse:
+        status_code = 200
+        content = b'audio'
+
+    def fake_post(_url, headers=None, data=None, timeout=None):
+        captured['data'] = data
+        return FakeResponse()
+
+    monkeypatch.setenv('OPENAI_API_KEY', 'sk-test-secret-value')
+    monkeypatch.setattr(ai_client.requests, 'post', fake_post)
+
+    audio = ai_client.openai_tts('Test audio.', None, voice='coral', speed=1.18)
+
+    assert audio == b'audio'
+    assert '"speed": 1.18' in captured['data']

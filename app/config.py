@@ -10,6 +10,14 @@ DEFAULT_DATABASE_URI = f"sqlite:///{os.path.join(DATA_DIR, 'app.db').replace(os.
 RAILWAY_VOLUME_MOUNT_PATH = _VOLUME_PATH or '/data'
 
 
+def _running_on_railway():
+    return bool(
+        os.environ.get('RAILWAY_ENVIRONMENT')
+        or os.environ.get('RAILWAY_PROJECT_ID')
+        or os.environ.get('RAILWAY_SERVICE_ID')
+    )
+
+
 def _database_url_from_env():
     keys = (
         'MCPD_DATABASE_URL',
@@ -28,14 +36,14 @@ def _database_url_from_env():
         # On Railway with a mounted volume, automatically use the volume for
         # SQLite so officer data survives redeploys without needing Postgres.
         volume = os.environ.get('RAILWAY_VOLUME_MOUNT_PATH', '').strip()
-        if volume and (os.environ.get('RAILWAY_ENVIRONMENT') or os.environ.get('RAILWAY_PROJECT_ID')):
+        if volume and _running_on_railway():
             return f"sqlite:///{volume}/app.db"
         return ''
 
     # Railway can sometimes keep a stale DATABASE_URL around. In production,
     # a Postgres URL is always safer than an app-filesystem SQLite URL, so
     # prefer any Postgres candidate before falling back to declaration order.
-    if os.environ.get('RAILWAY_ENVIRONMENT') or os.environ.get('RAILWAY_PROJECT_ID'):
+    if _running_on_railway():
         for _key, value in candidates:
             normalized = _normalize_database_uri(value)
             if normalized.startswith('postgresql://'):
@@ -84,8 +92,8 @@ class Config:
     TRAINING_UPLOAD = os.path.join(UPLOAD_ROOT, 'training')
     STATS_UPLOAD = os.path.join(UPLOAD_ROOT, 'stats')
     SIGNATURES_DIR = os.path.join(DATA_DIR, 'signatures')
-    APP_ENV = os.environ.get('APP_ENV', 'dev')
-    APP_DOMAIN = os.environ.get('APP_DOMAIN', '')
+    APP_ENV = os.environ.get('APP_ENV', 'prod' if _running_on_railway() else 'dev')
+    APP_DOMAIN = os.environ.get('APP_DOMAIN', os.environ.get('RAILWAY_PUBLIC_DOMAIN', ''))
     SERVER_NAME = None
     PREFERRED_URL_SCHEME = os.environ.get('PREFERRED_URL_SCHEME', 'https' if APP_ENV == 'prod' else 'http')
     TRUST_PROXY = os.environ.get('TRUST_PROXY', '1' if APP_ENV == 'prod' else '0').lower() in {'1', 'true', 'yes', 'on'}
@@ -101,6 +109,7 @@ class Config:
     FORCE_HTTPS = os.environ.get('FORCE_HTTPS', '1' if APP_ENV == 'prod' else '0').lower() in {'1', 'true', 'yes', 'on'}
     HSTS_ENABLED = os.environ.get('HSTS_ENABLED', '1' if APP_ENV == 'prod' else '0').lower() in {'1', 'true', 'yes', 'on'}
     HSTS_MAX_AGE = int(os.environ.get('HSTS_MAX_AGE', '31536000'))
+    PORTAL_WRITE_LIMITED_MODE = os.environ.get('PORTAL_WRITE_LIMITED_MODE', '0').lower() in {'1', 'true', 'yes', 'on'}
     GOOGLE_SITE_VERIFICATION = os.environ.get('GOOGLE_SITE_VERIFICATION', '')
     CAC_AUTH_ENABLED = os.environ.get('CAC_AUTH_ENABLED', '0').lower() in {'1', 'true', 'yes', 'on'}
     CAC_AUTO_REGISTER = os.environ.get('CAC_AUTO_REGISTER', '0').lower() in {'1', 'true', 'yes', 'on'}
@@ -145,5 +154,5 @@ class Config:
     CLEO_URL = os.environ.get('CLEO_URL', '')
     REQUIRE_PERSISTENT_DATABASE = os.environ.get(
         'REQUIRE_PERSISTENT_DATABASE',
-        '1' if os.environ.get('RAILWAY_ENVIRONMENT') or os.environ.get('RAILWAY_PROJECT_ID') else '0',
+        '1' if _running_on_railway() else '0',
     ).lower() in {'1', 'true', 'yes', 'on'}

@@ -194,12 +194,19 @@ def assistant_speak():
     voice = (body.get('voice') or 'coral').strip().lower()
     if voice not in _ALLOWED_VOICES:
         voice = 'coral'
+    speed_name = (body.get('speed') or 'normal').strip().lower()
+    speed_map = {
+        'normal': 0.92,
+        'fast': 1.05,
+        'veryfast': 1.18,
+    }
+    speed = speed_map.get(speed_name, speed_map['normal'])
 
     if not text:
         return jsonify({'ok': False, 'error': 'No text provided.'}), 400
 
     api_key = configured_openai_api_key()
-    audio = openai_tts(text, api_key, voice=voice)
+    audio = openai_tts(text, api_key, voice=voice, speed=speed)
     if audio:
         return Response(audio, mimetype='audio/mpeg')
 

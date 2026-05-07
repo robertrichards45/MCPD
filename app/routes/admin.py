@@ -7,6 +7,7 @@ from pathlib import Path
 import re
 import subprocess
 import sys
+from uuid import uuid4
 
 from flask import Blueprint, Response, abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
@@ -34,6 +35,8 @@ bp = Blueprint('admin', __name__)
 LEGAL_QA_STATUS_PATH = Path(__file__).resolve().parents[1] / 'data' / 'legal' / 'legal_qa_status.json'
 LEGAL_QUERY_LOG_PATH = Path(__file__).resolve().parents[1] / 'data' / 'legal' / 'legal_query_log.jsonl'
 LEGAL_BACKFILL_QUEUE_PATH = Path(__file__).resolve().parents[1] / 'data' / 'legal' / 'legal_backfill_queue.json'
+BUILDER_REQUESTS_DIRNAME = 'site_builder'
+BUILDER_REQUESTS_FILENAME = 'requests.json'
 
 
 def require_admin():
@@ -44,6 +47,50 @@ def require_admin():
 def require_builder_mode():
     if not can_access_builder_mode(current_user):
         abort(403)
+
+
+def _builder_request_path() -> Path:
+    root = Path(bp.root_path).resolve().parents[0]
+    instance_root = Path(getattr(bp, 'instance_path', '') or '')
+    # Blueprints do not carry app.instance_path. Resolve lazily from current_app
+    # inside the request context so the store works both locally and on Railway.
+    from flask import current_app
+
+    base = Path(current_app.instance_path) if current_app else root / 'instance'
+    return base / BUILDER_REQUESTS_DIRNAME / BUILDER_REQUESTS_FILENAME
+
+
+def _load_builder_requests() -> list[dict]:
+    path = _builder_request_path()
+    if not path.exists():
+        return []
+    try:
+        payload = json.loads(path.read_text(encoding='utf-8'))
+    except Exception:
+        return []
+    if not isinstance(payload, list):
+        return []
+    clean = []
+    for item in payload:
+        if not isinstance(item, dict):
+            continue
+        clean.append(item)
+    return clean
+
+
+def _write_builder_requests(rows: list[dict]) -> None:
+    path = _builder_request_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(rows, indent=2, sort_keys=True), encoding='utf-8')
+
+
+def _builder_request_stats(rows: list[dict]) -> dict:
+    return {
+        'total': len(rows),
+        'new': sum(1 for row in rows if row.get('status') == 'NEW'),
+        'approved': sum(1 for row in rows if row.get('status') == 'APPROVED'),
+        'completed': sum(1 for row in rows if row.get('status') == 'COMPLETED'),
+    }
 
 
 def _load_legal_qa_status() -> dict | None:
@@ -68,7 +115,98 @@ def _write_legal_qa_status(payload: dict) -> None:
 @login_required
 def site_builder():
     require_builder_mode()
-    return render_template('site_builder.html', title='Site Builder', user=current_user)
+    rows = _load_builder_requests()
+    rows.sort(key=lambda row: row.get('created_at', ''), reverse=True)
+    return render_template(
+        'site_builder.html',
+        title='Site Builder',
+        user=current_user,
+        builder_requests=rows,
+        builder_stats=_builder_request_stats(rows),
+        status_options=('NEW', 'APPROVED', 'IN_PROGRESS', 'COMPLETED', 'REJECTED'),
+        request_type_options=('Feature', 'Bug Fix', 'Layout Fix', 'Form Fix', 'Law Lookup Fix', 'AI Assistant Fix', 'Admin Tool'),
+        priority_options=('Low', 'Medium', 'High', 'Critical'),
+    )
+
+
+@bp.post('/admin/site-builder/requests')
+@login_required
+def create_builder_request():
+    require_builder_mode()
+    title = (request.form.get('title') or '').strip()
+    description = (request.form.get('description') or '').strip()
+    request_type = (request.form.get('request_type') or 'Feature').strip()
+    priority = (request.form.get('priority') or 'Medium').strip()
+    area = (request.form.get('area') or '').strip()
+    acceptance = (request.form.get('acceptance') or '').strip()
+    if not title or not description:
+        flash('Builder request needs a title and description.', 'error')
+        return redirect(url_for('admin.site_builder'))
+
+    now = datetime.now(timezone.utc).isoformat()
+    rows = _load_builder_requests()
+    row = {
+        'id': uuid4().hex[:12],
+        'title': title[:160],
+        'description': description[:4000],
+        'request_type': request_type[:60],
+        'priority': priority[:30],
+        'area': area[:120],
+        'acceptance': acceptance[:2000],
+        'status': 'NEW',
+        'created_at': now,
+        'updated_at': now,
+        'created_by': current_user.id,
+        'created_by_name': current_user.display_name,
+    }
+    rows.append(row)
+    _write_builder_requests(rows)
+    db.session.add(
+        AuditLog(
+            actor_id=current_user.id,
+            action='site_builder_request_create',
+            details=json.dumps({'request_id': row['id'], 'title': row['title'], 'priority': row['priority']}, sort_keys=True),
+        )
+    )
+    db.session.commit()
+    flash('Builder request saved.', 'success')
+    return redirect(url_for('admin.site_builder'))
+
+
+@bp.post('/admin/site-builder/requests/<request_id>/status')
+@login_required
+def update_builder_request_status(request_id):
+    require_builder_mode()
+    next_status = (request.form.get('status') or '').strip().upper()
+    allowed = {'NEW', 'APPROVED', 'IN_PROGRESS', 'COMPLETED', 'REJECTED'}
+    if next_status not in allowed:
+        flash('Invalid builder request status.', 'error')
+        return redirect(url_for('admin.site_builder'))
+    rows = _load_builder_requests()
+    changed = None
+    for row in rows:
+        if row.get('id') == request_id:
+            previous = row.get('status') or 'NEW'
+            row['status'] = next_status
+            row['updated_at'] = datetime.now(timezone.utc).isoformat()
+            row['updated_by'] = current_user.id
+            row['updated_by_name'] = current_user.display_name
+            changed = {'request_id': request_id, 'previous': previous, 'new': next_status}
+            break
+    if not changed:
+        flash('Builder request was not found.', 'error')
+        return redirect(url_for('admin.site_builder'))
+    _write_builder_requests(rows)
+    db.session.add(
+        AuditLog(
+            actor_id=current_user.id,
+            action='site_builder_request_status',
+            details=json.dumps(changed, sort_keys=True),
+        )
+    )
+    db.session.commit()
+    flash('Builder request status updated.', 'success')
+    return redirect(url_for('admin.site_builder'))
 
 
 def _load_legal_query_events(limit: int = 5000) -> list[dict]:

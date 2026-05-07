@@ -496,10 +496,27 @@ def _preferred_cac_portal_url():
     return f"https://{host}"
 
 
+def _external_request_scheme():
+    forwarded_proto = (request.headers.get('X-Forwarded-Proto') or '').split(',')[0].strip().lower()
+    if forwarded_proto:
+        return forwarded_proto
+    cf_visitor_raw = (request.headers.get('Cf-Visitor') or '').strip()
+    if cf_visitor_raw:
+        try:
+            import json
+
+            parsed = json.loads(cf_visitor_raw)
+            cf_scheme = (parsed.get('scheme') or '').strip().lower()
+            if cf_scheme:
+                return cf_scheme
+        except Exception:
+            pass
+    return (request.scheme or '').strip().lower()
+
+
 def _request_is_via_secure_proxy():
-    forwarded_proto = (request.headers.get('X-Forwarded-Proto') or '').strip().lower()
     forwarded_host = (request.headers.get('X-Forwarded-Host') or '').strip()
-    return request.is_secure or forwarded_proto == 'https' or bool(forwarded_host)
+    return request.is_secure or _external_request_scheme() == 'https' or bool(forwarded_host)
 
 
 def _cac_proxy_required_response():
@@ -514,7 +531,7 @@ def _cac_proxy_required_response():
 
 def _cac_header_missing_response(username_headers):
     proxy_hint = ''
-    if request.is_secure or request.headers.get('X-Forwarded-Proto', '').lower() == 'https':
+    if request.is_secure or _external_request_scheme() == 'https':
         proxy_hint = ' HTTPS reached the app, but no upstream identity header was added. Configure Cloudflare Access or an origin CAC proxy to inject the authenticated user header.'
     context = {
         'error': (
@@ -579,6 +596,53 @@ def login():
     session.pop('acting_watch_commander_id', None)
     _safe_audit(actor_id=user.id, action='login', details='User login')
     return redirect(_resolve_post_login_redirect())
+
+
+@bp.route('/login/reset-device', methods=['GET'])
+def reset_login_device():
+    response = current_app.response_class(
+        """
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reset MCPD Login</title>
+</head>
+<body>
+  <p>Resetting local MCPD login data...</p>
+  <script>
+    (async function () {
+      try {
+        if ('serviceWorker' in navigator) {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          await Promise.all(registrations.map((registration) => registration.unregister()));
+        }
+        if ('caches' in window) {
+          const keys = await caches.keys();
+          await Promise.all(keys.map((key) => caches.delete(key)));
+        }
+        try { localStorage.clear(); } catch (error) {}
+        try { sessionStorage.clear(); } catch (error) {}
+      } finally {
+        window.location.replace('/login?device_reset=1');
+      }
+    }());
+  </script>
+  <noscript>
+    Local browser storage cleanup requires JavaScript. Clear this site's browser data, then return to login.
+  </noscript>
+</body>
+</html>
+        """.strip(),
+        mimetype='text/html',
+    )
+    response.delete_cookie(current_app.config.get('SESSION_COOKIE_NAME', 'session'), path='/')
+    response.headers['Clear-Site-Data'] = '"cache", "cookies", "storage"'
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
 
 
 @bp.route('/admin/login', methods=['GET', 'POST'])

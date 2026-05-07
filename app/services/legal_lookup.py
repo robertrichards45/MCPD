@@ -2805,6 +2805,14 @@ def _score_profile(profile: SearchEntryProfile, analysis: QueryAnalysis, strict_
         and analysis.normalized_query != title_text
         and title_text in analysis.normalized_query
     )
+    controlled_substance_query = (
+        'controlled_substance' in analysis.concept_tags
+        or bool(re.search(r'\bdrug\b|\bdrugs\b|\bnarcotic\b|\bmarijuana\b|\bweed\b|\bcannabis\b|\bcocaine\b|\bmeth\b|\bfentanyl\b', analysis.normalized_query))
+    )
+    installation_entry_query = bool(
+        re.search(r'trespass|unauthorized entr|unlawful entr|without permission|barred from (?:base|installation)|reenter(?:ed)?|returned to (?:base|installation)|ordered not to return|told not to return|refus\w+ to leave|remain\w+ after|debarred|barment', analysis.normalized_query)
+        or ('restricted area' in analysis.normalized_query and not controlled_substance_query)
+    )
 
     if analysis.ocga_code and analysis.ocga_code in code_text:
         score += 96
@@ -2954,6 +2962,11 @@ def _score_profile(profile: SearchEntryProfile, analysis: QueryAnalysis, strict_
         score -= 18 if strict_gating else 10
     if analysis.stage == 'primary' and analysis.tokens and len(token_overlap) == 0 and not phrase_hits and not concept_overlap:
         score -= 22
+    if controlled_substance_query and entry.code == '18 USC 1382' and not installation_entry_query:
+        # Keep base/gate context as background, but do not let it beat the
+        # actual described drug conduct unless entry/barment facts are present.
+        score -= 40
+        reasons.append('location context only; primary conduct is controlled substance')
 
     final_reasons = _ordered_unique(reasons)[:6]
     final_terms = _ordered_unique(matched_terms)[:10]
@@ -3083,7 +3096,12 @@ def _required_codes_for_query(analysis: QueryAnalysis, source: str) -> tuple[str
             required.append('18 USC 1028')
     if re.search(r'government property', normalized):
         required.append('18 USC 641')
-    if re.search(r'federal installation|military installation|barred from base|barred from installation|restricted area', normalized):
+    controlled_substance_query = bool(re.search(r'\bdrug\b|\bdrugs\b|\bnarcotic\b|\bmarijuana\b|\bweed\b|\bcannabis\b|\bcocaine\b|\bmeth\b|\bfentanyl\b', normalized))
+    installation_entry_query = bool(
+        re.search(r'trespass|federal installation|military installation|unauthorized entr|unlawful entr|without permission|barred from base|barred from installation|reenter(?:ed)?|returned to (?:base|installation)|ordered not to return|told not to return|refus\w+ to leave|remain\w+ after|debarred|barment', normalized)
+        or ('restricted area' in normalized and not controlled_substance_query)
+    )
+    if installation_entry_query:
         required.append('18 USC 1382')
     allowed_sources = {'GEORGIA', 'UCMJ', 'BASE_ORDER', 'FEDERAL_USC'}
     if source in allowed_sources:
@@ -3398,6 +3416,10 @@ def search_entries(query: str, source: str = 'ALL', strict_gating: bool = True) 
     military_drug_phrase = bool(re.search(r'article 112a|wrongful use|wrongful possession|introduced drugs on base|marine|service member|barracks|high on duty|drunk on duty', normalized_query))
     federal_phrase = bool(re.search(r'federal|usc|united states code|interstate|bank|wire fraud|identity theft|government property|federal facility|unauthorized computer access|counterfeit', normalized_query))
     federal_installation_phrase = bool(re.search(r'federal installation|military installation|barred from (?:base|installation)|reenter(?:ed)? (?:base|installation)|returned to (?:base|installation)|unlawful entry onto (?:military|federal).*(?:installation|property)|restricted area|debarred|barment', normalized_query))
+    federal_entry_conduct_phrase = bool(
+        re.search(r'trespass|unauthorized entr|unlawful entr|without permission|barred from (?:base|installation)|reenter(?:ed)?|returned to (?:base|installation)|ordered not to return|told not to return|refus\w+ to leave|remain\w+ after|debarred|barment', normalized_query)
+        or ('restricted area' in normalized_query and not drug_phrase)
+    )
     marijuana_possession_phrase = bool(re.search(r'possession of marijuana|marijuana possession|weed possession|cannabis possession', normalized_query))
     marijuana_term_phrase = bool(re.search(r'marijuana|weed|cannabis', normalized_query))
     retail_theft_phrase = bool(re.search(r'shoplift|steal(?:ing)?(?: [a-z]+){0,3} from (?:the )?store|store theft|retail theft|stole(?: [a-z]+){0,3} from (?:the )?store', normalized_query))
@@ -3636,6 +3658,16 @@ def search_entries(query: str, source: str = 'ALL', strict_gating: bool = True) 
         if source_boost:
             score += source_boost
             reasons.append('Source relevance adjustment')
+        if (
+            drug_phrase
+            and entry.code == '18 USC 1382'
+            and not federal_entry_conduct_phrase
+        ):
+            # A gate/base location can be relevant background, but it should not
+            # outrank the described drug conduct unless the officer describes
+            # barment, trespass, reentry, or another installation-entry offense.
+            score -= 32
+            reasons.append('Location context only; primary conduct is controlled substance')
 
         for keyword in keywords:
             if normalized_query and normalized_query == keyword:

@@ -7,7 +7,7 @@
   // ── Voice catalogue ────────────────────────────────────────────────────────
   // label, gender hint, personality description
   var VOICES = [
-    { id: 'coral',   label: 'Coral',   tag: 'Female',  desc: 'Warm & natural — recommended' },
+    { id: 'coral',   label: 'Coral',   tag: 'Female',  desc: 'Warm and natural - recommended' },
     { id: 'nova',    label: 'Nova',    tag: 'Female',  desc: 'Clear & friendly' },
     { id: 'shimmer', label: 'Shimmer', tag: 'Female',  desc: 'Expressive & bright' },
     { id: 'ash',     label: 'Ash',     tag: 'Male',    desc: 'Casual & warm' },
@@ -106,7 +106,7 @@
       // Settings panel (hidden by default)
       '<div id="ai-settings-panel" class="ai-settings-panel ai-settings-hidden">',
       '  <div class="ai-settings-title">Choose a Voice</div>',
-      '  <div id="ai-tts-status" class="ai-settings-subtitle">Checking voice engine…</div>',
+      '  <div id="ai-tts-status" class="ai-settings-subtitle">Checking voice engine...</div>',
       '  <div id="ai-voice-list" class="ai-voice-list"></div>',
       '  <div class="ai-voice-controls" aria-label="Assistant voice controls">',
       '    <button id="ai-stop-voice-btn" class="btn btn-sm btn-outline" type="button">Stop</button>',
@@ -128,7 +128,7 @@
       '  <button id="ai-mic-btn" class="ai-mic-btn" title="Click to speak" aria-label="Voice input">',
       '    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>',
       '  </button>',
-      '  <input id="ai-text-input" class="ai-text-input" type="text" placeholder="Ask anything…" autocomplete="off" />',
+      '  <input id="ai-text-input" class="ai-text-input" type="text" placeholder="Ask anything..." autocomplete="off" />',
       '  <button id="ai-send-btn" class="ai-send-btn" aria-label="Send">',
       '    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>',
       '  </button>',
@@ -224,7 +224,7 @@
     fetch('/api/assistant/speak', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: previewText, voice: voiceId }),
+      body: JSON.stringify({ text: previewText, voice: voiceId, speed: Voice.getVoiceSpeed ? Voice.getVoiceSpeed() : 'normal' }),
     })
       .then(function (r) { return r.ok ? r.blob() : Promise.reject(); })
       .then(function (blob) {
@@ -316,12 +316,12 @@
     if (isListening) {
       fab.classList.add('ai-fab-listening');
       if (dot)    dot.classList.add('ai-dot-listening');
-      if (label)  label.textContent = 'Listening…';
+      if (label)  label.textContent = 'Listening...';
       if (micBtn) micBtn.classList.add('ai-mic-active');
     } else if (isThinking) {
       fab.classList.remove('ai-fab-listening');
       if (dot)    dot.classList.remove('ai-dot-listening');
-      if (label)  label.textContent = 'Thinking…';
+      if (label)  label.textContent = 'Thinking...';
       if (micBtn) micBtn.classList.remove('ai-mic-active');
     } else {
       fab.classList.remove('ai-fab-listening');
@@ -628,7 +628,7 @@
     var el = document.getElementById('ai-tts-status');
     if (!el) return;
     if (mode === 'openai') {
-      el.textContent = '✓ OpenAI TTS active — high-quality voices';
+      el.textContent = 'OpenAI TTS active - high-quality voices';
       el.style.color = '#4ade80';
     } else if (mode === 'instant') {
       el.textContent = 'Instant browser voice active';
@@ -637,7 +637,7 @@
       el.textContent = 'Voice playback is not supported on this device/browser.';
       el.style.color = '#fbbf24';
     } else {
-      el.textContent = '⚠ Browser fallback — set OPENAI_API_KEY in Railway for real voices';
+      el.textContent = 'Browser fallback - set OPENAI_API_KEY in Railway for real voices';
       el.style.color = '#fbbf24';
     }
   }
@@ -645,22 +645,17 @@
   function speakText(text) {
     if (!text) { if (voiceMode) scheduleAutoListen(); return; }
     stopAudio();
-    setTTSStatus(Voice.isVoiceSupported && !Voice.isVoiceSupported() ? 'unsupported' : 'instant');
-    if (Voice.speakSummary) {
-      Voice.speakSummary(text, function () { if (voiceMode) scheduleAutoListen(); });
-      return;
-    }
-    browserSpeak(text, getSavedVoice(), function () { if (voiceMode) scheduleAutoListen(); });
-    return;
+    var speechText = Voice.summarizeForSpeech ? Voice.summarizeForSpeech(text) : text;
+    if (!speechText) { if (voiceMode) scheduleAutoListen(); return; }
 
     fetch('/api/assistant/speak', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: text, voice: getSavedVoice() }),
+      body: JSON.stringify({ text: speechText, voice: getSavedVoice(), speed: Voice.getVoiceSpeed ? Voice.getVoiceSpeed() : 'normal' }),
     })
       .then(function (r) {
         if (!r.ok) {
-          console.warn('[MCPD TTS] Server returned', r.status, '— falling back to browser voice');
+          console.warn('[MCPD TTS] Server returned', r.status, '- falling back to browser voice');
           setTTSStatus('browser');
           throw new Error('tts-unavailable');
         }
@@ -684,7 +679,11 @@
       })
       .catch(function () {
         setTTSStatus('browser');
-        browserSpeak(text, getSavedVoice(), function () { if (voiceMode) scheduleAutoListen(); });
+        if (Voice.speakSummary) {
+          Voice.speakSummary(text, function () { if (voiceMode) scheduleAutoListen(); });
+          return;
+        }
+        browserSpeak(speechText, getSavedVoice(), function () { if (voiceMode) scheduleAutoListen(); });
       });
   }
 

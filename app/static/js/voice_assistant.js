@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  var SPEEDS = { normal: 1.0, fast: 1.18, veryfast: 1.32 };
+  var SPEEDS = { normal: 0.92, fast: 1.05, veryfast: 1.18 };
   var STORAGE_ENABLED = 'mcpd.voice.enabled';
   var STORAGE_SPEED = 'mcpd.voice.speed';
   var queue = [];
@@ -177,6 +177,7 @@
     speakFull: speakFull,
     stopVoice: stopVoice,
     replayLastVoice: replayLastVoice,
+    summarizeForSpeech: summaryText,
     setVoiceSpeed: setVoiceSpeed,
     getVoiceSpeed: getVoiceSpeed,
     getVoiceRate: currentRate,

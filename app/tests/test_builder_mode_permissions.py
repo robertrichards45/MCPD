@@ -111,3 +111,62 @@ def test_builder_grant_requires_owner_confirmations_and_audits():
 
         db.session.delete(target)
         db.session.commit()
+
+
+def test_site_builder_creates_and_updates_requests():
+    app = create_app()
+    app.config['TESTING'] = True
+    with app.app_context():
+        owner = User.query.filter(User.username.ilike('robertrichards')).first()
+        assert owner is not None
+        owner_id = owner.id
+
+    from pathlib import Path
+    request_file = Path(app.instance_path) / 'site_builder' / 'requests.json'
+    if request_file.exists():
+        request_file.unlink()
+
+    client = app.test_client()
+    _login(client, owner_id)
+    response = client.get('/admin/site-builder')
+    html = response.get_data(as_text=True)
+    assert response.status_code == 200
+    assert 'Create Builder Request' in html
+    assert 'No builder requests yet.' in html
+
+    response = client.post(
+        '/admin/site-builder/requests',
+        data={
+            'title': 'Fix mobile More page route',
+            'request_type': 'Bug Fix',
+            'priority': 'High',
+            'area': 'Mobile More',
+            'description': 'The More page route should render professional cards and not fail.',
+            'acceptance': 'Request appears in Site Builder and can be tracked.',
+        },
+        follow_redirects=True,
+    )
+    html = response.get_data(as_text=True)
+    assert response.status_code == 200
+    assert 'Fix mobile More page route' in html
+    assert 'NEW' in html
+
+    import json
+    rows = json.loads(request_file.read_text(encoding='utf-8'))
+    assert len(rows) == 1
+    request_id = rows[0]['id']
+
+    response = client.post(
+        f'/admin/site-builder/requests/{request_id}/status',
+        data={'status': 'APPROVED'},
+        follow_redirects=True,
+    )
+    assert response.status_code == 200
+    assert 'APPROVED' in response.get_data(as_text=True)
+
+    with app.app_context():
+        assert AuditLog.query.filter_by(action='site_builder_request_create').order_by(AuditLog.id.desc()).first() is not None
+        assert AuditLog.query.filter_by(action='site_builder_request_status').order_by(AuditLog.id.desc()).first() is not None
+
+    if request_file.exists():
+        request_file.unlink()
