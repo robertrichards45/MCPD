@@ -1,21 +1,190 @@
+<style>
+  /* MCPD Mobile Dock — Option 3: Center Action Button */
+  .mobile-tab-bar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+    padding: 0 14px calc(14px + env(safe-area-inset-bottom));
+    pointer-events: none;
+  }
+
+  .mobile-tab-strip {
+    position: relative;
+    pointer-events: auto;
+    max-width: 640px;
+    min-height: 78px;
+    margin: 0 auto;
+    padding: 10px 12px 12px;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    align-items: end;
+    gap: 6px;
+    border-radius: 28px;
+    border: 1px solid rgba(148, 163, 184, 0.28);
+    background:
+      linear-gradient(180deg, rgba(17, 27, 46, 0.94), rgba(8, 17, 31, 0.98));
+    box-shadow:
+      0 18px 45px rgba(2, 6, 23, 0.48),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+  }
+
+  .mobile-tab {
+    min-width: 0;
+    min-height: 56px;
+    border-radius: 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    color: rgba(226, 232, 240, 0.72);
+    text-decoration: none;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    transition: transform 0.16s ease, color 0.16s ease, background 0.16s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobile-tab svg {
+    width: 25px;
+    height: 25px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.25;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .mobile-tab:hover,
+  .mobile-tab:focus-visible {
+    color: #ffffff;
+    background: rgba(96, 165, 250, 0.12);
+    outline: none;
+  }
+
+  .mobile-tab.is-active:not(.mobile-tab-primary) {
+    color: #60a5fa;
+    background: rgba(37, 99, 235, 0.16);
+  }
+
+  .mobile-tab-primary {
+    position: relative;
+    min-height: 82px;
+    margin-top: -34px;
+    justify-content: flex-start;
+    gap: 6px;
+    color: #ffffff;
+  }
+
+  .mobile-tab-primary .mobile-tab-fab {
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(180deg, #3b82f6 0%, #155bd4 100%);
+    border: 1px solid rgba(147, 197, 253, 0.55);
+    box-shadow:
+      0 16px 30px rgba(37, 99, 235, 0.48),
+      inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  }
+
+  .mobile-tab-primary svg {
+    width: 34px;
+    height: 34px;
+    stroke-width: 2.8;
+  }
+
+  .mobile-tab-primary .mobile-tab-label {
+    color: #dbeafe;
+    font-size: 11px;
+    line-height: 1;
+    text-shadow: 0 1px 8px rgba(37, 99, 235, 0.35);
+  }
+
+  .mobile-tab-primary.is-active .mobile-tab-fab,
+  .mobile-tab-primary:hover .mobile-tab-fab,
+  .mobile-tab-primary:focus-visible .mobile-tab-fab {
+    background: linear-gradient(180deg, #60a5fa 0%, #1d4ed8 100%);
+    transform: translateY(-1px);
+  }
+
+  .mobile-tab-primary:hover,
+  .mobile-tab-primary:focus-visible {
+    background: transparent;
+  }
+
+  body[data-theme="light"] .mobile-tab-strip {
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(241, 245, 249, 0.98));
+    border-color: rgba(15, 23, 42, 0.12);
+    box-shadow:
+      0 16px 38px rgba(15, 23, 42, 0.20),
+      inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  }
+
+  body[data-theme="light"] .mobile-tab {
+    color: rgba(15, 23, 42, 0.62);
+  }
+
+  body[data-theme="light"] .mobile-tab.is-active:not(.mobile-tab-primary) {
+    color: #155bd4;
+    background: rgba(37, 99, 235, 0.10);
+  }
+
+  @media (max-width: 390px) {
+    .mobile-tab-bar {
+      padding-left: 8px;
+      padding-right: 8px;
+    }
+
+    .mobile-tab-strip {
+      gap: 2px;
+      padding-left: 8px;
+      padding-right: 8px;
+      border-radius: 24px;
+    }
+
+    .mobile-tab-label {
+      font-size: 10px;
+    }
+
+    .mobile-tab-primary .mobile-tab-fab {
+      width: 62px;
+      height: 62px;
+    }
+  }
+</style>
+
 <nav class="mobile-tab-bar" aria-label="Mobile navigation">
   <div class="mobile-tab-strip">
     <a class="mobile-tab {% if mobile_active_tab == 'home' %}is-active{% endif %}" href="{{ url_for('mobile.home') }}">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.5 12 5l8 6.5V20h-5v-5H9v5H4z"/></svg>
       <span class="mobile-tab-label">Home</span>
     </a>
-    <a class="mobile-tab {% if mobile_active_tab == 'incident' %}is-active{% endif %}" href="{{ url_for('mobile.incident_start') }}">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-      <span class="mobile-tab-label">New</span>
-    </a>
+
     <a class="mobile-tab {% if mobile_active_tab == 'reference' %}is-active{% endif %}" href="{{ url_for('reference.quick_reference') }}">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12v16H6z"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>
       <span class="mobile-tab-label">Reference</span>
     </a>
+
+    <a class="mobile-tab mobile-tab-primary {% if mobile_active_tab == 'incident' %}is-active{% endif %}" href="{{ url_for('mobile.incident_start') }}" aria-label="Start a new report">
+      <span class="mobile-tab-fab">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+      </span>
+      <span class="mobile-tab-label">New Report</span>
+    </a>
+
     <a class="mobile-tab {% if mobile_active_tab == 'saved' %}is-active{% endif %}" href="{{ url_for('forms.saved_forms') }}">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12v17l-6-3-6 3V4Z"/></svg>
       <span class="mobile-tab-label">Saved</span>
     </a>
+
     <a class="mobile-tab {% if mobile_active_tab == 'more' %}is-active{% endif %}" href="{{ url_for('mobile.more') }}">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h.01M12 12h.01M19 12h.01"/></svg>
       <span class="mobile-tab-label">More</span>
