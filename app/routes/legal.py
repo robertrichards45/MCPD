@@ -1044,22 +1044,57 @@ def _filter_results_for_display(query: str, source: str, results: list[LegalMatc
         return results
 
     code_lookup_like = _is_code_lookup_query(query)
+    statement_query = bool(query and not code_lookup_like and len([word for word in re.findall(r'\b\w+\b', query.lower()) if len(word) > 2]) >= 4)
     signal_reasons = {
         'Exact code match',
         'Code number match',
         'Article number match',
         'Exact title match',
-        'Exact keyword match',
-        'Keyword phrase match',
+        'matched exact citation',
+        'matched citation',
+        'matched citation prefix',
+        'matched article number',
+        'matched exact title',
+        'matched title-led query',
+        'reviewed full statute/order text',
+        'matched official text',
+        'matched body phrase',
+        'matched summary',
+        'matched elements',
+        'matched context',
+        'matched context clues',
+        'matched conduct',
+        'matched broad scenario details',
+        'matched offense context',
+        'matched likely core reference path',
         'Intent phrase match',
         'Intent alignment match',
     }
+
+    def _whole_statement_aligned(item: LegalMatch) -> bool:
+        if not statement_query:
+            return True
+        reasons = tuple(item.reasons or ())
+        if 'keyword-only weak match' in reasons or 'insufficient whole-statement alignment' in reasons:
+            return False
+        return (
+            code_lookup_like
+            or item.confidence >= 82
+            or any(
+                reason in signal_reasons
+                or str(reason).startswith('matched concept:')
+                or str(reason).startswith('matched phrase:')
+                for reason in reasons
+            )
+        )
+
     confident = [
         item for item in results
         if item.certainty_bucket in {'strong', 'probable'}
+        and _whole_statement_aligned(item)
         and (
             code_lookup_like
-            or len(item.matched_terms) >= 1
+            or (len(item.matched_terms) >= 1 and not statement_query)
             or item.confidence >= 82
             or any(reason in signal_reasons for reason in item.reasons)
         )
@@ -1071,9 +1106,10 @@ def _filter_results_for_display(query: str, source: str, results: list[LegalMatc
     narrowed = [
         item for item in results
         if item.confidence >= floor
+        and _whole_statement_aligned(item)
         and (
             code_lookup_like
-            or len(item.matched_terms) >= 1
+            or (len(item.matched_terms) >= 1 and not statement_query)
             or item.confidence >= 78
             or any(reason in signal_reasons for reason in item.reasons)
         )
@@ -1102,20 +1138,10 @@ def _render_legal_lookup(default_source='ALL'):
     ai_hints = {'terms': [], 'query_variants': [], 'related_policy_terms': [], 'source_hint': source, 'officer_brief': ''}
     ai_interpretation_note = ''
 
-    # --- Baseline keyword search ---
-    # For queries of ≥3 words that contain pure location/setting words (roadway,
-    # sidewalk, etc.), strip those words before the keyword pass so the engine
-    # matches on the actual offense terms, not the physical location described.
+    # --- Whole-statement retrieval ---
+    # The full officer statement stays intact so conduct, location, source
+    # context, and exclusions are ranked together before results are shown.
     search_query = query
-    if (
-        query
-        and not deterministic_lookup
-        and not code_lookup_like
-        and len(query.split()) >= 3
-    ):
-        stripped = _strip_location_context_words(query)
-        if stripped and len(stripped.split()) >= 2 and stripped.lower() != query.lower():
-            search_query = stripped
 
     raw_results = _search_entries_for_scope(search_query, source, state)
 
@@ -1265,7 +1291,7 @@ def _render_legal_lookup(default_source='ALL'):
             page_title=page_title,
             page_subtitle=page_subtitle,
             example_terms=example_terms,
-            search_tip='Search by code number, article number, title, offense phrase, or plain-language incident narrative.',
+            search_tip='Describe the full incident in plain language. The system reads the whole statement before ranking laws.',
             corpus_status=corpus_status(),
             ai_terms=ai_hints.get('terms', ()),
             ai_query_variants=ai_hints.get('query_variants', ()),

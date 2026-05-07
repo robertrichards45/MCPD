@@ -2427,6 +2427,7 @@ CONCEPT_TERMS = {
     'property_crime': ('theft', 'stole', 'stolen', 'shoplifting', 'burglary', 'robbery', 'larceny', 'property'),
     'violent_contact': ('assault', 'battery', 'pushed', 'slapped', 'grabbed', 'hit', 'struck', 'fight', 'fighting'),
     'military_status': ('marine', 'service member', 'barracks', 'on duty', 'military', 'ucmj'),
+    'public_sanitation': ('public defecation', 'defecating in public', 'pooping in public', 'pooping in the street', 'feces', 'urinating in public', 'public indecency', 'public nuisance'),
 }
 
 
@@ -2445,6 +2446,7 @@ CONCEPT_EXPANSIONS = {
     'property_crime': ('theft offense', 'stolen property', 'shoplifting', 'burglary'),
     'violent_contact': ('assault', 'battery', 'offensive contact', 'physical altercation'),
     'military_status': ('service member misconduct', 'military offense', 'barracks incident'),
+    'public_sanitation': ('disorderly conduct', 'public indecency', 'public nuisance', 'sanitation offense'),
 }
 
 
@@ -2799,6 +2801,7 @@ def _score_profile(profile: SearchEntryProfile, analysis: QueryAnalysis, strict_
     normalized_triggers = tuple(_normalize(item) for item in entry.narrative_triggers if item)
     exact_keyword_match = any(analysis.normalized_query == item for item in normalized_keywords)
     exact_alias_match = any(analysis.normalized_query == item for item in normalized_aliases + normalized_synonyms + normalized_triggers)
+    statement_query = len([token for token in analysis.tokens if token not in STOPWORDS]) >= 4 or len(analysis.normalized_query.split()) >= 6
     title_led_query = bool(
         analysis.normalized_query
         and title_text
@@ -2821,6 +2824,11 @@ def _score_profile(profile: SearchEntryProfile, analysis: QueryAnalysis, strict_
     )
     property_damage_query = bool(re.search(r'damag|destroy|destruction|vandal|graffiti|break|broke|smash', analysis.normalized_query))
     lawful_order_query = bool(re.search(r'lawful order|lawful command|direct order|disobey|refus\w+ command|article 92|regulation', analysis.normalized_query))
+    if _statement_negates(analysis.normalized_query, r'barred|barment|debarred|ordered|warned|warning|return|reenter|trespass'):
+        installation_entry_query = False
+    if _statement_negates(analysis.normalized_query, r'damage|damaged|damaging|destroy|destruction|vandal|graffiti|broke|broken|smash|smashed'):
+        property_damage_query = False
+    negated_theft_query = _statement_negates(analysis.normalized_query, r'shoplifting|theft|steal|stole|stolen|larceny|take|took|property')
 
     if analysis.ocga_code and analysis.ocga_code in code_text:
         score += 96
@@ -2844,10 +2852,10 @@ def _score_profile(profile: SearchEntryProfile, analysis: QueryAnalysis, strict_
         score += 46
         reasons.append('matched title-led query')
     if exact_keyword_match:
-        score += 84
+        score += 22 if statement_query else 84
         reasons.append('matched exact keyword')
     if exact_alias_match:
-        score += 52
+        score += 24 if statement_query else 52
         reasons.append('matched exact alias')
 
     full_text_score, full_text_reasons, full_text_terms, full_text_coverage = _full_document_relevance(profile, analysis)
@@ -2870,6 +2878,8 @@ def _score_profile(profile: SearchEntryProfile, analysis: QueryAnalysis, strict_
         overlap = set(analysis.tokens) & set(field_tokens)
         if overlap:
             field_weight = SEARCH_FIELD_WEIGHTS.get(field_name, 8)
+            if statement_query and field_name in {'keywords', 'aliases', 'synonyms', 'narrative_triggers'}:
+                field_weight = max(3, int(field_weight * 0.35))
             score += len(overlap) * field_weight
             matched_terms.extend(sorted(overlap))
             if field_name in {'keywords', 'aliases', 'narrative_triggers'}:
@@ -2959,17 +2969,39 @@ def _score_profile(profile: SearchEntryProfile, analysis: QueryAnalysis, strict_
     if 'matched exact title' in reasons:
         score += 44
     if 'matched exact keyword' in reasons:
-        score += 38
+        score += 8 if statement_query else 38
     if 'matched exact alias' in reasons:
-        score += 20
+        score += 6 if statement_query else 20
     if 'matched title-led query' in reasons:
-        score += 24
+        score += 60
 
     weak_overlap = len(token_overlap) + len(phrase_hits) + len(concept_overlap)
     if weak_overlap <= 1 and best_similarity < 0.58 and not source_overlap:
         score -= 18 if strict_gating else 10
     if analysis.stage == 'primary' and analysis.tokens and len(token_overlap) == 0 and not phrase_hits and not concept_overlap:
         score -= 22
+    semantic_signals = (
+        bool(full_text_reasons)
+        or bool(phrase_hits)
+        or bool(concept_overlap)
+        or bool(intent_overlap)
+        or bool(context_overlap)
+        or bool(conduct_overlap)
+        or full_text_coverage >= 0.22
+        or 'matched exact title' in reasons
+        or 'matched title-led query' in reasons
+        or bool(analysis.ocga_code or analysis.ocga_prefix or analysis.article_number)
+    )
+    if statement_query and not semantic_signals:
+        if exact_keyword_match or exact_alias_match or 'matched scenario triggers' in reasons:
+            score -= 72 if strict_gating else 48
+            reasons.append('keyword-only weak match')
+        else:
+            score -= 34 if strict_gating else 20
+            reasons.append('insufficient whole-statement alignment')
+    elif statement_query and full_text_coverage < 0.16 and (exact_keyword_match or exact_alias_match) and not (concept_overlap or intent_overlap or context_overlap or conduct_overlap):
+        score -= 28
+        reasons.append('keyword-only weak match')
     if controlled_substance_query and entry.code == '18 USC 1382' and not installation_entry_query:
         # Keep base/gate context as background, but do not let it beat the
         # actual described drug conduct unless entry/barment facts are present.
@@ -2982,6 +3014,9 @@ def _score_profile(profile: SearchEntryProfile, analysis: QueryAnalysis, strict_
         if entry.code == '18 USC 1361' and not property_damage_query:
             score -= 72
             reasons.append('suppressed property-damage path; no damage facts described')
+        if entry.code in {'OCGA 16-8-14', 'OCGA 16-8-2', 'OCGA 16-8-7', '18 USC 641', '18 USC 1708', 'Article 121'} and negated_theft_query:
+            score -= 110
+            reasons.append('suppressed theft path; statement negates theft/shoplifting facts')
         if entry.code == 'Article 92' and not lawful_order_query:
             score -= 64
             reasons.append('suppressed order/regulation path; no order facts described')
@@ -3108,7 +3143,7 @@ def _required_codes_for_query(analysis: QueryAnalysis, source: str) -> tuple[str
         required.extend(['Article 112', 'Article 112a'])
     if re.search(r'homeowner|home owner|vehicle was taken|car stolen|vehicle stolen|taken overnight', normalized):
         required.append('OCGA 16-8-2')
-    if re.search(r'shoplifting|shoplift|retail theft|merchandise from store|from px', normalized):
+    if re.search(r'shoplifting|shoplift|retail theft|merchandise from store|from px', normalized) and not _statement_negates(normalized, r'shoplifting|shoplift|retail|theft|steal|stole|stolen|merchandise|property'):
         required.extend(['OCGA 16-8-14', 'OCGA 16-8-2'])
     if re.search(r'\bpushed\b|\bslapped\b|\bgrabbed\b|\bshoved\b|\bhit\b', normalized):
         required.extend(['OCGA 16-5-23', 'OCGA 16-5-20'])
@@ -3119,13 +3154,15 @@ def _required_codes_for_query(analysis: QueryAnalysis, source: str) -> tuple[str
     if re.search(r'false name|fake id|false identification|identity theft|stolen ids?', normalized):
         if 'identity theft' in normalized or 'stolen id' in normalized or 'fake id' in normalized:
             required.append('18 USC 1028')
-    if re.search(r'government property', normalized):
+    if re.search(r'government property', normalized) and not _statement_negates(normalized, r'government|property|steal|stole|stolen|damage|damaged'):
         required.append('18 USC 641')
     controlled_substance_query = bool(re.search(r'\bdrug\b|\bdrugs\b|\bnarcotic\b|\bmarijuana\b|\bweed\b|\bcannabis\b|\bcocaine\b|\bmeth\b|\bfentanyl\b', normalized))
     installation_entry_query = bool(
         re.search(r'trespass|federal installation|military installation|unauthorized entr|unlawful entr|without permission|barred from base|barred from installation|reenter(?:ed)?|returned to (?:base|installation)|ordered not to return|told not to return|refus\w+ to leave|remain\w+ after|debarred|barment', normalized)
         or ('restricted area' in normalized and not controlled_substance_query)
     )
+    if _statement_negates(normalized, r'barred|barment|debarred|ordered|warned|warning|return|reenter|trespass'):
+        installation_entry_query = False
     if installation_entry_query:
         required.append('18 USC 1382')
     allowed_sources = {'GEORGIA', 'UCMJ', 'BASE_ORDER', 'FEDERAL_USC'}
@@ -3144,27 +3181,48 @@ def _forbidden_codes_for_query(analysis: QueryAnalysis) -> tuple[str, ...]:
         forbidden.append('OCGA 16-13-37')
     public_sanitation_query = bool(re.search(r'public defecation|defecat\w+|poop\w+|feces|urinat\w+|peeing|public indecency|indecent exposure|lewd conduct', normalized))
     if public_sanitation_query:
-        if not re.search(r'damag|destroy|destruction|vandal|graffiti|break|broke|smash', normalized):
+        damage_negated = _statement_negates(normalized, r'damage|damaged|damaging|destroy|destruction|vandal|graffiti|broke|broken|smash|smashed')
+        if not re.search(r'damag|destroy|destruction|vandal|graffiti|break|broke|smash', normalized) or damage_negated:
             forbidden.append('18 USC 1361')
+        if damage_negated:
+            forbidden.extend(['Article 108', 'OCGA 16-7-1', 'OCGA 40-6-271'])
         if not re.search(r'steal|stole|stolen|theft|larceny|take|took|government property', normalized):
             forbidden.append('18 USC 641')
+        if _statement_negates(normalized, r'shoplifting|theft|steal|stole|stolen|larceny|take|took|property'):
+            forbidden.extend(['OCGA 16-8-14', 'OCGA 16-8-2', 'OCGA 16-8-7', '18 USC 641', '18 USC 1708', 'Article 121'])
         if not re.search(r'lawful order|lawful command|direct order|disobey|refus\w+ command|article 92|regulation|ordered not to', normalized):
             forbidden.append('Article 92')
-        if not re.search(r'trespass|unauthorized entr|unlawful entr|barred|debarred|barment|returned to base|told not to return|ordered not to return|refus\w+ to leave|remain\w+ after', normalized):
+        if not re.search(r'trespass|unauthorized entr|unlawful entr|barred|debarred|barment|returned to base|told not to return|ordered not to return|refus\w+ to leave|remain\w+ after', normalized) or _statement_negates(normalized, r'barred|barment|debarred|ordered|warned|warning|return|reenter|trespass'):
             forbidden.append('18 USC 1382')
         if not re.search(r'drug|drugs|narcotic|marijuana|weed|cannabis|cocaine|meth|fentanyl', normalized):
             forbidden.append('OCGA 16-13-30.2')
+        if not re.search(r'vehicle|traffic|driv|driver|car|truck|crash|collision|parking|speed|seat belt|cell phone|texting', normalized):
+            forbidden.extend(['MCLBAO 5560.9G CH3-11', 'MCLBAO 5560.9G CH6', 'MCLBAO 5560.9G CH3-16/17'])
     return _ordered_unique(forbidden)
 
 
 def _apply_result_overlays(results: list[LegalMatch], analysis: QueryAnalysis, source: str) -> list[LegalMatch]:
     if not results:
         results = []
+    public_sanitation_query = bool(
+        re.search(
+            r'public defecation|defecat\w+|poop\w+|feces|urinat\w+|peeing|public indecency|indecent exposure|lewd conduct',
+            analysis.normalized_query,
+        )
+    )
     forbidden = set(_forbidden_codes_for_query(analysis))
     if forbidden:
         results = [item for item in results if item.entry.code not in forbidden]
     required_codes = _required_codes_for_query(analysis, source)
     if not required_codes:
+        if public_sanitation_query:
+            focused = [
+                item for item in results
+                if item.entry.code in {'OCGA 16-11-39', 'OCGA 16-6-8'}
+                or re.search(r'disorderly|indecenc|indecent|nuisance|sanitation|lewd', f'{item.entry.title} {item.entry.summary}', re.I)
+            ]
+            if focused:
+                return focused
         return results
     by_code = {item.entry.code: item for item in results}
     pool = {entry.code: entry for entry in get_entries(source)}
@@ -3187,7 +3245,16 @@ def _apply_result_overlays(results: list[LegalMatch], analysis: QueryAnalysis, s
             score=max(56, seed - min(index * 4, 16)),
             reasons=('matched likely core reference path',),
         )
-    return sorted(by_code.values(), key=_legal_match_sort_key)
+    merged = sorted(by_code.values(), key=_legal_match_sort_key)
+    if public_sanitation_query:
+        focused = [
+            item for item in merged
+            if item.entry.code in {'OCGA 16-11-39', 'OCGA 16-6-8'}
+            or re.search(r'disorderly|indecenc|indecent|nuisance|sanitation|lewd', f'{item.entry.title} {item.entry.summary}', re.I)
+        ]
+        if focused:
+            return focused
+    return merged
 
 
 def _expand_terms(terms: list[str]) -> list[str]:
@@ -3356,6 +3423,67 @@ def _certainty_bucket(confidence: int) -> str:
     return 'possible'
 
 
+def _is_statement_query_text(query: str) -> bool:
+    tokens = [token for token in _tokenize(_normalize(query)) if token not in STOPWORDS]
+    return len(tokens) >= 4 or len(str(query or '').split()) >= 6
+
+
+def _statement_negates(normalized_query: str, pattern: str) -> bool:
+    """Return True when the officer's full statement expressly excludes a fact."""
+    text = _normalize(normalized_query)
+    negation = r'(?:no|not|none|never|without|nobody|noone|no one|did not|does not|was not|were not|is not|isnt|wasnt|werent)'
+    return bool(
+        re.search(rf'\b{negation}\b(?:\s+\w+){{0,5}}\s+(?:{pattern})\b', text)
+        or re.search(rf'\b(?:{pattern})\b(?:\s+\w+){{0,4}}\s+\b{negation}\b', text)
+    )
+
+
+def _has_whole_statement_reason(reasons: tuple[str, ...]) -> bool:
+    semantic_markers = (
+        'reviewed full statute/order text',
+        'matched official text',
+        'matched body phrase',
+        'matched summary',
+        'matched elements',
+        'matched context',
+        'matched context clues',
+        'matched conduct',
+        'matched broad scenario details',
+        'matched concept:',
+        'matched offense context',
+        'matched phrase:',
+        'matched similar scenario wording',
+        'matched likely core reference path',
+        'required result',
+    )
+    return any(any(str(reason).startswith(marker) for marker in semantic_markers) for reason in reasons)
+
+
+def _is_keyword_only_result(query: str, item: LegalMatch) -> bool:
+    if not _is_statement_query_text(query):
+        return False
+    reasons = tuple(item.reasons or ())
+    if _has_whole_statement_reason(reasons):
+        return False
+    allowed_direct = {
+        'matched exact citation',
+        'matched citation',
+        'matched citation prefix',
+        'matched article number',
+        'matched exact title',
+        'matched title-led query',
+    }
+    if any(reason in allowed_direct for reason in reasons):
+        return False
+    keyword_markers = (
+        'matched exact keyword',
+        'matched scenario triggers',
+        'keyword-only weak match',
+        'matched exact alias',
+    )
+    return any(reason in keyword_markers for reason in reasons)
+
+
 def _result_warning(entry: LegalEntry, confidence: int) -> str:
     warnings: list[str] = []
     if confidence < 45:
@@ -3398,7 +3526,11 @@ def _finalize_results(query: str, raw_results: list[LegalMatch]) -> list[LegalMa
         entry_terms = set(_tokenize(_normalize(entry_text)))
         matched_terms = tuple(sorted(query_terms & entry_terms))[:10]
         confidence = _confidence_from_score(item.score, top_score)
+        if _is_keyword_only_result(query, item):
+            confidence = min(confidence, 48)
         warning = _result_warning(item.entry, confidence)
+        if _is_keyword_only_result(query, item):
+            warning = ('Keyword-only result suppressed from strong ranking. Read the full facts and verify. ' + warning).strip()
         finalized.append(
             LegalMatch(
                 entry=item.entry,
@@ -4363,8 +4495,24 @@ def search_entries(query: str, source: str = 'ALL', strict_gating: bool = True) 
         or 'matched citation' in item.reasons
         or 'matched article number' in item.reasons
     ]
+    statement_query = _is_statement_query_text(query)
+    if statement_query:
+        semantic_filtered = [
+            item for item in filtered
+            if not _is_keyword_only_result(query, item)
+            and 'insufficient whole-statement alignment' not in item.reasons
+        ]
+        if semantic_filtered:
+            filtered = semantic_filtered
+        else:
+            filtered = []
     if not filtered:
-        filtered = [item for item in merged[:6] if item.score >= 38]
+        filtered = [
+            item for item in merged[:6]
+            if item.score >= 38
+            and (not statement_query or not _is_keyword_only_result(query, item))
+            and (not statement_query or 'insufficient whole-statement alignment' not in item.reasons)
+        ]
 
     finalized = _finalize_results(query, filtered[:18])
     if not finalized:

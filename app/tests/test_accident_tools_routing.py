@@ -65,6 +65,10 @@ def test_officer_diagram_and_reconstruction_pages_are_not_the_same():
         officer_html = officer_response.get_data(as_text=True)
         assert officer_response.status_code == 200
         assert "Officer Accident Diagram" in officer_html
+        assert "Accident Information" in officer_html
+        assert "Direction of Travel" in officer_html
+        assert "data-accident-field=\"location\"" in officer_html
+        assert "data-selected-field=\"directionOfTravel\"" in officer_html
         assert "Vehicle Dynamics" not in officer_html
         assert "Generate Report" not in officer_html
 
@@ -75,6 +79,59 @@ def test_officer_diagram_and_reconstruction_pages_are_not_the_same():
         assert "Vehicle Dynamics" in reconstruction_html
         assert "Measurements" in reconstruction_html
         assert officer_html != reconstruction_html
+    finally:
+        _dispose(client)
+
+
+def test_officer_diagram_saves_accident_details_and_vehicle_direction():
+    client = _client_for_role()
+    try:
+        response = client.get("/reports/accidents/officer-diagram/new", follow_redirects=False)
+        assert response.status_code in {302, 303}
+        diagram_id = int(response.headers["Location"].rstrip("/").split("/")[-1])
+
+        save_response = client.post(
+            f"/reports/accidents/officer-diagram/{diagram_id}",
+            json={
+                "accidentDetails": {
+                    "incidentNumber": "CAD-123",
+                    "location": "Main Gate / Access Road",
+                    "weather": "Rain",
+                    "roadSurface": "Wet",
+                    "summary": "V1 traveled eastbound and struck V2 near the gate.",
+                },
+                "vehicles": [],
+                "objects": [],
+                "canvasItems": [
+                    {
+                        "clientId": "v1",
+                        "kind": "vehicle",
+                        "assetType": "sedan",
+                        "label": "V1",
+                        "directionOfTravel": "Eastbound",
+                        "preCrashSpeed": "25",
+                        "impactSpeed": "15",
+                        "damageNotes": "Front-end damage",
+                        "x": 300,
+                        "y": 250,
+                        "rotation": 0,
+                    }
+                ],
+                "measurements": [],
+                "units": "ft",
+            },
+        )
+        assert save_response.status_code == 200
+        assert save_response.get_json()["ok"] is True
+
+        with client.application.app_context():
+            row = db.session.get(AccidentReconstruction, diagram_id)
+            assert row.incident_number == "CAD-123"
+            assert row.location == "Main Gate / Access Road"
+            assert row.weather == "Rain"
+            assert row.road_surface == "Wet"
+            assert "eastbound" in row.diagram_data_json.lower()
+            assert "front-end damage" in row.diagram_data_json.lower()
     finally:
         _dispose(client)
 

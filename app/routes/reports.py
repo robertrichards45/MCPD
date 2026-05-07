@@ -128,6 +128,17 @@ def _require_advanced_reconstruction_access():
 
 def _save_reconstruction_diagram_payload(row, payload):
     row.diagram_data_json = json.dumps(payload)
+    accident_details = payload.get('accidentDetails') if isinstance(payload.get('accidentDetails'), dict) else {}
+    if accident_details:
+        row.incident_number = str(accident_details.get('incidentNumber') or row.incident_number or '').strip() or None
+        row.title = str(accident_details.get('title') or row.title or '').strip() or row.title
+        row.location = str(accident_details.get('location') or row.location or '').strip() or None
+        row.weather = str(accident_details.get('weather') or row.weather or '').strip() or None
+        row.road_surface = str(accident_details.get('roadSurface') or row.road_surface or '').strip() or None
+        row.notes = str(accident_details.get('summary') or row.notes or '').strip() or None
+        parsed_date = _parse_datetime_local(accident_details.get('dateTime'))
+        if parsed_date:
+            row.date_time = parsed_date
     row.updated_at = _utcnow_naive()
 
     for item in payload.get('vehicles', []):
@@ -138,6 +149,12 @@ def _save_reconstruction_diagram_payload(row, payload):
             vehicle.y_position = _float_or_none(item.get('y')) or vehicle.y_position
             vehicle.rotation = _float_or_none(item.get('rotation')) or 0
             vehicle.label = str(item.get('label') or vehicle.label or '').strip() or vehicle.label
+            vehicle.direction = str(item.get('directionOfTravel') or item.get('direction') or vehicle.direction or '').strip() or vehicle.direction
+            vehicle.pre_crash_speed = _float_or_none(item.get('preCrashSpeed')) or vehicle.pre_crash_speed
+            vehicle.impact_speed = _float_or_none(item.get('impactSpeed')) or vehicle.impact_speed
+            vehicle.post_crash_speed = _float_or_none(item.get('postCrashSpeed')) or vehicle.post_crash_speed
+            vehicle.damage_notes = str(item.get('damageNotes') or vehicle.damage_notes or '').strip() or vehicle.damage_notes
+            vehicle.notes = str(item.get('notes') or vehicle.notes or '').strip() or vehicle.notes
 
     for item in payload.get('objects', []):
         object_id = item.get('id')

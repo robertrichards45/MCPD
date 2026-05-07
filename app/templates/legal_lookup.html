@@ -12,7 +12,7 @@
       <div class="search-hero-copy">
         <div class="eyebrow">{{ page_title }}</div>
         <h1>{{ page_subtitle }}</h1>
-        <p>Pick the state, describe what happened, and review state, federal, UCMJ, and local order paths from one screen.</p>
+        <p>Describe the whole incident in plain language. Law Lookup reads the statement before ranking state, federal, UCMJ, and local order paths.</p>
       </div>
       <div class="search-hero-meta authority-hero-meta">
         <div class="hero-chip">
@@ -34,8 +34,8 @@
       <form method="get" action="{{ url_for('legal.legal_lookup') }}">
         <div class="row g-2 align-items-end">
           <div class="col-lg-5">
-            <label class="form-label text-dark">Search</label>
-            <input class="form-control" type="text" name="q" value="{{ query }}" placeholder="Example: trespassing on a federal installation" />
+            <label class="form-label text-dark">Incident Statement</label>
+            <textarea class="form-control legal-statement-search" name="q" rows="3" placeholder="Describe the full incident: who did what, where it happened, warnings/orders, property, weapons, injury, vehicle, or base context.">{{ query }}</textarea>
           </div>
           <div class="col-lg-3 col-md-6">
             <label class="form-label text-dark">State</label>

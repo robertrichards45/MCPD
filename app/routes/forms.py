@@ -5,6 +5,7 @@ import os
 import re
 import secrets
 import smtplib
+import textwrap
 import time
 import copy
 from datetime import datetime, timezone
@@ -818,6 +819,66 @@ def _normalize_payload(payload, schema):
     return baseline
 
 
+def _statement_line_fields(schema):
+    rows = []
+    for section in schema.get('sections', []):
+        for field in section.get('fields', []):
+            name = str(field.get('name') or '').strip()
+            label = str(field.get('label') or '').strip()
+            haystack = f'{name} {label}'.lower()
+            if 'statement' not in haystack:
+                continue
+            match = re.search(r'\bline\D*(\d{1,2})\b', haystack)
+            if not match:
+                continue
+            rows.append({
+                'name': name,
+                'label': label or _humanize_field_name(name),
+                'line': int(match.group(1)),
+                'required': bool(field.get('required')),
+            })
+    rows.sort(key=lambda item: (item['line'], item['name']))
+    return rows
+
+
+def _statement_full_text(values, statement_fields):
+    parts = []
+    for item in statement_fields:
+        value = str(values.get(item['name']) or '').strip()
+        if value:
+            parts.append(value)
+    return ' '.join(parts).strip()
+
+
+def _split_statement_text(statement_text, max_lines, width=78):
+    text = ' '.join(str(statement_text or '').replace('\r', '\n').split())
+    if not text or max_lines <= 0:
+        return []
+    wrapped = textwrap.wrap(text, width=width, break_long_words=False, break_on_hyphens=False)
+    if not wrapped:
+        return [text[:width]]
+    if len(wrapped) <= max_lines:
+        return wrapped
+    lines = wrapped[:max_lines]
+    remaining = ' '.join(wrapped[max_lines - 1:])
+    lines[-1] = remaining
+    return lines
+
+
+def _statement_compact_context(schema, payload):
+    statement_fields = _statement_line_fields(schema)
+    if len(statement_fields) < 2:
+        return None
+    values = payload.get('values') if isinstance(payload, dict) and isinstance(payload.get('values'), dict) else {}
+    return {
+        'field_names': [item['name'] for item in statement_fields],
+        'first_field': statement_fields[0]['name'],
+        'line_count': len(statement_fields),
+        'required': any(item.get('required') for item in statement_fields),
+        'text': _statement_full_text(values, statement_fields),
+    }
+
+
 def _parse_submission_payload(schema):
     payload = _empty_payload(schema)
     for section in schema.get('sections', []):
@@ -827,6 +888,11 @@ def _parse_submission_payload(schema):
                 payload['values'][field_name] = 'Yes' if request.form.get(f"field_{field_name}") else ''
             else:
                 payload['values'][field_name] = (request.form.get(f"field_{field_name}") or '').strip()
+    statement_fields = _statement_line_fields(schema)
+    if statement_fields and 'statement_full' in request.form:
+        lines = _split_statement_text(request.form.get('statement_full'), len(statement_fields))
+        for idx, item in enumerate(statement_fields):
+            payload['values'][item['name']] = lines[idx] if idx < len(lines) else ''
     if schema.get('show_role_entry'):
         role_values = request.form.getlist('role_entry_role')
         name_values = request.form.getlist('role_entry_name')
@@ -1042,6 +1108,8 @@ def _scan_supported(schema):
 
 def _allowed_submission_keys(schema):
     allowed = {'action', 'saved_title', 'scan_payload', 'scan_replace_existing'}
+    if _statement_line_fields(schema):
+        allowed.add('statement_full')
     for section in schema.get('sections', []):
         for field in section.get('fields', []):
             name = str(field.get('name') or '').strip()
@@ -2461,6 +2529,7 @@ def fill_form(form_id):
                 fill_state=fill_state,
                 scan_supported=_scan_supported(schema),
                 scan_result=scan_result,
+                statement_compact=_statement_compact_context(schema, payload),
             )
         if not fill_state['is_ready']:
             flash(fill_state['fallback_message'], 'error')
@@ -2499,6 +2568,7 @@ def fill_form(form_id):
                 scan_supported=False,
                 scan_result=None,
                 validation_summary=validation,
+                statement_compact=_statement_compact_context(schema, payload),
             )
 
         if action == 'save_completed':
@@ -2517,6 +2587,7 @@ def fill_form(form_id):
                     scan_supported=False,
                     scan_result=None,
                     validation_summary=validation,
+                    statement_compact=_statement_compact_context(schema, payload),
                 )
 
         target = saved_record
@@ -2558,6 +2629,7 @@ def fill_form(form_id):
         scan_supported=_scan_supported(schema),
         scan_result=scan_result,
         validation_summary=None,
+        statement_compact=_statement_compact_context(schema, payload),
     )
 
 

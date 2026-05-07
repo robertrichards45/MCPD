@@ -82,6 +82,31 @@ def test_public_defecation_query_prioritizes_conduct_over_base_or_federal_contex
     assert 'Article 92' not in codes
 
 
+def test_law_lookup_reads_whole_statement_before_ranking_keyword_paths():
+    results = search_entries(
+        'Subject was pooping in public near the roadway outside the PX. '
+        'No property was damaged and nobody was barred from base.',
+        'ALL',
+    )
+    codes = [item.entry.code for item in results[:6]]
+    assert codes[:2] == ['OCGA 16-11-39', 'OCGA 16-6-8']
+    assert '18 USC 1382' not in codes
+    assert '18 USC 1361' not in codes
+    assert 'Article 108' not in codes
+    assert all('keyword-only weak match' not in item.reasons for item in results[:2])
+
+
+def test_law_lookup_respects_negated_conduct_in_full_statement():
+    results = search_entries(
+        'Officer said this is not shoplifting; subject was defecating on the sidewalk in public view.',
+        'ALL',
+    )
+    codes = [item.entry.code for item in results[:5]]
+    assert codes[0] in {'OCGA 16-6-8', 'OCGA 16-11-39'}
+    assert 'OCGA 16-8-14' not in codes
+    assert 'OCGA 16-8-2' not in codes
+
+
 def test_ai_sweep_filters_unrelated_federal_and_ucmj_public_defecation_candidates():
     assert _ai_candidate_relevance(
         'pooping in public',
@@ -192,6 +217,8 @@ def test_legal_lookup_template_is_officer_clean_and_shows_download_action():
     assert 'Search Debug' not in html
     assert 'AI Supplemental Leads' not in html
     assert 'fallback sample set' not in html
+    assert 'Incident Statement' in html
+    assert 'legal-statement-search' in html
     assert 'Open Full Text' in html
     assert 'Download Reference' in html
 

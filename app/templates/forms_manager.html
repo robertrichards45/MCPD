@@ -4,206 +4,203 @@
   {% include 'partials/nav.html' %}
 
   <div class="page-wrap manager-page-wrap forms-manager-page">
-    <section class="mission-hero manager-hero mb-3">
-      <div>
+    <section class="mission-hero manager-hero forms-manager-hero mb-3">
+      <div class="mission-hero-copy">
         <div class="eyebrow">Forms Manager</div>
-        <h1>Add, edit, restore, or remove forms from the library.</h1>
+        <h1>Forms Library Manager</h1>
         <p>
-          Use this page to keep the officer-facing Forms Library clean. Upload adds new files;
-          this manager controls the form name, category, retention rules, and whether it appears.
+          Keep the officer-facing Forms Library clean. Upload adds new files; this manager controls
+          the form name, category, retention rules, visibility, and official-source update settings.
         </p>
       </div>
-      <div class="action-row">
-        <a class="btn btn-light" href="{{ url_for('forms.list_forms') }}">Open Forms Library</a>
+      <div class="mission-hero-actions">
+        <a class="btn btn-outline-secondary" href="{{ url_for('forms.list_forms') }}">Open Forms Library</a>
         {% if can_upload %}
-        <a class="btn btn-outline-light" href="{{ url_for('forms.upload_form') }}">Add New Form</a>
+        <a class="btn btn-primary" href="{{ url_for('forms.upload_form') }}">Add New Form</a>
         {% endif %}
       </div>
     </section>
 
-    <div class="row g-3">
-      <div class="col-lg-4">
-        <section class="card p-3 h-100">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <div>
-              <h3 class="h5 mb-1">Library Forms</h3>
-              <p class="text-muted mb-0">Choose a form to edit.</p>
-            </div>
-            <span class="badge bg-dark">{{ forms|length }}</span>
+    <div class="forms-manager-layout">
+      <aside class="card forms-manager-sidebar">
+        <div class="forms-manager-sidebar-head">
+          <div>
+            <div class="eyebrow">Library Forms</div>
+            <h2>Available Forms</h2>
+            <p>Choose a form to edit its officer-facing settings.</p>
           </div>
-          <div class="list-group">
-            {% for form in forms %}
-            <a
-              class="list-group-item list-group-item-action {% if selected_form and form.id == selected_form.id %}active{% endif %}"
-              href="{{ url_for('forms.forms_manager', edit=form.id) }}"
-            >
-              <div class="d-flex justify-content-between gap-2">
-                <strong>{{ form.title }}</strong>
-                {% if form.is_active %}
-                <span class="badge bg-success">Active</span>
-                {% else %}
-                <span class="badge bg-warning text-dark">Hidden</span>
-                {% endif %}
-              </div>
-              <small>{{ form.category or 'General' }}{% if form.version_label %} · v{{ form.version_label }}{% endif %}</small>
-            </a>
-            {% else %}
-            <div class="text-muted">No forms are loaded yet.</div>
-            {% endfor %}
-          </div>
-        </section>
-      </div>
+          <span class="forms-manager-count">{{ forms|length }}</span>
+        </div>
 
-      <div class="col-lg-8">
-        <section class="card p-3">
-          {% if selected_form %}
-          <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
-            <div>
-              <h2 class="h4 mb-1">Edit Form</h2>
-              <p class="text-muted mb-0">This changes how the form appears and behaves in the library.</p>
-            </div>
-            {% if edit_form.is_active %}
-            <span class="badge bg-success">Active</span>
+        <div class="forms-manager-list">
+          {% for form in forms %}
+          <a
+            class="forms-manager-row {% if selected_form and form.id == selected_form.id %}is-active{% endif %}"
+            href="{{ url_for('forms.forms_manager', edit=form.id) }}"
+          >
+            <span class="forms-manager-row-main">
+              <strong>{{ form.title }}</strong>
+              <small>{{ form.category or 'General' }}{% if form.version_label %} &middot; v{{ form.version_label }}{% endif %}</small>
+            </span>
+            {% if form.is_active %}
+            <span class="forms-manager-status is-live">Active</span>
             {% else %}
-            <span class="badge bg-warning text-dark">Hidden</span>
+            <span class="forms-manager-status is-hidden">Hidden</span>
             {% endif %}
+          </a>
+          {% else %}
+          <div class="forms-manager-empty">No forms are loaded yet.</div>
+          {% endfor %}
+        </div>
+      </aside>
+
+      <section class="card forms-manager-editor">
+        {% if selected_form %}
+        <div class="forms-manager-editor-head">
+          <div>
+            <div class="eyebrow">Form Settings</div>
+            <h2>Edit Form</h2>
+            <p>This changes how the form appears and behaves in the library.</p>
+          </div>
+          {% if edit_form.is_active %}
+          <span class="forms-manager-status is-live">Active</span>
+          {% else %}
+          <span class="forms-manager-status is-hidden">Hidden</span>
+          {% endif %}
+        </div>
+
+        <form method="post" class="forms-manager-form">
+          <input type="hidden" name="form_id" value="{{ edit_form.id }}" />
+
+          <div class="forms-manager-field-grid">
+            <label class="forms-manager-field is-wide">
+              <span>Form title</span>
+              <input class="form-control" id="title" name="title" value="{{ edit_form.title }}" required />
+            </label>
+            <label class="forms-manager-field">
+              <span>Version</span>
+              <input class="form-control" id="version_label" name="version_label" value="{{ edit_form.version_label }}" placeholder="Optional" />
+            </label>
+            <label class="forms-manager-field">
+              <span>Category</span>
+              <input class="form-control" id="category" name="category" value="{{ edit_form.category }}" list="form-category-options" />
+              <datalist id="form-category-options">
+                {% for category in categories %}
+                <option value="{{ category }}"></option>
+                {% endfor %}
+              </datalist>
+            </label>
+            <label class="forms-manager-field">
+              <span>Retention mode</span>
+              <select class="form-control" id="retention_mode" name="retention_mode">
+                {% for mode in retention_modes %}
+                <option value="{{ mode }}" {% if edit_form.retention_mode == mode %}selected{% endif %}>{{ mode }}</option>
+                {% endfor %}
+              </select>
+            </label>
+            <label class="forms-manager-field is-full">
+              <span>Notes</span>
+              <textarea class="form-control" id="notes" name="notes" rows="4" placeholder="Internal notes for this form.">{{ edit_form.notes }}</textarea>
+            </label>
           </div>
 
-          <form method="post" class="stacked-form">
-            <input type="hidden" name="form_id" value="{{ edit_form.id }}" />
-
-            <div class="row g-3">
-              <div class="col-md-8">
-                <label class="form-label" for="title">Form title</label>
-                <input class="form-control" id="title" name="title" value="{{ edit_form.title }}" required />
-              </div>
-              <div class="col-md-4">
-                <label class="form-label" for="version_label">Version</label>
-                <input class="form-control" id="version_label" name="version_label" value="{{ edit_form.version_label }}" placeholder="Optional" />
-              </div>
-            </div>
-
-            <div class="row g-3 mt-0">
-              <div class="col-md-6">
-                <label class="form-label" for="category">Category</label>
-                <input class="form-control" id="category" name="category" value="{{ edit_form.category }}" list="form-category-options" />
-                <datalist id="form-category-options">
-                  {% for category in categories %}
-                  <option value="{{ category }}"></option>
-                  {% endfor %}
-                </datalist>
-              </div>
-              <div class="col-md-6">
-                <label class="form-label" for="retention_mode">Retention mode</label>
-                <select class="form-control" id="retention_mode" name="retention_mode">
-                  {% for mode in retention_modes %}
-                  <option value="{{ mode }}" {% if edit_form.retention_mode == mode %}selected{% endif %}>{{ mode }}</option>
-                  {% endfor %}
-                </select>
-              </div>
-            </div>
-
-            <div class="mt-3">
-              <label class="form-label" for="notes">Notes</label>
-              <textarea class="form-control" id="notes" name="notes" rows="4" placeholder="Internal notes for this form.">{{ edit_form.notes }}</textarea>
-            </div>
-
-            <div class="card p-3 mt-3">
-              <h3 class="h6 mb-2">Officer Access Rules</h3>
-              <div class="row g-2">
-                <label class="col-md-6 form-check">
-                  <input class="form-check-input" type="checkbox" name="is_active" {% if edit_form.is_active %}checked{% endif %} />
-                  <span class="form-check-label">Show in active Forms Library</span>
-                </label>
-                <label class="col-md-6 form-check">
-                  <input class="form-check-input" type="checkbox" name="contains_pii" {% if edit_form.contains_pii %}checked{% endif %} />
-                  <span class="form-check-label">Contains PII</span>
-                </label>
-                <label class="col-md-6 form-check">
-                  <input class="form-check-input" type="checkbox" name="allow_email" {% if edit_form.allow_email %}checked{% endif %} />
-                  <span class="form-check-label">Allow email/send</span>
-                </label>
-                <label class="col-md-6 form-check">
-                  <input class="form-check-input" type="checkbox" name="allow_download" {% if edit_form.allow_download %}checked{% endif %} />
-                  <span class="form-check-label">Allow blank download</span>
-                </label>
-                <label class="col-md-6 form-check">
-                  <input class="form-check-input" type="checkbox" name="allow_blank_print" {% if edit_form.allow_blank_print %}checked{% endif %} />
-                  <span class="form-check-label">Allow blank preview/print</span>
-                </label>
-                <label class="col-md-6 form-check">
-                  <input class="form-check-input" type="checkbox" name="allow_completed_save" {% if edit_form.allow_completed_save %}checked{% endif %} />
-                  <span class="form-check-label">Allow completed save</span>
-                </label>
-              </div>
-            </div>
-
-            <div class="small text-muted mt-3">
-              Source file: <code>{{ edit_form.file_path }}</code>
-            </div>
-
-            <div class="card p-3 mt-3">
-              <h3 class="h6 mb-2">Official Source / Auto Update</h3>
-              <p class="text-muted small mb-3">
-                Use a direct official PDF URL from DSO/DLA, DONI, or WHS when available. If DSO returns a login/storefront page,
-                the portal will mark it gated and will not replace the form.
-              </p>
-              <div class="row g-3">
-                <div class="col-md-8">
-                  <label class="form-label" for="official_source_url">Official PDF URL</label>
-                  <input class="form-control" id="official_source_url" name="official_source_url" value="{{ edit_form.official_source_url }}" placeholder="https://..." />
-                </div>
-                <div class="col-md-4">
-                  <label class="form-label" for="official_source_version">Official version / edition</label>
-                  <input class="form-control" id="official_source_version" name="official_source_version" value="{{ edit_form.official_source_version }}" placeholder="Optional" />
-                </div>
-              </div>
-              <label class="form-check mt-3">
-                <input class="form-check-input" type="checkbox" name="source_auto_update_enabled" {% if edit_form.source_auto_update_enabled %}checked{% endif %} />
-                <span class="form-check-label">Allow scheduled official-source auto update</span>
+          <div class="forms-manager-panel">
+            <h3>Officer Access Rules</h3>
+            <div class="forms-manager-check-grid">
+              <label class="forms-manager-check">
+                <input class="form-check-input" type="checkbox" name="is_active" {% if edit_form.is_active %}checked{% endif %} />
+                <span class="form-check-label">Show in active Forms Library</span>
               </label>
-              <div class="small text-muted mt-2">
-                Last source check:
-                {% if edit_form.official_source_last_checked_at %}
-                  {{ edit_form.official_source_last_checked_at }} -
-                  {{ edit_form.official_source_last_status or 'No status recorded' }}
-                {% else %}
-                  Not checked yet
-                {% endif %}
-                {% if edit_form.official_source_hash %}
-                  <br />Official hash: <code>{{ edit_form.official_source_hash[:16] }}...</code>
-                {% endif %}
-              </div>
-              <div class="action-row mt-3">
-                <button class="btn btn-outline-secondary" type="submit" name="action" value="check_source">Check Official Source</button>
-                <button class="btn btn-outline-primary" type="submit" name="action" value="update_source">Apply Official Update</button>
-              </div>
+              <label class="forms-manager-check">
+                <input class="form-check-input" type="checkbox" name="contains_pii" {% if edit_form.contains_pii %}checked{% endif %} />
+                <span class="form-check-label">Contains PII</span>
+              </label>
+              <label class="forms-manager-check">
+                <input class="form-check-input" type="checkbox" name="allow_email" {% if edit_form.allow_email %}checked{% endif %} />
+                <span class="form-check-label">Allow email/send</span>
+              </label>
+              <label class="forms-manager-check">
+                <input class="form-check-input" type="checkbox" name="allow_download" {% if edit_form.allow_download %}checked{% endif %} />
+                <span class="form-check-label">Allow blank download</span>
+              </label>
+              <label class="forms-manager-check">
+                <input class="form-check-input" type="checkbox" name="allow_blank_print" {% if edit_form.allow_blank_print %}checked{% endif %} />
+                <span class="form-check-label">Allow blank preview/print</span>
+              </label>
+              <label class="forms-manager-check">
+                <input class="form-check-input" type="checkbox" name="allow_completed_save" {% if edit_form.allow_completed_save %}checked{% endif %} />
+                <span class="form-check-label">Allow completed save</span>
+              </label>
             </div>
+          </div>
 
-            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-4">
-              <div class="action-row">
-                <a class="btn btn-outline-secondary" href="{{ url_for('forms.fill_form', form_id=edit_form.id) }}">Open Form</a>
-                <a class="btn btn-outline-secondary" href="{{ url_for('forms.form_pdf_template_editor', form_id=edit_form.id) }}">Template Editor</a>
-              </div>
-              <div class="action-row">
-                {% if edit_form.is_active %}
-                <button class="btn btn-outline-danger" type="submit" name="action" value="hide" formnovalidate>Remove / Hide</button>
-                {% else %}
-                <button class="btn btn-outline-success" type="submit" name="action" value="restore" formnovalidate>Restore</button>
-                {% endif %}
-                <button class="btn btn-primary" type="submit" name="action" value="save">Save Form</button>
-              </div>
+          <div class="forms-manager-source">
+            Source file: <code>{{ edit_form.file_path }}</code>
+          </div>
+
+          <div class="forms-manager-panel">
+            <h3>Official Source / Auto Update</h3>
+            <p>
+              Use a direct official PDF URL from DSO/DLA, DONI, or WHS when available. If DSO returns a
+              login/storefront page, the portal will mark it gated and will not replace the form.
+            </p>
+            <div class="forms-manager-field-grid is-compact">
+              <label class="forms-manager-field is-wide">
+                <span>Official PDF URL</span>
+                <input class="form-control" id="official_source_url" name="official_source_url" value="{{ edit_form.official_source_url }}" placeholder="https://..." />
+              </label>
+              <label class="forms-manager-field">
+                <span>Official version / edition</span>
+                <input class="form-control" id="official_source_version" name="official_source_version" value="{{ edit_form.official_source_version }}" placeholder="Optional" />
+              </label>
             </div>
-          </form>
-          {% else %}
-          <h2 class="h4 mb-2">No forms loaded yet</h2>
-          <p class="text-muted">Upload an official form first, then return here to manage its library settings.</p>
+            <label class="forms-manager-check mt-3">
+              <input class="form-check-input" type="checkbox" name="source_auto_update_enabled" {% if edit_form.source_auto_update_enabled %}checked{% endif %} />
+              <span class="form-check-label">Allow scheduled official-source auto update</span>
+            </label>
+            <div class="forms-manager-source mt-2">
+              Last source check:
+              {% if edit_form.official_source_last_checked_at %}
+                {{ edit_form.official_source_last_checked_at }} -
+                {{ edit_form.official_source_last_status or 'No status recorded' }}
+              {% else %}
+                Not checked yet
+              {% endif %}
+              {% if edit_form.official_source_hash %}
+                <br />Official hash: <code>{{ edit_form.official_source_hash[:16] }}...</code>
+              {% endif %}
+            </div>
+            <div class="forms-manager-inline-actions">
+              <button class="btn btn-outline-secondary" type="submit" name="action" value="check_source">Check Official Source</button>
+              <button class="btn btn-outline-primary" type="submit" name="action" value="update_source">Apply Official Update</button>
+            </div>
+          </div>
+
+          <div class="forms-manager-actions">
+            <div class="forms-manager-inline-actions">
+              <a class="btn btn-outline-secondary" href="{{ url_for('forms.fill_form', form_id=edit_form.id) }}">Open Form</a>
+              <a class="btn btn-outline-secondary" href="{{ url_for('forms.form_pdf_template_editor', form_id=edit_form.id) }}">Template Editor</a>
+            </div>
+            <div class="forms-manager-inline-actions">
+              {% if edit_form.is_active %}
+              <button class="btn btn-outline-danger" type="submit" name="action" value="hide" formnovalidate>Remove / Hide</button>
+              {% else %}
+              <button class="btn btn-outline-success" type="submit" name="action" value="restore" formnovalidate>Restore</button>
+              {% endif %}
+              <button class="btn btn-primary" type="submit" name="action" value="save">Save Form</button>
+            </div>
+          </div>
+        </form>
+        {% else %}
+        <div class="forms-manager-empty-state">
+          <h2>No forms loaded yet</h2>
+          <p>Upload an official form first, then return here to manage its library settings.</p>
           {% if can_upload %}
           <a class="btn btn-primary" href="{{ url_for('forms.upload_form') }}">Add New Form</a>
           {% endif %}
-          {% endif %}
-        </section>
-      </div>
+        </div>
+        {% endif %}
+      </section>
     </div>
   </div>
 </div>

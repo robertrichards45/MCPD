@@ -18,6 +18,10 @@
   var modal = document.querySelector('[data-recon-asset-modal]');
   var modalClose = document.querySelector('[data-recon-asset-close]');
   var modalAssets = Array.prototype.slice.call(document.querySelectorAll('[data-asset-kind]'));
+  var accidentFields = Array.prototype.slice.call(root.querySelectorAll('[data-accident-field]'));
+  var selectedEditor = root.querySelector('[data-selected-editor]');
+  var selectedFields = Array.prototype.slice.call(root.querySelectorAll('[data-selected-field]'));
+  var directionButtons = Array.prototype.slice.call(root.querySelectorAll('[data-direction-rotate]'));
   var ctx = canvas.getContext('2d');
   var selectedTool = 'select';
   var selectedItem = null;
@@ -102,6 +106,7 @@
   });
   state.measurements = state.measurements || [];
   state.units = state.units || 'ft';
+  state.accidentDetails = state.accidentDetails || {};
 
   function normalizeVehicleType(value) {
     var raw = String(value || '').toLowerCase();
@@ -144,6 +149,11 @@
       assetType: assetType,
       label: item.label || defaults.label || '',
       notes: item.notes || '',
+      directionOfTravel: item.directionOfTravel || item.direction || '',
+      preCrashSpeed: item.preCrashSpeed || item.pre_crash_speed || '',
+      impactSpeed: item.impactSpeed || item.impact_speed || '',
+      postCrashSpeed: item.postCrashSpeed || item.post_crash_speed || '',
+      damageNotes: item.damageNotes || item.damage_notes || '',
       x: Number(item.x || item.x_position || 260),
       y: Number(item.y || item.y_position || 220),
       width: Number(item.width || size[0]),
@@ -320,6 +330,19 @@
       label.textContent = item.label || '';
       node.appendChild(label);
 
+      if (item.kind === 'vehicle' && item.directionOfTravel) {
+        var travel = document.createElement('span');
+        travel.className = 'recon-travel-arrow';
+        travel.textContent = '→';
+        travel.setAttribute('aria-label', 'Direction of travel: ' + item.directionOfTravel);
+        node.appendChild(travel);
+
+        var travelLabel = document.createElement('span');
+        travelLabel.className = 'recon-travel-label';
+        travelLabel.textContent = item.directionOfTravel;
+        node.appendChild(travelLabel);
+      }
+
       var rotate = document.createElement('button');
       rotate.className = 'recon-rotate-handle';
       rotate.type = 'button';
@@ -334,6 +357,75 @@
   function redraw() {
     drawRoadBase();
     renderObjects();
+    syncSelectedEditor();
+  }
+
+  function getAccidentDetails() {
+    var details = {};
+    accidentFields.forEach(function (field) {
+      var key = field.getAttribute('data-accident-field');
+      details[key] = field.value || '';
+    });
+    if (!details.title) details.title = 'Officer Accident Diagram';
+    return details;
+  }
+
+  function hydrateAccidentDetails() {
+    accidentFields.forEach(function (field) {
+      var key = field.getAttribute('data-accident-field');
+      if (Object.prototype.hasOwnProperty.call(state.accidentDetails, key) && state.accidentDetails[key] !== null) {
+        field.value = state.accidentDetails[key];
+      }
+      field.addEventListener('input', function () {
+        state.accidentDetails = getAccidentDetails();
+      });
+      field.addEventListener('change', function () {
+        state.accidentDetails = getAccidentDetails();
+      });
+    });
+    state.accidentDetails = getAccidentDetails();
+  }
+
+  function syncSelectedEditor() {
+    if (!selectedEditor) return;
+    var show = !!selectedItem;
+    selectedEditor.hidden = !show;
+    if (!show) return;
+    selectedFields.forEach(function (field) {
+      var key = field.getAttribute('data-selected-field');
+      field.value = selectedItem[key] || '';
+      field.disabled = selectedItem.kind !== 'vehicle' && key !== 'label' && key !== 'damageNotes';
+    });
+  }
+
+  function applySelectedField(field) {
+    if (!selectedItem || !field) return;
+    var key = field.getAttribute('data-selected-field');
+    selectedItem[key] = field.value;
+    if (key === 'directionOfTravel' && field.value && !selectedItem.rotation) {
+      selectedItem.rotation = directionToRotation(field.value);
+    }
+    redraw();
+  }
+
+  function directionToRotation(direction) {
+    var raw = String(direction || '').toLowerCase();
+    if (raw.indexOf('north') !== -1 && raw.indexOf('east') !== -1) return -45;
+    if (raw.indexOf('north') !== -1 && raw.indexOf('west') !== -1) return -135;
+    if (raw.indexOf('south') !== -1 && raw.indexOf('east') !== -1) return 45;
+    if (raw.indexOf('south') !== -1 && raw.indexOf('west') !== -1) return 135;
+    if (raw.indexOf('north') !== -1) return -90;
+    if (raw.indexOf('south') !== -1) return 90;
+    if (raw.indexOf('west') !== -1) return 180;
+    return 0;
+  }
+
+  function rotationToDirection(rotation) {
+    var rot = ((Number(rotation) || 0) % 360 + 360) % 360;
+    if (rot >= 315 || rot < 45) return 'Eastbound';
+    if (rot >= 45 && rot < 135) return 'Southbound';
+    if (rot >= 135 && rot < 225) return 'Westbound';
+    return 'Northbound';
   }
 
   function showVehicleModal(point) {
@@ -479,6 +571,10 @@
     if (!selectedItem) return;
     var label = window.prompt('Diagram label', selectedItem.label || '');
     if (label !== null) selectedItem.label = label.trim() || selectedItem.label;
+    if (selectedItem.kind === 'vehicle') {
+      var direction = window.prompt('Direction of travel', selectedItem.directionOfTravel || rotationToDirection(selectedItem.rotation));
+      if (direction !== null) selectedItem.directionOfTravel = direction.trim();
+    }
     var notes = window.prompt('Optional notes', selectedItem.notes || '');
     if (notes !== null) selectedItem.notes = notes.trim();
     redraw();
@@ -537,6 +633,20 @@
     if (control) control.addEventListener('change', redraw);
   });
 
+  selectedFields.forEach(function (field) {
+    field.addEventListener('input', function () { applySelectedField(field); });
+    field.addEventListener('change', function () { applySelectedField(field); });
+  });
+
+  directionButtons.forEach(function (button) {
+    button.addEventListener('click', function () {
+      if (!selectedItem) return;
+      selectedItem.rotation = Number(button.getAttribute('data-direction-rotate')) || 0;
+      selectedItem.directionOfTravel = rotationToDirection(selectedItem.rotation);
+      redraw();
+    });
+  });
+
   if (resetButton) resetButton.addEventListener('click', redraw);
   if (undoButton) {
     undoButton.addEventListener('click', function () {
@@ -554,6 +664,7 @@
       objects: state.objects,
       measurements: state.measurements,
       canvasItems: state.canvasItems,
+      accidentDetails: getAccidentDetails(),
       units: state.units
     };
   }
@@ -625,10 +736,22 @@
         var content = svgToGroup(svgTexts[index]);
         var x = item.x - item.width / 2;
         var y = item.y - item.height / 2;
+        var directionSvg = '';
+        if (item.kind === 'vehicle' && item.directionOfTravel) {
+          directionSvg = '<g transform="translate(' + item.x + ' ' + item.y + ') rotate(' + (item.rotation || 0) + ')">' +
+            '<path d="M' + (item.width / 2 + 12) + ' 0H' + (item.width / 2 + 70) + '" stroke="#1d4ed8" stroke-width="5" stroke-linecap="round"/>' +
+            '<path d="M' + (item.width / 2 + 70) + ' 0l-15 -9v18z" fill="#1d4ed8"/>' +
+            '</g><text x="' + item.x + '" y="' + (item.y + item.height / 2 + 26) + '" text-anchor="middle" font-family="Arial" font-size="11" font-weight="700" fill="#1d4ed8">' + escapeXml(item.directionOfTravel) + '</text>';
+        }
         return '<g transform="translate(' + x + ' ' + y + ') rotate(' + (item.rotation || 0) + ' ' + (item.width / 2) + ' ' + (item.height / 2) + ') scale(' + (item.width / 120) + ' ' + (item.height / 60) + ')">' + content + '</g>' +
+          directionSvg +
           '<text x="' + item.x + '" y="' + (item.y - item.height / 2 - 8) + '" text-anchor="middle" font-family="Arial" font-size="13" font-weight="800" fill="#0a2440">' + escapeXml(item.label) + '</text>';
       }).join('');
-      var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 580" width="1960" height="1160">' + roadSvg() + objectSvg + '</svg>';
+      var details = getAccidentDetails();
+      var footer = '<rect x="16" y="510" width="420" height="54" rx="8" fill="#ffffff" stroke="#cbd5e1"/>' +
+        '<text x="30" y="532" font-family="Arial" font-size="12" font-weight="800" fill="#0a2440">Officer Accident Diagram</text>' +
+        '<text x="30" y="550" font-family="Arial" font-size="11" fill="#334155">' + escapeXml([details.incidentNumber, details.location, details.crashType].filter(Boolean).join(' | ')) + '</text>';
+      var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 580" width="1960" height="1160">' + roadSvg() + objectSvg + footer + '</svg>';
       var blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
       var url = URL.createObjectURL(blob);
       var image = new Image();
@@ -654,6 +777,7 @@
 
   if (exportPngButton) exportPngButton.addEventListener('click', exportPng);
   window.addEventListener('resize', redraw);
+  hydrateAccidentDetails();
   setTool('select');
   redraw();
 }());

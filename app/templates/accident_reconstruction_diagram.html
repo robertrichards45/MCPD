@@ -44,6 +44,12 @@
           {% for tool in ['Select','Vehicle','Pedestrian','Officer','Stop Sign','Traffic Light','Cone','Barrier','Building','Tree','Measure','Text','Arrow','Skid','Impact','Clear All'] %}
           <button type="button" data-tool="{{ tool|lower|replace(' ', '-') }}">{{ tool }}</button>
           {% endfor %}
+          {% if is_officer_diagram %}
+          <div class="officer-diagram-tool-tip">
+            <strong>Direction of Travel</strong>
+            <span>Add a vehicle, select it, then set direction. A blue travel arrow prints with the diagram.</span>
+          </div>
+          {% endif %}
         </aside>
 
         <div class="recon-canvas-panel">
@@ -63,6 +69,80 @@
 
         <aside class="recon-inspector-panel">
           <div class="recon-inspector-tabs"><span>Vehicles</span><span>Objects</span><span>Notes</span><span>Layers</span></div>
+          {% if is_officer_diagram %}
+          <section class="officer-crash-info-panel">
+            <h3>Accident Information</h3>
+            <div class="officer-crash-grid">
+              <label>Incident #
+                <input type="text" data-accident-field="incidentNumber" value="{{ reconstruction.incident_number or '' }}" placeholder="Report / CAD number">
+              </label>
+              <label>Date / Time
+                <input type="datetime-local" data-accident-field="dateTime" value="{{ reconstruction.date_time.strftime('%Y-%m-%dT%H:%M') if reconstruction.date_time else '' }}">
+              </label>
+              <label class="is-wide">Location
+                <input type="text" data-accident-field="location" value="{{ reconstruction.location or '' }}" placeholder="Roadway, intersection, landmark">
+              </label>
+              <label>Crash Type
+                <select data-accident-field="crashType">
+                  <option value="">Select</option>
+                  {% for crash_type in ['Rear-end','Angle / Intersection','Sideswipe','Head-on','Single Vehicle','Pedestrian Strike','Hit and Run','Property Damage'] %}
+                  <option value="{{ crash_type }}">{{ crash_type }}</option>
+                  {% endfor %}
+                </select>
+              </label>
+              <label>Weather
+                <input type="text" data-accident-field="weather" value="{{ reconstruction.weather or '' }}" placeholder="Clear, rain, fog">
+              </label>
+              <label>Road Surface
+                <input type="text" data-accident-field="roadSurface" value="{{ reconstruction.road_surface or '' }}" placeholder="Dry, wet, gravel">
+              </label>
+              <label>Lighting
+                <select data-accident-field="lighting">
+                  <option value="">Select</option>
+                  {% for lighting in ['Daylight','Dawn','Dusk','Dark - Lighted','Dark - Not Lighted'] %}
+                  <option value="{{ lighting }}">{{ lighting }}</option>
+                  {% endfor %}
+                </select>
+              </label>
+              <label class="is-wide">Officer Summary
+                <textarea data-accident-field="summary" rows="4" placeholder="Briefly describe what happened, vehicle paths, impact point, injuries, citations, tow, and photos.">{{ reconstruction.notes or '' }}</textarea>
+              </label>
+            </div>
+          </section>
+
+          <section class="officer-selected-panel" data-selected-editor hidden>
+            <h3>Selected Object</h3>
+            <div class="officer-crash-grid">
+              <label>Label
+                <input type="text" data-selected-field="label">
+              </label>
+              <label>Direction of Travel
+                <select data-selected-field="directionOfTravel">
+                  <option value="">Not set</option>
+                  {% for direction in ['Northbound','Southbound','Eastbound','Westbound','Northeast','Northwest','Southeast','Southwest','Entering intersection','Leaving roadway','Stopped / Parked'] %}
+                  <option value="{{ direction }}">{{ direction }}</option>
+                  {% endfor %}
+                </select>
+              </label>
+              <label>Pre-crash speed
+                <input type="number" min="0" step="1" data-selected-field="preCrashSpeed" placeholder="mph">
+              </label>
+              <label>Impact speed
+                <input type="number" min="0" step="1" data-selected-field="impactSpeed" placeholder="mph">
+              </label>
+              <label class="is-wide">Damage / Notes
+                <textarea rows="3" data-selected-field="damageNotes" placeholder="Damage location, final rest, driver statement, contributing factors"></textarea>
+              </label>
+            </div>
+            <div class="direction-quick-row">
+              <button type="button" data-direction-rotate="-90">North</button>
+              <button type="button" data-direction-rotate="0">East</button>
+              <button type="button" data-direction-rotate="90">South</button>
+              <button type="button" data-direction-rotate="180">West</button>
+            </div>
+          </section>
+          {% endif %}
+
           <h3>Vehicles</h3>
           <div class="recon-vehicle-stack" data-recon-vehicle-list>
             {% for vehicle in vehicles %}
@@ -92,7 +172,7 @@
           {
             "vehicles": [
               {% for vehicle in vehicles %}
-              {"id": {{ vehicle.id }}, "label": {{ (vehicle.label or vehicle.unit or ('V' ~ loop.index))|tojson }}, "type": "vehicle", "x": {{ vehicle.x_position or (160 + loop.index * 40) }}, "y": {{ vehicle.y_position or (190 + loop.index * 20) }}, "rotation": {{ vehicle.rotation or 0 }}}{% if not loop.last %},{% endif %}
+              {"id": {{ vehicle.id }}, "label": {{ (vehicle.label or vehicle.unit or ('V' ~ loop.index))|tojson }}, "type": "vehicle", "vehicleType": {{ (vehicle.type or vehicle.make_model or 'sedan')|tojson }}, "directionOfTravel": {{ (vehicle.direction or '')|tojson }}, "preCrashSpeed": {{ (vehicle.pre_crash_speed or '')|tojson }}, "impactSpeed": {{ (vehicle.impact_speed or '')|tojson }}, "postCrashSpeed": {{ (vehicle.post_crash_speed or '')|tojson }}, "damageNotes": {{ (vehicle.damage_notes or '')|tojson }}, "notes": {{ (vehicle.notes or '')|tojson }}, "x": {{ vehicle.x_position or (160 + loop.index * 40) }}, "y": {{ vehicle.y_position or (190 + loop.index * 20) }}, "rotation": {{ vehicle.rotation or 0 }}}{% if not loop.last %},{% endif %}
               {% endfor %}
             ],
             "objects": [
@@ -106,6 +186,7 @@
               {% endfor %}
             ],
             "canvasItems": {{ diagram.get('canvasItems', [])|tojson }},
+            "accidentDetails": {{ diagram.get('accidentDetails', {})|tojson }},
             "units": "ft"
           }
         </script>
@@ -136,5 +217,5 @@
 {% endblock %}
 {% block scripts %}
   {{ super() }}
-  <script src="{{ url_for('static', filename='js/accident_reconstruction.js', v='2026-05-04-accident-1') }}"></script>
+  <script src="{{ url_for('static', filename='js/accident_reconstruction.js', v='2026-05-07-officer-details') }}"></script>
 {% endblock %}

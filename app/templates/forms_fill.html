@@ -155,6 +155,26 @@
               <summary>{{ section.title }}</summary>
               <div class="form-section-grid">
                 {% for field in section.fields %}
+                {% if statement_compact and field.name in statement_compact.field_names %}
+                {% if field.name == statement_compact.first_field %}
+                <div class="form-field-block form-field-type-textarea form-field-statement-full">
+                  <label class="form-label text-dark" for="statement-full">
+                    Statement{% if statement_compact.required %} <span class="field-required-star">*</span>{% endif %}
+                    <span class="field-type-badge">{{ statement_compact.line_count }} PDF lines</span>
+                  </label>
+                  <textarea
+                    class="form-control statement-full-textarea"
+                    name="statement_full"
+                    id="statement-full"
+                    rows="7"
+                    placeholder="Write the full statement here. The portal will place it into the correct PDF statement lines."
+                    {% if statement_compact.required %}required{% endif %}
+                    {% if not can_edit %}readonly{% endif %}
+                  >{{ statement_compact.text }}</textarea>
+                  <div class="form-text">One statement box is shown here for easier entry. It will be split into the PDF's statement line fields when previewed, printed, downloaded, emailed, or saved.</div>
+                </div>
+                {% endif %}
+                {% else %}
                 <div class="form-field-block form-field-type-{{ field.type }}">
                   <label class="form-label text-dark">
                     {{ field.label }}{% if field.required %} <span class="field-required-star">*</span>{% endif %}
@@ -207,6 +227,7 @@
                   />
                   {% endif %}
                 </div>
+                {% endif %}
                 {% endfor %}
               </div>
             </details>
