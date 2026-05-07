@@ -1,0 +1,6 @@
+{% extends "watch_commander/_layout.html" %}
+{% block wc_title %}Saved Work Review{% endblock %}
+{% block wc_subtitle %}Review assigned officers’ saved forms, reports, packets, diagrams, and unfinished work. No-retention forms show metadata only.{% endblock %}
+{% block wc_body %}
+<section class="wc-card-table">{% for item in items %}<article class="wc-row-card"><div><strong>{{ item.title or item.form.title }}</strong><span>{{ item.updated_at.strftime('%m/%d/%Y %H:%M') if item.updated_at else '' }}</span></div><div><span>Officer</span><strong>{{ item.officer.display_name if item.officer else 'Unknown' }}</strong></div><div><span>Status</span><strong>{{ item.status }}</strong></div><div><span>Retention</span><strong>{{ item.form.retention_mode }}</strong></div><div><span>Content</span><strong>{% if item.form.retention_mode != 'full_save_allowed' %}Metadata only{% else %}Allowed{% endif %}</strong></div></article>{% else %}<div class="wc-panel">No saved work found.</div>{% endfor %}</section>
+{% endblock %}

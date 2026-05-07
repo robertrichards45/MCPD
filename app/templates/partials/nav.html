@@ -5,7 +5,7 @@
 {% set orders_active = endpoint.startswith('orders.') or endpoint.startswith('reference.') %}
 {% set training_active = endpoint.startswith('training.') or endpoint.startswith('qual_tracker.') %}
 {% set personnel_active = endpoint.startswith('officers.') or endpoint == 'auth.manage_users' or endpoint == 'auth.edit_user' %}
-{% set command_active = endpoint.startswith('assistant.') or endpoint.startswith('performance.') or endpoint.startswith('announcements.') or endpoint.startswith('bolo.') or endpoint.startswith('ops_modules.') or endpoint.startswith('mobile.supervisor') %}
+{% set command_active = endpoint.startswith('watch_commander.') or endpoint.startswith('assistant.') or endpoint.startswith('performance.') or endpoint.startswith('announcements.') or endpoint.startswith('bolo.') or endpoint.startswith('ops_modules.') or endpoint.startswith('mobile.supervisor') %}
 
 <header class="mcpd-command-header">
   <div class="mcpd-header-brand">
@@ -56,13 +56,17 @@
       <a class="{% if endpoint.startswith('officers.') %}is-active{% endif %}" href="{{ url_for('officers.profile') }}"><span class="nav-icon">◇</span>Personnel</a>
     {% endif %}
     <a class="{% if saved_work_active %}is-active{% endif %}" href="{{ url_for('forms.saved_forms') }}"><span class="nav-icon">☆</span>Saved Work</a>
-    {% if current_user.can_manage_team() or portal_is_watch_commander_view %}
+    {% if current_user.can_manage_team() or portal_is_watch_commander_view or portal_can_access_builder_mode %}
       <details class="mcpd-sidebar-admin" {% if command_active %}open{% endif %}>
         <summary><span class="nav-icon">WC</span>Watch Commander</summary>
-        <a href="{{ url_for('assistant.watch_commander_console') }}">WC Tool Console</a>
+        <a href="{{ url_for('watch_commander.dashboard') }}">WC Dashboard</a>
         <a href="{{ url_for('auth.manage_users') }}">Approve / Assign Officers</a>
         <a href="{{ url_for('mobile.supervisor_dashboard') }}">Command Dashboard</a>
         <a href="{{ url_for('assistant.officer_files_console') }}">Officer Files</a>
+        <a href="{{ url_for('watch_commander.shift') }}">Shift Management</a>
+        <a href="{{ url_for('watch_commander.reports') }}">Report Review</a>
+        <a href="{{ url_for('watch_commander.approvals') }}">Approvals Center</a>
+        <a href="{{ url_for('watch_commander.briefing') }}">Shift Briefing</a>
         <a href="{{ url_for('performance.pending') }}">Stats Approvals</a>
         <a href="{{ url_for('performance.team_overview') }}">Team Stats</a>
         <a href="{{ url_for('qual_tracker.tracker_readiness') }}">Readiness Tracker</a>

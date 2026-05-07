@@ -816,7 +816,7 @@ def create_app():
     db.init_app(app)
     login_manager.init_app(app)
 
-    from .routes import auth, assistant, bolo, bodycam, dashboard, forms, training, qual_tracker, performance, stats, annual_ai, admin, cleo_api, reports, reconstruction, officers, ops_modules, legal, orders, reference, announcements, mobile
+    from .routes import auth, assistant, bolo, bodycam, dashboard, forms, training, qual_tracker, performance, stats, annual_ai, admin, cleo_api, reports, reconstruction, officers, ops_modules, legal, orders, reference, announcements, mobile, watch_commander
     app.register_blueprint(auth.bp)
     app.register_blueprint(assistant.bp)
     app.register_blueprint(bolo.bp)
@@ -839,6 +839,7 @@ def create_app():
     app.register_blueprint(reference.bp)
     app.register_blueprint(announcements.bp)
     app.register_blueprint(mobile.bp)
+    app.register_blueprint(watch_commander.bp)
 
     @app.get('/manifest.webmanifest')
     def pwa_manifest():

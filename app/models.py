@@ -878,6 +878,99 @@ class IncidentDraft(db.Model):
     officer = db.relationship('User', foreign_keys=[officer_user_id], backref='incident_drafts')
 
 
+class WatchShift(db.Model):
+    __tablename__ = 'watch_shift'
+    id = db.Column(db.Integer, primary_key=True)
+    shift_date = db.Column(db.String(10), nullable=False, index=True)
+    shift_type = db.Column(db.String(80), nullable=False, default='Alpha')
+    watch_commander_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
+    desk_sergeant_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
+    status = db.Column(db.String(30), nullable=False, default='OPEN', index=True)
+    start_time = db.Column(db.String(20), nullable=True)
+    end_time = db.Column(db.String(20), nullable=True)
+    notes = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=utcnow_naive, nullable=False)
+    updated_at = db.Column(db.DateTime, default=utcnow_naive, onupdate=utcnow_naive, nullable=False)
+
+    watch_commander = db.relationship('User', foreign_keys=[watch_commander_id], backref='watch_shifts_commanded')
+    desk_sergeant = db.relationship('User', foreign_keys=[desk_sergeant_id], backref='watch_shifts_desk')
+
+
+class WatchAssignment(db.Model):
+    __tablename__ = 'watch_assignment'
+    id = db.Column(db.Integer, primary_key=True)
+    shift_id = db.Column(db.Integer, db.ForeignKey('watch_shift.id'), nullable=True, index=True)
+    officer_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    assignment_type = db.Column(db.String(80), nullable=False, default='Patrol')
+    assignment_location = db.Column(db.String(160), nullable=True)
+    status = db.Column(db.String(40), nullable=False, default='On Duty', index=True)
+    start_time = db.Column(db.String(20), nullable=True)
+    end_time = db.Column(db.String(20), nullable=True)
+    notes = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=utcnow_naive, nullable=False)
+    updated_at = db.Column(db.DateTime, default=utcnow_naive, onupdate=utcnow_naive, nullable=False)
+
+    shift = db.relationship('WatchShift', backref='assignments')
+    officer = db.relationship('User', foreign_keys=[officer_id], backref='watch_assignments')
+
+
+class WatchNote(db.Model):
+    __tablename__ = 'watch_note'
+    id = db.Column(db.Integer, primary_key=True)
+    shift_id = db.Column(db.Integer, db.ForeignKey('watch_shift.id'), nullable=True, index=True)
+    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    note_type = db.Column(db.String(60), nullable=False, default='shift_note', index=True)
+    title = db.Column(db.String(180), nullable=False)
+    body = db.Column(db.Text, nullable=False)
+    priority = db.Column(db.String(20), nullable=False, default='Normal', index=True)
+    created_at = db.Column(db.DateTime, default=utcnow_naive, nullable=False)
+
+    shift = db.relationship('WatchShift', backref='watch_notes')
+    creator = db.relationship('User', foreign_keys=[created_by], backref='watch_notes')
+
+
+class WatchApproval(db.Model):
+    __tablename__ = 'watch_approval'
+    id = db.Column(db.Integer, primary_key=True)
+    target_type = db.Column(db.String(80), nullable=False, index=True)
+    target_id = db.Column(db.Integer, nullable=True, index=True)
+    requested_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
+    reviewed_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
+    status = db.Column(db.String(30), nullable=False, default='PENDING', index=True)
+    comments = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=utcnow_naive, nullable=False)
+    updated_at = db.Column(db.DateTime, default=utcnow_naive, onupdate=utcnow_naive, nullable=False)
+
+    requester = db.relationship('User', foreign_keys=[requested_by], backref='watch_approval_requests')
+    reviewer = db.relationship('User', foreign_keys=[reviewed_by], backref='watch_approvals_reviewed')
+
+
+class ShiftBrief(db.Model):
+    __tablename__ = 'shift_brief'
+    id = db.Column(db.Integer, primary_key=True)
+    shift_id = db.Column(db.Integer, db.ForeignKey('watch_shift.id'), nullable=True, index=True)
+    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    title = db.Column(db.String(180), nullable=False)
+    body = db.Column(db.Text, nullable=False)
+    status = db.Column(db.String(30), nullable=False, default='DRAFT', index=True)
+    created_at = db.Column(db.DateTime, default=utcnow_naive, nullable=False)
+    updated_at = db.Column(db.DateTime, default=utcnow_naive, onupdate=utcnow_naive, nullable=False)
+
+    shift = db.relationship('WatchShift', backref='briefs')
+    creator = db.relationship('User', foreign_keys=[created_by], backref='shift_briefs')
+
+
+class ShiftBriefAcknowledgement(db.Model):
+    __tablename__ = 'shift_brief_acknowledgement'
+    id = db.Column(db.Integer, primary_key=True)
+    brief_id = db.Column(db.Integer, db.ForeignKey('shift_brief.id'), nullable=False, index=True)
+    officer_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    acknowledged_at = db.Column(db.DateTime, default=utcnow_naive, nullable=False)
+
+    brief = db.relationship('ShiftBrief', backref='acknowledgements')
+    officer = db.relationship('User', foreign_keys=[officer_id], backref='shift_brief_acknowledgements')
+
+
 BOLO_STATUS_ACTIVE = 'ACTIVE'
 BOLO_STATUS_LOCATED = 'LOCATED'
 BOLO_STATUS_CANCELLED = 'CANCELLED'

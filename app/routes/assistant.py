@@ -389,7 +389,7 @@ def _save_file_index(items: list[dict]) -> None:
 def watch_commander_console():
     if not _is_supervisor():
         return render_template('forbidden.html', error_message='Supervisor access required.'), 403
-    return render_template('wc_admin_console.html', title='Watch Commander Admin', user=current_user)
+    return redirect(url_for('watch_commander.dashboard'))
 
 
 @bp.get('/admin/officer-files')

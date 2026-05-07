@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/watch_commander.css', v='2026-05-07') }}" />
+{% endblock %}
+{% block body %}
+<div class="app-shell mcpd-command-app wc-module">
+  {% include 'partials/nav.html' %}
+  <main class="wc-page-shell">
+    <header class="wc-page-header">
+      <div>
+        <p class="eyebrow">Watch Commander Tools</p>
+        <h1>{% block wc_title %}Watch Commander{% endblock %}</h1>
+        <p>{% block wc_subtitle %}Supervise the shift, review work, and maintain operational accountability.{% endblock %}</p>
+      </div>
+      <nav class="wc-page-tabs" aria-label="Watch Commander navigation">
+        <a href="{{ url_for('watch_commander.dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('watch_commander.shift') }}">Shift</a>
+        <a href="{{ url_for('watch_commander.officers') }}">Officers</a>
+        <a href="{{ url_for('watch_commander.reports') }}">Reports</a>
+        <a href="{{ url_for('watch_commander.approvals') }}">Approvals</a>
+        <a href="{{ url_for('watch_commander.briefing') }}">Briefing</a>
+      </nav>
+    </header>
+    {% block wc_body %}{% endblock %}
+  </main>
+</div>
+{% endblock %}

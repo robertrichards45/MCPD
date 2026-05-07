@@ -1,0 +1,6 @@
+{% extends "watch_commander/_layout.html" %}
+{% block wc_title %}Training Roster Oversight{% endblock %}
+{% block wc_subtitle %}Monitor active rosters, signatures, overdue items, and completion percentages.{% endblock %}
+{% block wc_body %}
+<section class="wc-card-table">{% for r in rosters %}<article class="wc-row-card"><div><strong>{{ r.title }}</strong><span>{{ r.status }}</span></div><div><span>Uploaded</span><strong>{{ r.uploaded_at.strftime('%m/%d/%Y') if r.uploaded_at else '' }}</strong></div><div><span>Signed</span><strong>{{ signed_counts.get(r.id, 0) }}</strong></div><a class="wc-btn" href="{{ url_for('training.training_detail', roster_id=r.id) }}">View Roster</a></article>{% else %}<div class="wc-panel">No training rosters found.</div>{% endfor %}</section>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "watch_commander/_layout.html" %}
+{% block wc_title %}Shift Management{% endblock %}
+{% block wc_subtitle %}Create, edit, close, and export watch shift summaries.{% endblock %}
+{% block wc_body %}
+<section class="wc-two-column">
+  <form class="wc-panel wc-form" method="post">
+    <h2>Create / Edit Shift</h2>
+    <input type="date" name="shift_date" value="{{ request.form.shift_date or '' }}">
+    <input name="shift_type" placeholder="Shift type, e.g. Alpha / Bravo">
+    <select name="desk_sergeant_id"><option value="">Desk Sergeant</option>{% for o in officers %}<option value="{{ o.id }}">{{ o.display_name }}</option>{% endfor %}</select>
+    <input name="start_time" placeholder="Start time">
+    <input name="end_time" placeholder="End time">
+    <select name="status"><option>OPEN</option><option>CLOSED</option></select>
+    <textarea name="notes" placeholder="Shift notes"></textarea>
+    <button class="btn btn-primary" type="submit">Save Shift</button>
+  </form>
+  <article class="wc-panel">
+    <h2>Recent Shifts</h2>
+    <div class="wc-list">{% for s in shifts %}<a><strong>{{ s.shift_date }} / {{ s.shift_type }}</strong><span>{{ s.status }} / {{ s.start_time or 'No start' }} - {{ s.end_time or 'No end' }}</span></a>{% else %}<p>No shifts created.</p>{% endfor %}</div>
+  </article>
+</section>
+{% endblock %}

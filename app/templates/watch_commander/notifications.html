@@ -1,0 +1,6 @@
+{% extends "watch_commander/_layout.html" %}
+{% block wc_title %}Notifications / Notes{% endblock %}
+{% block wc_subtitle %}Create shift notes, correction notes, training reminders, assignment updates, and general notices.{% endblock %}
+{% block wc_body %}
+<section class="wc-two-column"><form class="wc-panel wc-form" method="post"><h2>Send Internal Notice</h2><select name="note_type"><option>shift_note</option><option>correction_note</option><option>training_reminder</option><option>assignment_update</option><option>general_notice</option></select><input name="recipient" placeholder="Recipient, optional"><input name="subject" placeholder="Subject"><select name="priority"><option>Normal</option><option>High</option><option>Critical</option></select><textarea name="message" placeholder="Message"></textarea><button class="btn btn-primary">Save Notification</button></form><article class="wc-panel"><h2>Recent Notices</h2><div class="wc-list">{% for n in notes %}<a><strong>{{ n.title }}</strong><span>{{ n.priority }} / {{ n.note_type }}</span></a>{% else %}<p>No notices yet.</p>{% endfor %}</div></article></section>
+{% endblock %}

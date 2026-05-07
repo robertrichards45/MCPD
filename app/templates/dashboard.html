@@ -91,10 +91,10 @@
         <small>Open the phone/tablet field dashboard</small>
       </a>
       {% if current_user.can_manage_team() or portal_is_watch_commander_view %}
-      <a class="mcpd-action-card" href="{{ url_for('assistant.watch_commander_console') }}">
+      <a class="mcpd-action-card" href="{{ url_for('watch_commander.dashboard') }}">
         <span class="mcpd-action-icon" aria-hidden="true">{{ dash_icon('orders') }}</span>
-        <strong>WC Tool Console</strong>
-        <small>Counseling, awards, learning, and officer files</small>
+        <strong>Watch Commander Hub</strong>
+        <small>Shift, reports, approvals, officers, and briefing</small>
       </a>
       <a class="mcpd-action-card" href="{{ url_for('auth.manage_users') }}">
         <span class="mcpd-action-icon" aria-hidden="true">{{ dash_icon('training') }}</span>

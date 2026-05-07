@@ -1,0 +1,23 @@
+{% extends "watch_commander/_layout.html" %}
+{% block wc_title %}Report Review{% endblock %}
+{% block wc_subtitle %}Review submitted report packets, narratives, forms, diagrams, corrections, and approvals.{% endblock %}
+{% block wc_body %}
+<section class="wc-card-table">
+  {% for p in packets %}
+  <article class="wc-row-card">
+    <div><strong>{{ p.call_type or 'Incident Packet' }}</strong><span>{{ p.submitted_at.strftime('%m/%d/%Y %H:%M') if p.submitted_at else '' }}</span></div>
+    <div><span>Officer</span><strong>{{ p.officer.display_name if p.officer else 'Unknown' }}</strong></div>
+    <div><span>Status</span><strong>{{ p.approval_status }}</strong></div>
+    <div><span>Forms</span><strong>{{ p.form_count }}</strong></div>
+    <div><span>Location</span><strong>{{ p.location or 'Not listed' }}</strong></div>
+    <form method="post" action="{{ url_for('watch_commander.report_action', packet_id=p.id, action='return') }}" class="wc-inline-form" onsubmit="return confirm('Return this report for correction?');">
+      <input name="notes" placeholder="Correction note">
+      <button class="btn btn-outline" type="submit">Return</button>
+    </form>
+    <form method="post" action="{{ url_for('watch_commander.report_action', packet_id=p.id, action='approve') }}" onsubmit="return confirm('Approve this report packet?');">
+      <button class="btn btn-primary" type="submit">Approve</button>
+    </form>
+  </article>
+  {% else %}<div class="wc-panel">No submitted reports found.</div>{% endfor %}
+</section>
+{% endblock %}

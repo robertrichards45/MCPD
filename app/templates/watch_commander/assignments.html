@@ -1,0 +1,6 @@
+{% extends "watch_commander/_layout.html" %}
+{% block wc_title %}Assignments{% endblock %}
+{% block wc_subtitle %}Patrol zones, gate posts, desk duties, training duties, follow-ups, special tasks, and RAM checks.{% endblock %}
+{% block wc_body %}
+<section class="wc-card-table">{% for a in assignments %}<article class="wc-row-card"><div><strong>{{ a.officer.display_name if a.officer else 'Officer' }}</strong><span>{{ a.assignment_type }}</span></div><div><span>Location</span><strong>{{ a.assignment_location or 'N/A' }}</strong></div><div><span>Status</span><strong>{{ a.status }}</strong></div><div><span>Times</span><strong>{{ a.start_time or '' }} - {{ a.end_time or '' }}</strong></div></article>{% else %}<div class="wc-panel">No assignments yet. Create assignments from the Officer Status Board.</div>{% endfor %}</section>
+{% endblock %}

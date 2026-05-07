@@ -1,0 +1,60 @@
+{% extends "watch_commander/_layout.html" %}
+{% block wc_title %}Watch Commander Dashboard{% endblock %}
+{% block wc_subtitle %}Shift status, pending reviews, officer activity, training, and command actions in one place.{% endblock %}
+{% block wc_body %}
+<section class="wc-summary-grid">
+  {% for label, value in [
+    ('Officers on duty', summary.officers_on_duty),
+    ('Reports pending review', summary.reports_pending),
+    ('Saved forms pending review', summary.saved_forms_pending),
+    ('Training rosters active', summary.training_pending),
+    ('Open incidents', summary.open_incidents),
+    ('Shift notes', summary.shift_notes),
+    ('Pending approvals', summary.pending_approvals)
+  ] %}
+  <article class="wc-summary-card"><span>{{ label }}</span><strong>{{ value }}</strong></article>
+  {% endfor %}
+</section>
+
+<section class="wc-action-grid">
+  <a href="{{ url_for('watch_commander.briefing') }}">Start Shift Brief<span>Current notices, BOLOs, assignments, and safety notes.</span></a>
+  <a href="{{ url_for('watch_commander.reports') }}">Review Reports<span>Approve, return, or inspect submitted packets.</span></a>
+  <a href="{{ url_for('watch_commander.saved_work') }}">Review Saved Forms<span>Metadata-aware saved work review.</span></a>
+  <a href="{{ url_for('watch_commander.officers') }}">Assign Officers<span>Post, status, watch, and assignment updates.</span></a>
+  <a href="{{ url_for('watch_commander.training') }}">View Training Roster<span>Monitor signatures and completion.</span></a>
+  <a href="{{ url_for('watch_commander.blotter') }}">Open Blotter<span>Shift notes and journal review.</span></a>
+  <a href="{{ url_for('watch_commander.notifications') }}">Send Notification<span>Shift note, correction, training reminder, or notice.</span></a>
+  <a href="{{ url_for('watch_commander.approvals') }}">Approvals Center<span>All pending command actions grouped together.</span></a>
+</section>
+
+<section class="wc-dashboard-grid">
+  <article class="wc-panel">
+    <h2>Current Shift</h2>
+    {% if open_shift %}
+      <p><strong>{{ open_shift.shift_type }}</strong> / {{ open_shift.shift_date }} / {{ open_shift.status }}</p>
+      <p>{{ open_shift.notes or 'No shift notes entered.' }}</p>
+    {% else %}
+      <p>No open shift. Start one from Shift Management.</p>
+    {% endif %}
+    <a class="wc-btn" href="{{ url_for('watch_commander.shift') }}">Manage Shift</a>
+  </article>
+  <article class="wc-panel">
+    <h2>Mobile Watch View</h2>
+    <div class="wc-mobile-card-grid">
+      {% for title, endpoint in mobile_cards %}
+        <a href="{{ url_for(endpoint) }}">{{ title }}</a>
+      {% endfor %}
+    </div>
+  </article>
+  <article class="wc-panel wc-panel-wide">
+    <h2>Recent Shift Notes</h2>
+    <div class="wc-list">
+      {% for note in shift_notes %}
+      <a href="{{ url_for('watch_commander.blotter') }}"><strong>{{ note.title }}</strong><span>{{ note.priority }} / {{ note.note_type }}</span></a>
+      {% else %}
+      <p>No watch notes yet.</p>
+      {% endfor %}
+    </div>
+  </article>
+</section>
+{% endblock %}

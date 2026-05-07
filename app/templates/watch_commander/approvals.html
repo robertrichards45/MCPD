@@ -1,0 +1,6 @@
+{% extends "watch_commander/_layout.html" %}
+{% block wc_title %}Approvals Center{% endblock %}
+{% block wc_subtitle %}One queue for reports, forms, training, assignments, narrative learning, builder requests, and diagrams.{% endblock %}
+{% block wc_body %}
+<section class="wc-dashboard-grid">{% for label, items in queues.items() %}<article class="wc-panel"><h2>{{ label }}</h2><strong class="wc-big-number">{{ items|length }}</strong></article>{% endfor %}</section><section class="wc-card-table">{% for a in approvals %}<article class="wc-row-card"><div><strong>{{ a.target_type }}</strong><span>Target #{{ a.target_id or 'N/A' }}</span></div><div><span>Status</span><strong>{{ a.status }}</strong></div><form method="post" class="wc-inline-form"><input type="hidden" name="approval_id" value="{{ a.id }}"><input name="comments" placeholder="Comments"><select name="action"><option>APPROVED</option><option>RETURNED</option><option>REJECTED</option><option>NEEDS_CORRECTION</option></select><button class="btn btn-primary">Save</button></form></article>{% else %}<div class="wc-panel">No WatchApproval records yet.</div>{% endfor %}</section>
+{% endblock %}

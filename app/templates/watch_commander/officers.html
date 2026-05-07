@@ -1,0 +1,25 @@
+{% extends "watch_commander/_layout.html" %}
+{% block wc_title %}Officer Status Board{% endblock %}
+{% block wc_subtitle %}Assignment, availability, report status, training status, saved work, and corrections.{% endblock %}
+{% block wc_body %}
+<section class="wc-card-table">
+  {% for row in rows %}
+  <article class="wc-row-card">
+    <div><strong>{{ row.officer.display_name }}</strong><span>{{ row.officer.role_label }} / {{ row.officer.section_unit or 'Unassigned' }}</span></div>
+    <div><span>Assignment</span><strong>{{ row.assignment.assignment_type if row.assignment else 'Unassigned' }}</strong></div>
+    <div><span>Status</span><strong>{{ row.assignment.status if row.assignment else 'Off Duty' }}</strong></div>
+    <div><span>Saved</span><strong>{{ row.saved_count }}</strong></div>
+    <div><span>Drafts</span><strong>{{ row.draft_count }}</strong></div>
+    <div><span>Corrections</span><strong>{{ row.pending_corrections }}</strong></div>
+    <form method="post" class="wc-inline-form">
+      <input type="hidden" name="officer_id" value="{{ row.officer.id }}">
+      <select name="shift_id"><option value="">No shift</option>{% for s in shifts %}<option value="{{ s.id }}">{{ s.shift_date }} / {{ s.shift_type }}</option>{% endfor %}</select>
+      <select name="assignment_type">{% for t in assignment_types %}<option>{{ t }}</option>{% endfor %}</select>
+      <input name="assignment_location" placeholder="Post / zone">
+      <select name="status">{% for s in statuses %}<option>{{ s }}</option>{% endfor %}</select>
+      <button class="btn btn-primary" type="submit">Update</button>
+    </form>
+  </article>
+  {% endfor %}
+</section>
+{% endblock %}

@@ -1,0 +1,6 @@
+{% extends "watch_commander/_layout.html" %}
+{% block wc_title %}Forms Oversight{% endblock %}
+{% block wc_subtitle %}Submitted forms, blank forms, saved metadata, incomplete forms, and report packet attachments without debug tools.{% endblock %}
+{% block wc_body %}
+<section class="wc-two-column"><article class="wc-panel"><h2>Saved Forms</h2><div class="wc-list">{% for s in saved %}<a><strong>{{ s.title or s.form.title }}</strong><span>{{ s.status }} / {{ s.officer.display_name if s.officer else 'Unknown' }}</span></a>{% else %}<p>No saved forms.</p>{% endfor %}</div></article><article class="wc-panel"><h2>Blank Forms Available</h2><div class="wc-list">{% for f in forms %}<a href="{{ url_for('forms.fill_form', form_id=f.id) }}"><strong>{{ f.title }}</strong><span>{{ f.category or 'General' }}</span></a>{% else %}<p>No forms.</p>{% endfor %}</div></article></section>
+{% endblock %}
