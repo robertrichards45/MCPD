@@ -46,6 +46,12 @@ from ..services.mobile_form_catalog import build_mobile_form_catalog
 bp = Blueprint('mobile', __name__)
 
 
+@bp.route('/mobile')
+@login_required
+def root():
+    return redirect(url_for('mobile.home'))
+
+
 def _active_incident_draft():
     return (
         IncidentDraft.query

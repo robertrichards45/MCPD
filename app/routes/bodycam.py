@@ -179,6 +179,12 @@ def narrative_tool():
     return render_template('narrative_5w_tool.html', user=current_user, mobile_mode=False)
 
 
+@bp.get('/bodycam/narrative')
+@login_required
+def bodycam_narrative_alias():
+    return redirect(url_for('bodycam.narrative_tool'))
+
+
 @bp.get('/mobile/tools/narrative')
 @login_required
 def mobile_narrative_tool():

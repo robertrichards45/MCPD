@@ -53,6 +53,38 @@
         <strong>Saved Work</strong>
         <small>Saved forms, drafts, and packets</small>
       </a>
+      <a class="mcpd-action-card" href="{{ url_for('reports.accidents') }}">
+        <span class="mcpd-action-icon" aria-hidden="true">{{ dash_icon('report') }}</span>
+        <strong>Accident Tools</strong>
+        <small>Officer diagrams and investigator reconstruction</small>
+      </a>
+      <a class="mcpd-action-card" href="{{ url_for('bodycam.new_recording') }}">
+        <span class="mcpd-action-icon" aria-hidden="true">{{ dash_icon('report') }}</span>
+        <strong>Body Cam Mode</strong>
+        <small>Record video with transcript support</small>
+      </a>
+      <a class="mcpd-action-card" href="{{ url_for('bodycam.library') }}">
+        <span class="mcpd-action-icon" aria-hidden="true">{{ dash_icon('saved') }}</span>
+        <strong>Bodycam Footage</strong>
+        <small>Review saved recordings and transcripts</small>
+      </a>
+      <a class="mcpd-action-card" href="{{ url_for('bodycam.narrative_tool') }}">
+        <span class="mcpd-action-icon" aria-hidden="true">{{ dash_icon('forms') }}</span>
+        <strong>Narrative / 5W Builder</strong>
+        <small>Paste facts and generate a 5W summary</small>
+      </a>
+      {% if portal_can_access_builder_mode %}
+      <a class="mcpd-action-card" href="{{ url_for('admin.site_builder') }}">
+        <span class="mcpd-action-icon" aria-hidden="true">{{ dash_icon('orders') }}</span>
+        <strong>Site Builder</strong>
+        <small>Owner-approved change request console</small>
+      </a>
+      {% endif %}
+      <a class="mcpd-action-card" href="{{ url_for('mobile.home') }}">
+        <span class="mcpd-action-icon" aria-hidden="true">{{ dash_icon('training') }}</span>
+        <strong>Mobile Field View</strong>
+        <small>Open the phone/tablet field dashboard</small>
+      </a>
     </section>
 
     <section class="mcpd-dashboard-panels">
