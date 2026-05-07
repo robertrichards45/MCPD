@@ -328,9 +328,6 @@ def _ordered_visible_items(catalog, selected_ids, default_ids):
     ordered_ids = [item_id for item_id in selected_ids if item_id in allowed] if selected_ids else []
     if not ordered_ids:
         ordered_ids = [item_id for item_id in default_ids if item_id in allowed]
-    for item_id in allowed:
-        if item_id not in ordered_ids and item_id in default_ids:
-            ordered_ids.append(item_id)
     return [allowed[item_id] for item_id in ordered_ids if item_id in allowed]
 
 

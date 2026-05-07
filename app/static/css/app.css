@@ -15367,6 +15367,68 @@ body:not(.mobile-foundation) .forms-manager-page code {
   word-break: break-word;
 }
 
+body:not(.mobile-foundation) .mcpd-dashboard-head-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+body:not(.mobile-foundation) .dashboard-customize-layout {
+  display: grid;
+  gap: 18px;
+}
+
+body:not(.mobile-foundation) .dashboard-customize-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+body:not(.mobile-foundation) .dashboard-customize-grid.compact {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+body:not(.mobile-foundation) .dashboard-customize-card {
+  align-items: center;
+  background: var(--panel) !important;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  cursor: pointer;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: auto minmax(0, 1fr);
+  padding: 14px;
+}
+
+body:not(.mobile-foundation) .dashboard-customize-card:has(input:checked) {
+  background: color-mix(in srgb, var(--primary) 12%, var(--panel)) !important;
+  border-color: var(--primary);
+}
+
+body:not(.mobile-foundation) .dashboard-customize-card input {
+  margin: 0 !important;
+}
+
+body:not(.mobile-foundation) .dashboard-customize-card strong,
+body:not(.mobile-foundation) .dashboard-customize-card small {
+  display: block;
+}
+
+body:not(.mobile-foundation) .dashboard-customize-card small {
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+body:not(.mobile-foundation) .dashboard-customize-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: space-between;
+}
+
 @media (max-width: 960px) {
   body:not(.mobile-foundation):not(.force-mobile-view) .page-wrap,
   body:not(.mobile-foundation):not(.force-mobile-view) .dashboard,
@@ -15427,6 +15489,17 @@ body:not(.mobile-foundation) .forms-manager-page code {
 
   body:not(.mobile-foundation) .mission-hero .action-row .btn,
   body:not(.mobile-foundation) .manager-hero .action-row .btn {
+    width: 100%;
+  }
+
+  body:not(.mobile-foundation) .mcpd-dashboard-head-actions,
+  body:not(.mobile-foundation) .dashboard-customize-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  body:not(.mobile-foundation) .mcpd-dashboard-head-actions .btn,
+  body:not(.mobile-foundation) .dashboard-customize-actions .btn {
     width: 100%;
   }
 }

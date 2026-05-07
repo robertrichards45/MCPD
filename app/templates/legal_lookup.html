@@ -92,8 +92,8 @@
     <section class="card p-3 mb-3 ai-law-candidates">
       <div class="section-tight mb-2">
         <div class="eyebrow">AI-Assisted Jurisdiction Sweep</div>
-        <h5 class="mb-1">Candidate laws to verify</h5>
-        <p class="small text-muted mb-0">These are not official completed results. Verify the citation and current text before relying on them.</p>
+        <h5 class="mb-1">Related / Review If Needed</h5>
+        <p class="small text-muted mb-0">AI candidates are filtered against the facts entered here. Verify the citation and current text before relying on them.</p>
       </div>
       <div class="legal-results-list">
         {% for item in ai_candidates %}
@@ -101,12 +101,19 @@
           <summary class="legal-accordion-summary">
             <span class="legal-accordion-title">{{ item.code }} | {{ item.title }}</span>
             <div class="d-flex gap-1 align-items-center legal-result-badges">
-              <span class="badge bg-warning text-dark">{{ item.label }}</span>
+              <span class="badge bg-warning text-dark">{{ item.tier or 'Review If Needed' }}</span>
+              <span class="badge bg-info text-dark">{{ item.label }}</span>
               <span class="badge bg-secondary">Verify</span>
             </div>
           </summary>
           <div class="legal-accordion-body">
             {% if item.why_relevant %}<p class="mb-2">{{ item.why_relevant }}</p>{% endif %}
+            {% if item.matched_facts %}
+            <div class="summary-box mb-2">
+              <div class="small text-muted mb-1">Matched Facts</div>
+              <p class="mb-0">{{ item.matched_facts }}</p>
+            </div>
+            {% endif %}
             {% if item.elements %}
             <div class="summary-box mb-2">
               <div class="small text-muted mb-1">Likely elements / issues</div>

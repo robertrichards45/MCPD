@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% macro option_card(item, selected_ids, field_name) -%}
+<label class="dashboard-customize-card">
+  <input type="checkbox" name="{{ field_name }}" value="{{ item.id }}" {% if item.id in selected_ids %}checked{% endif %}>
+  <span>
+    <strong>{{ item.label if item.label is defined else item.title }}</strong>
+    <small>{{ item.description if item.description is defined else 'Dashboard panel' }}</small>
+  </span>
+</label>
+{%- endmacro %}
+{% block body %}
+<div class="app-shell mcpd-command-app">
+  {% include 'partials/nav.html' %}
+  <main class="dashboard mcpd-dashboard dashboard-customize-page">
+    <section class="mcpd-dashboard-head">
+      <div>
+        <h1>Customize Dashboard</h1>
+        <p>Choose the quick actions and information panels you want on your MCPD dashboard.</p>
+      </div>
+      <a class="btn btn-outline-secondary" href="{{ url_for('dashboard.dashboard') }}">Back to Dashboard</a>
+    </section>
+
+    <form class="dashboard-customize-layout" method="post">
+      <section class="mcpd-panel">
+        <div class="mcpd-panel-head">
+          <h2>Quick Action Cards</h2>
+          <span class="text-muted">Checked cards appear on your dashboard.</span>
+        </div>
+        <div class="dashboard-customize-grid">
+          {% for card in dashboard_card_catalog %}
+            {{ option_card(card, dashboard_selected_card_ids, 'cards') }}
+          {% endfor %}
+        </div>
+      </section>
+
+      <section class="mcpd-panel">
+        <div class="mcpd-panel-head">
+          <h2>Dashboard Panels</h2>
+          <span class="text-muted">Choose the lower dashboard panels.</span>
+        </div>
+        <div class="dashboard-customize-grid compact">
+          {% for panel in dashboard_panel_catalog %}
+            {{ option_card(panel, dashboard_selected_panel_ids, 'panels') }}
+          {% endfor %}
+        </div>
+      </section>
+
+      <section class="mcpd-panel dashboard-customize-actions">
+        <div>
+          <strong>Save your layout</strong>
+          <p class="text-muted mb-0">Your settings are saved to your account and follow you across desktop browsers.</p>
+        </div>
+        <div class="action-row">
+          <button class="btn btn-outline-secondary" type="submit" name="action" value="reset" formnovalidate>Reset to Default</button>
+          <button class="btn btn-primary" type="submit" name="action" value="save">Save Dashboard</button>
+        </div>
+      </section>
+    </form>
+  </main>
+</div>
+{% endblock %}

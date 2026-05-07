@@ -1,6 +1,7 @@
 from app import create_app
 from app.extensions import db
 from app.models import ROLE_WEBSITE_CONTROLLER, Form, User
+from app.routes import forms as forms_routes
 from app.services import form_source_updates
 
 
@@ -168,3 +169,17 @@ def test_form_source_update_marks_dso_storefront_as_gated(monkeypatch, tmp_path)
     result = form_source_updates.check_and_update_form_source(form, str(tmp_path), apply_update=True)
     assert result.ok is False
     assert result.status == 'requires_login'
+
+
+def test_form_recovery_scans_static_cleo_pdfs_when_upload_volume_is_empty(tmp_path):
+    app = create_app()
+    app.config['TESTING'] = True
+    app.config['FORMS_UPLOAD'] = str(tmp_path / 'empty-volume' / 'forms')
+    try:
+        with app.app_context():
+            entries = forms_routes._form_storage_entries()
+            names = {entry.name for entry in entries}
+            assert 'traffic ticket (DD Form 1408).pdf' in names
+            assert 'TA MAIN.pdf' in names
+    finally:
+        _dispose_app(app)

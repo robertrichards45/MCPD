@@ -2809,10 +2809,18 @@ def _score_profile(profile: SearchEntryProfile, analysis: QueryAnalysis, strict_
         'controlled_substance' in analysis.concept_tags
         or bool(re.search(r'\bdrug\b|\bdrugs\b|\bnarcotic\b|\bmarijuana\b|\bweed\b|\bcannabis\b|\bcocaine\b|\bmeth\b|\bfentanyl\b', analysis.normalized_query))
     )
+    public_sanitation_query = bool(
+        re.search(
+            r'public defecation|defecat\w+|poop\w+|feces|urinat\w+|peeing|public indecency|indecent exposure|lewd conduct',
+            analysis.normalized_query,
+        )
+    )
     installation_entry_query = bool(
         re.search(r'trespass|unauthorized entr|unlawful entr|without permission|barred from (?:base|installation)|reenter(?:ed)?|returned to (?:base|installation)|ordered not to return|told not to return|refus\w+ to leave|remain\w+ after|debarred|barment', analysis.normalized_query)
         or ('restricted area' in analysis.normalized_query and not controlled_substance_query)
     )
+    property_damage_query = bool(re.search(r'damag|destroy|destruction|vandal|graffiti|break|broke|smash', analysis.normalized_query))
+    lawful_order_query = bool(re.search(r'lawful order|lawful command|direct order|disobey|refus\w+ command|article 92|regulation', analysis.normalized_query))
 
     if analysis.ocga_code and analysis.ocga_code in code_text:
         score += 96
@@ -2967,6 +2975,23 @@ def _score_profile(profile: SearchEntryProfile, analysis: QueryAnalysis, strict_
         # actual described drug conduct unless entry/barment facts are present.
         score -= 40
         reasons.append('location context only; primary conduct is controlled substance')
+    if public_sanitation_query:
+        if entry.code == '18 USC 1382' and not installation_entry_query:
+            score -= 130
+            reasons.append('location context only; primary conduct is public sanitation/indecency')
+        if entry.code == '18 USC 1361' and not property_damage_query:
+            score -= 72
+            reasons.append('suppressed property-damage path; no damage facts described')
+        if entry.code == 'Article 92' and not lawful_order_query:
+            score -= 64
+            reasons.append('suppressed order/regulation path; no order facts described')
+        if (
+            entry.source == 'BASE_ORDER'
+            and re.search(r'traffic|speed|seat belt|cell phone|texting|vehicle', title_text)
+            and not re.search(r'vehicle|traffic|driv|road|lane|speed|crash|parking|seat belt|cell phone|texting', analysis.normalized_query)
+        ):
+            score -= 90
+            reasons.append('suppressed traffic-order path; no traffic facts described')
 
     final_reasons = _ordered_unique(reasons)[:6]
     final_terms = _ordered_unique(matched_terms)[:10]

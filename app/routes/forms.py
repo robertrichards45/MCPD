@@ -616,16 +616,22 @@ def _eligible_form_entries(save_dir):
 
 def _form_storage_entries():
     primary_dir = _resolve_storage_path(current_app.config.get('FORMS_UPLOAD'))
-    primary_entries = _eligible_form_entries(primary_dir)
-    if primary_entries:
-        return primary_entries
-
-    # Railway volumes start clean. Keep the officer library usable by falling
-    # back to the bundled official PDFs committed with the app image.
-    bundled_dir = os.path.abspath(os.path.join(_repo_root(), 'app', 'data', 'uploads', 'forms'))
-    if os.path.normcase(bundled_dir) == os.path.normcase(primary_dir or ''):
-        return primary_entries
-    return _eligible_form_entries(bundled_dir)
+    source_dirs = [
+        primary_dir,
+        # Railway volumes start clean. Keep the officer library usable by
+        # falling back to bundled PDFs committed with the app image.
+        os.path.abspath(os.path.join(_repo_root(), 'app', 'data', 'uploads', 'forms')),
+        os.path.abspath(os.path.join(current_app.root_path, 'static', 'cleo', 'pdfs')),
+    ]
+    entries = []
+    seen_paths = set()
+    for source_dir in source_dirs:
+        normalized_dir = os.path.normcase(os.path.abspath(source_dir or ''))
+        if not normalized_dir or normalized_dir in seen_paths:
+            continue
+        seen_paths.add(normalized_dir)
+        entries.extend(_eligible_form_entries(source_dir))
+    return entries
 
 
 def _sync_forms_from_storage():

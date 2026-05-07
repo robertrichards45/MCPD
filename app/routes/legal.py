@@ -504,6 +504,59 @@ def _ai_supplemental_candidates(query: str, source: str, results: list[LegalMatc
     return clean
 
 
+def _plain_language_fact_profile(query: str) -> dict:
+    normalized = _normalize_query_key(query)
+    return {
+        'public_sanitation': bool(re.search(r'public defecation|defecat\w+|poop\w+|feces|urinat\w+|peeing|public indecency|indecent exposure|lewd conduct', normalized)),
+        'public_location': bool(re.search(r'\bpublic\b|street|sidewalk|road|parking lot|open area|outside', normalized)),
+        'property_damage': bool(re.search(r'damag|destroy|destruction|vandal|graffiti|break|broke|smash', normalized)),
+        'theft': bool(re.search(r'shoplift|steal|stole|stolen|theft|larceny|take|took|px theft|exchange theft', normalized)),
+        'lawful_order': bool(re.search(r'lawful order|lawful command|direct order|disobey|refus\w+ command|article 92|regulation|ordered not to', normalized)),
+        'entry_barment': bool(re.search(r'trespass|unauthorized entr|unlawful entr|barred|debarred|barment|returned to base|told not to return|ordered not to return|refus\w+ to leave|remain\w+ after', normalized)),
+        'military_subject': bool(re.search(r'marine|soldier|airman|sailor|service member|military member|on duty|barracks|ucmj', normalized)),
+    }
+
+
+def _ai_candidate_relevance(query: str, jurisdiction: str, code: str, title: str, why_relevant: str, elements: list[str]) -> tuple[bool, str, str]:
+    """Keep AI suggestions tied to the described conduct, not loose keywords.
+
+    The AI sweep is useful for incomplete state/federal coverage, but officers
+    should not see speculative federal/UCMJ candidates just because the query
+    mentions a public place, base, street, or other background setting.
+    """
+
+    facts = _plain_language_fact_profile(query)
+    candidate_text = _normalize_query_key(' '.join([code, title, why_relevant, ' '.join(elements)]))
+
+    if facts['public_sanitation']:
+        relevant_public_terms = re.search(
+            r'disorderly|indecent|exposure|lewd|nuisance|sanitation|health|defecat|urination|public conduct',
+            candidate_text,
+        )
+        if jurisdiction == 'STATE' and relevant_public_terms:
+            return True, 'Strong Match', 'Matches the described public sanitation/indecency conduct and public-location facts.'
+        if jurisdiction == 'UCMJ':
+            military_public_terms = re.search(r'article 134|disorderly|indecent|prejudice|good order|conduct', candidate_text)
+            if facts['military_subject'] and military_public_terms:
+                return True, 'Related / Review If Needed', 'Possible military review only because the facts identify a military subject.'
+            return False, '', 'Rejected UCMJ candidate because no military-status/order facts were described.'
+        if jurisdiction == 'FEDERAL_USC':
+            return False, '', 'Rejected federal candidate because public defecation does not describe federal property damage, theft, or barred-entry facts.'
+
+    if re.search(r'1361|property damage|destruction', candidate_text) and not facts['property_damage']:
+        return False, '', 'Rejected property-damage candidate because no damage/destruction facts were described.'
+    if re.search(r'shoplift|exchange theft|px theft|theft|larceny', candidate_text) and not facts['theft']:
+        return False, '', 'Rejected theft candidate because no taking/shoplifting facts were described.'
+    if re.search(r'article 92|failure to obey|order or regulation|lawful order', candidate_text) and not facts['lawful_order']:
+        return False, '', 'Rejected order/regulation candidate because no order/refusal facts were described.'
+    if re.search(r'1382|reentry|military.*property|naval.*property|coast guard.*property|barred', candidate_text) and not facts['entry_barment']:
+        return False, '', 'Rejected installation-entry candidate because no barred-entry/refusal-to-leave facts were described.'
+
+    if jurisdiction == 'STATE':
+        return True, 'Probable Match', 'State-law candidate may fit the described conduct; verify elements and current citation.'
+    return True, 'Related / Review If Needed', 'Review only if the missing jurisdictional facts are confirmed.'
+
+
 def _ai_multijurisdiction_candidates(query: str, source: str, state_code: str, results: list[LegalMatch]) -> list[dict]:
     if not (query or '').strip():
         return []
@@ -564,6 +617,11 @@ def _ai_multijurisdiction_candidates(query: str, source: str, state_code: str, r
         key = (jurisdiction, code.lower())
         if key in seen or code in existing_codes:
             continue
+        why_relevant = str(item.get('why_relevant') or item.get('reason') or '').strip()
+        elements = _dedupe_phrases(item.get('elements') if isinstance(item.get('elements'), list) else [], limit=6)
+        allowed_candidate, tier, gate_note = _ai_candidate_relevance(query, jurisdiction, code, title, why_relevant, list(elements))
+        if not allowed_candidate:
+            continue
         seen.add(key)
         clean.append(
             {
@@ -572,8 +630,10 @@ def _ai_multijurisdiction_candidates(query: str, source: str, state_code: str, r
                 'label': f'{state_name} State Law' if jurisdiction == 'STATE' else _source_label(jurisdiction),
                 'code': code,
                 'title': title,
-                'why_relevant': str(item.get('why_relevant') or item.get('reason') or '').strip(),
-                'elements': _dedupe_phrases(item.get('elements') if isinstance(item.get('elements'), list) else [], limit=6),
+                'why_relevant': why_relevant,
+                'matched_facts': gate_note,
+                'tier': tier,
+                'elements': elements,
                 'verification_note': str(item.get('verification_note') or 'Verify against the current official source before use.').strip(),
             }
         )

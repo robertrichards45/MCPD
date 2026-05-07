@@ -5,7 +5,7 @@ from flask import Flask
 
 from app import create_app
 from app.services.legal_lookup import LegalEntry, reference_download_info, search_entries
-from app.routes.legal import _order_reference_matches
+from app.routes.legal import _ai_candidate_relevance, _order_reference_matches
 
 
 def test_federal_installation_queries_rank_18_usc_1382_first():
@@ -72,6 +72,46 @@ def test_public_defecation_query_does_not_surface_unrelated_shoplifting_order():
     assert not any('shoplifting' in title.lower() for title in titles)
 
 
+def test_public_defecation_query_prioritizes_conduct_over_base_or_federal_context():
+    results = search_entries('pooping in public on base', 'ALL')
+    codes = [item.entry.code for item in results[:5]]
+    assert 'OCGA 16-11-39' in codes
+    assert 'OCGA 16-6-8' in codes
+    assert results[0].entry.code in {'OCGA 16-11-39', 'OCGA 16-6-8'}
+    assert '18 USC 1361' not in codes
+    assert 'Article 92' not in codes
+
+
+def test_ai_sweep_filters_unrelated_federal_and_ucmj_public_defecation_candidates():
+    assert _ai_candidate_relevance(
+        'pooping in public',
+        'FEDERAL_USC',
+        '18 USC 1361',
+        'Government Property Damage or Destruction',
+        'May apply on government property.',
+        [],
+    )[0] is False
+    assert _ai_candidate_relevance(
+        'pooping in public',
+        'UCMJ',
+        'Article 92',
+        'Failure to Obey Order or Regulation',
+        'May apply to order violations.',
+        [],
+    )[0] is False
+    allowed, tier, note = _ai_candidate_relevance(
+        'pooping in public',
+        'STATE',
+        'OCGA 16-11-39',
+        'Disorderly Conduct',
+        'Public conduct creating a disturbance.',
+        ['Public conduct'],
+    )
+    assert allowed is True
+    assert tier == 'Strong Match'
+    assert 'public sanitation' in note
+
+
 def test_drug_conduct_at_gate_prioritizes_controlled_substance_over_entry_context():
     results = search_entries('weed in vehicle at the gate', 'ALL')
     assert results
@@ -104,6 +144,7 @@ def test_legal_lookup_template_is_officer_clean_and_shows_download_action():
     app.secret_key = 'test'
     app.handle_url_build_error = lambda error, endpoint, values: f'/{endpoint}'
     fake_user = SimpleNamespace(can_manage_site=lambda: False, can_manage_team=lambda: False, display_name='Officer Test')
+    app.jinja_env.globals['current_user'] = fake_user
     fake_entry = LegalEntry(
         source='FEDERAL_USC',
         code='18 USC 1382',
@@ -160,6 +201,7 @@ def test_legal_lookup_template_renders_ai_search_brief_when_present():
     app.secret_key = 'test'
     app.handle_url_build_error = lambda error, endpoint, values: f'/{endpoint}'
     fake_user = SimpleNamespace(can_manage_site=lambda: False, can_manage_team=lambda: False, display_name='Officer Test')
+    app.jinja_env.globals['current_user'] = fake_user
     with app.test_request_context('/legal/search'):
         html = app.jinja_env.get_template('legal_lookup.html').render(
             user=fake_user,
@@ -203,6 +245,7 @@ def test_legal_lookup_template_renders_state_selector_and_ai_candidate_notice():
     app.secret_key = 'test'
     app.handle_url_build_error = lambda error, endpoint, values: f'/{endpoint}'
     fake_user = SimpleNamespace(can_manage_site=lambda: False, can_manage_team=lambda: False, display_name='Officer Test')
+    app.jinja_env.globals['current_user'] = fake_user
     with app.test_request_context('/legal/search?state=TX&source=ALL&q=assault'):
         html = app.jinja_env.get_template('legal_lookup.html').render(
             user=fake_user,
@@ -246,7 +289,7 @@ def test_legal_lookup_template_renders_state_selector_and_ai_candidate_notice():
             portal_watch_commander_scope_id=None,
         )
     assert 'Texas' in html
-    assert 'Candidate laws to verify' in html
+    assert 'Related / Review If Needed' in html
     assert 'Verify against official Texas law.' in html
 
 
