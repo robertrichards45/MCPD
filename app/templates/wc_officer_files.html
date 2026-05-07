@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/wc_admin.css', v='2026-05-07') }}" />
+{% endblock %}
+{% block body %}
+<div class="wc-admin-shell">
+  <header class="wc-admin-header">
+    <div>
+      <p class="eyebrow">Watch Commander Records</p>
+      <h1>Officer Files</h1>
+      <p>Upload, index, filter, and retrieve officer documents without exposing raw storage paths to normal users.</p>
+    </div>
+    <div class="wc-admin-actions">
+      <a class="btn btn-outline" href="{{ url_for('assistant.watch_commander_console') }}">WC Tool Console</a>
+      <a class="btn btn-outline" href="{{ url_for('dashboard.dashboard') }}">Back to Dashboard</a>
+    </div>
+  </header>
+
+  <section class="wc-admin-grid">
+    <article class="wc-card">
+      <h2>Upload Officer Files</h2>
+      <form data-wc-form="files" enctype="multipart/form-data">
+        <input name="officer_id" placeholder="Officer ID or badge number" />
+        <select name="area">
+          <option value="">Auto-classify area</option>
+          <option value="awards">Awards</option>
+          <option value="counseling">Counseling</option>
+          <option value="medical">Medical</option>
+          <option value="training">Training</option>
+          <option value="pdi">PDI / Police Department Instructions</option>
+          <option value="marine_corps_orders">Marine Corps Orders</option>
+          <option value="forms">Forms</option>
+          <option value="accident_investigation">Accident Investigation</option>
+          <option value="srt">SRT</option>
+          <option value="k9">K9</option>
+        </select>
+        <textarea name="description" placeholder="Description, date, reason, or filing notes"></textarea>
+        <input name="files" type="file" multiple />
+        <button class="btn btn-primary" type="submit">Upload Files</button>
+      </form>
+    </article>
+
+    <article class="wc-card">
+      <h2>Find Files</h2>
+      <form data-wc-file-search>
+        <input name="officer_id" placeholder="Filter by officer ID" />
+        <select name="area">
+          <option value="">All areas</option>
+          <option value="awards">Awards</option>
+          <option value="counseling">Counseling</option>
+          <option value="medical">Medical</option>
+          <option value="training">Training</option>
+          <option value="pdi">PDI / Police Department Instructions</option>
+          <option value="marine_corps_orders">Marine Corps Orders</option>
+          <option value="forms">Forms</option>
+          <option value="accident_investigation">Accident Investigation</option>
+          <option value="srt">SRT</option>
+          <option value="k9">K9</option>
+        </select>
+        <button class="btn btn-primary" type="submit">Search Files</button>
+      </form>
+      <button class="btn btn-outline" type="button" data-wc-load-files>Load All Files</button>
+    </article>
+  </section>
+
+  <section class="wc-output-card">
+    <h2>File Index</h2>
+    <div id="wc-file-list" class="wc-file-list"></div>
+    <pre id="wc-admin-output">Ready.</pre>
+  </section>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/wc_admin.js', v='2026-05-07') }}"></script>
+{% endblock %}

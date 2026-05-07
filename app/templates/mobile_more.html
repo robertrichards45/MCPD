@@ -30,6 +30,12 @@
     {% if portal_is_site_controller or portal_is_watch_commander_view %}
       {{ tool_card('Approve / Assign Officers', 'Activate accounts and assign officers to watch or installation.', url_for('mobile.supervisor_officers'), 'officers', True) }}
       {{ tool_card('Command Dashboard', 'Review packets, corrections, and supervisor workflow.', url_for('mobile.supervisor_dashboard'), 'command') }}
+      {{ tool_card('WC Tool Console', 'Counseling, awards, learning, and officer file tools.', url_for('assistant.watch_commander_console'), 'command') }}
+      {{ tool_card('Officer Files', 'Upload and review smart-filed officer documents.', url_for('assistant.officer_files_console'), 'library') }}
+      {{ tool_card('Stats Approvals', 'Approve officer stats and performance submissions.', url_for('performance.pending'), 'reports') }}
+      {{ tool_card('Readiness Tracker', 'Monitor qualifications and team readiness.', url_for('qual_tracker.tracker_readiness'), 'officers') }}
+      {{ tool_card('Command Notices', 'Post and review watch announcements.', url_for('announcements.board'), 'reports') }}
+      {{ tool_card('BOLO Board', 'Review and manage BOLO information.', url_for('bolo.bolo_board'), 'reports') }}
     {% endif %}
     {{ tool_card('Reports Center', 'Open reports, crash tools, packets, and report photos.', url_for('reports.list_reports'), 'reports') }}
     {{ tool_card('Body Cam Mode', 'Record field video and transcript into MCPD storage.', url_for('bodycam.mobile_recording'), 'camera', True) }}

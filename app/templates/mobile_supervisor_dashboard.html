@@ -24,9 +24,18 @@
     <p class="cmd-card-label">Quick Links</p>
     <div class="cmd-link-grid">
       <a class="cmd-link-btn" href="{{ url_for('mobile.supervisor_review') }}">Self-Check</a>
+      <a class="cmd-link-btn" href="{{ url_for('mobile.supervisor_officers') }}">Approve / Assign</a>
+      <a class="cmd-link-btn" href="{{ url_for('assistant.watch_commander_console') }}">WC Console</a>
+      <a class="cmd-link-btn" href="{{ url_for('assistant.officer_files_console') }}">Officer Files</a>
       <a class="cmd-link-btn" href="{{ url_for('mobile.incident_start') }}">New Incident</a>
       <a class="cmd-link-btn" href="{{ url_for('forms.list_forms') }}">Forms</a>
       <a class="cmd-link-btn" href="{{ url_for('legal.legal_home') }}">Law Lookup</a>
+      <a class="cmd-link-btn" href="{{ url_for('performance.pending') }}">Stats Approvals</a>
+      <a class="cmd-link-btn" href="{{ url_for('performance.team_overview') }}">Team Stats</a>
+      <a class="cmd-link-btn" href="{{ url_for('qual_tracker.tracker_readiness') }}">Readiness</a>
+      <a class="cmd-link-btn" href="{{ url_for('announcements.board') }}">Notices</a>
+      <a class="cmd-link-btn" href="{{ url_for('bolo.bolo_board') }}">BOLO</a>
+      <a class="cmd-link-btn" href="{{ url_for('ops_modules.vehicle_inspections') }}">Vehicle Insp.</a>
     </div>
   </div>
 

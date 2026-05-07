@@ -7,6 +7,7 @@ from pathlib import Path
 
 from flask import Blueprint, Response, current_app, jsonify, redirect, render_template, request, send_from_directory, session, url_for
 from flask_login import current_user, login_required
+from jinja2 import TemplateNotFound
 from werkzeug.utils import secure_filename
 
 from ..permissions import can_manage_site
@@ -396,9 +397,10 @@ def watch_commander_console():
 def officer_files_console():
     if not _is_supervisor():
         return render_template('forbidden.html', error_message='Supervisor access required.'), 403
-    template_path = Path(current_app.template_folder or '') / 'wc_officer_files.html'
-    if template_path.exists():
+    try:
         return render_template('wc_officer_files.html', title='Officer Files')
+    except TemplateNotFound:
+        current_app.logger.warning('wc_officer_files.html missing; falling back to Watch Commander console.')
     return redirect(url_for('assistant.watch_commander_console'))
 
 

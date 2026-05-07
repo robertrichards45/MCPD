@@ -7,6 +7,32 @@
     el.textContent = typeof value === 'string' ? value : JSON.stringify(value, null, 2);
   }
 
+  function renderFiles(data) {
+    var list = document.getElementById('wc-file-list');
+    if (!list) return;
+    var files = data && Array.isArray(data.files) ? data.files : [];
+    if (!files.length) {
+      list.innerHTML = '<p class="wc-empty">No files found.</p>';
+      return;
+    }
+    list.innerHTML = files.map(function (file) {
+      var relPath = encodeURI(file.rel_path || '');
+      return [
+        '<article class="wc-file-row">',
+        '<div><strong>', escapeHtml(file.title || file.file_name || 'Officer file'), '</strong>',
+        '<span>', escapeHtml([file.area, file.officer_id, file.uploaded_at].filter(Boolean).join(' / ')), '</span></div>',
+        relPath ? '<a class="btn btn-outline" href="/api/admin/files/download/' + relPath + '">Download</a>' : '',
+        '</article>',
+      ].join('');
+    }).join('');
+  }
+
+  function escapeHtml(value) {
+    return String(value || '').replace(/[&<>"']/g, function (ch) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch];
+    });
+  }
+
   function formJson(form) {
     var payload = {};
     new FormData(form).forEach(function (value, key) {
@@ -42,7 +68,10 @@
       return;
     }
     if (type === 'files') {
-      fetch('/api/admin/files/upload', { method: 'POST', body: new FormData(form) }).then(function (response) { return response.json(); }).then(output).catch(function () { output('File upload failed.'); });
+      fetch('/api/admin/files/upload', { method: 'POST', body: new FormData(form) }).then(function (response) { return response.json(); }).then(function (data) {
+        output(data);
+        renderFiles(data);
+      }).catch(function () { output('File upload failed.'); });
     }
   });
 
@@ -51,7 +80,21 @@
       fetch('/api/admin/learning/pending').then(function (response) { return response.json(); }).then(output).catch(function () { output('Unable to load pending learning.'); });
     }
     if (event.target.closest('[data-wc-load-files]')) {
-      fetch('/api/admin/files').then(function (response) { return response.json(); }).then(output).catch(function () { output('Unable to load file index.'); });
+      fetch('/api/admin/files').then(function (response) { return response.json(); }).then(function (data) {
+        output(data);
+        renderFiles(data);
+      }).catch(function () { output('Unable to load file index.'); });
     }
+  });
+
+  document.addEventListener('submit', function (event) {
+    var form = event.target.closest('[data-wc-file-search]');
+    if (!form) return;
+    event.preventDefault();
+    var params = new URLSearchParams(new FormData(form));
+    fetch('/api/admin/files?' + params.toString()).then(function (response) { return response.json(); }).then(function (data) {
+      output(data);
+      renderFiles(data);
+    }).catch(function () { output('Unable to search file index.'); });
   });
 }());

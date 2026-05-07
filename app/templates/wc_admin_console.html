@@ -10,8 +10,45 @@
       <h1>Watch Commander Admin</h1>
       <p>Generate supervisor documents, submit learning examples, and file officer records.</p>
     </div>
-    <a class="btn btn-outline" href="{{ url_for('dashboard.dashboard') }}">Back to Dashboard</a>
+    <div class="wc-admin-actions">
+      <a class="btn btn-outline" href="{{ url_for('auth.manage_users') }}">Approve / Assign Officers</a>
+      <a class="btn btn-outline" href="{{ url_for('dashboard.dashboard') }}">Back to Dashboard</a>
+    </div>
   </header>
+  <section class="wc-tool-grid" aria-label="Watch Commander quick tools">
+    <a class="wc-tool-card" href="{{ url_for('mobile.supervisor_dashboard') }}">
+      <strong>Command Dashboard</strong>
+      <span>Review packets, corrections, and supervisor workflow.</span>
+    </a>
+    <a class="wc-tool-card" href="{{ url_for('assistant.officer_files_console') }}">
+      <strong>Officer Files</strong>
+      <span>Upload, index, filter, and download officer documents.</span>
+    </a>
+    <a class="wc-tool-card" href="{{ url_for('performance.pending') }}">
+      <strong>Stats Approvals</strong>
+      <span>Approve or reject officer performance entries.</span>
+    </a>
+    <a class="wc-tool-card" href="{{ url_for('performance.team_overview') }}">
+      <strong>Team Stats</strong>
+      <span>View officer performance and completion progress.</span>
+    </a>
+    <a class="wc-tool-card" href="{{ url_for('qual_tracker.tracker_readiness') }}">
+      <strong>Readiness Tracker</strong>
+      <span>Track qualifications, expirations, and team readiness.</span>
+    </a>
+    <a class="wc-tool-card" href="{{ url_for('announcements.board') }}">
+      <strong>Command Notices</strong>
+      <span>Post and review notices for the watch.</span>
+    </a>
+    <a class="wc-tool-card" href="{{ url_for('bolo.bolo_board') }}">
+      <strong>BOLO Board</strong>
+      <span>Create and manage active BOLO information.</span>
+    </a>
+    <a class="wc-tool-card" href="{{ url_for('ops_modules.vehicle_inspections') }}">
+      <strong>Vehicle Inspections</strong>
+      <span>Review patrol vehicle inspection workflow.</span>
+    </a>
+  </section>
   <section class="wc-admin-grid">
     <article class="wc-card">
       <h2>Counseling Generator</h2>
