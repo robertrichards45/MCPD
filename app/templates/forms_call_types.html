@@ -2,126 +2,151 @@
 {% block body %}
 <div class="app-shell">
   {% include 'partials/nav.html' %}
-  <div class="page-wrap">
-    <div class="card p-3 mb-3 page-head">
-      <div class="d-flex flex-wrap justify-content-between gap-2 align-items-start">
-        <div>
-          <h2 class="mb-1">Call Type Paperwork Manager</h2>
-          <p class="text-muted mb-0">Add call types and control the forms, statutes, and checklist items shown in the mobile incident flow.</p>
-        </div>
+  <div class="page-wrap manager-page-wrap call-types-page">
+    <section class="mission-hero manager-hero call-types-hero mb-3">
+      <div class="mission-hero-copy">
+        <div class="eyebrow">Forms Configuration</div>
+        <h1>Call Type Paperwork Manager</h1>
+        <p>Control which forms, statutes, and checklist prompts appear when officers start an incident in the mobile workflow.</p>
+      </div>
+      <div class="mission-hero-actions">
         <a class="btn btn-outline-secondary" href="{{ url_for('forms.forms_maintenance') }}">Template Maintenance</a>
+        <a class="btn btn-primary" href="{{ url_for('forms.call_type_rules_manager') }}">New Call Type</a>
       </div>
-    </div>
+    </section>
 
-    <div class="row g-3">
-      <div class="col-lg-4">
-        <div class="card p-3 h-100">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <h3 class="h5 mb-0">Call Types</h3>
-            <a class="btn btn-sm btn-primary" href="{{ url_for('forms.call_type_rules_manager') }}">New</a>
+    <div class="call-types-layout">
+      <aside class="card call-types-sidebar">
+        <div class="call-types-sidebar-head">
+          <div>
+            <div class="eyebrow">Mobile Flow</div>
+            <h2>Call Types</h2>
           </div>
-          <div class="list-group">
-            {% for slug, rule in rules|dictsort %}
-            <a class="list-group-item list-group-item-action {% if edit_slug == slug %}active{% endif %}" href="{{ url_for('forms.call_type_rules_manager', edit=slug) }}">
-              <div class="d-flex justify-content-between gap-2">
-                <strong>{{ rule.title }}</strong>
-                {% if rule.active %}
-                <span class="badge bg-success">Active</span>
-                {% else %}
-                <span class="badge bg-secondary">Hidden</span>
-                {% endif %}
-              </div>
-              <div class="small {% if edit_slug == slug %}text-white-50{% else %}text-muted{% endif %}">
-                {{ rule.recommendedForms|length }} recommended / {{ rule.optionalForms|length }} optional
-              </div>
-            </a>
-            {% else %}
-            <div class="text-muted">No call types configured yet.</div>
-            {% endfor %}
-          </div>
+          <span class="call-types-count">{{ rules|length }}</span>
         </div>
-      </div>
+        <div class="call-types-list">
+          {% for slug, rule in rules|dictsort %}
+          <a class="call-type-row {% if edit_slug == slug %}is-active{% endif %}" href="{{ url_for('forms.call_type_rules_manager', edit=slug) }}">
+            <span class="call-type-row-main">
+              <strong>{{ rule.title }}</strong>
+              <small>{{ rule.recommendedForms|length }} recommended / {{ rule.optionalForms|length }} optional</small>
+            </span>
+            {% if rule.active %}
+            <span class="call-type-status is-live">Active</span>
+            {% else %}
+            <span class="call-type-status is-hidden">Hidden</span>
+            {% endif %}
+          </a>
+          {% else %}
+          <div class="call-type-empty">No call types configured yet.</div>
+          {% endfor %}
+        </div>
+      </aside>
 
-      <div class="col-lg-8">
-        <form class="card p-3" method="post">
+      <section class="card call-types-editor">
+        <form method="post">
           <input type="hidden" name="old_slug" value="{{ edit_rule.slug if edit_rule else '' }}">
-          <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-            <h3 class="h5 mb-0">{{ 'Edit Call Type' if edit_rule else 'Add Call Type' }}</h3>
-            <label class="form-check form-switch mb-0">
-              <input class="form-check-input" type="checkbox" name="active" {% if not edit_rule or edit_rule.active %}checked{% endif %}>
-              <span class="form-check-label">Show on mobile</span>
+          <div class="call-types-editor-head">
+            <div>
+              <div class="eyebrow">{{ 'Edit Rule' if edit_rule else 'New Rule' }}</div>
+              <h2>{{ 'Edit Call Type' if edit_rule else 'Add Call Type' }}</h2>
+              <p>Keep labels short and officer-facing. Use one item per line for extra forms and checklist entries.</p>
+            </div>
+            <label class="call-type-mobile-toggle">
+              <input type="checkbox" name="active" {% if not edit_rule or edit_rule.active %}checked{% endif %}>
+              <span>Show on mobile</span>
             </label>
           </div>
 
-          <div class="row g-3">
-            <div class="col-md-7">
-              <label class="form-label" for="call-type-title">Call type name</label>
+          <div class="call-type-field-grid call-type-field-grid-top">
+            <label>
+              <span>Call type name</span>
               <input class="form-control" id="call-type-title" name="title" required value="{{ edit_rule.title if edit_rule else '' }}" placeholder="Example: Noise Complaint">
-            </div>
-            <div class="col-md-5">
-              <label class="form-label" for="call-type-slug">Slug</label>
+            </label>
+            <label>
+              <span>Slug</span>
               <input class="form-control" id="call-type-slug" name="slug" value="{{ edit_rule.slug if edit_rule else '' }}" placeholder="auto-created if blank">
-            </div>
-            <div class="col-md-5">
-              <label class="form-label" for="call-type-short-label">Short mobile label</label>
+            </label>
+            <label>
+              <span>Short mobile label</span>
               <input class="form-control" id="call-type-short-label" name="short_label" value="{{ edit_rule.shortLabel if edit_rule else '' }}" placeholder="Noise">
-            </div>
-            <div class="col-md-7">
-              <label class="form-label" for="call-type-description">Mobile note</label>
+            </label>
+            <label class="call-type-field-wide">
+              <span>Mobile note</span>
               <input class="form-control" id="call-type-description" name="description" value="{{ edit_rule.description if edit_rule else '' }}" placeholder="Short officer-facing reminder">
-            </div>
+            </label>
           </div>
 
-          <hr class="my-3">
+          <div class="call-type-section-title">
+            <h3>Paperwork Selection</h3>
+            <p>Recommended forms auto-select. Optional forms remain visible for officer review.</p>
+          </div>
 
-          <div class="row g-3">
-            <div class="col-md-6">
-              <label class="form-label" for="recommended-forms">Recommended forms</label>
-              <select class="form-select" id="recommended-forms" name="recommended_forms" multiple size="10">
+          <div class="call-type-two-col">
+            <div class="call-type-panel">
+              <label class="call-type-field-label" for="recommended-forms">Recommended forms</label>
+              {% if forms %}
+              <select class="form-select call-type-multi-select" id="recommended-forms" name="recommended_forms" multiple size="8">
                 {% for form in forms %}
                 <option value="{{ form.title }}" {% if edit_rule and form.title in edit_rule.recommendedForms %}selected{% endif %}>{{ form.title }}</option>
                 {% endfor %}
               </select>
-              <div class="form-text">These are auto-selected when the officer chooses this call type.</div>
-              <label class="form-label mt-2" for="recommended-extra">Other recommended form names</label>
-              <textarea class="form-control" id="recommended-extra" name="recommended_forms_extra" rows="2" placeholder="One per line">{% if edit_rule %}{{ recommended_extra|join('\n') }}{% endif %}</textarea>
+              {% else %}
+              <div class="call-type-empty-box">No active library forms are loaded. Use the manual list below until forms are restored.</div>
+              {% endif %}
+              <div class="form-text">Auto-selected when the officer chooses this call type.</div>
+              <label class="call-type-field-label mt-2" for="recommended-extra">Other recommended form names</label>
+              <textarea class="form-control" id="recommended-extra" name="recommended_forms_extra" rows="3" placeholder="One per line">{% if edit_rule %}{{ recommended_extra|join('\n') }}{% endif %}</textarea>
             </div>
-            <div class="col-md-6">
-              <label class="form-label" for="optional-forms">Optional forms</label>
-              <select class="form-select" id="optional-forms" name="optional_forms" multiple size="10">
+
+            <div class="call-type-panel">
+              <label class="call-type-field-label" for="optional-forms">Optional forms</label>
+              {% if forms %}
+              <select class="form-select call-type-multi-select" id="optional-forms" name="optional_forms" multiple size="8">
                 {% for form in forms %}
                 <option value="{{ form.title }}" {% if edit_rule and form.title in edit_rule.optionalForms %}selected{% endif %}>{{ form.title }}</option>
                 {% endfor %}
               </select>
-              <div class="form-text">Optional forms are shown but not forced.</div>
-              <label class="form-label mt-2" for="optional-extra">Other optional form names</label>
-              <textarea class="form-control" id="optional-extra" name="optional_forms_extra" rows="2" placeholder="One per line">{% if edit_rule %}{{ optional_extra|join('\n') }}{% endif %}</textarea>
+              {% else %}
+              <div class="call-type-empty-box">No active library forms are loaded. Optional manual names can still be saved below.</div>
+              {% endif %}
+              <div class="form-text">Shown in the packet checklist but not forced.</div>
+              <label class="call-type-field-label mt-2" for="optional-extra">Other optional form names</label>
+              <textarea class="form-control" id="optional-extra" name="optional_forms_extra" rows="3" placeholder="One per line">{% if edit_rule %}{{ optional_extra|join('\n') }}{% endif %}</textarea>
             </div>
           </div>
 
-          <div class="row g-3 mt-1">
-            <div class="col-md-6">
-              <label class="form-label" for="statutes">Statutes / offense areas</label>
+          <div class="call-type-section-title">
+            <h3>Officer Guidance</h3>
+            <p>These prompts appear as quick reminders during incident intake.</p>
+          </div>
+
+          <div class="call-type-two-col">
+            <label class="call-type-panel">
+              <span class="call-type-field-label">Statutes / offense areas</span>
               <textarea class="form-control" id="statutes" name="statutes" rows="5" placeholder="One per line">{% if edit_rule %}{{ edit_rule.statutes|join('\n') }}{% endif %}</textarea>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label" for="checklist-items">Checklist items</label>
+            </label>
+            <label class="call-type-panel">
+              <span class="call-type-field-label">Checklist items</span>
               <textarea class="form-control" id="checklist-items" name="checklist_items" rows="5" placeholder="One per line">{% if edit_rule %}{{ edit_rule.checklistItems|join('\n') }}{% endif %}</textarea>
-            </div>
+            </label>
           </div>
 
-          <div class="d-flex flex-wrap gap-2 justify-content-end mt-3">
+          <div class="call-type-actions">
+            {% if edit_rule %}
+            <button class="btn btn-outline-danger" form="delete-call-type-form" type="submit">Remove Call Type</button>
+            {% endif %}
             <button class="btn btn-primary" type="submit" name="action" value="save">Save Call Type</button>
           </div>
         </form>
 
         {% if edit_rule %}
-        <form class="mt-2 text-end" method="post" onsubmit="return confirm('Remove this call type from the mobile flow?');">
+        <form id="delete-call-type-form" method="post" onsubmit="return confirm('Remove this call type from the mobile flow?');">
           <input type="hidden" name="old_slug" value="{{ edit_rule.slug }}">
-          <button class="btn btn-outline-danger" type="submit" name="action" value="delete">Remove Call Type</button>
+          <input type="hidden" name="action" value="delete">
         </form>
         {% endif %}
-      </div>
+      </section>
     </div>
   </div>
 </div>

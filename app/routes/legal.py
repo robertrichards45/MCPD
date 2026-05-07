@@ -574,6 +574,10 @@ def _ai_multijurisdiction_candidates(query: str, source: str, state_code: str, r
         "You are assisting MCPD legal lookup. Return STRICT JSON only. "
         "Do not provide legal advice or final charging decisions. "
         "Find likely relevant law candidates for officer review and official verification. "
+        "Read the full scenario before choosing candidates. Identify the conduct, location, likely legal category, "
+        "and jurisdictional facts. Suppress candidates based only on loose keywords. "
+        "Do not include property-damage, theft, federal-entry, or Article 92/order candidates unless the scenario "
+        "actually describes damage, taking, barred/refused entry, or order/regulation facts. "
         "Use this schema exactly: "
         "{\"candidates\":[{\"jurisdiction\":\"STATE|FEDERAL_USC|UCMJ\",\"state\":\"AA\",\"code\":\"...\","
         "\"title\":\"...\",\"why_relevant\":\"...\",\"elements\":[\"...\"],\"verification_note\":\"...\"}]}. "
@@ -1230,7 +1234,16 @@ def _render_legal_lookup(default_source='ALL'):
     lead_result = results[0] if results else None
     grouped_results = _group_results(results[1:] if len(results) > 1 else [])
     order_reference_matches = _order_reference_matches(query, ai_hints.get('related_policy_terms', ()))
-    ai_candidates = _ai_multijurisdiction_candidates(query, source, state, results) if query else []
+    needs_ai_candidates = bool(
+        query
+        and (
+            not results
+            or not (state == 'GA')
+            or not lead_result
+            or lead_result.confidence < 75
+        )
+    )
+    ai_candidates = _ai_multijurisdiction_candidates(query, source, state, results) if needs_ai_candidates else []
     overlap_note = ''
     ai_brief = (ai_hints.get('officer_brief') or '').strip()
     active_sources = [group['source'] for group in grouped_results if (group.get('strongest') or group.get('probable') or group.get('possible'))]

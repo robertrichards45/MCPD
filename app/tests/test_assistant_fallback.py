@@ -51,6 +51,74 @@ def test_assistant_returns_local_law_lookup_help_when_ai_key_missing(monkeypatch
     assert '/legal/search' in payload['reply']
 
 
+def test_assistant_can_navigate_to_reports_center(monkeypatch):
+    monkeypatch.delenv('OPENAI_API_KEY', raising=False)
+    client = _logged_in_client()
+    response = client.post(
+        '/api/assistant/ask',
+        json={'message': 'open reports center'},
+        headers={'X-CSRFToken': 'test-token'},
+    )
+
+    assert response.status_code == 200
+    payload = response.get_json()
+    assert payload['ok'] is True
+    assert payload['action']['type'] == 'navigate'
+    assert payload['action']['label'] == 'Reports Center'
+    assert payload['action']['url'] == '/reports'
+
+
+def test_assistant_short_navigation_command_opens_law_lookup(monkeypatch):
+    monkeypatch.delenv('OPENAI_API_KEY', raising=False)
+    client = _logged_in_client()
+    response = client.post(
+        '/api/assistant/ask',
+        json={'message': 'law lookup'},
+        headers={'X-CSRFToken': 'test-token'},
+    )
+
+    assert response.status_code == 200
+    payload = response.get_json()
+    assert payload['ok'] is True
+    assert payload['action']['type'] == 'navigate'
+    assert payload['action']['label'] == 'Law Lookup'
+    assert payload['action']['url'] == '/legal/search'
+
+
+def test_assistant_can_navigate_to_bodycam_and_builder(monkeypatch):
+    monkeypatch.delenv('OPENAI_API_KEY', raising=False)
+    client = _logged_in_client()
+
+    bodycam = client.post(
+        '/api/assistant/ask',
+        json={'message': 'open bodycam mode'},
+        headers={'X-CSRFToken': 'test-token'},
+    ).get_json()
+    builder = client.post(
+        '/api/assistant/ask',
+        json={'message': 'open site builder'},
+        headers={'X-CSRFToken': 'test-token'},
+    ).get_json()
+
+    assert bodycam['action']['url'] == '/bodycam/new'
+    assert builder['action']['url'] == '/admin/site-builder'
+
+
+def test_assistant_5w_builder_does_not_open_site_builder(monkeypatch):
+    monkeypatch.delenv('OPENAI_API_KEY', raising=False)
+    client = _logged_in_client()
+    response = client.post(
+        '/api/assistant/ask',
+        json={'message': 'open 5w builder'},
+        headers={'X-CSRFToken': 'test-token'},
+    )
+
+    assert response.status_code == 200
+    payload = response.get_json()
+    assert payload['action']['label'] == '5W Builder'
+    assert payload['action']['url'] == '/tools/5w'
+
+
 def test_assistant_status_reports_missing_key_to_site_controller(monkeypatch):
     monkeypatch.delenv('OPENAI_API_KEY', raising=False)
     client = _logged_in_client()
@@ -135,6 +203,27 @@ def test_openai_tts_uses_fast_default_model(monkeypatch):
     assert audio == b'audio'
     assert '"model": "tts-1"' in captured['data']
     assert '"speed": 0.95' in captured['data']
+
+
+def test_assistant_speak_normal_speed_matches_voice_control(monkeypatch):
+    captured = {}
+
+    def fake_tts(text, api_key, voice='coral', speed=0.95):
+        captured['text'] = text
+        captured['voice'] = voice
+        captured['speed'] = speed
+        return b'audio'
+
+    monkeypatch.setattr('app.routes.assistant.openai_tts', fake_tts)
+    client = _logged_in_client()
+    response = client.post(
+        '/api/assistant/speak',
+        json={'text': 'Test voice.', 'voice': 'coral', 'speed': 'normal'},
+        headers={'X-CSRFToken': 'test-token'},
+    )
+
+    assert response.status_code == 200
+    assert captured['speed'] == 0.95
 
 
 def test_openai_tts_accepts_safe_speed(monkeypatch):

@@ -101,6 +101,7 @@ def _message_has_any(text: str, terms: tuple[str, ...]) -> bool:
 def _assistant_action_for(message: str, page: dict | None = None) -> dict | None:
     """Return safe client actions for site navigation and guided form completion."""
     text = (message or '').strip().lower()
+    normalized_text = re.sub(r'[^a-z0-9]+', ' ', text).strip()
     path = str((page or {}).get('path') or '')
     if not text:
         return None
@@ -123,19 +124,34 @@ def _assistant_action_for(message: str, page: dict | None = None) -> dict | None
         }
 
     navigation_targets = [
-        (('dashboard', 'home screen', 'main menu'), 'Dashboard', url_for('dashboard.dashboard')),
-        (('law lookup', 'legal lookup', 'look up law', 'search law', 'charges'), 'Law Lookup', url_for('legal.legal_lookup')),
-        (('start report', 'new report', 'incident report', 'write report'), 'Start Report', url_for('reports.new_report')),
-        (('reports center', 'all reports', 'reports page'), 'Reports Center', url_for('reports.list_reports')),
-        (('forms library', 'forms page', 'open forms', 'find form'), 'Forms Library', url_for('forms.list_forms')),
-        (('saved forms', 'saved work'), 'Saved Work', url_for('forms.saved_forms')),
-        (('orders', 'memos', 'orders and memos', 'orders & memos'), 'Orders & Memos', url_for('orders.library')),
-        (('training', 'roster', 'training roster'), 'Training', url_for('training.training_menu')),
-        (('personnel', 'officers', 'manage users', 'officer profiles'), 'Personnel', url_for('auth.manage_users')),
+        (('dashboard', 'home screen', 'main menu', 'command dashboard'), 'Dashboard', url_for('dashboard.dashboard')),
+        (('customize dashboard', 'dashboard settings'), 'Customize Dashboard', url_for('dashboard.customize_dashboard')),
+        (('law lookup', 'legal lookup', 'look up law', 'search law', 'charges', 'statutes'), 'Law Lookup', url_for('legal.legal_lookup')),
+        (('start report', 'new report', 'incident report', 'write report', 'start incident'), 'Start Report', url_for('reports.new_report')),
+        (('reports center', 'all reports', 'reports page', 'report center'), 'Reports Center', url_for('reports.list_reports')),
+        (('forms library', 'forms page', 'open forms', 'find form', 'forms'), 'Forms Library', url_for('forms.list_forms')),
+        (('saved forms', 'saved work', 'drafts'), 'Saved Work', url_for('forms.saved_forms')),
+        (('orders', 'memos', 'orders and memos', 'orders & memos', 'base orders'), 'Orders & Memos', url_for('orders.library')),
+        (('training', 'roster', 'training roster', 'training menu'), 'Training', url_for('training.training_menu')),
+        (('personnel', 'officers', 'manage users', 'officer profiles', 'users'), 'Personnel', url_for('auth.manage_users')),
+        (('watch commander', 'watch commander hub', 'watch dashboard'), 'Watch Commander Hub', url_for('watch_commander.dashboard')),
+        (('approve officers', 'assign officers', 'supervisor dashboard'), 'Approve / Assign Officers', url_for('mobile.supervisor_dashboard')),
+        (('admin', 'administration', 'admin users'), 'Administration', url_for('auth.manage_users')),
+        (('body cam', 'bodycam mode', 'body camera'), 'Body Cam Mode', url_for('bodycam.new_recording')),
+        (('bodycam footage', 'body cam footage', 'bodycam library'), 'Bodycam Footage', url_for('bodycam.library')),
+        (('narrative creator', 'narrative tool'), 'Narrative Creator', url_for('bodycam.narrative_tool')),
+        (('5w', '5ws', '5 w', 'five w', 'five ws', '5w builder'), '5W Builder', url_for('bodycam.five_w_tool')),
+        (('site builder', 'builder', 'builder mode'), 'Site Builder', url_for('admin.site_builder')),
         (('accident tools', 'crash tools', 'accident diagram'), 'Accident Tools', url_for('reports.accidents')),
-        (('mobile home', 'phone home', 'mobile page'), 'Mobile Home', url_for('mobile.home')),
+        (('officer accident diagram', 'simple accident diagram'), 'Officer Accident Diagram', url_for('reports.officer_accident_diagram_new')),
+        (('accident reconstruction', 'reconstruction tool', 'investigator reconstruction'), 'Accident Reconstruction', url_for('reports.investigator_reconstruction_new')),
+        (('scanner', 'scan id', 'camera scanner', 'id scanner'), 'Mobile ID Scanner', url_for('mobile.incident_person_editor')),
+        (('mobile home', 'phone home', 'mobile page', 'mobile dashboard'), 'Mobile Home', url_for('mobile.home')),
+        (('stats', 'my stats', 'performance'), 'My Stats', url_for('performance.my_stats')),
     ]
-    if _message_has_any(text, ('open ', 'go to ', 'take me to ', 'navigate', 'show me ', 'pull up ', 'launch ')):
+    should_navigate = _message_has_any(text, ('open ', 'go to ', 'take me to ', 'navigate', 'show me ', 'pull up ', 'launch ', 'switch to '))
+    short_direct_command = len(normalized_text.split()) <= 4
+    if should_navigate or short_direct_command:
         for terms, label, target_url in navigation_targets:
             if _message_has_any(text, terms):
                 return {'type': 'navigate', 'url': target_url, 'label': label}
@@ -197,8 +213,8 @@ def assistant_speak():
         voice = 'coral'
     speed_name = (body.get('speed') or 'normal').strip().lower()
     speed_map = {
-        'normal': 0.92,
-        'fast': 1.05,
+        'normal': 0.95,
+        'fast': 1.08,
         'veryfast': 1.18,
     }
     speed = speed_map.get(speed_name, speed_map['normal'])

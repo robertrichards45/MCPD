@@ -3142,6 +3142,18 @@ def _forbidden_codes_for_query(analysis: QueryAnalysis) -> tuple[str, ...]:
         forbidden.extend(['OCGA 16-13-37', 'OCGA 16-13-33', 'OCGA 16-13-33.1'])
     if 'control' in normalized and 'substance' in normalized and 'forg' not in normalized:
         forbidden.append('OCGA 16-13-37')
+    public_sanitation_query = bool(re.search(r'public defecation|defecat\w+|poop\w+|feces|urinat\w+|peeing|public indecency|indecent exposure|lewd conduct', normalized))
+    if public_sanitation_query:
+        if not re.search(r'damag|destroy|destruction|vandal|graffiti|break|broke|smash', normalized):
+            forbidden.append('18 USC 1361')
+        if not re.search(r'steal|stole|stolen|theft|larceny|take|took|government property', normalized):
+            forbidden.append('18 USC 641')
+        if not re.search(r'lawful order|lawful command|direct order|disobey|refus\w+ command|article 92|regulation|ordered not to', normalized):
+            forbidden.append('Article 92')
+        if not re.search(r'trespass|unauthorized entr|unlawful entr|barred|debarred|barment|returned to base|told not to return|ordered not to return|refus\w+ to leave|remain\w+ after', normalized):
+            forbidden.append('18 USC 1382')
+        if not re.search(r'drug|drugs|narcotic|marijuana|weed|cannabis|cocaine|meth|fentanyl', normalized):
+            forbidden.append('OCGA 16-13-30.2')
     return _ordered_unique(forbidden)
 
 

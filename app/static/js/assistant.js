@@ -357,8 +357,7 @@
     button.type = 'button';
     button.textContent = 'Read Full Response';
     button.addEventListener('click', function () {
-      if (Voice.speakFull) Voice.speakFull(text);
-      else browserSpeak(text, getSavedVoice(), null);
+      speakText(text, { full: true });
     });
     bubble.appendChild(document.createElement('br'));
     bubble.appendChild(button);
@@ -533,7 +532,7 @@
   }
 
   function tryDirectInterfaceCommand(text) {
-    var match = String(text || '').match(/^(?:click|tap|press|select|choose|open)\s+(.+)$/i);
+    var match = String(text || '').match(/^(?:click|tap|press|select|choose)\s+(.+)$/i);
     if (!match) return false;
     var targetLabel = match[1].replace(/\b(button|link|tab|menu|page)\b/ig, '').trim();
     var target = findInteractiveByLabel(targetLabel);
@@ -642,10 +641,11 @@
     }
   }
 
-  function speakText(text) {
+  function speakText(text, options) {
     if (!text) { if (voiceMode) scheduleAutoListen(); return; }
+    options = options || {};
     stopAudio();
-    var speechText = Voice.summarizeForSpeech ? Voice.summarizeForSpeech(text) : text;
+    var speechText = options.full ? String(text || '').trim() : (Voice.summarizeForSpeech ? Voice.summarizeForSpeech(text) : text);
     if (!speechText) { if (voiceMode) scheduleAutoListen(); return; }
 
     fetch('/api/assistant/speak', {
@@ -679,10 +679,6 @@
       })
       .catch(function () {
         setTTSStatus('browser');
-        if (Voice.speakSummary) {
-          Voice.speakSummary(text, function () { if (voiceMode) scheduleAutoListen(); });
-          return;
-        }
         browserSpeak(speechText, getSavedVoice(), function () { if (voiceMode) scheduleAutoListen(); });
       });
   }
@@ -694,13 +690,13 @@
   }
 
   var BROWSER_VOICE_PROFILES = {
-    coral:   { pitch: 1.10, rate: 1.00, gender: 'female' },
-    nova:    { pitch: 1.25, rate: 1.05, gender: 'female' },
-    shimmer: { pitch: 1.35, rate: 1.10, gender: 'female' },
-    ash:     { pitch: 0.90, rate: 0.97, gender: 'male'   },
-    onyx:    { pitch: 0.70, rate: 0.90, gender: 'male'   },
-    echo:    { pitch: 1.00, rate: 1.00, gender: 'male'   },
-    fable:   { pitch: 1.10, rate: 1.05, gender: 'male'   },
+    coral:   { pitch: 1.04, rate: 0.95, gender: 'female' },
+    nova:    { pitch: 1.08, rate: 0.97, gender: 'female' },
+    shimmer: { pitch: 1.10, rate: 1.00, gender: 'female' },
+    ash:     { pitch: 0.94, rate: 0.95, gender: 'male'   },
+    onyx:    { pitch: 0.88, rate: 0.92, gender: 'male'   },
+    echo:    { pitch: 0.96, rate: 0.95, gender: 'male'   },
+    fable:   { pitch: 1.02, rate: 0.97, gender: 'male'   },
     alloy:   { pitch: 1.00, rate: 1.00, gender: 'neutral'},
     verse:   { pitch: 0.95, rate: 1.10, gender: 'neutral'},
   };
