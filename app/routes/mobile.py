@@ -1378,8 +1378,18 @@ def supervisor_officer_update(user_id):
                 flash('Supervisor selection is invalid.', 'error')
                 return redirect(url_for('mobile.supervisor_officers'))
             supervisor = db.session.get(User, supervisor_id_int)
-            if not supervisor or not supervisor.has_role(ROLE_WATCH_COMMANDER):
-                flash('Select a valid Watch Commander.', 'error')
+            valid_supervisor = bool(
+                supervisor
+                and supervisor.active
+                and not supervisor.pending_approval
+                and (
+                    supervisor.normalized_role in MOBILE_SUPERVISOR_ASSIGNMENT_ROLES
+                    or any(role in supervisor.role_keys for role in MOBILE_SUPERVISOR_ASSIGNMENT_ROLES)
+                )
+                and (is_site_controller(current_user) or supervisor.installation == current_user.installation)
+            )
+            if not valid_supervisor:
+                flash('Select a valid Supervisor or Watch Commander.', 'error')
                 return redirect(url_for('mobile.supervisor_officers'))
             target.supervisor_id = supervisor.id
             if not target.section_unit:
