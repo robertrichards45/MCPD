@@ -618,3 +618,16 @@ def test_mobile_contact_update_syncs_to_user_profile():
         with app.app_context():
             _delete_user(username)
         _dispose_app(app)
+
+
+def test_forms_manager_uses_professional_manager_layout():
+    client = _logged_in_client()
+    try:
+        response = client.get("/forms/manage")
+        html = response.get_data(as_text=True)
+        assert response.status_code == 200
+        assert "forms-manager-page" in html
+        assert "manager-hero" in html
+        assert "Forms Manager" in html
+    finally:
+        _dispose_app(client.application)

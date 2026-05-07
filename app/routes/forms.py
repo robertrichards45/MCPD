@@ -600,9 +600,37 @@ def _recovered_source_name(filename):
     return re.sub(r'^\d{9,}-\d+-', '', raw_name)
 
 
-def _sync_forms_from_storage():
-    save_dir = _resolve_storage_path(current_app.config.get('FORMS_UPLOAD'))
+def _eligible_form_entries(save_dir):
     if not save_dir or not os.path.isdir(save_dir):
+        return []
+    entries = []
+    for entry in sorted(os.scandir(save_dir), key=lambda item: item.stat().st_mtime):
+        if not entry.is_file():
+            continue
+        ext = os.path.splitext(entry.name)[1].lower()
+        if ext and ext not in FORM_LIBRARY_EXTENSIONS:
+            continue
+        entries.append(entry)
+    return entries
+
+
+def _form_storage_entries():
+    primary_dir = _resolve_storage_path(current_app.config.get('FORMS_UPLOAD'))
+    primary_entries = _eligible_form_entries(primary_dir)
+    if primary_entries:
+        return primary_entries
+
+    # Railway volumes start clean. Keep the officer library usable by falling
+    # back to the bundled official PDFs committed with the app image.
+    bundled_dir = os.path.abspath(os.path.join(_repo_root(), 'app', 'data', 'uploads', 'forms'))
+    if os.path.normcase(bundled_dir) == os.path.normcase(primary_dir or ''):
+        return primary_entries
+    return _eligible_form_entries(bundled_dir)
+
+
+def _sync_forms_from_storage():
+    storage_entries = _form_storage_entries()
+    if not storage_entries:
         return 0
 
     existing_paths = set()
@@ -613,12 +641,7 @@ def _sync_forms_from_storage():
 
     uploaded_by = current_user.id if getattr(current_user, 'is_authenticated', False) else None
     imported = []
-    for entry in sorted(os.scandir(save_dir), key=lambda item: item.stat().st_mtime):
-        if not entry.is_file():
-            continue
-        ext = os.path.splitext(entry.name)[1].lower()
-        if ext and ext not in FORM_LIBRARY_EXTENSIONS:
-            continue
+    for entry in storage_entries:
         normalized_path = os.path.normcase(os.path.abspath(entry.path))
         if normalized_path in existing_paths:
             continue

@@ -252,6 +252,8 @@ def ensure_schema():
         _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN installation VARCHAR(100)')
     if 'preferred_legal_state' not in user_columns:
         _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN preferred_legal_state VARCHAR(2)')
+    if 'dashboard_preferences_json' not in user_columns:
+        _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN dashboard_preferences_json TEXT')
     if 'builder_mode_access' not in user_columns:
         if _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN builder_mode_access BOOLEAN'):
             _safe_schema_execute(f'UPDATE {user_table} SET builder_mode_access = 0 WHERE builder_mode_access IS NULL')

@@ -109,6 +109,7 @@ class User(UserMixin, db.Model):
     pending_approval = db.Column(db.Boolean, default=False, nullable=False)
     installation = db.Column(db.String(100), nullable=True)
     preferred_legal_state = db.Column(db.String(2), nullable=True)
+    dashboard_preferences_json = db.Column(db.Text, nullable=True)
     builder_mode_access = db.Column(db.Boolean, default=False, nullable=False)
     builder_mode_granted_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     builder_mode_granted_at = db.Column(db.DateTime, nullable=True)

@@ -15261,6 +15261,112 @@ body:not(.mobile-foundation) .table-responsive {
   overflow-x: auto;
 }
 
+body:not(.mobile-foundation) .mission-hero,
+body:not(.mobile-foundation) .search-hero,
+body:not(.mobile-foundation) .command-hero,
+body:not(.mobile-foundation) .desktop-command-hero,
+body:not(.mobile-foundation) .authority-hero,
+body:not(.mobile-foundation) .navigator-hero,
+body:not(.mobile-foundation) .manager-hero {
+  align-items: center;
+  background: var(--card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 18px !important;
+  box-shadow: 0 14px 38px rgba(15, 23, 42, 0.07) !important;
+  color: var(--text) !important;
+  display: grid;
+  gap: 22px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  min-height: 0 !important;
+  padding: 26px !important;
+}
+
+body:not(.mobile-foundation) .mission-hero > *,
+body:not(.mobile-foundation) .search-hero > *,
+body:not(.mobile-foundation) .command-hero > *,
+body:not(.mobile-foundation) .desktop-command-hero > *,
+body:not(.mobile-foundation) .authority-hero > *,
+body:not(.mobile-foundation) .navigator-hero > *,
+body:not(.mobile-foundation) .manager-hero > * {
+  min-width: 0;
+}
+
+body:not(.mobile-foundation) .mission-hero h1,
+body:not(.mobile-foundation) .search-hero h1,
+body:not(.mobile-foundation) .command-hero h1,
+body:not(.mobile-foundation) .desktop-command-hero h1,
+body:not(.mobile-foundation) .authority-hero h1,
+body:not(.mobile-foundation) .navigator-hero h1,
+body:not(.mobile-foundation) .manager-hero h1 {
+  color: var(--text) !important;
+  font-size: clamp(1.8rem, 3vw, 2.7rem) !important;
+  font-weight: 900;
+  letter-spacing: -0.035em;
+  line-height: 1.05 !important;
+  margin: 8px 0 12px !important;
+  max-width: 760px;
+  overflow-wrap: normal;
+  text-wrap: balance;
+}
+
+body:not(.mobile-foundation) .mission-hero p,
+body:not(.mobile-foundation) .search-hero p,
+body:not(.mobile-foundation) .command-hero p,
+body:not(.mobile-foundation) .desktop-command-hero p,
+body:not(.mobile-foundation) .authority-hero p,
+body:not(.mobile-foundation) .navigator-hero p,
+body:not(.mobile-foundation) .manager-hero p {
+  color: var(--muted) !important;
+  font-size: 1rem;
+  max-width: 720px;
+}
+
+body:not(.mobile-foundation) .eyebrow {
+  color: var(--muted) !important;
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+body:not(.mobile-foundation) .action-row,
+body:not(.mobile-foundation) .mission-hero .action-row,
+body:not(.mobile-foundation) .manager-hero .action-row {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+body:not(.mobile-foundation) .forms-manager-page .row {
+  align-items: stretch;
+}
+
+body:not(.mobile-foundation) .forms-manager-page .list-group {
+  display: grid;
+  gap: 8px;
+}
+
+body:not(.mobile-foundation) .forms-manager-page .list-group-item {
+  background: var(--panel) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 12px !important;
+  color: var(--text) !important;
+  text-decoration: none;
+}
+
+body:not(.mobile-foundation) .forms-manager-page .list-group-item.active {
+  background: color-mix(in srgb, var(--primary) 14%, var(--panel)) !important;
+  border-color: var(--primary) !important;
+}
+
+body:not(.mobile-foundation) .forms-manager-page code {
+  color: var(--text) !important;
+  white-space: normal;
+  word-break: break-word;
+}
+
 @media (max-width: 960px) {
   body:not(.mobile-foundation):not(.force-mobile-view) .page-wrap,
   body:not(.mobile-foundation):not(.force-mobile-view) .dashboard,
@@ -15290,6 +15396,37 @@ body:not(.mobile-foundation) .table-responsive {
   body:not(.mobile-foundation) .personnel-edit-actions .btn,
   body:not(.mobile-foundation) .form-action-bar .btn,
   body:not(.mobile-foundation) .page-head .btn {
+    width: 100%;
+  }
+
+  body:not(.mobile-foundation) .mission-hero,
+  body:not(.mobile-foundation) .search-hero,
+  body:not(.mobile-foundation) .command-hero,
+  body:not(.mobile-foundation) .desktop-command-hero,
+  body:not(.mobile-foundation) .authority-hero,
+  body:not(.mobile-foundation) .navigator-hero,
+  body:not(.mobile-foundation) .manager-hero {
+    grid-template-columns: 1fr;
+    padding: 18px !important;
+  }
+
+  body:not(.mobile-foundation) .mission-hero h1,
+  body:not(.mobile-foundation) .search-hero h1,
+  body:not(.mobile-foundation) .command-hero h1,
+  body:not(.mobile-foundation) .desktop-command-hero h1,
+  body:not(.mobile-foundation) .authority-hero h1,
+  body:not(.mobile-foundation) .navigator-hero h1,
+  body:not(.mobile-foundation) .manager-hero h1 {
+    font-size: clamp(1.55rem, 8vw, 2.1rem) !important;
+  }
+
+  body:not(.mobile-foundation) .mission-hero .action-row,
+  body:not(.mobile-foundation) .manager-hero .action-row {
+    justify-content: stretch;
+  }
+
+  body:not(.mobile-foundation) .mission-hero .action-row .btn,
+  body:not(.mobile-foundation) .manager-hero .action-row .btn {
     width: 100%;
   }
 }
