@@ -269,6 +269,93 @@ def test_edit_page_can_delete_new_bad_account():
         _dispose_app(client.application)
 
 
+def test_personnel_page_can_delete_account_by_selected_officer_id():
+    client = _logged_in_client()
+    username = "pytest_delete_by_select"
+    try:
+        with client.application.app_context():
+            _delete_user(username)
+            officer = User(
+                username=username,
+                first_name="Delete",
+                last_name="Selected",
+                role=ROLE_PATROL_OFFICER,
+                active=True,
+                installation="MCLB_ALBANY",
+            )
+            officer.set_password("TempPass123!")
+            db.session.add(officer)
+            db.session.commit()
+            officer_id = officer.id
+
+        page = client.get("/admin/users")
+        html = page.get_data(as_text=True)
+        assert page.status_code == 200
+        assert f'name="user_id" value="{officer_id}"' in html
+        assert "Delete" in html
+
+        response = client.post(
+            "/admin/users",
+            data={"action": "delete", "user_id": str(officer_id)},
+            follow_redirects=False,
+        )
+        assert response.status_code in {302, 303}
+
+        with client.application.app_context():
+            assert User.query.filter_by(username=username).first() is None
+    finally:
+        with client.application.app_context():
+            _delete_user(username)
+        _dispose_app(client.application)
+
+
+def test_personnel_page_can_transfer_officer_by_selected_officer_id():
+    client = _logged_in_client()
+    username = "pytest_transfer_by_select"
+    try:
+        with client.application.app_context():
+            _delete_user(username)
+            officer = User(
+                username=username,
+                first_name="Transfer",
+                last_name="Selected",
+                role=ROLE_PATROL_OFFICER,
+                active=True,
+                installation="MCLB_ALBANY",
+                section_unit="Old Shift",
+            )
+            officer.set_password("TempPass123!")
+            db.session.add(officer)
+            db.session.commit()
+            officer_id = officer.id
+
+        response = client.post(
+            "/admin/users",
+            data={
+                "action": "transfer",
+                "user_id": str(officer_id),
+                "role": ROLE_DESK_SGT,
+                "section_unit": "Charlie Shift",
+                "installation": "MCB_CAMP_LEJEUNE",
+                "supervisor_id": "",
+                "can_grade_cleoc_reports": "1",
+            },
+            follow_redirects=False,
+        )
+        assert response.status_code in {302, 303}
+
+        with client.application.app_context():
+            officer = db.session.get(User, officer_id)
+            assert officer.role == ROLE_DESK_SGT
+            assert officer.section_unit == "Charlie Shift"
+            assert officer.installation == "MCB_CAMP_LEJEUNE"
+            assert officer.can_grade_cleoc_reports is True
+    finally:
+        with client.application.app_context():
+            _delete_user(username)
+        _dispose_app(client.application)
+
+
 def test_edit_activation_clears_pending_approval_so_officer_can_login():
     client = _logged_in_client()
     username = "pytest_activate_pending"

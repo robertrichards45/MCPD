@@ -118,6 +118,37 @@ def test_shift_creation_officer_assignment_and_audit():
         assert AuditLog.query.filter_by(action='watch_assignment_changed').first() is not None
 
 
+def test_watch_commander_can_create_shift_and_assign_self():
+    app = create_app()
+    app.config['TESTING'] = True
+    with app.app_context():
+        wc = _user('wc_self_shift_test', ROLE_WATCH_COMMANDER)
+        _app, client = _client_for(wc)
+
+        response = client.post(
+            '/watch-commander/shift',
+            data={
+                'shift_date': '2026-05-08',
+                'shift_type': 'Bravo',
+                'status': 'OPEN',
+                'assign_self': '1',
+                'assigned_officer_ids': [str(wc.id)],
+                'assignment_type': 'Desk Duty',
+                'assignment_location': 'Watch Desk',
+                'assignment_status': 'On Duty',
+            },
+            follow_redirects=True,
+        )
+        assert response.status_code == 200
+        shift = WatchShift.query.filter_by(shift_date='2026-05-08', shift_type='Bravo').first()
+        assert shift is not None
+        assignment = WatchAssignment.query.filter_by(shift_id=shift.id, officer_id=wc.id).first()
+        assert assignment is not None
+        assert assignment.assignment_type == 'Desk Duty'
+        assert assignment.assignment_location == 'Watch Desk'
+        assert assignment.status == 'On Duty'
+
+
 def test_report_return_and_approve_actions_create_audit():
     app = create_app()
     app.config['TESTING'] = True

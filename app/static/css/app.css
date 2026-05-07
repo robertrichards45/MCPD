@@ -15037,6 +15037,21 @@ body[data-theme="dark"] .dropdown-menu {
   flex: 0 0 auto;
 }
 
+.personnel-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 210px;
+}
+
+.personnel-row-actions form {
+  margin: 0;
+}
+
+.personnel-row-actions .btn {
+  white-space: nowrap;
+}
+
 @media (max-width: 1100px) {
   .wc-summary-grid,
   .wc-action-grid {
@@ -15045,6 +15060,237 @@ body[data-theme="dark"] .dropdown-menu {
 
   .wc-row-card {
     grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ============================================================
+   2026-05-07 Final layout hardening
+   Older blocks above are intentionally overridden here so command
+   pages do not render as edge-to-edge, half-styled browser forms.
+   ============================================================ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body:not(.mobile-foundation) {
+  background: var(--bg) !important;
+  color: var(--text) !important;
+}
+
+body:not(.mobile-foundation) .app-shell {
+  background: var(--bg) !important;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body:not(.mobile-foundation):not(.force-mobile-view) .page-wrap,
+body:not(.mobile-foundation):not(.force-mobile-view) .dashboard,
+body:not(.mobile-foundation):not(.force-mobile-view) .authority-page-wrap {
+  margin-left: 250px !important;
+  margin-top: 72px !important;
+  max-width: none !important;
+  padding: 28px 32px 48px !important;
+  width: calc(100% - 250px) !important;
+}
+
+body:not(.mobile-foundation) .card,
+body:not(.mobile-foundation) .page-head,
+body:not(.mobile-foundation) .collapse-card,
+body:not(.mobile-foundation) .personnel-edit-card,
+body:not(.mobile-foundation) .mcpd-panel,
+body:not(.mobile-foundation) .result-card,
+body:not(.mobile-foundation) .portal-card,
+body:not(.mobile-foundation) .stat-card {
+  background: var(--card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 14px 38px rgba(15, 23, 42, 0.07) !important;
+  color: var(--text) !important;
+  overflow: visible;
+}
+
+body:not(.mobile-foundation) .page-head {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+body:not(.mobile-foundation) .page-head h1,
+body:not(.mobile-foundation) .page-head h2,
+body:not(.mobile-foundation) .page-head h3,
+body:not(.mobile-foundation) .card h1,
+body:not(.mobile-foundation) .card h2,
+body:not(.mobile-foundation) .card h3,
+body:not(.mobile-foundation) .card h4,
+body:not(.mobile-foundation) .card h5 {
+  color: var(--text) !important;
+  line-height: 1.15;
+}
+
+body:not(.mobile-foundation) label,
+body:not(.mobile-foundation) .form-label,
+body:not(.mobile-foundation) .personnel-edit-grid label,
+body:not(.mobile-foundation) .recon-form-grid label,
+body:not(.mobile-foundation) .wc-fieldset label {
+  color: var(--text) !important;
+  display: block;
+  font-size: 0.84rem;
+  font-weight: 850;
+  letter-spacing: 0;
+  line-height: 1.25;
+  min-width: 0;
+}
+
+body:not(.mobile-foundation) input,
+body:not(.mobile-foundation) select,
+body:not(.mobile-foundation) textarea,
+body:not(.mobile-foundation) .form-control,
+body:not(.mobile-foundation) .form-select {
+  background: var(--panel) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 12px !important;
+  color: var(--text) !important;
+  display: block;
+  font: inherit;
+  margin-top: 6px;
+  max-width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  width: 100%;
+}
+
+body:not(.mobile-foundation) textarea,
+body:not(.mobile-foundation) textarea.form-control {
+  min-height: 96px;
+  resize: vertical;
+}
+
+body:not(.mobile-foundation) input::placeholder,
+body:not(.mobile-foundation) textarea::placeholder {
+  color: var(--muted) !important;
+  opacity: 0.82;
+}
+
+body:not(.mobile-foundation) .personnel-edit-page {
+  max-width: none !important;
+}
+
+body:not(.mobile-foundation) .personnel-edit-card {
+  padding: 22px !important;
+}
+
+body:not(.mobile-foundation) .personnel-edit-identity {
+  border-bottom: 1px solid var(--border) !important;
+  margin: 0 0 20px !important;
+}
+
+body:not(.mobile-foundation) .personnel-edit-identity h3,
+body:not(.mobile-foundation) .personnel-edit-identity p {
+  color: var(--text) !important;
+}
+
+body:not(.mobile-foundation) .personnel-edit-identity p,
+body:not(.mobile-foundation) .text-muted,
+body:not(.mobile-foundation) .form-text,
+body:not(.mobile-foundation) small {
+  color: var(--muted) !important;
+}
+
+body:not(.mobile-foundation) .personnel-edit-grid,
+body:not(.mobile-foundation) .recon-form-grid,
+body:not(.mobile-foundation) .form-section-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  min-width: 0;
+  width: 100%;
+}
+
+body:not(.mobile-foundation) .personnel-edit-grid > *,
+body:not(.mobile-foundation) .recon-form-grid > *,
+body:not(.mobile-foundation) .form-section-grid > * {
+  min-width: 0;
+}
+
+body:not(.mobile-foundation) .personnel-edit-wide,
+body:not(.mobile-foundation) .personnel-edit-check,
+body:not(.mobile-foundation) .form-field-type-textarea,
+body:not(.mobile-foundation) .form-field-type-signature,
+body:not(.mobile-foundation) .form-field-type-initial {
+  grid-column: 1 / -1 !important;
+}
+
+body:not(.mobile-foundation) .personnel-edit-check,
+body:not(.mobile-foundation) .form-check {
+  align-items: center;
+  background: var(--panel) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 12px;
+  color: var(--text) !important;
+  display: flex;
+  gap: 10px;
+}
+
+body:not(.mobile-foundation) .personnel-edit-check input,
+body:not(.mobile-foundation) .form-check input,
+body:not(.mobile-foundation) input[type="checkbox"],
+body:not(.mobile-foundation) input[type="radio"] {
+  display: inline-block;
+  flex: 0 0 auto;
+  height: 18px;
+  margin: 0;
+  min-height: 18px;
+  padding: 0;
+  width: 18px;
+}
+
+body:not(.mobile-foundation) .personnel-edit-actions,
+body:not(.mobile-foundation) .form-action-bar,
+body:not(.mobile-foundation) .sig-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+body:not(.mobile-foundation) .table-responsive {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+@media (max-width: 960px) {
+  body:not(.mobile-foundation):not(.force-mobile-view) .page-wrap,
+  body:not(.mobile-foundation):not(.force-mobile-view) .dashboard,
+  body:not(.mobile-foundation):not(.force-mobile-view) .authority-page-wrap {
+    margin-left: 0 !important;
+    margin-top: 64px !important;
+    padding: 18px 14px 96px !important;
+    width: 100% !important;
+  }
+
+  body:not(.mobile-foundation) .page-head {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  body:not(.mobile-foundation) .personnel-edit-grid,
+  body:not(.mobile-foundation) .recon-form-grid,
+  body:not(.mobile-foundation) .form-section-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body:not(.mobile-foundation) .personnel-edit-actions,
+  body:not(.mobile-foundation) .form-action-bar {
+    justify-content: stretch;
+  }
+
+  body:not(.mobile-foundation) .personnel-edit-actions .btn,
+  body:not(.mobile-foundation) .form-action-bar .btn,
+  body:not(.mobile-foundation) .page-head .btn {
+    width: 100%;
   }
 }
 

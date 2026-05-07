@@ -216,6 +216,19 @@ def _user_by_username(username, *, active_only=False):
     return query.first()
 
 
+def _user_from_management_form(*, active_only=False):
+    user_id = (request.form.get('user_id') or request.form.get('target_user_id') or '').strip()
+    if user_id:
+        try:
+            target = db.session.get(User, int(user_id))
+        except (TypeError, ValueError):
+            target = None
+        if target and (not active_only or target.active):
+            return target
+        return None
+    return _user_by_username(request.form.get('username', ''), active_only=active_only)
+
+
 def _username_exists(username, *, exclude_user_id=None):
     normalized = _normalize_username(username)
     if not normalized:
@@ -1063,8 +1076,8 @@ def manage_users():
             if not _commit_or_rollback():
                 return render_template('admin_users.html', **context_kwargs(error='Unable to create that user right now. Try again later.'))
             _safe_audit(actor_id=current_user.id, action='user_create', details=username)
-        elif action == 'update':
-            target = _user_by_username(username)
+        elif action in {'update', 'transfer'}:
+            target = _user_from_management_form()
             if not target or not can_manage_user(current_user, target):
                 abort(403)
             try:
@@ -1076,9 +1089,10 @@ def manage_users():
                 return render_template('admin_users.html', **context_kwargs(error=str(exc)))
             if not _commit_or_rollback():
                 return render_template('admin_users.html', **context_kwargs(error='Unable to update that user right now. Try again later.'))
-            _safe_audit(actor_id=current_user.id, action='user_update_role', details=f'{username}:{target.role}')
+            audit_action = 'user_transfer' if action == 'transfer' else 'user_update_role'
+            _safe_audit(actor_id=current_user.id, action=audit_action, details=f'{target.username}:{target.role}:{target.section_unit or ""}')
         elif action == 'delete':
-            target = _user_by_username(username)
+            target = _user_from_management_form()
             if not target:
                 return render_template('admin_users.html', **context_kwargs(error='User not found.'))
             if not can_manage_user(current_user, target):
@@ -1144,7 +1158,7 @@ def manage_users():
                 return render_template('admin_users.html', **context_kwargs(error='Unable to reject that account right now.'))
             _safe_audit(actor_id=current_user.id, action='user_reject', details=rejected_name)
         elif action == 'issue_code':
-            target = _user_by_username(username, active_only=True)
+            target = _user_from_management_form(active_only=True)
             if not target or not can_manage_user(current_user, target):
                 abort(403)
             raw_hours = (request.form.get('hours') or '24').strip() or '24'
@@ -1169,20 +1183,20 @@ def manage_users():
                 **context_kwargs(success=f'Enrollment code issued for {target.display_name}.', issued_code=code_value),
             )
         elif action == 'disable':
-            user = _user_by_username(username)
+            user = _user_from_management_form()
             if user and can_manage_user(current_user, user):
                 user.active = False
                 if not _commit_or_rollback():
                     return render_template('admin_users.html', **context_kwargs(error='Unable to disable that user right now. Try again later.'))
-                _safe_audit(actor_id=current_user.id, action='user_disable', details=username)
+                _safe_audit(actor_id=current_user.id, action='user_disable', details=user.username)
         elif action == 'reset':
-            user = _user_by_username(username)
+            user = _user_from_management_form()
             new_pw = request.form.get('password')
             if user and new_pw and can_manage_user(current_user, user):
                 user.set_password(new_pw)
                 if not _commit_or_rollback():
                     return render_template('admin_users.html', **context_kwargs(error='Unable to reset that password right now. Try again later.'))
-                _safe_audit(actor_id=current_user.id, action='user_reset', details=username)
+                _safe_audit(actor_id=current_user.id, action='user_reset', details=user.username)
         return redirect(url_for('auth.manage_users'))
 
     return render_template('admin_users.html', **context_kwargs())
