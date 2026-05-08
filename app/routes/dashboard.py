@@ -26,6 +26,11 @@ DEFAULT_DASHBOARD_CARD_IDS = [
     'orders_memos',
     'training',
     'saved_work',
+    'accident_tools',
+    'bodycam_mode',
+    'bodycam_footage',
+    'narrative_creator',
+    'five_w_builder',
 ]
 
 DEFAULT_DASHBOARD_PANEL_IDS = ['recent_reports', 'training_rosters', 'saved_work']
