@@ -19,6 +19,13 @@ def _running_on_railway():
 
 
 def _database_url_from_env():
+    if (
+        os.environ.get('PYTEST_CURRENT_TEST')
+        and not _running_on_railway()
+        and os.environ.get('DATABASE_URL', '').strip()
+    ):
+        return os.environ.get('DATABASE_URL').strip()
+
     keys = (
         'MCPD_DATABASE_URL',
         'DATABASE_URL',

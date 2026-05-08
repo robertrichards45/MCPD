@@ -6,6 +6,7 @@ import hmac
 import logging
 import os
 import json
+import re
 import secrets
 import weakref
 import warnings
@@ -127,9 +128,12 @@ def _refresh_runtime_environment_config(app):
             # Tests often create more than one Flask app in the same process.
             # A plain SQLite memory DB is per connection, which makes logged-in
             # users disappear between those app instances. Use a named shared
-            # memory database for local tests only; production DB selection is
-            # still governed by DATABASE_URL/Postgres or the persistent guard.
-            database_uri = 'sqlite:///file:mcpd_test_memory?mode=memory&cache=shared&uri=true'
+            # memory database for local tests only. Scope the name to the
+            # current pytest test when available so state cannot bleed between
+            # unrelated tests.
+            test_name = os.environ.get('PYTEST_CURRENT_TEST', 'mcpd_test_memory').split(' ', 1)[0]
+            test_name = re.sub(r'[^A-Za-z0-9_]+', '_', test_name).strip('_') or 'mcpd_test_memory'
+            database_uri = f'sqlite:///file:{test_name}?mode=memory&cache=shared&uri=true'
         app.config['SQLALCHEMY_DATABASE_URI'] = database_uri
     require_persistent = os.environ.get('REQUIRE_PERSISTENT_DATABASE')
     if require_persistent is not None:
@@ -880,6 +884,7 @@ def create_app():
             pass
 
     with app.app_context():
+        db.session.remove()
         try:
             db.create_all()
             ensure_schema()
@@ -897,5 +902,10 @@ def create_app():
             logging.getLogger(__name__).critical(
                 'Database initialization failed — app will start but may be non-functional: %s', exc
             )
+
+        try:
+            seed_admin()
+        except Exception as owner_seed_exc:
+            logging.getLogger(__name__).warning('Website Controller bootstrap retry skipped: %s', owner_seed_exc)
 
     return app
