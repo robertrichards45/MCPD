@@ -90,3 +90,6 @@ Auth note: credentials were not available in this terminal environment.
 ## Notes
 - desktop: authenticated checks skipped because no audit credentials were available in environment.
 - mobile: authenticated checks skipped because no audit credentials were available in environment.
+
+## Manual Visual Finding
+- Public login page loaded successfully, but the live screenshot showed several pale text blocks on a pale card. This was patched locally in `app/static/css/app.css`; it will be visible on `mclbpd.com` after redeploy.
