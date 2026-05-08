@@ -11,6 +11,16 @@
     <div><span>Saved</span><strong>{{ row.saved_count }}</strong></div>
     <div><span>Drafts</span><strong>{{ row.draft_count }}</strong></div>
     <div><span>Corrections</span><strong>{{ row.pending_corrections }}</strong></div>
+    <div class="wc-row-actions">
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('auth.edit_user', user_id=row.officer.id) }}">Edit</a>
+      {% if row.officer.id != user.id %}
+      <form method="post" action="{{ url_for('auth.manage_users') }}" onsubmit="return confirm('Remove portal access for {{ row.officer.display_name }}?');">
+        <input type="hidden" name="action" value="delete">
+        <input type="hidden" name="user_id" value="{{ row.officer.id }}">
+        <button class="btn btn-outline-danger btn-sm" type="submit">Remove</button>
+      </form>
+      {% endif %}
+    </div>
     <form method="post" class="wc-inline-form">
       <input type="hidden" name="officer_id" value="{{ row.officer.id }}">
       <select name="shift_id"><option value="">No shift</option>{% for s in shifts %}<option value="{{ s.id }}">{{ s.shift_date }} / {{ s.shift_type }}</option>{% endfor %}</select>

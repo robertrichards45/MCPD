@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  var SPEEDS = { normal: 0.95, fast: 1.08, veryfast: 1.18 };
+  var SPEEDS = { normal: 0.86, fast: 0.98, veryfast: 1.08 };
   var STORAGE_ENABLED = 'mcpd.voice.enabled';
   var STORAGE_SPEED = 'mcpd.voice.speed';
   var queue = [];

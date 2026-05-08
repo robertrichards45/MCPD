@@ -825,22 +825,28 @@ def _normalize_payload(payload, schema):
 
 def _statement_line_fields(schema):
     rows = []
+    fallback_rows = []
     for section in schema.get('sections', []):
         for field in section.get('fields', []):
             name = str(field.get('name') or '').strip()
             label = str(field.get('label') or '').strip()
+            ftype = str(field.get('type') or '').strip().lower()
             haystack = f'{name} {label}'.lower()
-            if 'statement' not in haystack:
+            if not any(token in haystack for token in ('statement', 'remarks', 'narrative', 'facts')):
                 continue
             match = re.search(r'\bline\D*(\d{1,2})\b', haystack)
-            if not match:
-                continue
-            rows.append({
+            item = {
                 'name': name,
                 'label': label or _humanize_field_name(name),
-                'line': int(match.group(1)),
+                'line': int(match.group(1)) if match else len(fallback_rows) + 1,
                 'required': bool(field.get('required')),
-            })
+            }
+            if match:
+                rows.append(item)
+            elif ftype in {'text', 'textarea'}:
+                fallback_rows.append(item)
+    if len(rows) < 2 and len(fallback_rows) >= 2:
+        rows = fallback_rows
     rows.sort(key=lambda item: (item['line'], item['name']))
     return rows
 
@@ -865,7 +871,7 @@ def _split_statement_text(statement_text, max_lines, width=78):
         return wrapped
     lines = wrapped[:max_lines]
     remaining = ' '.join(wrapped[max_lines - 1:])
-    lines[-1] = remaining
+    lines[-1] = remaining[: max(width, 240)]
     return lines
 
 

@@ -209,7 +209,7 @@ def test_openai_tts_uses_fast_default_model(monkeypatch):
 def test_assistant_speak_normal_speed_matches_voice_control(monkeypatch):
     captured = {}
 
-    def fake_tts(text, api_key, voice='coral', speed=0.95):
+    def fake_tts(text, api_key, voice='coral', speed=0.86):
         captured['text'] = text
         captured['voice'] = voice
         captured['speed'] = speed
@@ -224,7 +224,7 @@ def test_assistant_speak_normal_speed_matches_voice_control(monkeypatch):
     )
 
     assert response.status_code == 200
-    assert captured['speed'] == 0.95
+    assert captured['speed'] == 0.86
 
 
 def test_openai_tts_accepts_safe_speed(monkeypatch):

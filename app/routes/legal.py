@@ -1145,7 +1145,7 @@ def _render_legal_lookup(default_source='ALL'):
 
     raw_results = _search_entries_for_scope(search_query, source, state)
     local_top_confidence = int(raw_results[0].confidence) if raw_results else 0
-    local_results_strong = bool(raw_results and local_top_confidence >= 80)
+    local_results_strong = bool(raw_results and local_top_confidence >= 88)
     force_ai_interpretation = str(current_app.config.get('LEGAL_AI_ALWAYS_INTERPRET', '')).strip().lower() in {
         '1', 'true', 'yes', 'on'
     }
@@ -1158,7 +1158,7 @@ def _render_legal_lookup(default_source='ALL'):
     allow_narrative_interp = bool(
         ai_expansion_enabled
         and query
-        and (force_ai_interpretation or not local_results_strong)
+        and (force_ai_interpretation or not local_results_strong or len(query.split()) >= 5)
         and not deterministic_lookup
         and not code_lookup_like
         and _is_narrative_query(query)

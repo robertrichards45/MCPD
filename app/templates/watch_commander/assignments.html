@@ -2,5 +2,51 @@
 {% block wc_title %}Assignments{% endblock %}
 {% block wc_subtitle %}Patrol zones, gate posts, desk duties, training duties, follow-ups, special tasks, and RAM checks.{% endblock %}
 {% block wc_body %}
-<section class="wc-card-table">{% for a in assignments %}<article class="wc-row-card"><div><strong>{{ a.officer.display_name if a.officer else 'Officer' }}</strong><span>{{ a.assignment_type }}</span></div><div><span>Location</span><strong>{{ a.assignment_location or 'N/A' }}</strong></div><div><span>Status</span><strong>{{ a.status }}</strong></div><div><span>Times</span><strong>{{ a.start_time or '' }} - {{ a.end_time or '' }}</strong></div></article>{% else %}<div class="wc-panel">No assignments yet. Create assignments from the Officer Status Board.</div>{% endfor %}</section>
+<section class="wc-two-column">
+  <form class="wc-panel wc-form" method="post">
+    <h2>Create / Update Assignment</h2>
+    <label>Officer
+      <select name="officer_id" required>
+        <option value="">Select officer</option>
+        {% for officer in officers %}
+        <option value="{{ officer.id }}" {% if officer.id == user.id %}selected{% endif %}>{{ officer.display_name }} / {{ officer.role_label }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Shift
+      <select name="shift_id">
+        <option value="">No shift selected</option>
+        {% for shift in shifts %}
+        <option value="{{ shift.id }}">{{ shift.shift_date }} / {{ shift.shift_type }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Assignment Type
+      <select name="assignment_type">{% for type in assignment_types %}<option>{{ type }}</option>{% endfor %}</select>
+    </label>
+    <input name="assignment_location" placeholder="Post / zone / location">
+    <label>Status
+      <select name="status">{% for status in statuses %}<option>{{ status }}</option>{% endfor %}</select>
+    </label>
+    <div class="wc-form-row">
+      <input name="start_time" placeholder="Start time">
+      <input name="end_time" placeholder="End time">
+    </div>
+    <textarea name="notes" placeholder="Assignment notes"></textarea>
+    <button class="btn btn-primary" type="submit">Save Assignment</button>
+  </form>
+
+  <section class="wc-card-table">
+    {% for a in assignments %}
+    <article class="wc-row-card">
+      <div><strong>{{ a.officer.display_name if a.officer else 'Officer' }}</strong><span>{{ a.assignment_type }}</span></div>
+      <div><span>Location</span><strong>{{ a.assignment_location or 'N/A' }}</strong></div>
+      <div><span>Status</span><strong>{{ a.status }}</strong></div>
+      <div><span>Times</span><strong>{{ a.start_time or '' }} - {{ a.end_time or '' }}</strong></div>
+    </article>
+    {% else %}
+    <div class="wc-panel">No assignments yet. Use the form to assign yourself or an officer.</div>
+    {% endfor %}
+  </section>
+</section>
 {% endblock %}

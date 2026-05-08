@@ -296,7 +296,10 @@ def _available_supervisors():
         query = query.filter(User.id == current_user.id)
     else:
         query = query.filter(User.id == current_user.id)
-    return [user for user in query.order_by(User.first_name, User.last_name, User.username).all() if _is_assignment_supervisor_candidate(user)]
+    supervisors = [user for user in query.order_by(User.first_name, User.last_name, User.username).all() if _is_assignment_supervisor_candidate(user)]
+    if not supervisors and _is_assignment_supervisor_candidate(current_user):
+        supervisors.append(current_user)
+    return supervisors
 
 
 def _visible_users_query():
@@ -402,7 +405,23 @@ def _delete_user_account(target):
         raise ValueError('Only a Website Controller can delete another Website Controller account.')
     deleted_name = target.display_name
     username = target.username
-    db.session.delete(target)
+    # Reports, forms, audits, and training records can reference this user.
+    # Remove portal access and identifying login data without breaking history.
+    stamp = datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')
+    target.active = False
+    target.pending_approval = False
+    target.username = f'deleted-{target.id}-{stamp}'
+    target.name = f'Deleted Account {target.id}'
+    target.first_name = 'Deleted'
+    target.last_name = f'Account {target.id}'
+    target.display_name_override = 'Deleted Account'
+    target.email = None
+    target.phone_number = None
+    target.address = None
+    target.cac_identifier = None
+    target.cac_enabled = False
+    target.pin_hash = None
+    target.supervisor_id = None
     return username, deleted_name
 
 
@@ -1173,8 +1192,10 @@ def manage_users():
                 supervisor = db.session.get(User, watch_commander_scope_id(current_user))
             section_unit = request.form.get('section_unit', '').strip() or None
             target.role = role
-            target.supervisor_id = supervisor.id if supervisor else None
-            target.section_unit = section_unit or target.section_unit
+            target.supervisor_id = supervisor.id if supervisor else (current_user.id if _is_assignment_supervisor_candidate(current_user) else None)
+            target.section_unit = section_unit or target.section_unit or current_user.section_unit or (f'{current_user.display_name} Watch' if _is_assignment_supervisor_candidate(current_user) else None)
+            if not target.installation and current_user.installation:
+                target.installation = current_user.installation
             if target.normalized_role == ROLE_WATCH_COMMANDER and not target.section_unit:
                 target.section_unit = f'{target.display_name} Watch'
             target.active = True

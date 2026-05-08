@@ -141,6 +141,7 @@ def _assistant_action_for(message: str, page: dict | None = None) -> dict | None
         (('bodycam footage', 'body cam footage', 'bodycam library'), 'Bodycam Footage', url_for('bodycam.library')),
         (('narrative creator', 'narrative tool'), 'Narrative Creator', url_for('bodycam.narrative_tool')),
         (('5w', '5ws', '5 w', 'five w', 'five ws', '5w builder'), '5W Builder', url_for('bodycam.five_w_tool')),
+        (('mock report', 'mock reports', 'cleo report', 'cleo reports'), 'Mock Report Writing', url_for('cleo_api.cleo_reports_page')),
         (('site builder', 'builder', 'builder mode'), 'Site Builder', url_for('admin.site_builder')),
         (('accident tools', 'crash tools', 'accident diagram'), 'Accident Tools', url_for('reports.accidents')),
         (('officer accident diagram', 'simple accident diagram'), 'Officer Accident Diagram', url_for('reports.officer_accident_diagram_new')),
@@ -213,9 +214,9 @@ def assistant_speak():
         voice = 'coral'
     speed_name = (body.get('speed') or 'normal').strip().lower()
     speed_map = {
-        'normal': 0.95,
-        'fast': 1.08,
-        'veryfast': 1.18,
+        'normal': 0.86,
+        'fast': 0.98,
+        'veryfast': 1.08,
     }
     speed = speed_map.get(speed_name, speed_map['normal'])
 

@@ -250,6 +250,36 @@
   flex: 0 0 auto;
 }
 
+.wc-row-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.wc-row-actions form {
+  margin: 0;
+}
+
+.wc-form-row {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.wc-module .btn,
+.wc-module button,
+.wc-module select,
+.wc-module input,
+.wc-module textarea {
+  max-width: 100%;
+}
+
+.wc-module a:not(.btn):not(.wc-btn) {
+  color: var(--primary);
+  font-weight: 800;
+}
+
 @media (max-width: 1100px) {
   .wc-summary-grid,
   .wc-action-grid {
@@ -279,6 +309,10 @@
 
   .wc-row-card {
     align-items: stretch;
+  }
+
+  .wc-form-row {
+    grid-template-columns: 1fr;
   }
 
   .wc-page-tabs {

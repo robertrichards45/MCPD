@@ -332,12 +332,42 @@ def approvals():
     return render_template('watch_commander/approvals.html', title='Approvals Center', user=current_user, queues=queues, approvals=approvals)
 
 
-@bp.route('/assignments')
+@bp.route('/assignments', methods=['GET', 'POST'])
 @login_required
 def assignments():
     _require_watch_tools()
+    if request.method == 'POST':
+        officer_id = request.form.get('officer_id', type=int)
+        officer = db.session.get(User, officer_id)
+        if not officer or not officer.active:
+            abort(404)
+        shift_id = request.form.get('shift_id', type=int)
+        assignment = (
+            WatchAssignment.query.filter_by(shift_id=shift_id, officer_id=officer.id).first()
+            if shift_id else None
+        ) or WatchAssignment(officer_id=officer.id)
+        assignment.shift_id = shift_id
+        assignment.assignment_type = (request.form.get('assignment_type') or 'Patrol Zone').strip()
+        assignment.assignment_location = (request.form.get('assignment_location') or '').strip()
+        assignment.status = (request.form.get('status') or 'On Duty').strip()
+        assignment.start_time = (request.form.get('start_time') or '').strip()
+        assignment.end_time = (request.form.get('end_time') or '').strip()
+        assignment.notes = (request.form.get('notes') or '').strip()
+        db.session.add(assignment)
+        _audit('watch_assignment_changed', f'officer_id={officer.id}|shift_id={shift_id or ""}|assignment={assignment.assignment_type}|status={assignment.status}')
+        db.session.commit()
+        flash('Assignment saved.', 'success')
+        return redirect(url_for('watch_commander.assignments'))
     assignments = WatchAssignment.query.order_by(WatchAssignment.updated_at.desc()).limit(150).all()
-    return render_template('watch_commander/assignments.html', title='Assignments', user=current_user, assignments=assignments, statuses=OFFICER_STATUSES)
+    shifts = WatchShift.query.filter(WatchShift.status != 'CLOSED').order_by(WatchShift.created_at.desc()).all()
+    return render_template('watch_commander/assignments.html', title='Assignments', user=current_user, assignments=assignments, officers=_officers(), shifts=shifts, statuses=OFFICER_STATUSES, assignment_types=ASSIGNMENT_TYPES)
+
+
+@bp.route('/personnel')
+@login_required
+def personnel():
+    _require_watch_tools()
+    return redirect(url_for('auth.manage_users'))
 
 
 @bp.route('/briefing', methods=['GET', 'POST'])

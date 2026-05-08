@@ -122,7 +122,15 @@ def _enforce_persistent_database_config(app):
 def _refresh_runtime_environment_config(app):
     database_url = _database_url_from_env()
     if database_url is not None:
-        app.config['SQLALCHEMY_DATABASE_URI'] = _normalize_database_uri(database_url)
+        database_uri = _normalize_database_uri(database_url)
+        if database_uri == 'sqlite:///:memory:':
+            # Tests often create more than one Flask app in the same process.
+            # A plain SQLite memory DB is per connection, which makes logged-in
+            # users disappear between those app instances. Use a named shared
+            # memory database for local tests only; production DB selection is
+            # still governed by DATABASE_URL/Postgres or the persistent guard.
+            database_uri = 'sqlite:///file:mcpd_test_memory?mode=memory&cache=shared&uri=true'
+        app.config['SQLALCHEMY_DATABASE_URI'] = database_uri
     require_persistent = os.environ.get('REQUIRE_PERSISTENT_DATABASE')
     if require_persistent is not None:
         app.config['REQUIRE_PERSISTENT_DATABASE'] = require_persistent.lower() in {'1', 'true', 'yes', 'on'}

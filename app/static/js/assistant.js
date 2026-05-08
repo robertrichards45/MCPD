@@ -645,6 +645,10 @@
     if (!text) { if (voiceMode) scheduleAutoListen(); return; }
     options = options || {};
     stopAudio();
+    if (Voice.setVoiceSpeed) {
+      var speedSelect = document.getElementById('ai-voice-speed');
+      Voice.setVoiceSpeed(speedSelect ? speedSelect.value : (Voice.getVoiceSpeed ? Voice.getVoiceSpeed() : 'normal'));
+    }
     var speechText = options.full ? String(text || '').trim() : (Voice.summarizeForSpeech ? Voice.summarizeForSpeech(text) : text);
     if (!speechText) { if (voiceMode) scheduleAutoListen(); return; }
 

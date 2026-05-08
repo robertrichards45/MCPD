@@ -10795,6 +10795,91 @@ body:not(.mobile-foundation) .small {
 
 }
 
+/* Stabilization polish for admin/personnel/forms screens that use shared cards. */
+.personnel-edit-page .page-head,
+.personnel-edit-card,
+.forms-library-shell .page-head,
+.forms-fill-page .page-head,
+.forms-manager-page .page-head {
+  color: var(--text);
+}
+
+.personnel-edit-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.personnel-edit-grid label,
+.forms-fill-page label,
+.forms-library-shell label,
+.collapse-card label {
+  color: var(--text) !important;
+  font-weight: 800;
+}
+
+.personnel-edit-grid input,
+.personnel-edit-grid select,
+.personnel-edit-grid textarea,
+.forms-fill-page input,
+.forms-fill-page select,
+.forms-fill-page textarea,
+.forms-library-shell input,
+.forms-library-shell select,
+.forms-library-shell textarea {
+  background: var(--input-bg, var(--surface));
+  border: 1px solid var(--border);
+  color: var(--input-text, var(--text));
+  max-width: 100%;
+}
+
+.personnel-edit-wide {
+  grid-column: 1 / -1;
+}
+
+.personnel-edit-actions,
+.form-action-bar,
+.result-actions,
+.forms-toolbar {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.personnel-row-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.personnel-row-actions form {
+  margin: 0;
+}
+
+@media (max-width: 760px) {
+  .personnel-edit-grid,
+  .forms-fill-layout,
+  .forms-result-card,
+  .forms-filter-panel .row {
+    grid-template-columns: 1fr !important;
+  }
+
+  .forms-fill-page,
+  .forms-library-shell,
+  .page-wrap {
+    padding-bottom: calc(var(--mobile-dock-height, 112px) + env(safe-area-inset-bottom, 0px) + 28px);
+  }
+
+  .personnel-edit-actions .btn,
+  .forms-toolbar .btn,
+  .form-action-bar .btn,
+  .result-actions .btn {
+    flex: 1 1 180px;
+  }
+}
+
 .mobile-form-rec-card.is-always-required {
   border: 2px solid #c9a646;
   background: linear-gradient(135deg, rgba(201,166,70,0.15), rgba(10,25,47,0.95));
