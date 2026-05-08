@@ -484,4 +484,4 @@ def cleo_report_grade(report_id):
 @bp.route('/cleo/reports', methods=['GET'])
 @login_required
 def cleo_reports_page():
-    return redirect(url_for('reports.list_reports'))
+    return redirect(url_for('forms.list_forms', _anchor='mock-report-writing'))

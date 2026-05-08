@@ -8,7 +8,7 @@
         <div class="ops-head-copy">
           <div class="eyebrow forms-library-eyebrow">Reporting Hub</div>
           <h2 class="mb-1">Reports Center</h2>
-          <p class="text-muted mb-0">Standard reports and mock report packets now live in one reporting center so mobile navigation stays cleaner and the workflow reads as one system.</p>
+          <p class="text-muted mb-0">Standard reports, field drafts, accident reports, and report packets. Mock report-writing forms now live under Forms.</p>
         </div>
         <div class="ops-head-stats">
           <article class="ops-stat-pill">
@@ -16,8 +16,8 @@
             <strong>{{ report_count|default(0) }}</strong>
           </article>
           <article class="ops-stat-pill">
-            <span>Mock Reports</span>
-            <strong>{{ cleo_count|default(0) }}</strong>
+            <span>Mock Writing</span>
+            <strong>Forms</strong>
           </article>
           <article class="ops-stat-pill">
             <span>Review Queue</span>
@@ -35,8 +35,8 @@
         <a class="btn btn-outline-secondary" href="{{ url_for('bodycam.narrative_tool') }}">Narrative Creator</a>
         <a class="btn btn-outline-secondary" href="{{ url_for('bodycam.five_w_tool') }}">5W Builder</a>
         <a class="btn btn-outline-secondary" href="{{ url_for('reports.accidents') }}">Accident Tools</a>
-        <button class="btn btn-outline-secondary" type="button" onclick="createCleoReport()">New Mock Report</button>
-          <a class="btn btn-outline-secondary" href="{{ url_for('reference.incident_paperwork_guide') }}">Paperwork Navigator</a>
+        <a class="btn btn-outline-secondary" href="{{ url_for('forms.list_forms', _anchor='mock-report-writing') }}">Mock Report Writing</a>
+        <a class="btn btn-outline-secondary" href="{{ url_for('reference.incident_paperwork_guide') }}">Paperwork Navigator</a>
       </div>
     </section>
 
