@@ -484,4 +484,27 @@ def cleo_report_grade(report_id):
 @bp.route('/cleo/reports', methods=['GET'])
 @login_required
 def cleo_reports_page():
-    return redirect(url_for('forms.list_forms', _anchor='mock-report-writing'))
+    my_mock_reports = (
+        CleoReport.query
+        .filter_by(user_id=current_user.id)
+        .order_by(CleoReport.updated_at.desc())
+        .limit(8)
+        .all()
+    )
+    mock_review_reports = []
+    if can_manage_site(current_user) or can_manage_team(current_user) or can_grade_cleoc_reports(current_user):
+        mock_review_reports = (
+            CleoReport.query
+            .filter(CleoReport.status.in_(('SUBMITTED', 'RETURNED', 'GRADED')))
+            .order_by(CleoReport.updated_at.desc())
+            .limit(8)
+            .all()
+        )
+    return render_template(
+        'cleo_reports.html',
+        user=current_user,
+        my_mock_reports=my_mock_reports,
+        mock_review_reports=mock_review_reports,
+        mock_report_count=len(my_mock_reports),
+        mock_review_count=len(mock_review_reports),
+    )

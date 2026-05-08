@@ -2,94 +2,122 @@
 {% block body %}
 <div class="app-shell">
   {% include 'partials/nav.html' %}
-  <div class="page-wrap">
-    <div class="card p-3 mb-3 page-head d-flex justify-content-between align-items-center">
-      <div>
-        <h2 class="mb-1">Mock Reports Program</h2>
-        <p class="text-muted mb-0">Write mock reports, submit them for review, print them, and review graded packets without changing prior submissions.</p>
-      </div>
-      <form method="post" action="{{ url_for('cleo_api.cleo_reports_create') }}" onsubmit="return false;">
-        <button class="btn btn-primary" type="button" onclick="createCleoReport()">New Mock Report</button>
-      </form>
+  <div class="page-wrap report-center-shell">
+    <div class="mobile-back-bar">
+      <a class="mobile-back-btn" href="{{ url_for('reports.list_reports') }}">&#8592; Reports Center</a>
     </div>
 
-    <div class="row">
-      <div class="col-lg-7">
-        <div class="card p-3 mb-3">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <h4 class="mb-0">My Reports</h4>
-            <span class="text-muted small">{{ my_reports|length }} total</span>
-          </div>
-          {% if my_reports %}
-            <div class="table-responsive">
-              <table class="table table-striped align-middle">
-                <thead>
-                  <tr>
-                    <th>Report</th>
-                    <th>Status</th>
-                    <th>Updated</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for report in my_reports %}
-                    <tr>
-                      <td>
-                        <strong>{{ report.title or ('Report #' ~ report.id) }}</strong>
-                        <div class="text-muted small">ID {{ report.id }}</div>
-                      </td>
-                      <td><span class="badge bg-dark">{{ report.status or 'DRAFT' }}</span></td>
-                      <td class="text-muted small">{{ report.updated_at.strftime('%Y-%m-%d %H:%M') if report.updated_at else '' }}</td>
-                      <td class="text-end">
-                        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('cleo_api.cleo_report_view', report_id=report.id) }}">Open</a>
-                      </td>
-                    </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
+    <section class="card p-3 mb-3 page-head ops-head-card">
+      <div class="ops-head-grid">
+        <div class="ops-head-copy">
+          <div class="eyebrow forms-library-eyebrow">Training / Mock Reports</div>
+          <h2 class="mb-1">Mock Report Writing</h2>
+          <p class="mb-0 text-muted">Use this training area for mock incident packets and CLEO-style report-writing practice. Official forms stay in the Forms Library.</p>
+        </div>
+        <div class="ops-head-stats">
+          <article class="ops-stat-pill">
+            <span>My Mock Reports</span>
+            <strong>{{ mock_report_count|default(0) }}</strong>
+          </article>
+          <article class="ops-stat-pill">
+            <span>Review Queue</span>
+            <strong>{{ mock_review_count|default(0) }}</strong>
+          </article>
+        </div>
+      </div>
+
+      <div class="forms-toolbar">
+        <button class="btn btn-primary" type="button" onclick="createCleoReport()">New Mock Report</button>
+        <a class="btn btn-outline-secondary" href="{{ url_for('reports.list_reports') }}">Reports Center</a>
+        <a class="btn btn-outline-secondary" href="{{ url_for('reference.incident_paperwork_guide') }}">Paperwork Navigator</a>
+      </div>
+    </section>
+
+    <section class="card p-3 mb-3 report-center-panel">
+      <div class="report-panel-head">
+        <div>
+          <h3 class="mb-1">Mock Packet Pages</h3>
+          <p class="text-muted mb-0">Open only training/mock report-writing pages from here.</p>
+        </div>
+      </div>
+
+      <div class="report-call-type-grid mb-3">
+        <a class="report-call-type-card text-decoration-none" href="/static/cleo/incident-admin.html">
+          <span class="report-call-type-kicker">Packet Start</span>
+          <strong>Incident Admin</strong>
+          <p>Start or continue the mock report incident administration page.</p>
+          <span class="report-call-type-meta">Case control / incident details</span>
+        </a>
+        <a class="report-call-type-card text-decoration-none" href="/static/cleo/persons.html">
+          <span class="report-call-type-kicker">People</span>
+          <strong>Persons / Suspects / Victims</strong>
+          <p>Capture people, identifiers, and involved-party details.</p>
+          <span class="report-call-type-meta">Mock report page</span>
+        </a>
+        <a class="report-call-type-card text-decoration-none" href="/static/cleo/narrative.html">
+          <span class="report-call-type-kicker">Writing</span>
+          <strong>Narrative Page</strong>
+          <p>Write the mock report narrative and supporting details.</p>
+          <span class="report-call-type-meta">Narrative / facts</span>
+        </a>
+        <a class="report-call-type-card text-decoration-none" href="{{ url_for('reference.incident_paperwork_guide') }}">
+          <span class="report-call-type-kicker">Form Selection</span>
+          <strong>Paperwork Navigator</strong>
+          <p>Confirm the official forms that belong with the selected incident.</p>
+          <span class="report-call-type-meta">Recommended paperwork</span>
+        </a>
+      </div>
+    </section>
+
+    <div class="report-center-grid">
+      <section class="card p-3 report-center-panel">
+        <div class="report-panel-head mb-2">
+          <h3 class="mb-0">My Mock Reports</h3>
+          <span class="badge bg-dark">{{ mock_report_count|default(0) }}</span>
+        </div>
+        <div class="report-hub-list">
+          {% for report in my_mock_reports %}
+          <article class="result-card report-hub-card">
+            <div class="result-head">
+              <h4>{{ report.title or ('Report #' ~ report.id) }}</h4>
+              <span class="badge bg-dark">{{ report.status or 'DRAFT' }}</span>
             </div>
+            <p class="result-sub">Updated {{ report.updated_at.strftime('%Y-%m-%d %H:%M') if report.updated_at else '' }}</p>
+            <div class="report-hub-actions">
+              <a class="btn btn-sm btn-primary" href="{{ url_for('cleo_api.cleo_report_view', report_id=report.id) }}">Open Packet</a>
+              {% if report.status in ['DRAFT', 'RETURNED'] %}
+              <a class="btn btn-sm btn-outline-secondary" href="/static/cleo/incident-admin.html?report_id={{ report.id }}">Continue Writing</a>
+              {% endif %}
+            </div>
+          </article>
           {% else %}
-            <div class="text-muted">No reports yet. Start a new mock report to begin.</div>
-          {% endif %}
+          <div class="report-empty-state">No mock reports yet. Use New Mock Report to begin a training packet.</div>
+          {% endfor %}
         </div>
-      </div>
+      </section>
 
-      <div class="col-lg-5">
-        <div class="card p-3 mb-3">
-          <h4 class="mb-2">Workflow</h4>
-          <ol class="mb-0">
-            <li>Create your report and complete the mock report pages.</li>
-            <li>Submit when finished. Submitted reports become read-only.</li>
-            <li>A grader can return the report with highlighted field notes or mark it graded.</li>
-            <li>After review, the officer can reopen returned reports, or review graded reports in read-only mode.</li>
-          </ol>
+      <section class="card p-3 report-center-panel">
+        <div class="report-panel-head mb-2">
+          <h3 class="mb-0">Review Queue</h3>
+          <span class="badge bg-dark">{{ mock_review_count|default(0) }}</span>
         </div>
-
-        {% if can_grade_report and review_reports %}
-          <div class="card p-3 mb-3">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <h4 class="mb-0">Review Queue</h4>
-              <span class="text-muted small">{{ review_reports|length }} available</span>
+        <div class="report-hub-list">
+          {% for report in mock_review_reports %}
+          <article class="result-card report-hub-card">
+            <div class="result-head">
+              <h4>{{ report.title or ('Report #' ~ report.id) }}</h4>
+              <span class="badge bg-dark">{{ report.status or 'SUBMITTED' }}</span>
             </div>
-            <div class="list-group">
-              {% for report in review_reports %}
-                <a class="list-group-item list-group-item-action" href="{{ url_for('cleo_api.cleo_report_view', report_id=report.id) }}">
-                  <div class="d-flex justify-content-between">
-                    <strong>{{ report.title or ('Report #' ~ report.id) }}</strong>
-                    <span class="badge bg-secondary">{{ report.status }}</span>
-                  </div>
-                  <div class="text-muted small">Officer: {{ report.owner.display_name if report.owner else report.user_id }}</div>
-                </a>
-              {% endfor %}
+            <p class="result-sub">Officer: {{ report.owner.display_name if report.owner else report.user_id }}</p>
+            <div class="report-hub-actions">
+              <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('cleo_api.cleo_report_view', report_id=report.id) }}">Open Review</a>
             </div>
-          </div>
-        {% elif can_grade_report %}
-          <div class="card p-3 mb-3">
-            <h4 class="mb-2">Review Queue</h4>
-            <div class="text-muted">No submitted mock reports are waiting for review.</div>
-          </div>
-        {% endif %}
-      </div>
+          </article>
+          {% else %}
+          <div class="report-empty-state">No mock reports are waiting for review.</div>
+          {% endfor %}
+        </div>
+      </section>
     </div>
   </div>
 </div>
@@ -102,7 +130,7 @@
     });
     const data = await response.json();
     if (!response.ok || !data.id) {
-      alert(data.error || 'Unable to create a report right now.');
+      alert(data.error || 'Unable to create a mock report right now.');
       return;
     }
     localStorage.setItem('cleo_report_id', data.id);

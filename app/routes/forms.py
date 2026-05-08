@@ -17,8 +17,8 @@ from flask_login import current_user, login_required
 from werkzeug.utils import secure_filename
 
 from ..extensions import db
-from ..models import AuditLog, CleoReport, Form, ROLE_DESK_SGT, ROLE_WATCH_COMMANDER, SavedForm, SavedFormAudit, User
-from ..permissions import can_grade_cleoc_reports, can_manage_site, can_manage_team, can_view_user
+from ..models import AuditLog, Form, ROLE_DESK_SGT, ROLE_WATCH_COMMANDER, SavedForm, SavedFormAudit, User
+from ..permissions import can_manage_site, can_view_user
 from ..services.call_type_rules import load_call_type_rules, normalize_call_type_rule, save_call_type_rules, slugify_call_type, split_multivalue
 from ..services.form_metadata_ai import category_options, choose_latest_form, detect_form_metadata_from_uploads, heuristic_metadata, normalize_form_family
 from ..services.form_source_updates import check_and_update_form_source
@@ -1464,22 +1464,6 @@ def list_forms():
     if not current_app.config.get('TESTING'):
         forms = [form for form in forms if not _is_test_form_record(form)]
     categories = sorted({form.category for form in forms if form.category})
-    my_mock_reports = (
-        CleoReport.query
-        .filter_by(user_id=current_user.id)
-        .order_by(CleoReport.updated_at.desc())
-        .limit(8)
-        .all()
-    )
-    mock_review_reports = []
-    if can_manage_site(current_user) or can_manage_team(current_user) or can_grade_cleoc_reports(current_user):
-        mock_review_reports = (
-            CleoReport.query
-            .filter(CleoReport.status.in_(('SUBMITTED', 'RETURNED', 'GRADED')))
-            .order_by(CleoReport.updated_at.desc())
-            .limit(8)
-            .all()
-        )
     return render_template(
         'forms.html',
         forms=forms,
@@ -1490,10 +1474,6 @@ def list_forms():
         category_filter=category,
         can_manage_form_maintenance=_can_manage_form_maintenance(current_user),
         can_manage_uploads=current_user.can_manage_site(),
-        my_mock_reports=my_mock_reports,
-        mock_review_reports=mock_review_reports,
-        mock_report_count=len(my_mock_reports),
-        mock_review_count=len(mock_review_reports),
     )
 
 

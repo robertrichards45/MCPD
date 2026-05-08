@@ -41,3 +41,32 @@ def test_forms_library_hides_test_only_records_from_operational_page():
             if form:
                 db.session.delete(form)
                 db.session.commit()
+
+
+def test_main_forms_library_excludes_mock_report_writing_tools():
+    client = _logged_in_client()
+
+    forms_response = client.get('/forms')
+    old_forms_mock_response = client.get('/forms/mock-report-writing')
+    cleo_response = client.get('/cleo/reports')
+    reports_response = client.get('/reports')
+
+    forms_html = forms_response.get_data(as_text=True)
+    cleo_html = cleo_response.get_data(as_text=True)
+    reports_html = reports_response.get_data(as_text=True)
+
+    assert forms_response.status_code == 200
+    assert 'Forms Library' in forms_html
+    assert 'Mock Report Writing' not in forms_html
+    assert 'New Mock Report' not in forms_html
+    assert '/static/cleo/incident-admin.html' not in forms_html
+    assert 'My Mock Reports' not in forms_html
+    assert old_forms_mock_response.status_code == 404
+    assert cleo_response.status_code == 200
+    assert 'Mock Report Writing' in cleo_html
+    assert 'New Mock Report' in cleo_html
+    assert '/static/cleo/incident-admin.html' in cleo_html
+    assert reports_response.status_code == 200
+    assert 'New Mock Report' not in reports_html
+    assert '/cleo/reports' in reports_html
+    assert '/forms/mock-report-writing' not in reports_html

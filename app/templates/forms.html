@@ -32,105 +32,12 @@
       <div class="forms-toolbar">
         <a class="btn btn-primary" href="{{ url_for('forms.saved_forms') }}">Open Saved Work</a>
         <a class="btn btn-outline-secondary" href="{{ url_for('reference.incident_paperwork_guide') }}">Paperwork Navigator</a>
-        <a class="btn btn-outline-secondary" href="#mock-report-writing">Mock Report Writing</a>
         {% if can_manage_form_maintenance %}
         <a class="btn btn-outline-dark" href="{{ url_for('forms.forms_manager') }}">Manage Forms</a>
         {% endif %}
         {% if can_manage_uploads %}
         <a class="btn btn-outline-dark" href="{{ url_for('forms.upload_form') }}">Add New Form</a>
         {% endif %}
-      </div>
-    </section>
-
-    <section id="mock-report-writing" class="card p-3 mb-3 report-center-panel">
-      <div class="report-panel-head">
-        <div>
-          <div class="eyebrow forms-library-eyebrow">Report Writing Forms</div>
-          <h3 class="mb-1">Mock Report Writing</h3>
-          <p class="text-muted mb-0">Complete incident-admin packet pages, narrative, enclosures, and review from the Forms area.</p>
-        </div>
-        <div class="forms-toolbar">
-          <button class="btn btn-primary" type="button" onclick="createCleoReport()">New Mock Report</button>
-          <a class="btn btn-outline-secondary" href="{{ url_for('cleo_api.cleo_reports_page') }}">Open Mock Reports</a>
-        </div>
-      </div>
-
-      <div class="report-call-type-grid mb-3">
-        <a class="report-call-type-card text-decoration-none" href="/static/cleo/incident-admin.html">
-          <span class="report-call-type-kicker">Packet Start</span>
-          <strong>Incident Admin</strong>
-          <p>Start or continue the mock report incident administration page.</p>
-          <span class="report-call-type-meta">Case control / incident details</span>
-        </a>
-        <a class="report-call-type-card text-decoration-none" href="/static/cleo/persons.html">
-          <span class="report-call-type-kicker">People</span>
-          <strong>Persons / Suspects / Victims</strong>
-          <p>Capture people, identifiers, and involved-party details.</p>
-          <span class="report-call-type-meta">Mock report form page</span>
-        </a>
-        <a class="report-call-type-card text-decoration-none" href="/static/cleo/narrative.html">
-          <span class="report-call-type-kicker">Writing</span>
-          <strong>Narrative Page</strong>
-          <p>Write the mock report narrative and supporting details.</p>
-          <span class="report-call-type-meta">Narrative / facts</span>
-        </a>
-        <a class="report-call-type-card text-decoration-none" href="{{ url_for('reference.incident_paperwork_guide') }}">
-          <span class="report-call-type-kicker">Form Selection</span>
-          <strong>Paperwork Navigator</strong>
-          <p>Confirm the official forms that belong with the selected incident.</p>
-          <span class="report-call-type-meta">Recommended paperwork</span>
-        </a>
-      </div>
-
-      <div class="report-center-grid">
-        <div>
-          <div class="report-panel-head mb-2">
-            <h4 class="mb-0">My Mock Reports</h4>
-            <span class="badge bg-dark">{{ mock_report_count|default(0) }}</span>
-          </div>
-          <div class="report-hub-list">
-            {% for report in my_mock_reports %}
-            <article class="result-card report-hub-card">
-              <div class="result-head">
-                <h4>{{ report.title or ('Report #' ~ report.id) }}</h4>
-                <span class="badge bg-dark">{{ report.status or 'DRAFT' }}</span>
-              </div>
-              <p class="result-sub">Updated {{ report.updated_at.strftime('%Y-%m-%d %H:%M') if report.updated_at else '' }}</p>
-              <div class="report-hub-actions">
-                <a class="btn btn-sm btn-primary" href="{{ url_for('cleo_api.cleo_report_view', report_id=report.id) }}">Open Packet</a>
-                {% if report.status in ['DRAFT', 'RETURNED'] %}
-                <a class="btn btn-sm btn-outline-secondary" href="/static/cleo/incident-admin.html?report_id={{ report.id }}">Continue Writing</a>
-                {% endif %}
-              </div>
-            </article>
-            {% else %}
-            <div class="report-empty-state">No mock reports yet. Use New Mock Report to begin a packet.</div>
-            {% endfor %}
-          </div>
-        </div>
-
-        <div>
-          <div class="report-panel-head mb-2">
-            <h4 class="mb-0">Review Queue</h4>
-            <span class="badge bg-dark">{{ mock_review_count|default(0) }}</span>
-          </div>
-          <div class="report-hub-list">
-            {% for report in mock_review_reports %}
-            <article class="result-card report-hub-card">
-              <div class="result-head">
-                <h4>{{ report.title or ('Report #' ~ report.id) }}</h4>
-                <span class="badge bg-dark">{{ report.status or 'SUBMITTED' }}</span>
-              </div>
-              <p class="result-sub">Officer: {{ report.owner.display_name if report.owner else report.user_id }}</p>
-              <div class="report-hub-actions">
-                <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('cleo_api.cleo_report_view', report_id=report.id) }}">Open Review</a>
-              </div>
-            </article>
-            {% else %}
-            <div class="report-empty-state">No mock reports are waiting for review.</div>
-            {% endfor %}
-          </div>
-        </div>
       </div>
     </section>
 
@@ -199,20 +106,4 @@
     </div>
   </div>
 </div>
-<script>
-  async function createCleoReport() {
-    const response = await fetch('{{ url_for("cleo_api.cleo_reports_create") }}', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({})
-    });
-    const data = await response.json();
-    if (!response.ok || !data.id) {
-      alert(data.error || 'Unable to create a mock report right now.');
-      return;
-    }
-    localStorage.setItem('cleo_report_id', data.id);
-    window.location.href = `/static/cleo/incident-admin.html?report_id=${data.id}`;
-  }
-</script>
 {% endblock %}
