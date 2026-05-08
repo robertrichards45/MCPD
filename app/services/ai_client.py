@@ -173,7 +173,10 @@ def openai_key_status(api_key=None):
     payload = {
         'model': model,
         'input': 'Reply with exactly: ok',
-        'max_output_tokens': 8,
+        # OpenAI Responses requires at least 16 output tokens. Keep this probe
+        # small, but valid, so /api/assistant/status does not report a false
+        # configuration failure in production.
+        'max_output_tokens': 16,
     }
     try:
         response = requests.post(

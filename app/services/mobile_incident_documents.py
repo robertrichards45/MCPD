@@ -1,5 +1,8 @@
 import base64
 import os
+import hashlib
+import json
+from collections import OrderedDict
 from io import BytesIO
 from pathlib import Path
 
@@ -8,6 +11,11 @@ from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
 
 from .forms_pdf_renderer import _pdf_classes, render_form_pdf
+
+
+_STATEMENT_PDF_CACHE_VERSION = 'statement-pdf-v2'
+_STATEMENT_PDF_CACHE_MAX = 96
+_STATEMENT_PDF_CACHE: OrderedDict[str, tuple[bytes, dict]] = OrderedDict()
 
 
 def _repo_root() -> Path:
@@ -515,10 +523,16 @@ def _overlay_signature_images(pdf_bytes: bytes, placements: list[dict]) -> tuple
 
 
 def render_statement_pdf(statement: dict, incident_state: dict) -> tuple[bytes, dict]:
+    cache_key = _statement_pdf_cache_key(statement, incident_state)
+    cached = _statement_pdf_cache_get(cache_key)
+    if cached:
+        return cached
     pdf_bytes, meta = _render_statement_fillable_pdf(statement, incident_state)
     preview = meta['preview']
     stamped_bytes, stamp_meta = _overlay_signature_images(pdf_bytes, _signature_placements(statement, preview))
-    return stamped_bytes, {
+    result = (
+        stamped_bytes,
+        {
         'mode': meta.get('mode'),
         'mapped_count': meta.get('mapped_count', 0),
         'truncations': meta.get('truncations', []),
@@ -526,7 +540,37 @@ def render_statement_pdf(statement: dict, incident_state: dict) -> tuple[bytes, 
         'placed_fields': stamp_meta['placed_fields'],
         'used_page_count': sum(1 for page in preview['pages'] if page.get('used')),
         'overflow': bool(preview.get('overflow')),
+        },
+    )
+    _statement_pdf_cache_store(cache_key, result)
+    return result
+
+
+def _statement_pdf_cache_key(statement: dict, incident_state: dict) -> str:
+    payload = {
+        'version': _STATEMENT_PDF_CACHE_VERSION,
+        'statement': statement if isinstance(statement, dict) else {},
+        'incident': incident_state if isinstance(incident_state, dict) else {},
     }
+    serialized = json.dumps(payload, sort_keys=True, separators=(',', ':'), default=str)
+    return hashlib.sha256(serialized.encode('utf-8')).hexdigest()
+
+
+def _statement_pdf_cache_get(cache_key: str) -> tuple[bytes, dict] | None:
+    cached = _STATEMENT_PDF_CACHE.get(cache_key)
+    if not cached:
+        return None
+    _STATEMENT_PDF_CACHE.move_to_end(cache_key)
+    pdf_bytes, meta = cached
+    return pdf_bytes, dict(meta)
+
+
+def _statement_pdf_cache_store(cache_key: str, result: tuple[bytes, dict]) -> None:
+    pdf_bytes, meta = result
+    _STATEMENT_PDF_CACHE[cache_key] = (pdf_bytes, dict(meta))
+    _STATEMENT_PDF_CACHE.move_to_end(cache_key)
+    while len(_STATEMENT_PDF_CACHE) > _STATEMENT_PDF_CACHE_MAX:
+        _STATEMENT_PDF_CACHE.popitem(last=False)
 
 
 def _wrap_pdf_text(value: str, max_chars: int) -> list[str]:
