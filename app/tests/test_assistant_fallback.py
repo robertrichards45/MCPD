@@ -158,6 +158,7 @@ def test_openai_key_status_uses_configured_model_without_exposing_key(monkeypatc
     assert 'sk-test-secret-value' not in str(status)
     assert captured['auth'] == 'Bearer sk-test-secret-value'
     assert '"model": "gpt-test-model"' in captured['data']
+    assert '"max_output_tokens": 16' in captured['data']
 
 
 def test_openai_key_status_redacts_error_key_fragments(monkeypatch):

@@ -207,6 +207,10 @@ test('full MCPD desktop and mobile audit', async ({ browser }) => {
       events.push({ type: 'page-error', url: page.url(), status: 'pageerror', notes: [error.message] });
     });
     page.on('requestfailed', (request) => {
+      // Cloudflare injects RUM beacons on the custom domain. Browsers often
+      // abort those telemetry requests during navigation; they are not MCPD app
+      // asset/API failures and should not pollute the audit report.
+      if (request.url().includes('/cdn-cgi/rum')) return;
       events.push({ type: 'request-failed', url: request.url(), status: 'requestfailed', notes: [request.failure()?.errorText || 'failed request'] });
     });
 

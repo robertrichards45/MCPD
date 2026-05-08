@@ -547,10 +547,18 @@ def render_statement_pdf(statement: dict, incident_state: dict) -> tuple[bytes, 
 
 
 def _statement_pdf_cache_key(statement: dict, incident_state: dict) -> str:
+    incident = incident_state if isinstance(incident_state, dict) else {}
     payload = {
         'version': _STATEMENT_PDF_CACHE_VERSION,
         'statement': statement if isinstance(statement, dict) else {},
-        'incident': incident_state if isinstance(incident_state, dict) else {},
+        # Statement PDFs only depend on the declarant payload and the basic
+        # incident context used to fill date/time/location/subject headers.
+        # Excluding packet delivery metadata keeps repeated mobile packet builds
+        # fast without reusing output across different statement facts.
+        'incident_context': {
+            'callType': incident.get('callType'),
+            'incidentBasics': incident.get('incidentBasics') if isinstance(incident.get('incidentBasics'), dict) else {},
+        },
     }
     serialized = json.dumps(payload, sort_keys=True, separators=(',', ':'), default=str)
     return hashlib.sha256(serialized.encode('utf-8')).hexdigest()
