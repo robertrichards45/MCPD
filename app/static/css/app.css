@@ -17441,3 +17441,47 @@ body.dark:not(.mobile-foundation) .legal-lookup-page #legal-results {
     margin-bottom: calc(var(--mobile-dock-height) + env(safe-area-inset-bottom, 0px) + 18px);
   }
 }
+/* Live audit fix: keep public access/login text readable even when a saved
+   dark theme token leaks onto the unauthenticated landing page. */
+body.landing .login-panel--professional,
+body.landing .login-panel--professional .login-panel__brand,
+body.landing .login-panel--professional .login-panel__auth {
+  background: #ffffff !important;
+  color: #071426 !important;
+}
+
+body.landing .login-panel--professional h1,
+body.landing .login-panel--professional h2,
+body.landing .login-panel--professional label,
+body.landing .login-panel--professional .form-label,
+body.landing .login-panel--professional .login-status-pill strong,
+body.landing .login-panel--professional .login-help-note strong {
+  color: #071426 !important;
+}
+
+body.landing .login-panel--professional p,
+body.landing .login-panel--professional .subtitle,
+body.landing .login-panel--professional .login-auth-header p,
+body.landing .login-panel--professional .login-callout p,
+body.landing .login-panel--professional .login-help-note,
+body.landing .login-panel--professional .login-status-pill {
+  color: #5f6f86 !important;
+}
+
+body.landing .login-panel--professional .login-callout,
+body.landing .login-panel--professional .login-help-note,
+body.landing .login-panel--professional .login-status-pill {
+  background: #f5f8fc !important;
+  border-color: #d6e1ef !important;
+}
+
+body.landing .login-panel--professional .login-form .form-control {
+  background: #ffffff !important;
+  color: #071426 !important;
+  border-color: #d6e1ef !important;
+}
+
+body.landing .login-panel--professional .login-form .form-control:focus {
+  border-color: #1d64c8 !important;
+  box-shadow: 0 0 0 4px rgba(29, 100, 200, 0.16) !important;
+}
