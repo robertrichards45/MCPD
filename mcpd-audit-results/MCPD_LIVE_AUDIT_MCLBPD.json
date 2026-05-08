@@ -1,0 +1,236 @@
+{
+  "baseUrl": "https://mclbpd.com",
+  "startedAt": "2026-05-08T21:12:34.704Z",
+  "authenticated": false,
+  "authSkipped": true,
+  "pages": [
+    {
+      "label": "desktop-login",
+      "route": "/login",
+      "status": 200,
+      "finalUrl": "https://mclbpd.com/login",
+      "ms": 4925,
+      "title": "MCPD Portal",
+      "bodyHints": [
+        "Watch Commander"
+      ],
+      "screenshot": "C:\\Users\\rober\\Documents\\GitHub\\MCPD\\mcpd-audit-results\\screenshots\\desktop-login.png",
+      "error": null
+    },
+    {
+      "label": "desktop-dashboard",
+      "route": "/dashboard",
+      "status": 200,
+      "finalUrl": "https://mclbpd.com/login?next=%2Fdashboard",
+      "ms": 502,
+      "title": "MCPD Portal",
+      "bodyHints": [
+        "Watch Commander"
+      ],
+      "screenshot": "C:\\Users\\rober\\Documents\\GitHub\\MCPD\\mcpd-audit-results\\screenshots\\desktop-dashboard.png",
+      "error": null
+    },
+    {
+      "label": "desktop-reports",
+      "route": "/reports",
+      "status": 200,
+      "finalUrl": "https://mclbpd.com/login?next=%2Freports",
+      "ms": 588,
+      "title": "MCPD Portal",
+      "bodyHints": [
+        "Watch Commander"
+      ],
+      "screenshot": "C:\\Users\\rober\\Documents\\GitHub\\MCPD\\mcpd-audit-results\\screenshots\\desktop-reports.png",
+      "error": null
+    },
+    {
+      "label": "desktop-forms",
+      "route": "/forms",
+      "status": 200,
+      "finalUrl": "https://mclbpd.com/login?next=%2Fforms",
+      "ms": 362,
+      "title": "MCPD Portal",
+      "bodyHints": [
+        "Watch Commander"
+      ],
+      "screenshot": "C:\\Users\\rober\\Documents\\GitHub\\MCPD\\mcpd-audit-results\\screenshots\\desktop-forms.png",
+      "error": null
+    },
+    {
+      "label": "desktop-watch-commander",
+      "route": "/watch-commander",
+      "status": 200,
+      "finalUrl": "https://mclbpd.com/login?next=%2Fwatch-commander",
+      "ms": 384,
+      "title": "MCPD Portal",
+      "bodyHints": [
+        "Watch Commander"
+      ],
+      "screenshot": "C:\\Users\\rober\\Documents\\GitHub\\MCPD\\mcpd-audit-results\\screenshots\\desktop-watch-commander.png",
+      "error": null
+    },
+    {
+      "label": "desktop-mobile-home-from-desktop",
+      "route": "/mobile",
+      "status": 200,
+      "finalUrl": "https://mclbpd.com/login?next=%2Fmobile",
+      "ms": 465,
+      "title": "MCPD Portal",
+      "bodyHints": [
+        "Watch Commander"
+      ],
+      "screenshot": "C:\\Users\\rober\\Documents\\GitHub\\MCPD\\mcpd-audit-results\\screenshots\\desktop-mobile-home-from-desktop.png",
+      "error": null
+    },
+    {
+      "label": "desktop-mobile-more-from-desktop",
+      "route": "/mobile/more",
+      "status": 200,
+      "finalUrl": "https://mclbpd.com/login?next=%2Fmobile%2Fmore",
+      "ms": 551,
+      "title": "MCPD Portal",
+      "bodyHints": [
+        "Watch Commander"
+      ],
+      "screenshot": "C:\\Users\\rober\\Documents\\GitHub\\MCPD\\mcpd-audit-results\\screenshots\\desktop-mobile-more-from-desktop.png",
+      "error": null
+    },
+    {
+      "label": "desktop-law-lookup",
+      "route": "/legal/search",
+      "status": 200,
+      "finalUrl": "https://mclbpd.com/login?next=%2Flegal%2Fsearch",
+      "ms": 491,
+      "title": "MCPD Portal",
+      "bodyHints": [
+        "Watch Commander"
+      ],
+      "screenshot": "C:\\Users\\rober\\Documents\\GitHub\\MCPD\\mcpd-audit-results\\screenshots\\desktop-law-lookup.png",
+      "error": null
+    },
+    {
+      "label": "Assistant status API",
+      "route": "/api/assistant/status",
+      "status": 200,
+      "finalUrl": "https://mclbpd.com/api/assistant/status",
+      "ms": null,
+      "title": "",
+      "bodyHints": [
+        "<!doctype html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\" />\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n  \n  <title>MCPD Portal</title>\n  <meta name=\"application-name\" content=\"MCPD Portal\" />\n  <meta name=\"theme-color\" content=\"#071b33\" />\n  <meta name=\"mobile-web-app-capable\" content=\"yes\" />\n  <meta name=\"apple-mobile-web-app-capable\" content=\"yes\" />\n  <meta name=\"apple-mobile-web-app-title\" content=\"MCPD Portal\" />\n  <meta name=\"apple-mobile-web-app-statu"
+      ],
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "label": "desktop-login",
+      "route": "/login",
+      "status": 200,
+      "finalUrl": "https://mclbpd.com/login",
+      "ms": 1723,
+      "title": "MCPD Portal",
+      "bodyHints": [
+        "Watch Commander"
+      ],
+      "screenshot": "C:\\Users\\rober\\Documents\\GitHub\\MCPD\\mcpd-audit-results\\screenshots\\desktop-login.png",
+      "error": null
+    },
+    {
+      "label": "mobile-mobile-home",
+      "route": "/mobile",
+      "status": 200,
+      "finalUrl": "https://mclbpd.com/login?next=%2Fmobile",
+      "ms": 559,
+      "title": "MCPD Portal",
+      "bodyHints": [
+        "Watch Commander"
+      ],
+      "screenshot": "C:\\Users\\rober\\Documents\\GitHub\\MCPD\\mcpd-audit-results\\screenshots\\mobile-mobile-home.png",
+      "error": null
+    },
+    {
+      "label": "mobile-mobile-more",
+      "route": "/mobile/more",
+      "status": 200,
+      "finalUrl": "https://mclbpd.com/login?next=%2Fmobile%2Fmore",
+      "ms": 719,
+      "title": "MCPD Portal",
+      "bodyHints": [
+        "Watch Commander"
+      ],
+      "screenshot": "C:\\Users\\rober\\Documents\\GitHub\\MCPD\\mcpd-audit-results\\screenshots\\mobile-mobile-more.png",
+      "error": null
+    },
+    {
+      "label": "mobile-reports-mobile",
+      "route": "/reports",
+      "status": 200,
+      "finalUrl": "https://mclbpd.com/login?next=%2Freports",
+      "ms": 462,
+      "title": "MCPD Portal",
+      "bodyHints": [
+        "Watch Commander"
+      ],
+      "screenshot": "C:\\Users\\rober\\Documents\\GitHub\\MCPD\\mcpd-audit-results\\screenshots\\mobile-reports-mobile.png",
+      "error": null
+    },
+    {
+      "label": "mobile-forms-mobile",
+      "route": "/forms",
+      "status": 200,
+      "finalUrl": "https://mclbpd.com/login?next=%2Fforms",
+      "ms": 349,
+      "title": "MCPD Portal",
+      "bodyHints": [
+        "Watch Commander"
+      ],
+      "screenshot": "C:\\Users\\rober\\Documents\\GitHub\\MCPD\\mcpd-audit-results\\screenshots\\mobile-forms-mobile.png",
+      "error": null
+    },
+    {
+      "label": "mobile-law-lookup-mobile",
+      "route": "/legal/search",
+      "status": 200,
+      "finalUrl": "https://mclbpd.com/login?next=%2Flegal%2Fsearch",
+      "ms": 346,
+      "title": "MCPD Portal",
+      "bodyHints": [
+        "Watch Commander"
+      ],
+      "screenshot": "C:\\Users\\rober\\Documents\\GitHub\\MCPD\\mcpd-audit-results\\screenshots\\mobile-law-lookup-mobile.png",
+      "error": null
+    },
+    {
+      "label": "desktop-law-lookup",
+      "route": "/legal/search",
+      "status": 200,
+      "finalUrl": "https://mclbpd.com/login?next=%2Flegal%2Fsearch",
+      "ms": 408,
+      "title": "MCPD Portal",
+      "bodyHints": [
+        "Watch Commander"
+      ],
+      "screenshot": "C:\\Users\\rober\\Documents\\GitHub\\MCPD\\mcpd-audit-results\\screenshots\\desktop-law-lookup.png",
+      "error": null
+    },
+    {
+      "label": "Assistant status API",
+      "route": "/api/assistant/status",
+      "status": 200,
+      "finalUrl": "https://mclbpd.com/api/assistant/status",
+      "ms": null,
+      "title": "",
+      "bodyHints": [
+        "<!doctype html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\" />\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n  \n  <title>MCPD Portal</title>\n  <meta name=\"application-name\" content=\"MCPD Portal\" />\n  <meta name=\"theme-color\" content=\"#071b33\" />\n  <meta name=\"mobile-web-app-capable\" content=\"yes\" />\n  <meta name=\"apple-mobile-web-app-capable\" content=\"yes\" />\n  <meta name=\"apple-mobile-web-app-title\" content=\"MCPD Portal\" />\n  <meta name=\"apple-mobile-web-app-statu"
+      ],
+      "screenshot": null,
+      "error": null
+    }
+  ],
+  "consoleErrors": [],
+  "failedRequests": [],
+  "notes": [
+    "desktop: authenticated checks skipped because no audit credentials were available in environment.",
+    "mobile: authenticated checks skipped because no audit credentials were available in environment."
+  ],
+  "finishedAt": "2026-05-08T21:12:55.372Z"
+}
