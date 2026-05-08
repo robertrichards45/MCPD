@@ -218,6 +218,24 @@ def _user_by_username(username, *, active_only=False):
     return query.first()
 
 
+def _user_by_login_identifier(identifier):
+    """Accept the identifiers officers naturally try at login."""
+    value = (identifier or '').strip()
+    if not value:
+        return None
+    normalized_username = _normalize_username(value)
+    query = User.query.filter(func.lower(User.username) == normalized_username)
+    if '@' in value:
+        query = query.union(User.query.filter(func.lower(User.email) == value.lower()))
+    officer_number = _normalize_officer_number(value)
+    if officer_number:
+        query = query.union(User.query.filter(func.upper(User.officer_number) == officer_number))
+    edipi = _normalize_edipi(value)
+    if edipi:
+        query = query.union(User.query.filter(User.edipi == edipi))
+    return query.first()
+
+
 def _user_from_management_form(*, active_only=False):
     user_id = (request.form.get('user_id') or request.form.get('target_user_id') or '').strip()
     if user_id:
@@ -616,7 +634,7 @@ def login():
     if len(attempts) >= 10:
         return _render_landing(error='Too many attempts. Try again later.')
 
-    user = _user_by_username(username)
+    user = _user_by_login_identifier(username)
     if user and user.pending_approval:
         return _render_landing(error='Your account is waiting for Watch Commander approval.')
     if user and not user.active:

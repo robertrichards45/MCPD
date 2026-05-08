@@ -877,6 +877,14 @@ def create_app():
             ensure_schema()
             seed_roles()
             seed_admin()
+            try:
+                from .routes.forms import _sync_forms_from_storage
+
+                _sync_forms_from_storage()
+            except Exception as sync_exc:
+                logging.getLogger(__name__).warning(
+                    'Bundled form library sync skipped during startup: %s', sync_exc
+                )
         except Exception as exc:
             logging.getLogger(__name__).critical(
                 'Database initialization failed — app will start but may be non-functional: %s', exc

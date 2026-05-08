@@ -130,6 +130,60 @@ def test_pending_account_gets_clear_login_message_until_approved():
         _dispose_app(client.application)
 
 
+def test_approved_registered_account_can_login_with_username_email_or_officer_number():
+    client = _logged_in_client()
+    username = "pytest_approved_login"
+    try:
+        with client.application.app_context():
+            _delete_user(username)
+            officer = User(
+                username=username,
+                first_name="Approved",
+                last_name="Officer",
+                email="approved.login@example.test",
+                officer_number="APPR123",
+                role=ROLE_PATROL_OFFICER,
+                active=False,
+                pending_approval=True,
+                installation="MCLB_ALBANY",
+            )
+            officer.set_password("TempPass123!")
+            db.session.add(officer)
+            db.session.commit()
+            officer_id = officer.id
+
+        response = client.post(
+            "/admin/users",
+            data={
+                "action": "approve",
+                "pending_id": str(officer_id),
+                "role": ROLE_PATROL_OFFICER,
+                "supervisor_id": "",
+                "section_unit": "Alpha Shift",
+            },
+            follow_redirects=False,
+        )
+        assert response.status_code in {302, 303}
+
+        with client.application.app_context():
+            officer = db.session.get(User, officer_id)
+            assert officer.active is True
+            assert officer.pending_approval is False
+
+        for identifier in (username, "approved.login@example.test", "APPR123"):
+            login_response = client.post(
+                "/login",
+                data={"username": identifier, "password": "TempPass123!"},
+                follow_redirects=False,
+            )
+            assert login_response.status_code in {302, 303}
+            client.post("/logout", follow_redirects=False)
+    finally:
+        with client.application.app_context():
+            _delete_user(username)
+        _dispose_app(client.application)
+
+
 def test_watch_commander_can_claim_unassigned_installation_officer():
     app = create_app()
     app.config["TESTING"] = True

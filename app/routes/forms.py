@@ -646,7 +646,11 @@ def _sync_forms_from_storage():
         if resolved:
             existing_paths.add(os.path.normcase(os.path.abspath(resolved)))
 
-    uploaded_by = current_user.id if getattr(current_user, 'is_authenticated', False) else None
+    try:
+        uploaded_by = current_user.id if getattr(current_user, 'is_authenticated', False) else None
+    except RuntimeError:
+        # Startup/database recovery can run outside a request context.
+        uploaded_by = None
     imported = []
     for entry in storage_entries:
         normalized_path = os.path.normcase(os.path.abspath(entry.path))

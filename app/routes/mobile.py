@@ -206,8 +206,13 @@ def _handbook_backup_blob():
 @lru_cache(maxsize=1)
 def _domestic_mobile_schema():
     try:
-        forms_dir = _repo_root() / 'data' / 'uploads' / 'forms'
-        matches = sorted(forms_dir.glob('*DOMESTIC*CHECKLIST*.pdf'))
+        forms_dirs = [
+            _repo_root() / 'app' / 'data' / 'uploads' / 'forms',
+            _repo_root() / 'data' / 'uploads' / 'forms',
+        ]
+        matches = []
+        for forms_dir in forms_dirs:
+            matches.extend(sorted(forms_dir.glob('*DOMESTIC*CHECKLIST*.pdf')))
     except OSError:
         return {'sections': []}
     if not matches:

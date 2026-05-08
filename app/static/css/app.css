@@ -17328,4 +17328,31 @@ body.dark:not(.mobile-foundation) .legal-lookup-page #legal-results {
     color: var(--text-secondary);
     margin: 0;
   }
+
+  .mobile-shell .ai-fab,
+  body.view-mobile .ai-fab,
+  body.mobile-view .ai-fab {
+    bottom: calc(var(--mobile-dock-height) + env(safe-area-inset-bottom, 0px) + 18px) !important;
+    right: max(16px, env(safe-area-inset-right, 0px)) !important;
+    z-index: var(--z-floating) !important;
+  }
+
+  .mobile-shell .ai-panel,
+  body.view-mobile .ai-panel,
+  body.mobile-view .ai-panel {
+    bottom: calc(var(--mobile-dock-height) + env(safe-area-inset-bottom, 0px) + 84px) !important;
+    max-height: calc(100dvh - var(--mobile-dock-height) - env(safe-area-inset-bottom, 0px) - env(safe-area-inset-top, 0px) - 116px) !important;
+    z-index: var(--z-modal) !important;
+  }
+
+  .mobile-shell > :last-child,
+  .mobile-main > :last-child,
+  .mobile-content > :last-child,
+  .mobile-page > :last-child,
+  .mobile-workflow > :last-child,
+  .mobile-incident-app > :last-child,
+  .mobile-form-page > :last-child,
+  .mobile-bodycam-page > :last-child {
+    margin-bottom: calc(var(--mobile-dock-height) + env(safe-area-inset-bottom, 0px) + 18px);
+  }
 }
