@@ -170,6 +170,31 @@ function registerMcpdServiceWorker() {
     });
 }
 
+function guardMobileRender() {
+  const shell = document.querySelector('.mobile-shell');
+  const main = document.querySelector('.mobile-main');
+  if (!shell || !main) return;
+  window.setTimeout(() => {
+    const meaningful = Array.from(main.children).some((child) => {
+      const text = (child.textContent || '').trim();
+      const hasControls = child.querySelector('input, textarea, select, button, a, video, canvas');
+      const rect = child.getBoundingClientRect();
+      return text || hasControls || rect.height > 24;
+    });
+    if (meaningful) return;
+    main.innerHTML = [
+      '<section class="mobile-render-fallback" role="status">',
+      '<strong>This mobile page did not finish loading.</strong>',
+      '<p>Use Home or Menu to continue. If this keeps happening, refresh once and the page will reload without losing the portal shell.</p>',
+      '<a class="mobile-header-nav-btn" href="/mobile">Home</a>',
+      '</section>'
+    ].join('');
+    if (window.console && console.warn) {
+      console.warn('MCPD mobile render fallback displayed for empty page:', window.location.pathname);
+    }
+  }, 900);
+}
+
 window.addEventListener('load', () => {
   const canvas = getCanvas();
   if (canvas) {
@@ -232,5 +257,6 @@ window.addEventListener('load', () => {
 
   bindModuleScanner();
   bindModuleFeed();
+  guardMobileRender();
   registerMcpdServiceWorker();
 });

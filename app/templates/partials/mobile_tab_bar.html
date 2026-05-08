@@ -5,8 +5,8 @@
     left: 0;
     right: 0;
     bottom: 0;
-    z-index: 1000;
-    padding: 0 14px calc(14px + env(safe-area-inset-bottom));
+    z-index: var(--z-dock, 400);
+    padding: 0 14px calc(12px + env(safe-area-inset-bottom, 0px));
     pointer-events: none;
   }
 
@@ -14,7 +14,7 @@
     position: relative;
     pointer-events: auto;
     max-width: 640px;
-    min-height: 78px;
+    min-height: calc(var(--mobile-dock-height, 112px) - 34px);
     margin: 0 auto;
     padding: 10px 12px 12px;
     display: grid;
@@ -28,8 +28,8 @@
     box-shadow:
       0 18px 45px rgba(2, 6, 23, 0.48),
       inset 0 1px 0 rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
   }
 
   .mobile-tab {

@@ -2,7 +2,7 @@
 {% block body %}
 <div class="app-shell">
   {% include 'partials/nav.html' %}
-  <div class="page-wrap authority-page-wrap">
+  <div class="page-wrap authority-page-wrap legal-lookup-page">
     <div class="mobile-back-bar">
       <a class="mobile-back-btn" href="{{ url_for('mobile.home') }}">&#8592; Field Portal</a>
     </div>
@@ -15,38 +15,41 @@
         <p>Describe the whole incident in plain language. Law Lookup reads the statement before ranking state, federal, UCMJ, and local order paths.</p>
       </div>
       <div class="search-hero-meta authority-hero-meta">
-        <div class="hero-chip">
+        <div class="hero-chip legal-hero-chip">
           <span class="hero-chip-label">Corpus</span>
           <strong>{{ corpus_status.total_entries if corpus_status is defined and corpus_status.total_entries is defined else 'Approved' }}</strong>
+          <small>approved references</small>
         </div>
-        <div class="hero-chip">
+        <div class="hero-chip legal-hero-chip">
           <span class="hero-chip-label">State</span>
           <strong>{{ state_label }}</strong>
+          <small>selected jurisdiction</small>
         </div>
-        <div class="hero-chip">
+        <div class="hero-chip legal-hero-chip">
           <span class="hero-chip-label">Scope</span>
           <strong>{{ 'State + Federal + UCMJ' if source == 'ALL' else ('State Law' if source == 'STATE' else source) }}</strong>
+          <small>ranking sources</small>
         </div>
       </div>
     </section>
 
     <div class="card p-3 mb-3 search-panel ops-search-shell authority-search-shell">
-      <form method="get" action="{{ url_for('legal.legal_lookup') }}">
-        <div class="row g-2 align-items-end">
-          <div class="col-lg-5">
-            <label class="form-label text-dark">Incident Statement</label>
+      <form method="get" action="{{ url_for('legal.legal_lookup') }}" class="legal-search-form">
+        <div class="legal-search-grid">
+          <div class="legal-statement-field">
+            <label class="form-label">Incident Statement</label>
             <textarea class="form-control legal-statement-search" name="q" rows="3" placeholder="Describe the full incident: who did what, where it happened, warnings/orders, property, weapons, injury, vehicle, or base context.">{{ query }}</textarea>
           </div>
-          <div class="col-lg-3 col-md-6">
-            <label class="form-label text-dark">State</label>
+          <div>
+            <label class="form-label">State</label>
             <select class="form-control" name="state">
               {% for code, label in state_options %}
               <option value="{{ code }}" {% if state == code %}selected{% endif %}>{{ label }}</option>
               {% endfor %}
             </select>
           </div>
-          <div class="col-lg-2 col-md-6">
-            <label class="form-label text-dark">Scope</label>
+          <div>
+            <label class="form-label">Scope</label>
             <select class="form-control" name="source">
               {% for option in source_options %}
               <option value="{{ option }}" {% if source == option %}selected{% endif %}>
@@ -55,7 +58,7 @@
               {% endfor %}
             </select>
           </div>
-          <div class="col-lg-2">
+          <div>
             <button class="btn btn-primary w-100" type="submit">Search</button>
           </div>
         </div>
@@ -332,7 +335,10 @@
       {% elif lead_item %}
       <div class="notice-panel notice-panel-soft">One strong legal path matched this search. Open the full text above to verify the exact charging language.</div>
       {% else %}
-      <div class="notice-panel notice-panel-soft">No approved legal reference was found for this search.</div>
+      <div class="notice-panel notice-panel-soft legal-empty-state">
+        <strong>No approved legal reference was found for this exact search.</strong>
+        <span>Try adding location, order/warning details, property involved, injury, vehicle facts, or base-access context. If AI candidates appear above, verify them before using them in a report.</span>
+      </div>
       {% endif %}
     </div>
   </div>
