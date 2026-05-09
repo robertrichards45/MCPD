@@ -1,34 +1,34 @@
 # MCPD Live Audit - mclbpd.com
 
-Started: 2026-05-08T21:12:34.704Z
-Finished: 2026-05-08T21:12:55.372Z
+Started: 2026-05-08T21:21:40.045Z
+Finished: 2026-05-08T21:21:55.797Z
 Base URL: https://mclbpd.com
 Authenticated: no
 Auth note: credentials were not available in this terminal environment.
 
 ## Page Results
-- desktop-login: status=200, ms=4925, final=https://mclbpd.com/login
+- desktop-login: status=200, ms=4061, final=https://mclbpd.com/login
   Hints: Watch Commander
   Screenshot: C:\Users\rober\Documents\GitHub\MCPD\mcpd-audit-results\screenshots\desktop-login.png
-- desktop-dashboard: status=200, ms=502, final=https://mclbpd.com/login?next=%2Fdashboard
+- desktop-dashboard: status=200, ms=437, final=https://mclbpd.com/login?next=%2Fdashboard
   Hints: Watch Commander
   Screenshot: C:\Users\rober\Documents\GitHub\MCPD\mcpd-audit-results\screenshots\desktop-dashboard.png
-- desktop-reports: status=200, ms=588, final=https://mclbpd.com/login?next=%2Freports
+- desktop-reports: status=200, ms=556, final=https://mclbpd.com/login?next=%2Freports
   Hints: Watch Commander
   Screenshot: C:\Users\rober\Documents\GitHub\MCPD\mcpd-audit-results\screenshots\desktop-reports.png
-- desktop-forms: status=200, ms=362, final=https://mclbpd.com/login?next=%2Fforms
+- desktop-forms: status=200, ms=336, final=https://mclbpd.com/login?next=%2Fforms
   Hints: Watch Commander
   Screenshot: C:\Users\rober\Documents\GitHub\MCPD\mcpd-audit-results\screenshots\desktop-forms.png
-- desktop-watch-commander: status=200, ms=384, final=https://mclbpd.com/login?next=%2Fwatch-commander
+- desktop-watch-commander: status=200, ms=339, final=https://mclbpd.com/login?next=%2Fwatch-commander
   Hints: Watch Commander
   Screenshot: C:\Users\rober\Documents\GitHub\MCPD\mcpd-audit-results\screenshots\desktop-watch-commander.png
-- desktop-mobile-home-from-desktop: status=200, ms=465, final=https://mclbpd.com/login?next=%2Fmobile
+- desktop-mobile-home-from-desktop: status=200, ms=341, final=https://mclbpd.com/login?next=%2Fmobile
   Hints: Watch Commander
   Screenshot: C:\Users\rober\Documents\GitHub\MCPD\mcpd-audit-results\screenshots\desktop-mobile-home-from-desktop.png
-- desktop-mobile-more-from-desktop: status=200, ms=551, final=https://mclbpd.com/login?next=%2Fmobile%2Fmore
+- desktop-mobile-more-from-desktop: status=200, ms=339, final=https://mclbpd.com/login?next=%2Fmobile%2Fmore
   Hints: Watch Commander
   Screenshot: C:\Users\rober\Documents\GitHub\MCPD\mcpd-audit-results\screenshots\desktop-mobile-more-from-desktop.png
-- desktop-law-lookup: status=200, ms=491, final=https://mclbpd.com/login?next=%2Flegal%2Fsearch
+- desktop-law-lookup: status=200, ms=341, final=https://mclbpd.com/login?next=%2Flegal%2Fsearch
   Hints: Watch Commander
   Screenshot: C:\Users\rober\Documents\GitHub\MCPD\mcpd-audit-results\screenshots\desktop-law-lookup.png
 - Assistant status API: status=200, ms=n/a, final=https://mclbpd.com/api/assistant/status
@@ -45,25 +45,25 @@ Auth note: credentials were not available in this terminal environment.
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="MCPD Portal" />
   <meta name="apple-mobile-web-app-statu
-- desktop-login: status=200, ms=1723, final=https://mclbpd.com/login
+- desktop-login: status=200, ms=1025, final=https://mclbpd.com/login
   Hints: Watch Commander
   Screenshot: C:\Users\rober\Documents\GitHub\MCPD\mcpd-audit-results\screenshots\desktop-login.png
-- mobile-mobile-home: status=200, ms=559, final=https://mclbpd.com/login?next=%2Fmobile
+- mobile-mobile-home: status=200, ms=327, final=https://mclbpd.com/login?next=%2Fmobile
   Hints: Watch Commander
   Screenshot: C:\Users\rober\Documents\GitHub\MCPD\mcpd-audit-results\screenshots\mobile-mobile-home.png
-- mobile-mobile-more: status=200, ms=719, final=https://mclbpd.com/login?next=%2Fmobile%2Fmore
+- mobile-mobile-more: status=200, ms=560, final=https://mclbpd.com/login?next=%2Fmobile%2Fmore
   Hints: Watch Commander
   Screenshot: C:\Users\rober\Documents\GitHub\MCPD\mcpd-audit-results\screenshots\mobile-mobile-more.png
-- mobile-reports-mobile: status=200, ms=462, final=https://mclbpd.com/login?next=%2Freports
+- mobile-reports-mobile: status=200, ms=343, final=https://mclbpd.com/login?next=%2Freports
   Hints: Watch Commander
   Screenshot: C:\Users\rober\Documents\GitHub\MCPD\mcpd-audit-results\screenshots\mobile-reports-mobile.png
-- mobile-forms-mobile: status=200, ms=349, final=https://mclbpd.com/login?next=%2Fforms
+- mobile-forms-mobile: status=200, ms=343, final=https://mclbpd.com/login?next=%2Fforms
   Hints: Watch Commander
   Screenshot: C:\Users\rober\Documents\GitHub\MCPD\mcpd-audit-results\screenshots\mobile-forms-mobile.png
-- mobile-law-lookup-mobile: status=200, ms=346, final=https://mclbpd.com/login?next=%2Flegal%2Fsearch
+- mobile-law-lookup-mobile: status=200, ms=335, final=https://mclbpd.com/login?next=%2Flegal%2Fsearch
   Hints: Watch Commander
   Screenshot: C:\Users\rober\Documents\GitHub\MCPD\mcpd-audit-results\screenshots\mobile-law-lookup-mobile.png
-- desktop-law-lookup: status=200, ms=408, final=https://mclbpd.com/login?next=%2Flegal%2Fsearch
+- desktop-law-lookup: status=200, ms=327, final=https://mclbpd.com/login?next=%2Flegal%2Fsearch
   Hints: Watch Commander
   Screenshot: C:\Users\rober\Documents\GitHub\MCPD\mcpd-audit-results\screenshots\desktop-law-lookup.png
 - Assistant status API: status=200, ms=n/a, final=https://mclbpd.com/api/assistant/status
@@ -90,6 +90,3 @@ Auth note: credentials were not available in this terminal environment.
 ## Notes
 - desktop: authenticated checks skipped because no audit credentials were available in environment.
 - mobile: authenticated checks skipped because no audit credentials were available in environment.
-
-## Manual Visual Finding
-- Public login page loaded successfully, but the live screenshot showed several pale text blocks on a pale card. This was patched locally in `app/static/css/app.css`; it will be visible on `mclbpd.com` after redeploy.

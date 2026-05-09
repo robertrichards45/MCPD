@@ -1,6 +1,6 @@
 {
   "baseUrl": "https://mclbpd.com",
-  "startedAt": "2026-05-08T21:12:34.704Z",
+  "startedAt": "2026-05-08T21:21:40.045Z",
   "authenticated": false,
   "authSkipped": true,
   "pages": [
@@ -9,7 +9,7 @@
       "route": "/login",
       "status": 200,
       "finalUrl": "https://mclbpd.com/login",
-      "ms": 4925,
+      "ms": 4061,
       "title": "MCPD Portal",
       "bodyHints": [
         "Watch Commander"
@@ -22,7 +22,7 @@
       "route": "/dashboard",
       "status": 200,
       "finalUrl": "https://mclbpd.com/login?next=%2Fdashboard",
-      "ms": 502,
+      "ms": 437,
       "title": "MCPD Portal",
       "bodyHints": [
         "Watch Commander"
@@ -35,7 +35,7 @@
       "route": "/reports",
       "status": 200,
       "finalUrl": "https://mclbpd.com/login?next=%2Freports",
-      "ms": 588,
+      "ms": 556,
       "title": "MCPD Portal",
       "bodyHints": [
         "Watch Commander"
@@ -48,7 +48,7 @@
       "route": "/forms",
       "status": 200,
       "finalUrl": "https://mclbpd.com/login?next=%2Fforms",
-      "ms": 362,
+      "ms": 336,
       "title": "MCPD Portal",
       "bodyHints": [
         "Watch Commander"
@@ -61,7 +61,7 @@
       "route": "/watch-commander",
       "status": 200,
       "finalUrl": "https://mclbpd.com/login?next=%2Fwatch-commander",
-      "ms": 384,
+      "ms": 339,
       "title": "MCPD Portal",
       "bodyHints": [
         "Watch Commander"
@@ -74,7 +74,7 @@
       "route": "/mobile",
       "status": 200,
       "finalUrl": "https://mclbpd.com/login?next=%2Fmobile",
-      "ms": 465,
+      "ms": 341,
       "title": "MCPD Portal",
       "bodyHints": [
         "Watch Commander"
@@ -87,7 +87,7 @@
       "route": "/mobile/more",
       "status": 200,
       "finalUrl": "https://mclbpd.com/login?next=%2Fmobile%2Fmore",
-      "ms": 551,
+      "ms": 339,
       "title": "MCPD Portal",
       "bodyHints": [
         "Watch Commander"
@@ -100,7 +100,7 @@
       "route": "/legal/search",
       "status": 200,
       "finalUrl": "https://mclbpd.com/login?next=%2Flegal%2Fsearch",
-      "ms": 491,
+      "ms": 341,
       "title": "MCPD Portal",
       "bodyHints": [
         "Watch Commander"
@@ -126,7 +126,7 @@
       "route": "/login",
       "status": 200,
       "finalUrl": "https://mclbpd.com/login",
-      "ms": 1723,
+      "ms": 1025,
       "title": "MCPD Portal",
       "bodyHints": [
         "Watch Commander"
@@ -139,7 +139,7 @@
       "route": "/mobile",
       "status": 200,
       "finalUrl": "https://mclbpd.com/login?next=%2Fmobile",
-      "ms": 559,
+      "ms": 327,
       "title": "MCPD Portal",
       "bodyHints": [
         "Watch Commander"
@@ -152,7 +152,7 @@
       "route": "/mobile/more",
       "status": 200,
       "finalUrl": "https://mclbpd.com/login?next=%2Fmobile%2Fmore",
-      "ms": 719,
+      "ms": 560,
       "title": "MCPD Portal",
       "bodyHints": [
         "Watch Commander"
@@ -165,7 +165,7 @@
       "route": "/reports",
       "status": 200,
       "finalUrl": "https://mclbpd.com/login?next=%2Freports",
-      "ms": 462,
+      "ms": 343,
       "title": "MCPD Portal",
       "bodyHints": [
         "Watch Commander"
@@ -178,7 +178,7 @@
       "route": "/forms",
       "status": 200,
       "finalUrl": "https://mclbpd.com/login?next=%2Fforms",
-      "ms": 349,
+      "ms": 343,
       "title": "MCPD Portal",
       "bodyHints": [
         "Watch Commander"
@@ -191,7 +191,7 @@
       "route": "/legal/search",
       "status": 200,
       "finalUrl": "https://mclbpd.com/login?next=%2Flegal%2Fsearch",
-      "ms": 346,
+      "ms": 335,
       "title": "MCPD Portal",
       "bodyHints": [
         "Watch Commander"
@@ -204,7 +204,7 @@
       "route": "/legal/search",
       "status": 200,
       "finalUrl": "https://mclbpd.com/login?next=%2Flegal%2Fsearch",
-      "ms": 408,
+      "ms": 327,
       "title": "MCPD Portal",
       "bodyHints": [
         "Watch Commander"
@@ -232,5 +232,5 @@
     "desktop: authenticated checks skipped because no audit credentials were available in environment.",
     "mobile: authenticated checks skipped because no audit credentials were available in environment."
   ],
-  "finishedAt": "2026-05-08T21:12:55.372Z"
+  "finishedAt": "2026-05-08T21:21:55.797Z"
 }
