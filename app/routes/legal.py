@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from difflib import SequenceMatcher
 import io
 import json
+import os
 from pathlib import Path
 import re
 from uuid import uuid4
@@ -161,7 +162,10 @@ def _lookup_match_context(query: str, source: str, code: str):
 def _safe_ai_guidance(prompt):
     if not (prompt or '').strip():
         return ''
-    answer = ask_openai(prompt, None)
+    # Legal lookup uses compact JSON/brief prompts. Keep the request bounded so
+    # a field search does not stall while still allowing AI to read the full
+    # statement and produce useful retrieval terms.
+    answer = ask_openai(prompt, None, max_output_tokens=320, timeout=12)
     if not answer:
         return ''
     if is_ai_unavailable_message(answer):
@@ -943,12 +947,15 @@ def _order_reference_matches(query: str, related_terms: tuple[str, ...] | list[s
     clean_query = (query or '').strip()
     if not clean_query:
         return []
-    from .orders import search_orders_with_ai_assist
+    from .orders import _filtered_orders
 
     combined_query = ' '.join(
         part for part in [clean_query, ' '.join(_dedupe_phrases(related_terms, limit=4))] if part.strip()
     ).strip()
-    documents, _strategy = search_orders_with_ai_assist(combined_query, status_filter='ACTIVE')
+    # Law Lookup has its own AI read of the incident statement. Use the local
+    # approved-order index here so one law search does not trigger a second,
+    # slower AI expansion pass from Orders & Memos.
+    documents = _filtered_orders(combined_query, status_filter='ACTIVE')
     matches = []
     query_terms = {
         term for term in _tokenize(clean_query)
@@ -1137,6 +1144,9 @@ def _render_legal_lookup(default_source='ALL'):
     code_lookup_like = bool(re.search(r'\b(?:ocga\s*)?\d{1,2}-\d{1,2}(?:-\d{1,3}(?:\.\d+)?)?\b', query.lower()))
     ai_hints = {'terms': [], 'query_variants': [], 'related_policy_terms': [], 'source_hint': source, 'officer_brief': ''}
     ai_interpretation_note = ''
+    narrative_interp_used = False
+    interpreted_primary_search = ''
+    interpreted_terms: list[str] = []
 
     # --- Whole-statement retrieval ---
     # The full officer statement stays intact so conduct, location, source
@@ -1167,6 +1177,9 @@ def _render_legal_lookup(default_source='ALL'):
         interp = _ai_interpret_narrative_query(query, source)
         primary_search = (interp.get('primary_search') or '').strip()
         if primary_search and primary_search.lower() not in (query.lower(), search_query.lower()):
+            narrative_interp_used = True
+            interpreted_primary_search = primary_search
+            interpreted_terms = _dedupe_phrases([primary_search] + list(interp.get('additional_terms') or []), limit=6)
             ai_interpretation_note = interp.get('interpretation_note', '')
             interp_results = _search_entries_for_scope(primary_search, source, state)
             for extra_term in (interp.get('additional_terms') or [])[:3]:
@@ -1181,11 +1194,22 @@ def _render_legal_lookup(default_source='ALL'):
             raw_results = _merge_ai_results(interp_results, keyword_supplement)
 
     results = _filter_results_for_display(query, source, raw_results, include_possible=include_possible)
+    effective_top_confidence = int(results[0].confidence) if results else 0
+    effective_results_strong = bool(results and effective_top_confidence >= 82)
+    if narrative_interp_used:
+        ai_hints = {
+            'terms': interpreted_terms,
+            'query_variants': [interpreted_primary_search] if interpreted_primary_search else [],
+            'related_policy_terms': interpreted_terms[:3],
+            'source_hint': source,
+            'officer_brief': ai_interpretation_note,
+        }
 
     allow_ai_expansion = bool(
         ai_expansion_enabled
         and query
-        and not local_results_strong
+        and not narrative_interp_used
+        and not effective_results_strong
         and not deterministic_lookup
         and not code_lookup_like
         and len(query.split()) >= 2
@@ -1267,13 +1291,21 @@ def _render_legal_lookup(default_source='ALL'):
     lead_result = results[0] if results else None
     grouped_results = _group_results(results[1:] if len(results) > 1 else [])
     order_reference_matches = _order_reference_matches(query, ai_hints.get('related_policy_terms', ()))
+    deep_ai_candidates_enabled = str(os.environ.get('LEGAL_AI_CANDIDATES_ENABLED', '0')).strip().lower() in {
+        '1', 'true', 'yes', 'on'
+    }
     needs_ai_candidates = bool(
         query
         and (
             not results
             or not (state == 'GA')
-            or not lead_result
-            or lead_result.confidence < 75
+            or (
+                deep_ai_candidates_enabled
+                and (
+                    not lead_result
+                    or lead_result.confidence < 75
+                )
+            )
         )
     )
     ai_candidates = _ai_multijurisdiction_candidates(query, source, state, results) if needs_ai_candidates else []

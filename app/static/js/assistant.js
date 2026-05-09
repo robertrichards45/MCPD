@@ -51,6 +51,7 @@
   var audioQueue   = null;
   var recognition  = null;
   var speechRunId  = 0;
+  var lastAssistantReply = '';
   var formInterview = { active: false, fields: [], index: 0 };
   var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
@@ -147,7 +148,8 @@
     document.getElementById('ai-settings-done').addEventListener('click', toggleSettings);
     document.getElementById('ai-stop-voice-btn').addEventListener('click', function () { stopAudio(); });
     document.getElementById('ai-replay-voice-btn').addEventListener('click', function () {
-      if (Voice.replayLastVoice) Voice.replayLastVoice();
+      if (lastAssistantReply) speakText(lastAssistantReply);
+      else if (Voice.replayLastVoice) Voice.replayLastVoice();
     });
     document.getElementById('ai-voice-toggle-btn').addEventListener('click', function () {
       var enabled = Voice.getVoiceEnabled ? !Voice.getVoiceEnabled() : false;
@@ -158,6 +160,7 @@
       if (Voice.setVoiceSpeed) Voice.setVoiceSpeed(event.target.value);
       if (Voice.stopVoice) Voice.stopVoice();
       syncVoiceControls();
+      setTTSStatus('speed');
     });
     document.getElementById('ai-text-input').addEventListener('keydown', function (e) {
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendText(); }
@@ -594,6 +597,7 @@
         isThinking = false;
         if (Voice.startVoiceStatus) Voice.startVoiceStatus('Answering...');
         var reply = (data && data.reply) ? data.reply : 'Sorry, I could not get a response.';
+        lastAssistantReply = reply;
         if (data && data.mode === 'local_fallback') {
           var label = document.getElementById('ai-status-label');
           if (label) label.textContent = 'Local assist';
@@ -635,14 +639,18 @@
     } else if (mode === 'unsupported') {
       el.textContent = 'Voice playback is not supported on this device/browser.';
       el.style.color = '#fbbf24';
+    } else if (mode === 'speed') {
+      el.textContent = 'Voice speed saved. Replay uses the selected speed.';
+      el.style.color = '#93c5fd';
     } else {
-      el.textContent = 'Browser fallback - set OPENAI_API_KEY in Railway for real voices';
+      el.textContent = 'Browser fallback active - OpenAI TTS was unavailable for this clip';
       el.style.color = '#fbbf24';
     }
   }
 
   function speakText(text, options) {
     if (!text) { if (voiceMode) scheduleAutoListen(); return; }
+    if (Voice.getVoiceEnabled && !Voice.getVoiceEnabled()) return;
     options = options || {};
     stopAudio();
     if (Voice.setVoiceSpeed) {

@@ -216,7 +216,7 @@ def _disable_ai_temporarily(message, minutes=1):
     return message
 
 
-def ask_openai(prompt, api_key):
+def ask_openai(prompt, api_key, max_output_tokens=None, timeout=None):
     global _AI_DISABLED_MESSAGE, _AI_DISABLED_UNTIL
     api_key = configured_openai_api_key(api_key)
     prompt = (prompt or '').strip()
@@ -248,13 +248,18 @@ def ask_openai(prompt, api_key):
             },
         ],
     }
+    if max_output_tokens is not None:
+        try:
+            payload['max_output_tokens'] = max(16, int(max_output_tokens))
+        except (TypeError, ValueError):
+            pass
 
     try:
         response = requests.post(
             'https://api.openai.com/v1/responses',
             headers=headers,
             data=json.dumps(payload),
-            timeout=30,
+            timeout=timeout or 30,
         )
     except requests.Timeout:
         return 'AI request timed out. Try again.'

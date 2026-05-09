@@ -1,15 +1,15 @@
 {
   "baseUrl": "https://mclbpd.com",
-  "startedAt": "2026-05-08T21:21:40.045Z",
-  "authenticated": false,
-  "authSkipped": true,
+  "startedAt": "2026-05-09T09:01:25.386Z",
+  "authenticated": true,
+  "authSkipped": false,
   "pages": [
     {
       "label": "desktop-login",
       "route": "/login",
       "status": 200,
       "finalUrl": "https://mclbpd.com/login",
-      "ms": 4061,
+      "ms": 3673,
       "title": "MCPD Portal",
       "bodyHints": [
         "Watch Commander"
@@ -21,11 +21,14 @@
       "label": "desktop-dashboard",
       "route": "/dashboard",
       "status": 200,
-      "finalUrl": "https://mclbpd.com/login?next=%2Fdashboard",
-      "ms": 437,
+      "finalUrl": "https://mclbpd.com/dashboard",
+      "ms": 1418,
       "title": "MCPD Portal",
       "bodyHints": [
-        "Watch Commander"
+        "Watch Commander",
+        "Forms",
+        "Law Lookup",
+        "Reports"
       ],
       "screenshot": "C:\\Users\\rober\\Documents\\GitHub\\MCPD\\mcpd-audit-results\\screenshots\\desktop-dashboard.png",
       "error": null
@@ -34,11 +37,14 @@
       "label": "desktop-reports",
       "route": "/reports",
       "status": 200,
-      "finalUrl": "https://mclbpd.com/login?next=%2Freports",
-      "ms": 556,
+      "finalUrl": "https://mclbpd.com/reports",
+      "ms": 366,
       "title": "MCPD Portal",
       "bodyHints": [
-        "Watch Commander"
+        "Watch Commander",
+        "Forms",
+        "Law Lookup",
+        "Reports"
       ],
       "screenshot": "C:\\Users\\rober\\Documents\\GitHub\\MCPD\\mcpd-audit-results\\screenshots\\desktop-reports.png",
       "error": null
@@ -47,11 +53,14 @@
       "label": "desktop-forms",
       "route": "/forms",
       "status": 200,
-      "finalUrl": "https://mclbpd.com/login?next=%2Fforms",
-      "ms": 336,
+      "finalUrl": "https://mclbpd.com/forms",
+      "ms": 280,
       "title": "MCPD Portal",
       "bodyHints": [
-        "Watch Commander"
+        "Watch Commander",
+        "Forms",
+        "Law Lookup",
+        "Reports"
       ],
       "screenshot": "C:\\Users\\rober\\Documents\\GitHub\\MCPD\\mcpd-audit-results\\screenshots\\desktop-forms.png",
       "error": null
@@ -60,11 +69,14 @@
       "label": "desktop-watch-commander",
       "route": "/watch-commander",
       "status": 200,
-      "finalUrl": "https://mclbpd.com/login?next=%2Fwatch-commander",
-      "ms": 339,
-      "title": "MCPD Portal",
+      "finalUrl": "https://mclbpd.com/watch-commander/dashboard",
+      "ms": 798,
+      "title": "Watch Commander Dashboard",
       "bodyHints": [
-        "Watch Commander"
+        "Watch Commander",
+        "Forms",
+        "Law Lookup",
+        "Reports"
       ],
       "screenshot": "C:\\Users\\rober\\Documents\\GitHub\\MCPD\\mcpd-audit-results\\screenshots\\desktop-watch-commander.png",
       "error": null
@@ -73,11 +85,13 @@
       "label": "desktop-mobile-home-from-desktop",
       "route": "/mobile",
       "status": 200,
-      "finalUrl": "https://mclbpd.com/login?next=%2Fmobile",
-      "ms": 341,
-      "title": "MCPD Portal",
+      "finalUrl": "https://mclbpd.com/mobile/home",
+      "ms": 486,
+      "title": "Home | MCPD Mobile",
       "bodyHints": [
-        "Watch Commander"
+        "Forms",
+        "Law Lookup",
+        "Reports"
       ],
       "screenshot": "C:\\Users\\rober\\Documents\\GitHub\\MCPD\\mcpd-audit-results\\screenshots\\desktop-mobile-home-from-desktop.png",
       "error": null
@@ -86,11 +100,12 @@
       "label": "desktop-mobile-more-from-desktop",
       "route": "/mobile/more",
       "status": 200,
-      "finalUrl": "https://mclbpd.com/login?next=%2Fmobile%2Fmore",
-      "ms": 339,
-      "title": "MCPD Portal",
+      "finalUrl": "https://mclbpd.com/mobile/more",
+      "ms": 358,
+      "title": "More | MCPD Mobile",
       "bodyHints": [
-        "Watch Commander"
+        "Watch Commander",
+        "Reports"
       ],
       "screenshot": "C:\\Users\\rober\\Documents\\GitHub\\MCPD\\mcpd-audit-results\\screenshots\\desktop-mobile-more-from-desktop.png",
       "error": null
@@ -99,13 +114,29 @@
       "label": "desktop-law-lookup",
       "route": "/legal/search",
       "status": 200,
-      "finalUrl": "https://mclbpd.com/login?next=%2Flegal%2Fsearch",
-      "ms": 341,
-      "title": "MCPD Portal",
+      "finalUrl": "https://mclbpd.com/legal/search",
+      "ms": 238,
+      "title": "Law Lookup",
       "bodyHints": [
-        "Watch Commander"
+        "Watch Commander",
+        "Forms",
+        "Law Lookup",
+        "Reports"
       ],
       "screenshot": "C:\\Users\\rober\\Documents\\GitHub\\MCPD\\mcpd-audit-results\\screenshots\\desktop-law-lookup.png",
+      "error": null
+    },
+    {
+      "label": "Law Lookup search: public defecation statement",
+      "route": "/legal/search",
+      "status": null,
+      "finalUrl": "https://mclbpd.com/legal/search?source=ALL&state=GA&q=",
+      "ms": 334,
+      "title": "Law Lookup",
+      "bodyHints": [
+        "resultText=MCPD PORTAL Search Dark Mobile Mode Lt. Richards Website Controller ⌂ Dashboard ⌕ Law Lookup □ Reports ▤ Forms ▥ Orders & Memos ▴ Training ◇ Personnel ☆ Saved Work WC Watch Commander ⚙ Administration ✦ Site Builder Need Help? Support Center Logout LAW LOOKUP Search Georgia state law, United States Code, UCMJ, and MCLB Albany base orders in one place. Describe the whole incident in plain language. Law Lookup reads the statement before ranking state, federal, UCMJ, and local order paths. CORPUS Approved approved references STATE Georgia selected jurisdiction SCOPE State + Federal + UCMJ rankin"
+      ],
+      "screenshot": "C:\\Users\\rober\\Documents\\GitHub\\MCPD\\mcpd-audit-results\\screenshots\\desktop-law-lookup-results.png",
       "error": null
     },
     {
@@ -116,7 +147,7 @@
       "ms": null,
       "title": "",
       "bodyHints": [
-        "<!doctype html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\" />\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n  \n  <title>MCPD Portal</title>\n  <meta name=\"application-name\" content=\"MCPD Portal\" />\n  <meta name=\"theme-color\" content=\"#071b33\" />\n  <meta name=\"mobile-web-app-capable\" content=\"yes\" />\n  <meta name=\"apple-mobile-web-app-capable\" content=\"yes\" />\n  <meta name=\"apple-mobile-web-app-title\" content=\"MCPD Portal\" />\n  <meta name=\"apple-mobile-web-app-statu"
+        "{\"ok\":true,\"openai\":{\"configured\":true,\"errorCode\":null,\"keyLength\":164,\"keyPrefix\":\"[redacted-key]\",\"message\":\"OpenAI accepted the configured key.\",\"model\":\"gpt-4.1-mini\",\"ok\":true,\"statusCode\":200,\"ttsModel\":\"tts-1\"}}\n"
       ],
       "screenshot": null,
       "error": null
@@ -126,7 +157,7 @@
       "route": "/login",
       "status": 200,
       "finalUrl": "https://mclbpd.com/login",
-      "ms": 1025,
+      "ms": 3517,
       "title": "MCPD Portal",
       "bodyHints": [
         "Watch Commander"
@@ -138,11 +169,13 @@
       "label": "mobile-mobile-home",
       "route": "/mobile",
       "status": 200,
-      "finalUrl": "https://mclbpd.com/login?next=%2Fmobile",
-      "ms": 327,
-      "title": "MCPD Portal",
+      "finalUrl": "https://mclbpd.com/mobile/home",
+      "ms": 2756,
+      "title": "Home | MCPD Mobile",
       "bodyHints": [
-        "Watch Commander"
+        "Forms",
+        "Law Lookup",
+        "Reports"
       ],
       "screenshot": "C:\\Users\\rober\\Documents\\GitHub\\MCPD\\mcpd-audit-results\\screenshots\\mobile-mobile-home.png",
       "error": null
@@ -151,11 +184,12 @@
       "label": "mobile-mobile-more",
       "route": "/mobile/more",
       "status": 200,
-      "finalUrl": "https://mclbpd.com/login?next=%2Fmobile%2Fmore",
-      "ms": 560,
-      "title": "MCPD Portal",
+      "finalUrl": "https://mclbpd.com/mobile/more",
+      "ms": 3756,
+      "title": "More | MCPD Mobile",
       "bodyHints": [
-        "Watch Commander"
+        "Watch Commander",
+        "Reports"
       ],
       "screenshot": "C:\\Users\\rober\\Documents\\GitHub\\MCPD\\mcpd-audit-results\\screenshots\\mobile-mobile-more.png",
       "error": null
@@ -164,11 +198,14 @@
       "label": "mobile-reports-mobile",
       "route": "/reports",
       "status": 200,
-      "finalUrl": "https://mclbpd.com/login?next=%2Freports",
-      "ms": 343,
+      "finalUrl": "https://mclbpd.com/reports",
+      "ms": 2824,
       "title": "MCPD Portal",
       "bodyHints": [
-        "Watch Commander"
+        "Watch Commander",
+        "Forms",
+        "Law Lookup",
+        "Reports"
       ],
       "screenshot": "C:\\Users\\rober\\Documents\\GitHub\\MCPD\\mcpd-audit-results\\screenshots\\mobile-reports-mobile.png",
       "error": null
@@ -177,11 +214,14 @@
       "label": "mobile-forms-mobile",
       "route": "/forms",
       "status": 200,
-      "finalUrl": "https://mclbpd.com/login?next=%2Fforms",
-      "ms": 343,
+      "finalUrl": "https://mclbpd.com/forms",
+      "ms": 484,
       "title": "MCPD Portal",
       "bodyHints": [
-        "Watch Commander"
+        "Watch Commander",
+        "Forms",
+        "Law Lookup",
+        "Reports"
       ],
       "screenshot": "C:\\Users\\rober\\Documents\\GitHub\\MCPD\\mcpd-audit-results\\screenshots\\mobile-forms-mobile.png",
       "error": null
@@ -190,11 +230,14 @@
       "label": "mobile-law-lookup-mobile",
       "route": "/legal/search",
       "status": 200,
-      "finalUrl": "https://mclbpd.com/login?next=%2Flegal%2Fsearch",
-      "ms": 335,
-      "title": "MCPD Portal",
+      "finalUrl": "https://mclbpd.com/legal/search",
+      "ms": 357,
+      "title": "Law Lookup",
       "bodyHints": [
-        "Watch Commander"
+        "Watch Commander",
+        "Forms",
+        "Law Lookup",
+        "Reports"
       ],
       "screenshot": "C:\\Users\\rober\\Documents\\GitHub\\MCPD\\mcpd-audit-results\\screenshots\\mobile-law-lookup-mobile.png",
       "error": null
@@ -203,13 +246,29 @@
       "label": "desktop-law-lookup",
       "route": "/legal/search",
       "status": 200,
-      "finalUrl": "https://mclbpd.com/login?next=%2Flegal%2Fsearch",
-      "ms": 327,
-      "title": "MCPD Portal",
+      "finalUrl": "https://mclbpd.com/legal/search",
+      "ms": 243,
+      "title": "Law Lookup",
       "bodyHints": [
-        "Watch Commander"
+        "Watch Commander",
+        "Forms",
+        "Law Lookup",
+        "Reports"
       ],
       "screenshot": "C:\\Users\\rober\\Documents\\GitHub\\MCPD\\mcpd-audit-results\\screenshots\\desktop-law-lookup.png",
+      "error": null
+    },
+    {
+      "label": "Law Lookup search: public defecation statement",
+      "route": "/legal/search",
+      "status": null,
+      "finalUrl": "https://mclbpd.com/legal/search?q=A+person+was+seen+defecating+on+the+sidewalk+in+public+near+the+barracks+while+other+people+were+present.&state=GA&source=ALL",
+      "ms": 12682,
+      "title": "Law Lookup",
+      "bodyHints": [
+        "resultText=MCPD PORTAL Dark Mobile Mode ⌂ Dashboard ⌕ Law Lookup □ Reports ▤ Forms ▥ Orders & Memos ▴ Training ◇ Personnel ☆ Saved Work WC Watch Commander ⚙ Administration ✦ Site Builder Need Help? Support Center Logout ← Field Portal LAW LOOKUP Search Georgia state law, United States Code, UCMJ, and MCLB Albany base orders in one place. Describe the whole incident in plain language. Law Lookup reads the statement before ranking state, federal, UCMJ, and local order paths. CORPUS Approved approved references STATE Georgia selected jurisdiction SCOPE State + Federal + UCMJ ranking sources Incident State"
+      ],
+      "screenshot": "C:\\Users\\rober\\Documents\\GitHub\\MCPD\\mcpd-audit-results\\screenshots\\desktop-law-lookup-results.png",
       "error": null
     },
     {
@@ -220,7 +279,7 @@
       "ms": null,
       "title": "",
       "bodyHints": [
-        "<!doctype html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\" />\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n  \n  <title>MCPD Portal</title>\n  <meta name=\"application-name\" content=\"MCPD Portal\" />\n  <meta name=\"theme-color\" content=\"#071b33\" />\n  <meta name=\"mobile-web-app-capable\" content=\"yes\" />\n  <meta name=\"apple-mobile-web-app-capable\" content=\"yes\" />\n  <meta name=\"apple-mobile-web-app-title\" content=\"MCPD Portal\" />\n  <meta name=\"apple-mobile-web-app-statu"
+        "{\"ok\":true,\"openai\":{\"configured\":true,\"errorCode\":null,\"keyLength\":164,\"keyPrefix\":\"[redacted-key]\",\"message\":\"OpenAI accepted the configured key.\",\"model\":\"gpt-4.1-mini\",\"ok\":true,\"statusCode\":200,\"ttsModel\":\"tts-1\"}}\n"
       ],
       "screenshot": null,
       "error": null
@@ -228,9 +287,6 @@
   ],
   "consoleErrors": [],
   "failedRequests": [],
-  "notes": [
-    "desktop: authenticated checks skipped because no audit credentials were available in environment.",
-    "mobile: authenticated checks skipped because no audit credentials were available in environment."
-  ],
-  "finishedAt": "2026-05-08T21:21:55.797Z"
+  "notes": [],
+  "finishedAt": "2026-05-09T09:02:21.764Z"
 }

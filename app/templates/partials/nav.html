@@ -18,8 +18,8 @@
   <form class="mcpd-header-search" method="get" action="{{ url_for('legal.legal_lookup') }}">
     <input type="hidden" name="source" value="ALL">
     <input type="hidden" name="state" value="GA">
-    <input name="q" type="search" placeholder="Search laws, reports, forms, orders..." aria-label="Search MCPD Portal">
-    <button type="submit">Search</button>
+    <input name="q" type="search" placeholder="Search laws, reports, forms, orders..." aria-label="Search MCPD Portal" required>
+    <button type="submit" aria-label="Search MCPD Portal">Search</button>
   </form>
   <div class="mcpd-header-user">
     <button class="mcpd-theme-toggle" type="button" data-theme-toggle>Dark</button>

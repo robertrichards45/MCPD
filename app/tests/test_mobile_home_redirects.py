@@ -81,7 +81,10 @@ def test_mobile_home_menu_link_opens_more_tools():
 
     more_response = client.get('/mobile/more')
     assert more_response.status_code == 200
-    assert 'More tools' in more_response.get_data(as_text=True)
+    more_html = more_response.get_data(as_text=True)
+    assert 'More tools' in more_html
+    assert 'mobile-more-grid' in more_html
+    assert 'mobile-tool-card-title' in more_html
 
 
 def test_mobile_stats_and_contact_pages_work_without_desktop_shell():

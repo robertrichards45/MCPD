@@ -107,21 +107,29 @@ async function exerciseLawLookup(page) {
   const statement = 'A person was seen defecating on the sidewalk in public near the barracks while other people were present.';
   const textareas = page.locator('textarea');
   const inputs = page.locator('input[type="search"], input[name="q"], input[name="query"], input[type="text"]');
+  let targetInput = null;
   if (await textareas.count()) {
-    await textareas.first().fill(statement);
+    targetInput = textareas.first();
+    await targetInput.fill(statement);
   } else if (await inputs.count()) {
-    await inputs.first().fill(statement);
+    targetInput = inputs.first();
+    await targetInput.fill(statement);
   } else {
     results.notes.push('Law Lookup input field was not found.');
     return;
   }
-  const searchButton = page.locator('button:has-text("Search"), input[type="submit"]').first();
+  const searchButton = page
+    .locator('button:visible, input[type="submit"]:visible')
+    .filter({ hasText: 'Search' })
+    .first();
   const started = Date.now();
   if (await searchButton.count()) {
     await Promise.all([
       page.waitForLoadState('domcontentloaded', { timeout: 30000 }).catch(() => {}),
       searchButton.click(),
     ]);
+  } else if (targetInput) {
+    await targetInput.press('Enter');
   }
   await page.waitForLoadState('load', { timeout: 30000 }).catch(() => {});
   const body = await page.locator('body').innerText({ timeout: 10000 }).catch(() => '');
@@ -182,8 +190,36 @@ async function auditContext(browser, name, contextOptions, routes) {
   for (const [route, label] of routes) {
     await measure(page, route, `${name}-${label}`);
   }
-  await exerciseLawLookup(page);
-  await exerciseAssistant(page);
+  try {
+    await exerciseLawLookup(page);
+  } catch (err) {
+    results.pages.push({
+      label: `${name} Law Lookup action`,
+      route: '/legal/search',
+      status: null,
+      finalUrl: page.url(),
+      ms: null,
+      title: await page.title().catch(() => ''),
+      bodyHints: [],
+      screenshot: await snapshotPage(page, `${name}-law-lookup-error`).catch(() => null),
+      error: String(err.message || err).slice(0, 600),
+    });
+  }
+  try {
+    await exerciseAssistant(page);
+  } catch (err) {
+    results.pages.push({
+      label: `${name} Assistant status`,
+      route: '/api/assistant/status',
+      status: null,
+      finalUrl: page.url(),
+      ms: null,
+      title: '',
+      bodyHints: [],
+      screenshot: null,
+      error: String(err.message || err).slice(0, 600),
+    });
+  }
   await context.close();
 }
 
