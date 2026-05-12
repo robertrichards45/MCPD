@@ -190,3 +190,27 @@ body[data-theme="dark"] .table-hover tbody tr:hover {
     max-width: calc(100vw - 260px);
   }
 }
+
+/* --- Signature canvas: always light so ink is visible ----------- */
+.sig-canvas {
+  background: #ffffff !important;
+  border-color: var(--border-color, #d0d5dd);
+}
+body[data-theme="dark"] .sig-canvas {
+  background: #f5f7fa !important;
+  border-color: #4a6580;
+}
+
+/* --- Form "not ready" notice: dark mode ------------------------- */
+.form-not-ready-notice {
+  background: #fff8e6;
+  border-color: #f1d59a;
+}
+body[data-theme="dark"] .form-not-ready-notice {
+  background: rgba(251, 191, 36, 0.10);
+  border-color: rgba(251, 191, 36, 0.28);
+  color: var(--text-primary);
+}
+body[data-theme="dark"] .form-not-ready-notice .text-muted {
+  color: var(--text-secondary) !important;
+}
