@@ -99,38 +99,42 @@
               </div>
               <div class="col-md-3 mb-3">
                 <label class="form-label text-dark">Lights</label>
+                {% set _lights = editing_condition_map.get('lights', '') %}
                 <select class="form-control" name="lights_status">
-                  <option value="S">S</option>
-                  <option value="D">D</option>
-                  <option value="M">M</option>
-                  <option value="N/A">N/A</option>
+                  <option value="S" {% if _lights == 'S' or not _lights %}selected{% endif %}>S</option>
+                  <option value="D" {% if _lights == 'D' %}selected{% endif %}>D</option>
+                  <option value="M" {% if _lights == 'M' %}selected{% endif %}>M</option>
+                  <option value="N/A" {% if _lights == 'N/A' %}selected{% endif %}>N/A</option>
                 </select>
               </div>
               <div class="col-md-3 mb-3">
                 <label class="form-label text-dark">Tires</label>
+                {% set _tires = editing_condition_map.get('tires', '') %}
                 <select class="form-control" name="tires_status">
-                  <option value="S">S</option>
-                  <option value="D">D</option>
-                  <option value="M">M</option>
-                  <option value="N/A">N/A</option>
+                  <option value="S" {% if _tires == 'S' or not _tires %}selected{% endif %}>S</option>
+                  <option value="D" {% if _tires == 'D' %}selected{% endif %}>D</option>
+                  <option value="M" {% if _tires == 'M' %}selected{% endif %}>M</option>
+                  <option value="N/A" {% if _tires == 'N/A' %}selected{% endif %}>N/A</option>
                 </select>
               </div>
               <div class="col-md-3 mb-3">
                 <label class="form-label text-dark">Equipment</label>
+                {% set _equip = editing_condition_map.get('equipment', '') %}
                 <select class="form-control" name="equipment_status">
-                  <option value="S">S</option>
-                  <option value="D">D</option>
-                  <option value="M">M</option>
-                  <option value="N/A">N/A</option>
+                  <option value="S" {% if _equip == 'S' or not _equip %}selected{% endif %}>S</option>
+                  <option value="D" {% if _equip == 'D' %}selected{% endif %}>D</option>
+                  <option value="M" {% if _equip == 'M' %}selected{% endif %}>M</option>
+                  <option value="N/A" {% if _equip == 'N/A' %}selected{% endif %}>N/A</option>
                 </select>
               </div>
               <div class="col-md-3 mb-3">
                 <label class="form-label text-dark">Cleanliness</label>
+                {% set _clean = editing_condition_map.get('cleanliness', '') %}
                 <select class="form-control" name="cleanliness_status">
-                  <option value="S">S</option>
-                  <option value="D">D</option>
-                  <option value="M">M</option>
-                  <option value="N/A">N/A</option>
+                  <option value="S" {% if _clean == 'S' or not _clean %}selected{% endif %}>S</option>
+                  <option value="D" {% if _clean == 'D' %}selected{% endif %}>D</option>
+                  <option value="M" {% if _clean == 'M' %}selected{% endif %}>M</option>
+                  <option value="N/A" {% if _clean == 'N/A' %}selected{% endif %}>N/A</option>
                 </select>
               </div>
               <div class="col-12 mb-3">
