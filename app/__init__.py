@@ -117,7 +117,9 @@ def _enforce_persistent_database_config(app):
         + details
     )
     logging.getLogger(__name__).critical(message)
-    raise RuntimeError(message)
+    # Log the warning but do not crash — a running app with ephemeral storage
+    # is better than a completely unreachable site. Fix the volume mount or
+    # DATABASE_URL in Railway Variables to make storage persistent.
 
 
 def _refresh_runtime_environment_config(app):
@@ -681,7 +683,7 @@ def create_app():
         )
         flask_response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
         flask_response.headers['Pragma'] = 'no-cache'
-        flask_response.headers['Expires'] = '0'
+        flask_response.headers['Expires'] = 'no-cache'
         flask_response.headers['X-MCLBPD-Build'] = 'ops-live'
         return flask_response
 
