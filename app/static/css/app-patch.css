@@ -214,3 +214,21 @@ body[data-theme="dark"] .form-not-ready-notice {
 body[data-theme="dark"] .form-not-ready-notice .text-muted {
   color: var(--text-secondary) !important;
 }
+
+/* --- Matched / highlighted text block (orders, PDF debug) ------- */
+.order-matched-block {
+  background: #fff8e6;
+  border-color: #f1d59a !important;
+}
+body[data-theme="dark"] .order-matched-block {
+  background: rgba(251, 191, 36, 0.10);
+  border-color: rgba(251, 191, 36, 0.30) !important;
+}
+body[data-theme="dark"] .order-matched-block .text-muted {
+  color: var(--text-secondary) !important;
+}
+
+/* --- Vehicle inspection sig-pad: always white for ink ------------ */
+#sig-pad {
+  background: #ffffff !important;
+}

@@ -42,7 +42,7 @@
       <input type="hidden" name="issues_only" value="{{ '1' if issues_only else '0' }}" />
       <div class="row g-2 align-items-end">
         <div class="col-md-8">
-          <label class="form-label text-dark">Filter Fields</label>
+          <label class="form-label">Filter Fields</label>
           <input class="form-control" name="q" value="{{ q }}" placeholder="Search section, schema field, label, or mapped PDF field" />
         </div>
         <div class="col-md-4 d-flex gap-2">
@@ -55,7 +55,7 @@
     <div class="card p-3 mb-3">
       <h5 class="mb-2">Schema → PDF Field Coverage</h5>
       {% if duplicate_targets %}
-      <div class="mb-2 p-2" style="background:#fff5dd;border:1px solid #efd79a;border-radius:8px;">
+      <div class="mb-2 p-2 order-matched-block" style="border-radius:8px;">
         <strong>Duplicate Mapping Warning:</strong>
         Multiple schema fields map to the same PDF target field.
         <div class="small mt-1">{{ duplicate_targets|join(', ') }}</div>
