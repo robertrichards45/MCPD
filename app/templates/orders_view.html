@@ -13,7 +13,7 @@
     </div>
 
     {% if freshness_warning %}
-    <div class="card p-3 mb-3" style="background:#fff8e6;border-color:#f1d59a;">
+    <div class="card p-3 mb-3 form-not-ready-notice">
       <strong>{{ freshness_warning }}</strong>
     </div>
     {% endif %}
@@ -50,7 +50,7 @@
             <p class="mb-2 text-muted">{{ block.text }}</p>
           {% endfor %}
           {% for block in reader_context.focus_blocks %}
-            <div class="p-3 mb-2 border rounded" style="background:#fff8e6;border-color:#f1d59a !important;">
+            <div class="p-3 mb-2 border rounded" class="order-matched-block">
               <div class="small text-muted mb-1">Matched section</div>
               <div id="order-excerpt-text">{{ block.text }}</div>
             </div>
@@ -91,7 +91,7 @@
         <div style="max-height:70vh;overflow:auto;">
           {% for block in reader_context.all_blocks %}
             {% if loop.index0 == reader_context.focus_index %}
-              <div id="matched-full-text-block" class="p-3 mb-2 border rounded" style="background:#fff8e6;border-color:#f1d59a !important;">
+              <div id="matched-full-text-block" class="p-3 mb-2 border rounded" class="order-matched-block">
                 <div class="small text-muted mb-1">Matched location</div>
                 <div>{{ block.text }}</div>
               </div>
