@@ -12,16 +12,11 @@
         </div>
       </div>
       <p class="subtitle">Command portal access for reports, forms, law lookup, orders, training, and field workflows.</p>
+      {% if config.CAC_AUTH_ENABLED %}
       <div class="login-status-row" aria-label="Portal status">
-        <span class="login-status-pill">
-          Mode
-          <strong>{{ 'Production' if config.APP_ENV == 'prod' else 'Development' }}</strong>
-        </span>
-        <span class="login-status-pill">
-          CAC
-          <strong>{{ 'Enabled' if config.CAC_AUTH_ENABLED else 'Disabled' }}</strong>
-        </span>
+        <span class="login-status-pill">CAC Login <strong>Available</strong></span>
       </div>
+      {% endif %}
       <div class="login-callout">
         <h2>Authorized Use Only</h2>
         <p>Use your MCPD account to access protected law-enforcement tools. Activity may be reviewed by command staff.</p>
