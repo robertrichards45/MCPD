@@ -214,9 +214,9 @@ def assistant_speak():
         voice = 'coral'
     speed_name = (body.get('speed') or 'normal').strip().lower()
     speed_map = {
-        'normal': 0.86,
-        'fast': 0.98,
-        'veryfast': 1.08,
+        'normal': 1.2,
+        'fast': 1.4,
+        'veryfast': 1.6,
     }
     speed = speed_map.get(speed_name, speed_map['normal'])
 
