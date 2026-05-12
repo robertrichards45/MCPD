@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/watch_commander.css', v='2026-05-07') }}" />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/watch_commander.css', v='2026-05-12') }}" />
 {% endblock %}
 {% block body %}
 <div class="app-shell mcpd-command-app wc-module">
@@ -13,12 +13,13 @@
         <p>{% block wc_subtitle %}Supervise the shift, review work, and maintain operational accountability.{% endblock %}</p>
       </div>
       <nav class="wc-page-tabs" aria-label="Watch Commander navigation">
-        <a href="{{ url_for('watch_commander.dashboard') }}">Dashboard</a>
-        <a href="{{ url_for('watch_commander.shift') }}">Shift</a>
-        <a href="{{ url_for('watch_commander.officers') }}">Officers</a>
-        <a href="{{ url_for('watch_commander.reports') }}">Reports</a>
-        <a href="{{ url_for('watch_commander.approvals') }}">Approvals</a>
-        <a href="{{ url_for('watch_commander.briefing') }}">Briefing</a>
+        {% set _ep = request.endpoint %}
+        <a href="{{ url_for('watch_commander.dashboard') }}" {% if _ep in ('watch_commander.dashboard', 'watch_commander.index') %}aria-current="page"{% endif %}>Dashboard</a>
+        <a href="{{ url_for('watch_commander.shift') }}" {% if _ep == 'watch_commander.shift' %}aria-current="page"{% endif %}>Shift</a>
+        <a href="{{ url_for('watch_commander.officers') }}" {% if _ep in ('watch_commander.officers', 'watch_commander.assignments') %}aria-current="page"{% endif %}>Officers</a>
+        <a href="{{ url_for('watch_commander.reports') }}" {% if _ep in ('watch_commander.reports', 'watch_commander.saved_work') %}aria-current="page"{% endif %}>Reports</a>
+        <a href="{{ url_for('watch_commander.approvals') }}" {% if _ep == 'watch_commander.approvals' %}aria-current="page"{% endif %}>Approvals</a>
+        <a href="{{ url_for('watch_commander.briefing') }}" {% if _ep in ('watch_commander.briefing', 'watch_commander.notifications', 'watch_commander.blotter') %}aria-current="page"{% endif %}>Briefing</a>
       </nav>
     </header>
     {% block wc_body %}{% endblock %}

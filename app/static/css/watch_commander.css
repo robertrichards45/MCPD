@@ -61,6 +61,12 @@
   border-color: var(--primary);
 }
 
+.wc-page-tabs a[aria-current="page"] {
+  background: var(--primary, #1a56db);
+  border-color: var(--primary, #1a56db);
+  color: #ffffff;
+}
+
 .wc-summary-grid {
   display: grid;
   gap: 12px;
