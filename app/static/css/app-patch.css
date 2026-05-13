@@ -261,6 +261,31 @@ body[data-theme="dark"] .code-error-pre {
   color: #fca5a5;
 }
 
+/* --- Skip navigation link (Section 508 / WCAG 2.4.1) ------------ */
+.skip-nav-link {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  z-index: 10000;
+  background: #071b33;
+  color: #ffffff;
+  padding: 10px 20px;
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+  border-radius: 0 0 8px 0;
+  transition: top 0.1s ease;
+}
+.skip-nav-link:focus {
+  top: 0;
+  outline: 3px solid #4f8ee8;
+  outline-offset: 2px;
+}
+body[data-theme="dark"] .skip-nav-link {
+  background: #1a2e4a;
+  color: #e8edf4;
+}
+
 /* --- PDF embed frame -------------------------------------------- */
 .pdf-embed-frame {
   border: 1px solid var(--border-color, #d7dde7);

@@ -31,7 +31,7 @@
   </div>
 </header>
 
-<aside class="mcpd-command-sidebar" data-nav-menu>
+<aside class="mcpd-command-sidebar" data-nav-menu aria-label="Site navigation">
   <nav aria-label="Main navigation">
     <a class="{% if endpoint == 'dashboard.dashboard' %}is-active{% endif %}" href="{{ url_for('dashboard.dashboard') }}"><span class="nav-icon">⌂</span>Dashboard</a>
     <a class="{% if endpoint.startswith('legal.') %}is-active{% endif %}" href="{{ url_for('legal.legal_home') }}"><span class="nav-icon">⌕</span>Law Lookup</a>
@@ -97,3 +97,4 @@
     <button type="submit">Logout</button>
   </form>
 </aside>
+<a id="main-content" tabindex="-1" aria-hidden="true"></a>
