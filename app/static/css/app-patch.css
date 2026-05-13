@@ -232,3 +232,42 @@ body[data-theme="dark"] .order-matched-block .text-muted {
 #sig-pad {
   background: #ffffff !important;
 }
+
+/* --- Code / output pre blocks ------------------------------------ */
+.code-output-pre {
+  background: #f6f8fa;
+  border: 1px solid #d0d7de;
+  border-radius: 8px;
+  padding: 10px;
+  white-space: pre-wrap;
+  overflow: auto;
+}
+body[data-theme="dark"] .code-output-pre {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: var(--border-color, #2e4057);
+  color: var(--text-primary);
+}
+.code-error-pre {
+  background: #fff4f4;
+  border: 1px solid #f1b8b8;
+  border-radius: 8px;
+  padding: 10px;
+  white-space: pre-wrap;
+  overflow: auto;
+}
+body[data-theme="dark"] .code-error-pre {
+  background: rgba(248, 113, 113, 0.10);
+  border-color: rgba(248, 113, 113, 0.28);
+  color: #fca5a5;
+}
+
+/* --- PDF embed frame -------------------------------------------- */
+.pdf-embed-frame {
+  border: 1px solid var(--border-color, #d7dde7);
+  border-radius: 8px;
+  background: #ffffff;
+}
+body[data-theme="dark"] .pdf-embed-frame {
+  border-color: var(--border-color, #2e4057);
+  background: #1a2635;
+}

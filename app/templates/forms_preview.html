@@ -35,8 +35,8 @@
           <span class="small text-muted ms-2">{{ preview_pdf_download_name }}</span>
         </div>
         <div class="small text-muted mb-2">This preview uses the same populated PDF output as print, download, and email.</div>
-        <object data="{{ preview_pdf_url }}" type="application/pdf" style="width:100%;min-height:520px;border:1px solid #d7dbe5;border-radius:10px;">
-          <p class="small text-muted mb-0">PDF preview unavailable in this browser. Use “Open Generated PDF”.</p>
+        <object data="{{ preview_pdf_url }}" type="application/pdf" class="pdf-embed-frame" style="width:100%;min-height:520px;border-radius:10px;">
+          <p class="small text-muted mb-0">PDF preview unavailable in this browser. Use "Open Generated PDF".</p>
         </object>
       </section>
       {% endif %}
@@ -46,88 +46,3 @@
         <strong>No-Retention Mode:</strong> This completed data is temporary and will not be saved on the website.
       </div>
       {% endif %}
-      <div class="form-print-header">
-        <div>
-          <h3 class="mb-1">{{ form.title }}</h3>
-          <div class="small text-muted">Schema: {{ schema.title }}</div>
-        </div>
-        <div class="small text-muted">
-          <div>Printed: {{ generated_at }}</div>
-          {% if blank_mode %}<div>BLANK VERSION</div>{% else %}<div>COMPLETED VERSION</div>{% endif %}
-        </div>
-      </div>
-
-      {% for section in sections %}
-      <section class="print-section">
-        <h4>{{ section.title }}</h4>
-        <div class="print-grid">
-          {% for row in section.rows %}
-          <div class="print-field">
-            <div class="print-label">{{ row.label }}</div>
-            {% if row.type in ('signature', 'initial') and row.value and row.value[:11] == 'data:image/' %}
-            <div class="print-value print-sig-cell"><img class="print-sig-img" src="{{ row.value }}" alt="{{ row.label }}" /></div>
-            {% elif row.type in ('signature', 'initial') %}
-            <div class="print-value print-value-empty">Not captured</div>
-            {% elif row.type == 'textarea' %}
-            <div class="print-value print-value-multiline">{{ row.value }}</div>
-            {% else %}
-            <div class="print-value">{{ row.value }}</div>
-            {% endif %}
-          </div>
-          {% endfor %}
-        </div>
-      </section>
-      {% endfor %}
-
-      {% if schema.show_role_entry %}
-      <section class="print-section">
-        <h4>People by Role</h4>
-        <div class="table-responsive">
-          <table class="table table-striped">
-            <thead>
-              <tr>
-                <th>Role</th>
-                <th>Full Name</th>
-                <th>ID / DL</th>
-                <th>Phone</th>
-                <th>Vehicle</th>
-                <th>Notes</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for row in role_rows %}
-              <tr>
-                <td>{{ row.role }}</td>
-                <td>{{ row.full_name }}</td>
-                <td>{{ row.identifier }}</td>
-                <td>{{ row.phone }}</td>
-                <td>{{ row.vehicle }}</td>
-                <td>{{ row.notes }}</td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      </section>
-      {% endif %}
-
-      {% if schema.show_notes %}
-      <section class="print-section">
-        <h4>General Notes</h4>
-        <div class="print-value print-value-multiline">{{ payload.notes if payload.notes else ('' if blank_mode else 'N/A') }}</div>
-      </section>
-      {% endif %}
-    </div>
-  </div>
-</div>
-{% endblock %}
-{% block scripts %}
-  {{ super() }}
-  {% if print_mode %}
-  <script>
-    window.addEventListener('load', function () {
-      window.print();
-    });
-  </script>
-  {% endif %}
-{% endblock %}

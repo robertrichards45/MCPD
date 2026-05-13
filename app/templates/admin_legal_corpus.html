@@ -168,10 +168,10 @@
             <div class="small text-muted mt-1">Last run (UTC): {{ qa_result.ran_at_utc }}</div>
           {% endif %}
           {% if qa_result.output %}
-            <pre class="mt-2" style="white-space:pre-wrap;background:#f8f8f8;border:1px solid #ddd;border-radius:8px;padding:10px;max-height:320px;overflow:auto;">{{ qa_result.output | join('\n') }}</pre>
+            <pre class="mt-2 code-output-pre" style="max-height:320px;">{{ qa_result.output | join('\n') }}</pre>
           {% endif %}
           {% if qa_result.error %}
-            <pre class="mt-2" style="white-space:pre-wrap;background:#fff4f4;border:1px solid #f1b8b8;border-radius:8px;padding:10px;max-height:240px;overflow:auto;">{{ qa_result.error | join('\n') }}</pre>
+            <pre class="mt-2 code-error-pre" style="max-height:240px;">{{ qa_result.error | join('\n') }}</pre>
           {% endif %}
         </div>
       {% endif %}
