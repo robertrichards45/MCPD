@@ -23,6 +23,7 @@
   {% block head %}{% endblock %}
 </head>
 <body class="{{ body_class|default('') }}">
+  <a class="skip-nav-link" href="#main-content">Skip to main content</a>
   <script>
   (function () {
     var stored = localStorage.getItem('mcpd-theme');
@@ -36,7 +37,7 @@
   </script>
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
-    <div class="global-flash-stack">
+    <div class="global-flash-stack" role="alert" aria-live="assertive" aria-atomic="true">
       {% for category, message in messages %}
       <div class="global-flash global-flash-{{ category or 'info' }}">{{ message }}</div>
       {% endfor %}

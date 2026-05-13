@@ -747,6 +747,25 @@ def create_app():
                 'max-age={}; includeSubDomains'.format(app.config.get('HSTS_MAX_AGE', 31536000)),
             )
         response.headers.setdefault('X-Robots-Tag', 'index, follow')
+        # Content-Security-Policy: all resources served locally; inline scripts required for
+        # theme/CSRF init that must run before render. blob: needed for file download links
+        # and camera scan; data: needed for signature canvas output.
+        csp_parts = [
+            "default-src 'self'",
+            "script-src 'self' 'unsafe-inline'",
+            "style-src 'self' 'unsafe-inline'",
+            "img-src 'self' data: blob:",
+            "font-src 'self'",
+            "object-src 'self'",
+            "media-src 'self' blob:",
+            "connect-src 'self'",
+            "worker-src 'self' blob:",
+            "frame-src 'self'",
+            "manifest-src 'self'",
+            "base-uri 'self'",
+            "form-action 'self'",
+        ]
+        response.headers.setdefault('Content-Security-Policy', '; '.join(csp_parts))
         return response
 
     @app.errorhandler(403)
