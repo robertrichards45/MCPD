@@ -234,13 +234,16 @@ body[data-theme="dark"] .order-matched-block .text-muted {
 }
 
 /* --- Code / output pre blocks ------------------------------------ */
-.code-output-pre {
-  background: #f6f8fa;
-  border: 1px solid #d0d7de;
+.code-output-pre,
+.code-error-pre {
   border-radius: 8px;
   padding: 10px;
   white-space: pre-wrap;
   overflow: auto;
+}
+.code-output-pre {
+  background: #f6f8fa;
+  border: 1px solid #d0d7de;
 }
 body[data-theme="dark"] .code-output-pre {
   background: rgba(255, 255, 255, 0.04);
@@ -250,10 +253,6 @@ body[data-theme="dark"] .code-output-pre {
 .code-error-pre {
   background: #fff4f4;
   border: 1px solid #f1b8b8;
-  border-radius: 8px;
-  padding: 10px;
-  white-space: pre-wrap;
-  overflow: auto;
 }
 body[data-theme="dark"] .code-error-pre {
   background: rgba(248, 113, 113, 0.10);
