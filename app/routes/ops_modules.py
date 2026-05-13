@@ -1279,6 +1279,7 @@ def vehicle_inspections():
         'returned': sum(1 for item in inspections if item.status == 'RETURNED'),
         'complete': sum(1 for item in inspections if item.status == 'COMPLETE'),
     }
+    _editing = _vehicle_inspection_form_state()
     return render_template(
         'vehicle_inspections.html',
         user=current_user,
@@ -1288,7 +1289,8 @@ def vehicle_inspections():
         current_log_date=log_date,
         inspections=inspections,
         inspection_summary=summary,
-        editing_inspection=_vehicle_inspection_form_state(),
+        editing_inspection=_editing,
+        editing_condition_map=_vehicle_condition_map(_editing) if _editing else {},
         vehicle_search_term=search_term,
         vehicle_status_filter=status_filter,
         inspection_template_dir=inspection_template_directory(),
