@@ -176,13 +176,13 @@
                 {% endif %}
                 {% else %}
                 <div class="form-field-block form-field-type-{{ field.type }}">
-                  <label class="form-label text-dark">
+                  <label class="form-label text-dark" for="fld_{{ field.name }}">
                     {{ field.label }}{% if field.required %} <span class="field-required-star">*</span>{% endif %}
                     {% if field.type == 'signature' %}<span class="field-type-badge">Signature</span>{% endif %}
                     {% if field.type == 'initial' %}<span class="field-type-badge">Initials</span>{% endif %}
                   </label>
                   {% if field.type == 'textarea' %}
-                  <textarea class="form-control" name="field_{{ field.name }}" rows="3" placeholder="{{ field.placeholder }}" {% if not can_edit %}readonly{% endif %}>{{ payload['values'].get(field.name, '') }}</textarea>
+                  <textarea class="form-control" id="fld_{{ field.name }}" name="field_{{ field.name }}" rows="3" placeholder="{{ field.placeholder }}" {% if not can_edit %}readonly{% endif %}>{{ payload['values'].get(field.name, '') }}</textarea>
                   {% elif field.type == 'checkbox' %}
                   {% set checked = payload['values'].get(field.name, '')|lower in ['yes', 'true', '1', 'on', 'x'] %}
                   <div class="form-check">
@@ -190,12 +190,12 @@
                       class="form-check-input"
                       type="checkbox"
                       name="field_{{ field.name }}"
-                      id="field_{{ field.name }}"
+                      id="fld_{{ field.name }}"
                       value="1"
                       {% if checked %}checked{% endif %}
                       {% if not can_edit %}disabled{% endif %}
                     />
-                    <label class="form-check-label" for="field_{{ field.name }}">Selected</label>
+                    <label class="form-check-label" for="fld_{{ field.name }}">Selected</label>
                   </div>
                   {% elif field.type in ('signature', 'initial') %}
                   {% set sig_val = payload['values'].get(field.name, '') %}
@@ -218,6 +218,7 @@
                   {% else %}
                   <input
                     class="form-control"
+                    id="fld_{{ field.name }}"
                     type="{{ 'text' if field.type in ('select',) else field.type }}"
                     name="field_{{ field.name }}"
                     value="{{ payload['values'].get(field.name, '') }}"
