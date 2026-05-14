@@ -14,7 +14,7 @@ from ..models import (
     SavedForm,
     TrainingRoster,
 )
-from ..permissions import can_access_builder_mode
+from ..permissions import can_access_assistant_operations, can_access_builder_mode
 
 bp = Blueprint('dashboard', __name__)
 _log = logging.getLogger(__name__)
@@ -238,6 +238,13 @@ def _dashboard_card_catalog():
     if current_user.can_manage_team():
         cards.extend([
             {
+                'id': 'assistant_operations_tracker',
+                'label': 'Assistant Ops Tracker',
+                'description': 'Due-outs, training, inspections, and projects',
+                'icon': 'orders',
+                'endpoint': 'assistant_operations.dashboard',
+            },
+            {
                 'id': 'watch_commander_hub',
                 'label': 'Watch Commander Hub',
                 'description': 'Shift, reports, approvals, officers, and briefing',
@@ -266,6 +273,14 @@ def _dashboard_card_catalog():
                 'endpoint': 'qual_tracker.tracker_readiness',
             },
         ])
+    elif can_access_assistant_operations(current_user):
+        cards.append({
+            'id': 'assistant_operations_tracker',
+            'label': 'Assistant Ops Tracker',
+            'description': 'Due-outs, training, inspections, and projects',
+            'icon': 'orders',
+            'endpoint': 'assistant_operations.dashboard',
+        })
     return cards
 
 
@@ -310,6 +325,7 @@ def _dashboard_panel_catalog(snapshot):
             'supervisor_only': True,
             'items': [
                 {'label': 'Watch Commander Hub', 'detail': 'Shift supervision dashboard', 'endpoint': 'watch_commander.dashboard'},
+                {'label': 'Assistant Ops Tracker', 'detail': 'Due-outs, training, inspections, and projects', 'endpoint': 'assistant_operations.dashboard'},
                 {'label': 'Approvals Center', 'detail': 'Review pending supervisor actions', 'endpoint': 'watch_commander.approvals'},
                 {'label': 'Shift Management', 'detail': 'Create shifts and assign officers', 'endpoint': 'watch_commander.shift'},
             ],

@@ -3,6 +3,7 @@ import os
 from flask import session
 
 from .models import (
+    ROLE_ASSISTANT_OPERATIONS_OFFICER,
     ROLE_DESK_SGT,
     ROLE_FIELD_TRAINING,
     ROLE_PATROL_OFFICER,
@@ -82,6 +83,23 @@ def can_grade_cleoc_reports(user):
 
 def can_manage_team(user):
     return effective_role(user) in {ROLE_WEBSITE_CONTROLLER, ROLE_WATCH_COMMANDER}
+
+
+def can_access_assistant_operations(user):
+    if not user or not getattr(user, 'is_authenticated', False):
+        return False
+    return user.has_any_role(
+        ROLE_WEBSITE_CONTROLLER,
+        ROLE_ASSISTANT_OPERATIONS_OFFICER,
+        ROLE_WATCH_COMMANDER,
+        ROLE_DESK_SGT,
+    )
+
+
+def can_create_assistant_operations_tasks(user):
+    if not user or not getattr(user, 'is_authenticated', False):
+        return False
+    return user.has_any_role(ROLE_WEBSITE_CONTROLLER, ROLE_ASSISTANT_OPERATIONS_OFFICER)
 
 
 def can_access_truck_gate(user):
@@ -199,6 +217,7 @@ def assignable_roles(user):
     if can_manage_site(user):
         return [
             ROLE_WEBSITE_CONTROLLER,
+            ROLE_ASSISTANT_OPERATIONS_OFFICER,
             ROLE_WATCH_COMMANDER,
             ROLE_DESK_SGT,
             ROLE_FIELD_TRAINING,

@@ -37,6 +37,9 @@
       {{ tool_card('Command Notices', 'Post and review watch announcements.', url_for('announcements.board'), 'reports') }}
       {{ tool_card('BOLO Board', 'Review and manage BOLO information.', url_for('bolo.bolo_board'), 'reports') }}
     {% endif %}
+    {% if portal_can_access_assistant_operations %}
+      {{ tool_card('Assistant Ops Tracker', 'Due-outs, training, inspections, projects, and watch readiness.', url_for('assistant_operations.dashboard'), 'command', True) }}
+    {% endif %}
     {{ tool_card('Reports Center', 'Open reports, crash tools, packets, and report photos.', url_for('reports.list_reports'), 'reports') }}
     {{ tool_card('Body Cam Mode', 'Record field video and transcript into MCPD storage.', url_for('bodycam.mobile_recording'), 'camera', True) }}
     {{ tool_card('Bodycam Footage', 'View saved recordings and transcripts.', url_for('bodycam.mobile_library'), 'library') }}

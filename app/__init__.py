@@ -800,6 +800,7 @@ def create_app():
 
         from .permissions import (
             can_access_armory,
+            can_access_assistant_operations,
             can_access_builder_mode,
             can_access_rfi,
             can_access_truck_gate,
@@ -842,6 +843,7 @@ def create_app():
             'portal_watch_commander_scope_id': watch_commander_scope_id(current_user),
             'portal_role_keys': sorted(current_user.role_keys),
             'portal_can_access_armory': can_access_armory(current_user),
+            'portal_can_access_assistant_operations': can_access_assistant_operations(current_user),
             'portal_can_access_builder_mode': can_access_builder_mode(current_user),
             'portal_can_access_truck_gate': can_access_truck_gate(current_user),
             'portal_can_access_rfi': can_access_rfi(current_user),
@@ -851,9 +853,10 @@ def create_app():
     db.init_app(app)
     login_manager.init_app(app)
 
-    from .routes import auth, assistant, bolo, bodycam, dashboard, forms, training, qual_tracker, performance, stats, annual_ai, admin, cleo_api, reports, reconstruction, officers, ops_modules, legal, orders, reference, announcements, mobile, watch_commander
+    from .routes import auth, assistant, assistant_operations, bolo, bodycam, dashboard, forms, training, qual_tracker, performance, stats, annual_ai, admin, cleo_api, reports, reconstruction, officers, ops_modules, legal, orders, reference, announcements, mobile, watch_commander
     app.register_blueprint(auth.bp)
     app.register_blueprint(assistant.bp)
+    app.register_blueprint(assistant_operations.bp)
     app.register_blueprint(bolo.bp)
     app.register_blueprint(bodycam.bp)
     app.register_blueprint(dashboard.bp)

@@ -8,6 +8,7 @@ def utcnow_naive():
 
 
 ROLE_WEBSITE_CONTROLLER = 'WEBSITE_CONTROLLER'
+ROLE_ASSISTANT_OPERATIONS_OFFICER = 'ASSISTANT_OPERATIONS_OFFICER'
 ROLE_WATCH_COMMANDER = 'WATCH_COMMANDER'
 ROLE_DESK_SGT = 'DESK_SGT'
 ROLE_FIELD_TRAINING = 'FIELD_TRAINING_OFFICER'
@@ -21,6 +22,7 @@ ROLE_RFI_PATROL_OFFICER = 'RFI_PATROL_OFFICER'
 ROLE_LABELS = {
     'ADMIN': 'Website Controller',
     ROLE_WEBSITE_CONTROLLER: 'Website Controller',
+    ROLE_ASSISTANT_OPERATIONS_OFFICER: 'Assistant Operations Officer',
     ROLE_WATCH_COMMANDER: 'Watch Commander',
     ROLE_DESK_SGT: 'Desk Sgt',
     'FIELD_TRAINING': 'Field Training Officer',
@@ -35,6 +37,7 @@ ROLE_LABELS = {
 
 ALL_PORTAL_ROLES = [
     ROLE_WEBSITE_CONTROLLER,
+    ROLE_ASSISTANT_OPERATIONS_OFFICER,
     ROLE_WATCH_COMMANDER,
     ROLE_DESK_SGT,
     ROLE_FIELD_TRAINING,
@@ -944,6 +947,61 @@ class WatchApproval(db.Model):
 
     requester = db.relationship('User', foreign_keys=[requested_by], backref='watch_approval_requests')
     reviewer = db.relationship('User', foreign_keys=[reviewed_by], backref='watch_approvals_reviewed')
+
+
+class OperationsTask(db.Model):
+    __tablename__ = 'operations_task'
+
+    id = db.Column(db.Integer, primary_key=True)
+    task_id = db.Column(db.String(40), unique=True, nullable=False, index=True)
+    task_title = db.Column(db.String(180), nullable=False, index=True)
+    task_category = db.Column(db.String(80), nullable=False, index=True)
+    description = db.Column(db.Text, nullable=True)
+    assigned_watch = db.Column(db.String(80), nullable=False, index=True)
+    assigned_lead_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
+    assigned_lead_name = db.Column(db.String(120), nullable=True)
+    created_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
+    created_date = db.Column(db.DateTime, default=utcnow_naive, nullable=False, index=True)
+    start_date = db.Column(db.DateTime, nullable=True)
+    due_date = db.Column(db.DateTime, nullable=False, index=True)
+    priority = db.Column(db.String(40), nullable=False, default='Normal', index=True)
+    status = db.Column(db.String(40), nullable=False, default='Not Started', index=True)
+    percent_complete = db.Column(db.Integer, default=0, nullable=False)
+    total_personnel_required = db.Column(db.Integer, default=0, nullable=False)
+    personnel_completed = db.Column(db.Integer, default=0, nullable=False)
+    personnel_pending = db.Column(db.Integer, default=0, nullable=False)
+    is_overdue = db.Column(db.Boolean, default=False, nullable=False, index=True)
+    days_until_due = db.Column(db.Integer, default=0, nullable=False)
+    completion_date = db.Column(db.DateTime, nullable=True, index=True)
+    recurring = db.Column(db.Boolean, default=False, nullable=False)
+    recurrence_type = db.Column(db.String(40), nullable=True)
+    attachment_link = db.Column(db.String(500), nullable=True)
+    last_updated_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    last_updated_date = db.Column(db.DateTime, default=utcnow_naive, onupdate=utcnow_naive, nullable=False)
+    commander_notes = db.Column(db.Text, nullable=True)
+
+    assigned_lead = db.relationship('User', foreign_keys=[assigned_lead_id], backref='operations_tasks_led')
+    creator = db.relationship('User', foreign_keys=[created_by_id], backref='operations_tasks_created')
+    last_updated_by = db.relationship('User', foreign_keys=[last_updated_by_id])
+
+
+class OperationsTaskComment(db.Model):
+    __tablename__ = 'operations_task_comment'
+
+    id = db.Column(db.Integer, primary_key=True)
+    comment_id = db.Column(db.String(40), unique=True, nullable=False, index=True)
+    task_id = db.Column(db.Integer, db.ForeignKey('operations_task.id'), nullable=False, index=True)
+    comment_date = db.Column(db.DateTime, default=utcnow_naive, nullable=False, index=True)
+    comment_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
+    watch = db.Column(db.String(80), nullable=True, index=True)
+    comment_text = db.Column(db.Text, nullable=False)
+    status_at_comment = db.Column(db.String(40), nullable=True)
+    percent_at_comment = db.Column(db.Integer, default=0, nullable=False)
+    follow_up_required = db.Column(db.Boolean, default=False, nullable=False)
+    follow_up_date = db.Column(db.DateTime, nullable=True)
+
+    task = db.relationship('OperationsTask', backref=db.backref('comments', lazy='dynamic', order_by='OperationsTaskComment.comment_date.desc()'))
+    commenter = db.relationship('User', foreign_keys=[comment_by_id])
 
 
 class ShiftBrief(db.Model):
