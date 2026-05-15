@@ -19,7 +19,7 @@ def _demo_client(monkeypatch):
     app.config["TESTING"] = True
     with app.app_context():
         admin = User(
-            username="demo_controller_test",
+            username="robertrichards",
             role=ROLE_WEBSITE_CONTROLLER,
             active=True,
             pending_approval=False,
@@ -65,7 +65,7 @@ def test_demo_setup_loads_resets_and_keeps_real_user(monkeypatch):
     with client.application.app_context():
         assert User.query.filter_by(is_demo=True).count() == 0
         assert DemoRecord.query.filter_by(is_demo=True).count() == 0
-        assert User.query.filter_by(username="demo_controller_test").count() == 1
+        assert User.query.filter_by(username="robertrichards").count() == 1
 
 
 def test_demo_user_switcher_and_law_lookup(monkeypatch):
@@ -94,3 +94,37 @@ def test_demo_user_switcher_and_law_lookup(monkeypatch):
     workflow = client.get("/demo/workflows/cvi")
     assert workflow.status_code == 200
     assert "Commercial vehicle inspection log" in workflow.get_data(as_text=True)
+
+
+def test_demo_toggle_is_site_owner_only(monkeypatch):
+    client, _admin_id = _demo_client(monkeypatch)
+
+    turned_on = client.post("/demo/toggle", follow_redirects=True)
+    assert turned_on.status_code == 200
+    assert "DEMO MODE" in turned_on.get_data(as_text=True)
+
+    turned_off = client.post("/demo/toggle", follow_redirects=False)
+    assert turned_off.status_code in {302, 303}
+
+    app = client.application
+    with app.app_context():
+        non_owner = User(
+            username="not_the_owner",
+            role=ROLE_WEBSITE_CONTROLLER,
+            active=True,
+            pending_approval=False,
+            first_name="Other",
+            last_name="Admin",
+        )
+        non_owner.set_password("x")
+        db.session.add(non_owner)
+        db.session.commit()
+        non_owner_id = non_owner.id
+
+    other_client = app.test_client()
+    with other_client.session_transaction() as session:
+        session["_user_id"] = str(non_owner_id)
+        session["_fresh"] = True
+
+    assert other_client.get("/demo/setup").status_code == 403
+    assert other_client.post("/demo/toggle").status_code == 403

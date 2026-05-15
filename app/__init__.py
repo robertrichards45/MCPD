@@ -846,6 +846,9 @@ def create_app():
                 'portal_write_limited_notice': 'Running in limited write mode' if app.config.get('PORTAL_WRITE_LIMITED_MODE') else '',
                 'portal_demo_mode': bool(session.get('demo_mode')),
                 'portal_demo_viewing_as': session.get('demo_viewing_as'),
+                'portal_demo_batch_id': session.get('demo_batch_id'),
+                'portal_is_site_owner': False,
+                'portal_can_control_demo': False,
             }
 
         from .permissions import (
@@ -856,6 +859,7 @@ def create_app():
             can_access_truck_gate,
             effective_role,
             is_site_controller,
+            is_site_owner,
             watch_commander_scope_id,
         )
         from .models import INSTALLATION_LABELS
@@ -901,6 +905,8 @@ def create_app():
             'portal_demo_mode': bool(session.get('demo_mode')),
             'portal_demo_viewing_as': session.get('demo_viewing_as'),
             'portal_demo_batch_id': session.get('demo_batch_id'),
+            'portal_is_site_owner': is_site_owner(current_user),
+            'portal_can_control_demo': is_site_owner(current_user),
         }
 
     db.init_app(app)

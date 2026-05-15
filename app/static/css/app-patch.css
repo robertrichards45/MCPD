@@ -775,6 +775,79 @@ body[data-theme="dark"] .pdf-embed-frame {
 }
 
 /* --- Demo mode --------------------------------------------------- */
+.mcpd-demo-toggle-form {
+  margin: 0;
+}
+
+.mcpd-demo-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 18px;
+  border: 1px solid rgba(251, 191, 36, 0.55);
+  border-radius: 999px;
+  background: rgba(251, 191, 36, 0.14);
+  color: #fde68a;
+  font: inherit;
+  font-weight: 900;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+}
+
+.mcpd-demo-toggle:hover,
+.mcpd-demo-toggle:focus {
+  background: rgba(251, 191, 36, 0.24);
+  color: #fff7cc;
+}
+
+.mcpd-demo-toggle.is-on {
+  background: #fbbf24;
+  border-color: #fbbf24;
+  color: #071b33;
+}
+
+.mcpd-sidebar-demo {
+  display: grid;
+  gap: 8px;
+  margin: 10px 0 12px;
+  padding: 14px;
+  border: 1px solid rgba(251, 191, 36, 0.36);
+  border-radius: 16px;
+  background: rgba(251, 191, 36, 0.1);
+  color: #f8fafc;
+}
+
+.mcpd-sidebar-demo strong {
+  color: #fde68a;
+  font-weight: 900;
+}
+
+.mcpd-sidebar-demo span {
+  color: #cbd5e1;
+  font-size: 0.9rem;
+}
+
+.mcpd-sidebar-demo form {
+  margin: 0;
+}
+
+.mcpd-sidebar-demo button {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid rgba(251, 191, 36, 0.5);
+  border-radius: 12px;
+  background: rgba(251, 191, 36, 0.16);
+  color: #fde68a;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.mcpd-sidebar-demo button.is-on {
+  background: #fbbf24;
+  color: #071b33;
+}
+
 .demo-mode-banner {
   position: sticky;
   top: 0;

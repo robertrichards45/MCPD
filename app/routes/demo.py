@@ -49,7 +49,7 @@ from ..models import (
     WatchShift,
     utcnow_naive,
 )
-from ..permissions import can_manage_site
+from ..permissions import is_site_owner
 
 bp = Blueprint('demo', __name__, url_prefix='/demo')
 
@@ -204,15 +204,28 @@ DEMO_LAW_RESULTS = [
 
 
 def _can_control_demo():
-    if can_manage_site(current_user):
+    if is_site_owner(current_user):
         return True
     controller_id = session.get('demo_controller_id')
-    return bool(controller_id and getattr(current_user, 'is_demo', False))
+    controller = db.session.get(User, controller_id) if controller_id else None
+    return bool(controller and is_site_owner(controller) and getattr(current_user, 'is_demo', False))
 
 
 def _require_demo_controller():
     if not _can_control_demo():
         abort(403)
+
+
+def _require_site_owner():
+    if not is_site_owner(current_user):
+        abort(403)
+
+
+def _clear_demo_session():
+    session.pop('demo_mode', None)
+    session.pop('demo_batch_id', None)
+    session.pop('demo_viewing_as', None)
+    session.pop('demo_controller_id', None)
 
 
 def _seed_roles():
@@ -294,9 +307,7 @@ def _delete_demo_rows():
         count = model.query.filter_by(is_demo=True).delete(synchronize_session=False)
         deleted[model.__name__] = count
     db.session.commit()
-    session.pop('demo_mode', None)
-    session.pop('demo_batch_id', None)
-    session.pop('demo_viewing_as', None)
+    _clear_demo_session()
     return deleted
 
 
@@ -634,8 +645,7 @@ def _demo_counts():
 @bp.route('/setup', methods=['GET', 'POST'])
 @login_required
 def setup():
-    if not can_manage_site(current_user):
-        abort(403)
+    _require_site_owner()
     if request.method == 'POST':
         batch_id = _load_demo_data()
         flash('MCPD demo data loaded. Use the demo user switcher to click through each role.', 'success')
@@ -643,10 +653,33 @@ def setup():
     return render_template('demo/setup.html', title='Load MCPD Demo Data', user=current_user, counts=_demo_counts())
 
 
+@bp.post('/toggle')
+@login_required
+def toggle():
+    if session.get('demo_mode'):
+        _require_site_owner()
+        _clear_demo_session()
+        flash('Demo Mode turned off. Demo data remains available until you reset it.', 'success')
+        return redirect(url_for('dashboard.dashboard'))
+
+    _require_site_owner()
+    batch_id = session.get('demo_batch_id')
+    if not DemoRecord.query.filter_by(is_demo=True).first():
+        batch_id = _load_demo_data()
+    else:
+        latest = DemoRecord.query.filter_by(is_demo=True).order_by(DemoRecord.created_at.desc()).first()
+        batch_id = latest.demo_batch_id if latest else f'MCPD-DEMO-{utcnow_naive().strftime("%Y%m%d%H%M%S")}'
+        session['demo_mode'] = True
+        session['demo_batch_id'] = batch_id
+        session['demo_controller_id'] = current_user.id
+    flash('Demo Mode turned on. Sample data only.', 'success')
+    return redirect(url_for('demo.dashboard'))
+
+
 @bp.post('/reset')
 @login_required
 def reset():
-    _require_demo_controller()
+    _require_site_owner()
     deleted = _delete_demo_rows()
     flash('Demo data reset complete. Real records were not touched.', 'success')
     return redirect(url_for('demo.setup', deleted=json.dumps(deleted)))
@@ -702,7 +735,7 @@ def impersonate(user_id):
 def return_admin():
     controller_id = session.get('demo_controller_id')
     admin = db.session.get(User, controller_id) if controller_id else None
-    if not admin or not can_manage_site(admin):
+    if not admin or not is_site_owner(admin):
         abort(403)
     login_user(admin)
     session['demo_mode'] = True
