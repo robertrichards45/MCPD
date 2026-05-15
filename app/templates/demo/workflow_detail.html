@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell mcpd-command-app demo-mode-app">
+  {% include 'partials/nav.html' %}
+  <main class="mcpd-command-main demo-main">
+    <section class="demo-hero">
+      <div>
+        <p class="eyebrow">Demo Workflow</p>
+        <h1>{{ record_type.replace('-', ' ')|title }}</h1>
+        <p>Sample records are fake, command-safe, and clearly marked as demonstration data.</p>
+      </div>
+      <a class="btn btn-outline-secondary" href="{{ url_for('demo.workflows') }}">All Workflows</a>
+    </section>
+    <section class="demo-record-list">
+      {% for row in rows %}
+      <article class="demo-panel">
+        <div class="demo-panel-head">
+          <div>
+            <p class="eyebrow">{{ row.record_type.replace('_', ' ')|title }}</p>
+            <h2>{{ row.title }}</h2>
+          </div>
+          <span class="demo-badge">{{ row.status or 'Demo' }}</span>
+        </div>
+        <p>{{ row.summary }}</p>
+      </article>
+      {% endfor %}
+    </section>
+  </main>
+</div>
+{% endblock %}

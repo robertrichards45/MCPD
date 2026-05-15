@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell mcpd-command-app demo-mode-app">
+  {% include 'partials/nav.html' %}
+  <main class="mcpd-command-main demo-main">
+    <section class="demo-hero">
+      <div>
+        <p class="eyebrow">Demo Law Lookup</p>
+        <h1>Operational Law and Reporting Reference Examples</h1>
+        <p>Sample results only. This does not provide legal advice and does not use real case facts.</p>
+      </div>
+      <a class="btn btn-outline-secondary" href="{{ url_for('demo.workflows') }}">Workflow Launcher</a>
+    </section>
+
+    <form class="demo-search-panel" method="get">
+      <label>Plain-language search
+        <input name="q" value="{{ query }}" placeholder="Try: barred person returned to base">
+      </label>
+      <button class="btn btn-primary" type="submit">Search Demo References</button>
+    </form>
+
+    <section class="demo-example-row">
+      {% for example in examples %}
+      <a href="{{ url_for('demo.law_lookup', q=example.query) }}">{{ example.query }}</a>
+      {% endfor %}
+    </section>
+
+    <section class="demo-record-list">
+      {% for result in results %}
+      <article class="demo-law-card">
+        <div class="demo-panel-head">
+          <div>
+            <p class="eyebrow">{{ result.source_type }}</p>
+            <h2>{{ result.citation }} | {{ result.title }}</h2>
+          </div>
+          <span class="demo-badge">Demo Match</span>
+        </div>
+        <p><strong>Why it matched:</strong> {{ result.why }}</p>
+        <p>{{ result.excerpt }}</p>
+        <div class="demo-actions">
+          <button class="btn btn-outline-secondary" type="button">Add to Report</button>
+          <button class="btn btn-outline-secondary" type="button">Simplify This</button>
+        </div>
+      </article>
+      {% else %}
+      <article class="demo-panel">
+        <h2>No demo reference matched</h2>
+        <p>Use one of the example searches above to show the demo law lookup behavior.</p>
+      </article>
+      {% endfor %}
+    </section>
+  </main>
+</div>
+{% endblock %}

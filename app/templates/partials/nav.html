@@ -86,7 +86,11 @@
         <a href="{{ url_for('reference.incident_paperwork_guide_manage') }}">Navigator Editor</a>
         <a href="{{ url_for('admin.legal_corpus_admin') }}">Legal QA</a>
         <a href="{{ url_for('admin.legal_analytics') }}">Legal Analytics</a>
+        <a href="{{ url_for('demo.setup') }}">Demo Mode</a>
       </details>
+    {% endif %}
+    {% if portal_demo_mode|default(false) %}
+      <a class="{% if endpoint.startswith('demo.') %}is-active{% endif %}" href="{{ url_for('demo.dashboard') }}"><span class="nav-icon">DM</span>Demo Mode</a>
     {% endif %}
     {% if portal_can_access_builder_mode %}
       <a class="{% if endpoint == 'admin.site_builder' %}is-active{% endif %}" href="{{ url_for('admin.site_builder') }}"><span class="nav-icon">✦</span>Site Builder</a>

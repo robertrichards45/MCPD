@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell mcpd-command-app demo-mode-app">
+  {% include 'partials/nav.html' %}
+  <main class="mcpd-command-main demo-main">
+    <section class="demo-hero">
+      <div>
+        <p class="eyebrow">MCPD Demo Dashboard</p>
+        <h1>Command Walkthrough Environment</h1>
+        <p>Use this page to show command fake staffing, fake workflows, demo users, and loaded sample records across the portal.</p>
+      </div>
+      <div class="demo-actions">
+        <a class="btn btn-primary" href="{{ url_for('demo.users') }}">Switch Demo User</a>
+        <a class="btn btn-outline-secondary" href="{{ url_for('demo.workflows') }}">Workflow Launcher</a>
+        <form method="post" action="{{ url_for('demo.reset') }}">
+          <input type="hidden" name="csrf_token" value="{{ g.csrf_token }}">
+          <button class="btn btn-danger" type="submit">Reset Demo Data</button>
+        </form>
+      </div>
+    </section>
+
+    <section class="demo-card-grid">
+      {% for label, value in counts.items() %}
+      <article class="demo-stat-card">
+        <span>{{ label.replace('_', ' ')|title }}</span>
+        <strong>{{ value }}</strong>
+      </article>
+      {% endfor %}
+    </section>
+
+    <section class="demo-layout-grid">
+      <article class="demo-panel">
+        <div class="demo-panel-head">
+          <div>
+            <p class="eyebrow">Staffing Structure</p>
+            <h2>Demo Units Loaded</h2>
+          </div>
+          <span class="demo-badge">{{ batch_id or 'Demo batch' }}</span>
+        </div>
+        <div class="demo-section-list">
+          {% for section, rows in staff_sections.items() %}
+          <details class="demo-section" {% if loop.index <= 2 %}open{% endif %}>
+            <summary>{{ section }} <span>{{ rows|length }} users</span></summary>
+            <ul>
+              {% for username, rank, last_name, role, label in rows %}
+              <li><strong>{{ rank }} {{ last_name }}</strong><small>{{ label }} / {{ role_labels.get(role, role) }}</small></li>
+              {% endfor %}
+            </ul>
+          </details>
+          {% endfor %}
+        </div>
+      </article>
+
+      <article class="demo-panel">
+        <div class="demo-panel-head">
+          <div>
+            <p class="eyebrow">Workflow Launcher</p>
+            <h2>Show the System</h2>
+          </div>
+        </div>
+        <div class="demo-launch-grid">
+          {% for slug, title, href, description in launchers %}
+          <a class="demo-launch-card" href="{{ href }}">
+            <span>{{ title }}</span>
+            <small>{{ description }}</small>
+          </a>
+          {% endfor %}
+        </div>
+      </article>
+    </section>
+  </main>
+</div>
+{% endblock %}

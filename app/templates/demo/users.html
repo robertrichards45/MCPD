@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell mcpd-command-app demo-mode-app">
+  {% include 'partials/nav.html' %}
+  <main class="mcpd-command-main demo-main">
+    <section class="demo-hero">
+      <div>
+        <p class="eyebrow">Demo User Switcher</p>
+        <h1>Impersonate Demo Users</h1>
+        <p>Switch roles safely for walkthroughs. These are fake accounts only. Shared demo password: <strong>{{ password }}</strong></p>
+      </div>
+      <div class="demo-actions">
+        <a class="btn btn-outline-secondary" href="{{ url_for('demo.dashboard') }}">Demo Dashboard</a>
+        {% if current_user.is_demo %}
+        <form method="post" action="{{ url_for('demo.return_admin') }}">
+          <input type="hidden" name="csrf_token" value="{{ g.csrf_token }}">
+          <button class="btn btn-primary" type="submit">Return to Demo Controller</button>
+        </form>
+        {% endif %}
+      </div>
+    </section>
+
+    <section class="demo-user-grid">
+      {% for demo_user in demo_users %}
+      <article class="demo-user-card">
+        <div>
+          <strong>{{ demo_user.display_name }}</strong>
+          <small>{{ demo_user.role_label }} / {{ demo_user.section_unit or 'Demo' }}</small>
+          <code>{{ demo_user.username }}</code>
+        </div>
+        <form method="post" action="{{ url_for('demo.impersonate', user_id=demo_user.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ g.csrf_token }}">
+          <button class="btn btn-primary" type="submit">Impersonate Demo User</button>
+        </form>
+      </article>
+      {% else %}
+      <article class="demo-panel">
+        <h2>No demo users loaded</h2>
+        <p>Go to Demo Setup and load the MCPD demo data first.</p>
+      </article>
+      {% endfor %}
+    </section>
+  </main>
+</div>
+{% endblock %}

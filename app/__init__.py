@@ -223,6 +223,37 @@ def ensure_schema():
     user_indexes = {index['name'] for index in inspector.get_indexes('user')}
     user_table = _quoted_identifier('user')
     datetime_type = _schema_datetime_type()
+
+    def _ensure_demo_columns(table_name):
+        if table_name not in table_names:
+            return
+        quoted = _quoted_identifier(table_name)
+        columns = {column['name'] for column in inspector.get_columns(table_name)}
+        if 'is_demo' not in columns:
+            if _safe_schema_execute(f'ALTER TABLE {quoted} ADD COLUMN is_demo BOOLEAN'):
+                _safe_schema_execute(f'UPDATE {quoted} SET is_demo = false WHERE is_demo IS NULL')
+        if 'demo_batch_id' not in columns:
+            _safe_schema_execute(f'ALTER TABLE {quoted} ADD COLUMN demo_batch_id VARCHAR(80)')
+
+    for _demo_table in (
+        'user',
+        'form',
+        'saved_form',
+        'training_roster',
+        'training_signature',
+        'report',
+        'accident_reconstruction',
+        'incident_packet',
+        'incident_draft',
+        'watch_shift',
+        'watch_assignment',
+        'watch_note',
+        'watch_approval',
+        'operations_task',
+        'shift_brief',
+    ):
+        _ensure_demo_columns(_demo_table)
+
     if 'edipi' not in user_columns:
         _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN edipi VARCHAR(20)')
     if 'first_name' not in user_columns:
@@ -347,6 +378,23 @@ def ensure_schema():
             _safe_schema_execute("ALTER TABLE saved_form ADD COLUMN access_scope VARCHAR(40)")
         if 'rendered_output_path' not in saved_form_columns:
             _safe_schema_execute("ALTER TABLE saved_form ADD COLUMN rendered_output_path VARCHAR(255)")
+
+    if 'operations_task' in table_names:
+        operations_task_columns = {column['name'] for column in inspector.get_columns('operations_task')}
+        if 'assignment_target' not in operations_task_columns:
+            if _safe_schema_execute("ALTER TABLE operations_task ADD COLUMN assignment_target VARCHAR(80)"):
+                _safe_schema_execute("UPDATE operations_task SET assignment_target = 'SPECIFIC_LEAD' WHERE assignment_target IS NULL OR assignment_target = ''")
+        if 'assigned_user_ids_json' not in operations_task_columns:
+            _safe_schema_execute("ALTER TABLE operations_task ADD COLUMN assigned_user_ids_json TEXT")
+        if 'assigned_user_names' not in operations_task_columns:
+            _safe_schema_execute("ALTER TABLE operations_task ADD COLUMN assigned_user_names TEXT")
+        if 'completion_target' not in operations_task_columns:
+            if _safe_schema_execute("ALTER TABLE operations_task ADD COLUMN completion_target VARCHAR(80)"):
+                _safe_schema_execute("UPDATE operations_task SET completion_target = 'CUSTOM_COUNT' WHERE completion_target IS NULL OR completion_target = ''")
+        if 'required_user_ids_json' not in operations_task_columns:
+            _safe_schema_execute("ALTER TABLE operations_task ADD COLUMN required_user_ids_json TEXT")
+        if 'required_user_names' not in operations_task_columns:
+            _safe_schema_execute("ALTER TABLE operations_task ADD COLUMN required_user_names TEXT")
 
     if 'form' in table_names:
         form_columns = {column['name'] for column in inspector.get_columns('form')}
@@ -796,6 +844,8 @@ def create_app():
                 'portal_origin_label': host_display,
                 'portal_show_origin_banner': show_origin_banner,
                 'portal_write_limited_notice': 'Running in limited write mode' if app.config.get('PORTAL_WRITE_LIMITED_MODE') else '',
+                'portal_demo_mode': bool(session.get('demo_mode')),
+                'portal_demo_viewing_as': session.get('demo_viewing_as'),
             }
 
         from .permissions import (
@@ -848,12 +898,15 @@ def create_app():
             'portal_can_access_truck_gate': can_access_truck_gate(current_user),
             'portal_can_access_rfi': can_access_rfi(current_user),
             'portal_pending_approvals': pending_approvals_count,
+            'portal_demo_mode': bool(session.get('demo_mode')),
+            'portal_demo_viewing_as': session.get('demo_viewing_as'),
+            'portal_demo_batch_id': session.get('demo_batch_id'),
         }
 
     db.init_app(app)
     login_manager.init_app(app)
 
-    from .routes import auth, assistant, assistant_operations, bolo, bodycam, dashboard, forms, training, qual_tracker, performance, stats, annual_ai, admin, cleo_api, reports, reconstruction, officers, ops_modules, legal, orders, reference, announcements, mobile, watch_commander
+    from .routes import auth, assistant, assistant_operations, bolo, bodycam, dashboard, forms, training, qual_tracker, performance, stats, annual_ai, admin, cleo_api, reports, reconstruction, officers, ops_modules, legal, orders, reference, announcements, mobile, watch_commander, demo
     app.register_blueprint(auth.bp)
     app.register_blueprint(assistant.bp)
     app.register_blueprint(assistant_operations.bp)
@@ -878,6 +931,7 @@ def create_app():
     app.register_blueprint(announcements.bp)
     app.register_blueprint(mobile.bp)
     app.register_blueprint(watch_commander.bp)
+    app.register_blueprint(demo.bp)
 
     @app.get('/manifest.webmanifest')
     def pwa_manifest():

@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell mcpd-command-app demo-mode-app">
+  {% include 'partials/nav.html' %}
+  <main class="mcpd-command-main demo-main">
+    <section class="demo-hero">
+      <div>
+        <p class="eyebrow">Demo Workflow Launcher</p>
+        <h1>Click Through MCPD Workflows</h1>
+        <p>Each launcher opens a real portal page or demo context page using sample data only.</p>
+      </div>
+      <a class="btn btn-outline-secondary" href="{{ url_for('demo.dashboard') }}">Demo Dashboard</a>
+    </section>
+    <section class="demo-launch-grid demo-launch-grid-large">
+      {% for slug, title, href, description in launchers %}
+      <a class="demo-launch-card" href="{{ href }}">
+        <span>{{ title }}</span>
+        <small>{{ description }}</small>
+      </a>
+      {% endfor %}
+    </section>
+  </main>
+</div>
+{% endblock %}

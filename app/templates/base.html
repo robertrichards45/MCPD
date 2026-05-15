@@ -44,6 +44,14 @@
     </div>
     {% endif %}
   {% endwith %}
+  {% if portal_demo_mode %}
+  <div class="demo-mode-banner" role="status">
+    <strong>DEMO MODE — SAMPLE DATA ONLY</strong>
+    <span>{% if portal_demo_viewing_as %}Viewing as {{ portal_demo_viewing_as }}{% else %}Command demonstration data is active{% endif %}</span>
+    <a href="{{ url_for('demo.dashboard') }}">Demo Dashboard</a>
+    <a href="{{ url_for('demo.users') }}">Switch User</a>
+  </div>
+  {% endif %}
   {% block body %}{% endblock %}
   <script src="{{ url_for('static', filename='js/app.js', v='2026-05-05-mobile-nav') }}"></script>
   <script src="{{ url_for('static', filename='js/voice_assistant.js', v='2026-05-09-voice-stability') }}"></script>

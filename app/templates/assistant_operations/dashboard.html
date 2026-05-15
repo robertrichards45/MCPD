@@ -7,7 +7,7 @@
       <div>
         <p class="eyebrow">Assistant Operations</p>
         <h1>Command Due-Out Tracker</h1>
-        <p>Assign due-outs, training, inspections, suspense items, and projects to Lt/Sgt/watch commanders. Updates here map cleanly to SharePoint, Power Apps, Power BI, and Power Automate later.</p>
+        <p>Assign due-outs, training, inspections, suspense items, and projects to Lt/Sgt/watch commanders. Track who owns the task, who must complete it, and command readiness at a glance.</p>
       </div>
       <div class="assistant-ops-hero-actions">
         <a class="btn btn-outline-secondary" href="{{ url_for('watch_commander.dashboard') }}">Watch Commander Hub</a>
@@ -56,8 +56,39 @@
           <label>Description
             <textarea name="description" rows="3" placeholder="What needs to happen, required standard, and suspense instructions."></textarea>
           </label>
+          <label>Assign To
+            <select name="assignment_target" id="assistant-ops-assignment-target" required>
+              {% for value, label in assignment_target_choices %}
+              <option value="{{ value }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <div class="assistant-ops-target-panel" data-assignment-panel="SPECIFIC_WATCH_COMMANDERS">
+            <label>Certain Watch Commanders
+              <select name="watch_commander_ids" multiple size="5">
+                {% for officer in watch_commanders %}
+                <option value="{{ officer.id }}">{{ officer.display_name }} / {{ officer.role_label }}</option>
+                {% else %}
+                <option value="" disabled>No active Watch Commanders found</option>
+                {% endfor %}
+              </select>
+            </label>
+            <small>Hold Ctrl to select more than one Watch Commander.</small>
+          </div>
+          <div class="assistant-ops-target-panel" data-assignment-panel="SPECIFIC_DESK_SGTS">
+            <label>Certain Desk Sgt's
+              <select name="desk_sgt_ids" multiple size="5">
+                {% for officer in desk_sgts %}
+                <option value="{{ officer.id }}">{{ officer.display_name }} / {{ officer.role_label }}</option>
+                {% else %}
+                <option value="" disabled>No active Desk Sgt users found</option>
+                {% endfor %}
+              </select>
+            </label>
+            <small>Hold Ctrl to select more than one Desk Sgt.</small>
+          </div>
           <div class="assistant-ops-two">
-            <label>Assigned Lead
+            <label data-assignment-panel="SPECIFIC_LEAD">One Specific Lead
               <select name="assigned_lead_id">
                 <option value="">Unassigned</option>
                 {% for lead in leads %}<option value="{{ lead.id }}">{{ lead.display_name }} / {{ lead.role_label }}</option>{% endfor %}
@@ -67,6 +98,29 @@
               <input type="date" name="due_date" required>
             </label>
           </div>
+          <label>Who Must Complete This?
+            <select name="completion_target" id="assistant-ops-completion-target" required>
+              {% for value, label in completion_target_choices %}
+              <option value="{{ value }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <div class="assistant-ops-target-panel" data-completion-panel="SPECIFIC_PERSONNEL">
+            <label>Certain People Required to Complete
+              <select name="completion_user_ids" multiple size="8">
+                {% for officer in personnel %}
+                <option value="{{ officer.id }}">{{ officer.display_name }} / {{ officer.role_label }}{% if officer.section_unit %} / {{ officer.section_unit }}{% endif %}</option>
+                {% else %}
+                <option value="" disabled>No active personnel found</option>
+                {% endfor %}
+              </select>
+            </label>
+            <small>Use this for tasking a precise list of officers, sergeants, commanders, or support personnel.</small>
+          </div>
+          <div class="assistant-ops-target-panel" data-completion-panel="CUSTOM_COUNT">
+            <strong>Custom count tracking</strong>
+            <small>Use this when the task is tracked by a number instead of named portal accounts. Example: 12 Marines need the training, 7 completed.</small>
+          </div>
           <div class="assistant-ops-three">
             <label>Priority
               <select name="priority">
@@ -75,6 +129,7 @@
             </label>
             <label>Total Required
               <input type="number" name="total_personnel_required" min="0" value="0">
+              <small>Auto-filled for named groups. Used directly for Custom Count.</small>
             </label>
             <label>Completed
               <input type="number" name="personnel_completed" min="0" value="0">
@@ -164,9 +219,38 @@
           </summary>
           <div class="assistant-ops-task-body">
             <div class="assistant-ops-task-copy">
+              <div class="assistant-ops-task-chart" aria-label="{{ task.task_title }} completion graph">
+                <div class="assistant-ops-ring" style="background: conic-gradient(var(--primary, #2364c8) {{ task.percent_complete }}%, rgba(59, 130, 246, 0.14) 0);">
+                  <span>{{ task.percent_complete }}%</span>
+                </div>
+                <div class="assistant-ops-chart-copy">
+                  <strong>Task Completion</strong>
+                  <small>{{ task.personnel_completed }} complete / {{ task.personnel_pending }} pending</small>
+                  <div class="assistant-ops-completion-bar" role="img" aria-label="{{ task.percent_complete }} percent complete">
+                    <span style="width: {{ task.percent_complete }}%"></span>
+                  </div>
+                </div>
+              </div>
               <p>{{ task.description or 'No description entered.' }}</p>
               <dl>
-                <div><dt>Lead</dt><dd>{{ task.assigned_lead.display_name if task.assigned_lead else task.assigned_lead_name or 'Unassigned' }}</dd></div>
+                <div><dt>Assigned To</dt><dd>{{ assignment_label(task.assignment_target) }}</dd></div>
+                <div><dt>Recipients</dt><dd>
+                  {% if task.assigned_user_names %}
+                    {{ task.assigned_user_names }}
+                  {% elif task.assigned_lead %}
+                    {{ task.assigned_lead.display_name }}
+                  {% else %}
+                    {{ task.assigned_lead_name or 'Unassigned' }}
+                  {% endif %}
+                </dd></div>
+                <div><dt>Completion</dt><dd>{{ completion_label(task.completion_target) }}</dd></div>
+                <div><dt>Required</dt><dd>
+                  {% if task.required_user_names %}
+                    <span class="assistant-ops-name-list">{{ task.required_user_names }}</span>
+                  {% else %}
+                    {{ task.total_personnel_required }} required
+                  {% endif %}
+                </dd></div>
                 <div><dt>Priority</dt><dd>{{ task.priority }}</dd></div>
                 <div><dt>Personnel</dt><dd>{{ task.personnel_completed }} / {{ task.total_personnel_required }} complete{% if task.personnel_pending %}, {{ task.personnel_pending }} pending{% endif %}</dd></div>
                 <div><dt>Days Until Due</dt><dd>{{ task.days_until_due }}</dd></div>
@@ -244,4 +328,27 @@
     </section>
   </main>
 </div>
+{% endblock %}
+{% block scripts %}
+{{ super() }}
+<script>
+(function () {
+  function bindPanelSelect(selectId, panelAttribute, fallback) {
+    var target = document.getElementById(selectId);
+    if (!target) return;
+    var panels = Array.prototype.slice.call(document.querySelectorAll('[' + panelAttribute + ']'));
+    function syncPanels() {
+      var selected = target.value || fallback;
+      panels.forEach(function (panel) {
+        var panelTarget = panel.getAttribute(panelAttribute);
+        panel.hidden = panelTarget !== selected;
+      });
+    }
+    target.addEventListener('change', syncPanels);
+    syncPanels();
+  }
+  bindPanelSelect('assistant-ops-assignment-target', 'data-assignment-panel', 'ALL_WATCH_COMMANDERS');
+  bindPanelSelect('assistant-ops-completion-target', 'data-completion-panel', 'ALL_ACTIVE_PERSONNEL');
+}());
+</script>
 {% endblock %}

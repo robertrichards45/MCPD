@@ -1,4 +1,5 @@
 import hmac
+import json
 from datetime import date, datetime, time
 
 from flask import Blueprint, abort, flash, redirect, render_template, request, session, url_for
@@ -42,6 +43,23 @@ STATUS_CHOICES = ['Not Started', 'In Progress', 'Waiting on Personnel', 'Pending
 WATCH_CHOICES = ['Day Shift', 'Night Shift', 'Alpha Watch', 'Bravo Watch', 'Charlie Watch', 'Delta Watch', 'All Watches', 'Admin']
 RECURRENCE_CHOICES = ['One-Time', 'Monthly', 'Quarterly', 'Annual']
 OPEN_STATUSES = {'Not Started', 'In Progress', 'Waiting on Personnel', 'Pending Review', 'Overdue'}
+ASSIGNMENT_TARGET_CHOICES = [
+    ('ALL_WATCH_COMMANDERS', 'All Watch Commanders'),
+    ('SPECIFIC_WATCH_COMMANDERS', 'Certain Watch Commanders'),
+    ('WATCH_COMMANDERS_AND_DESK_SGTS', 'Watch Commanders and Desk Sgts'),
+    ('ALL_DESK_SGTS', 'All Desk Sgts'),
+    ('SPECIFIC_DESK_SGTS', "Certain Desk Sgt's"),
+    ('SPECIFIC_LEAD', 'One Specific Lead'),
+]
+COMPLETION_TARGET_CHOICES = [
+    ('ALL_ACTIVE_PERSONNEL', 'Everyone Active'),
+    ('ASSIGNED_WATCH', 'Everyone on Assigned Watch'),
+    ('WATCH_COMMANDERS', 'Watch Commanders'),
+    ('DESK_SGTS', 'Desk Sgts'),
+    ('WATCH_COMMANDERS_AND_DESK_SGTS', 'Watch Commanders and Desk Sgts'),
+    ('SPECIFIC_PERSONNEL', 'Certain People'),
+    ('CUSTOM_COUNT', 'Custom Count Only'),
+]
 
 
 def _require_access():
@@ -78,6 +96,16 @@ def _int_field(name, default=0):
         return max(0, int(request.form.get(name, default) or default))
     except (TypeError, ValueError):
         return default
+
+
+def _selected_user_ids(field_name):
+    selected = []
+    for raw_id in request.form.getlist(field_name):
+        try:
+            selected.append(int(raw_id))
+        except (TypeError, ValueError):
+            continue
+    return selected
 
 
 def _clamp_percent(value):
@@ -121,6 +149,9 @@ def _refresh_task_calculations(task):
         task.percent_complete = _clamp_percent(task.percent_complete)
 
     if task.status == 'Complete':
+        if total:
+            task.personnel_completed = total
+            task.personnel_pending = 0
         task.percent_complete = 100
         if not task.completion_date:
             task.completion_date = utcnow_naive()
@@ -155,6 +186,76 @@ def _active_leads():
     )
     command_users = [user for user in users if user.has_any_role(*command_roles)]
     return command_users or users
+
+
+def _active_personnel():
+    return (
+        User.query.filter(User.active.is_(True))
+        .order_by(User.last_name.asc(), User.first_name.asc(), User.username.asc())
+        .all()
+    )
+
+
+def _role_users(*role_keys):
+    return [user for user in _active_personnel() if user.has_any_role(*role_keys)]
+
+
+def _watch_users(watch_name):
+    watch = (watch_name or '').strip().lower()
+    if not watch or watch == 'all watches':
+        return _active_personnel()
+    users = []
+    for user in _active_personnel():
+        section = (user.section_unit or '').strip().lower()
+        if section == watch or watch in section:
+            users.append(user)
+    return users
+
+
+def _resolve_assignment_recipients(assignment_target):
+    if assignment_target == 'ALL_WATCH_COMMANDERS':
+        return _role_users(ROLE_WATCH_COMMANDER)
+    if assignment_target == 'WATCH_COMMANDERS_AND_DESK_SGTS':
+        return _role_users(ROLE_WATCH_COMMANDER, ROLE_DESK_SGT)
+    if assignment_target == 'ALL_DESK_SGTS':
+        return _role_users(ROLE_DESK_SGT)
+
+    if assignment_target == 'SPECIFIC_WATCH_COMMANDERS':
+        allowed = {user.id: user for user in _role_users(ROLE_WATCH_COMMANDER)}
+        return [allowed[user_id] for user_id in _selected_user_ids('watch_commander_ids') if user_id in allowed]
+
+    if assignment_target == 'SPECIFIC_DESK_SGTS':
+        allowed = {user.id: user for user in _role_users(ROLE_DESK_SGT)}
+        return [allowed[user_id] for user_id in _selected_user_ids('desk_sgt_ids') if user_id in allowed]
+
+    lead_id = request.form.get('assigned_lead_id', type=int)
+    lead = db.session.get(User, lead_id) if lead_id else None
+    return [lead] if lead and lead.active else []
+
+
+def _assignment_label(target):
+    return dict(ASSIGNMENT_TARGET_CHOICES).get(target or 'SPECIFIC_LEAD', 'One Specific Lead')
+
+
+def _resolve_completion_recipients(completion_target, assigned_watch):
+    if completion_target == 'ALL_ACTIVE_PERSONNEL':
+        return _active_personnel()
+    if completion_target == 'ASSIGNED_WATCH':
+        return _watch_users(assigned_watch)
+    if completion_target == 'WATCH_COMMANDERS':
+        return _role_users(ROLE_WATCH_COMMANDER)
+    if completion_target == 'DESK_SGTS':
+        return _role_users(ROLE_DESK_SGT)
+    if completion_target == 'WATCH_COMMANDERS_AND_DESK_SGTS':
+        return _role_users(ROLE_WATCH_COMMANDER, ROLE_DESK_SGT)
+    if completion_target == 'SPECIFIC_PERSONNEL':
+        allowed = {user.id: user for user in _active_personnel()}
+        return [allowed[user_id] for user_id in _selected_user_ids('completion_user_ids') if user_id in allowed]
+    return []
+
+
+def _completion_label(target):
+    return dict(COMPLETION_TARGET_CHOICES).get(target or 'CUSTOM_COUNT', 'Custom Count Only')
 
 
 def _dashboard_metrics(tasks):
@@ -226,6 +327,13 @@ def dashboard():
         metrics=_dashboard_metrics(all_tasks),
         watch_readiness=_watch_readiness(all_tasks),
         leads=_active_leads(),
+        personnel=_active_personnel(),
+        watch_commanders=_role_users(ROLE_WATCH_COMMANDER),
+        desk_sgts=_role_users(ROLE_DESK_SGT),
+        assignment_target_choices=ASSIGNMENT_TARGET_CHOICES,
+        assignment_label=_assignment_label,
+        completion_target_choices=COMPLETION_TARGET_CHOICES,
+        completion_label=_completion_label,
         task_categories=TASK_CATEGORIES,
         priority_choices=PRIORITY_CHOICES,
         status_choices=STATUS_CHOICES,
@@ -247,26 +355,48 @@ def create_task():
     assigned_watch = (request.form.get('assigned_watch') or '').strip()
     due_date = _parse_date(request.form.get('due_date'))
     priority = (request.form.get('priority') or 'Normal').strip()
+    assignment_target = (request.form.get('assignment_target') or 'SPECIFIC_LEAD').strip()
+    if assignment_target not in dict(ASSIGNMENT_TARGET_CHOICES):
+        assignment_target = 'SPECIFIC_LEAD'
+    completion_target = (request.form.get('completion_target') or 'CUSTOM_COUNT').strip()
+    if completion_target not in dict(COMPLETION_TARGET_CHOICES):
+        completion_target = 'CUSTOM_COUNT'
     if not title or category not in TASK_CATEGORIES or assigned_watch not in WATCH_CHOICES or not due_date or priority not in PRIORITY_CHOICES:
         flash('Title, category, assigned watch, due date, and priority are required.', 'error')
         return redirect(url_for('assistant_operations.dashboard'))
 
-    lead_id = request.form.get('assigned_lead_id', type=int)
-    lead = db.session.get(User, lead_id) if lead_id else None
+    recipients = _resolve_assignment_recipients(assignment_target)
+    if assignment_target.startswith('SPECIFIC') and not recipients:
+        flash('Choose at least one person for that assignment target.', 'error')
+        return redirect(url_for('assistant_operations.dashboard'))
+    lead = recipients[0] if recipients else None
+    recipient_names = ', '.join(user.display_name for user in recipients)
+    completion_users = _resolve_completion_recipients(completion_target, assigned_watch)
+    if completion_target == 'SPECIFIC_PERSONNEL' and not completion_users:
+        flash('Choose at least one person who must complete the task.', 'error')
+        return redirect(url_for('assistant_operations.dashboard'))
+    required_names = ', '.join(user.display_name for user in completion_users)
+    total_required = len(completion_users) if completion_target != 'CUSTOM_COUNT' else _int_field('total_personnel_required')
     task = OperationsTask(
         task_id=_generate_task_id(),
         task_title=title,
         task_category=category,
         description=(request.form.get('description') or '').strip(),
         assigned_watch=assigned_watch,
+        assignment_target=assignment_target,
+        assigned_user_ids_json=json.dumps([user.id for user in recipients]),
+        assigned_user_names=recipient_names,
         assigned_lead_id=lead.id if lead else None,
-        assigned_lead_name=lead.display_name if lead else (request.form.get('assigned_lead_name') or '').strip(),
+        assigned_lead_name=lead.display_name if lead else _assignment_label(assignment_target),
+        completion_target=completion_target,
+        required_user_ids_json=json.dumps([user.id for user in completion_users]),
+        required_user_names=required_names,
         created_by_id=current_user.id,
         start_date=_parse_date(request.form.get('start_date'), fallback=None),
         due_date=due_date,
         priority=priority,
         status='Not Started',
-        total_personnel_required=_int_field('total_personnel_required'),
+        total_personnel_required=total_required,
         personnel_completed=_int_field('personnel_completed'),
         recurring=bool(request.form.get('recurring')),
         recurrence_type=(request.form.get('recurrence_type') or 'One-Time').strip(),
@@ -277,7 +407,10 @@ def create_task():
     _refresh_task_calculations(task)
     db.session.add(task)
     db.session.flush()
-    _audit('assistant_operations_task_created', f'task_id={task.task_id}|title={task.task_title}|watch={task.assigned_watch}')
+    _audit(
+        'assistant_operations_task_created',
+        f'task_id={task.task_id}|title={task.task_title}|watch={task.assigned_watch}|target={task.assignment_target}|recipients={recipient_names}|completion_target={task.completion_target}|required={required_names or task.total_personnel_required}',
+    )
     db.session.commit()
     flash('Assistant Operations task created.', 'success')
     return redirect(url_for('assistant_operations.dashboard'))
