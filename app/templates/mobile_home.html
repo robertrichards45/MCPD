@@ -2,50 +2,61 @@
 {% block body %}
 <div class="mcpd-mobile-app">
   <header class="mcpd-mobile-topbar">
-    <a class="mcpd-mobile-menu-link" href="{{ url_for('mobile.more') }}" aria-label="Open menu">Menu</a>
+    <a class="mcpd-mobile-menu-link" href="{{ url_for('mobile.more') }}" aria-label="Open menu">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      Menu
+    </a>
     <strong>MCPD</strong>
     <button class="mcpd-theme-toggle" type="button" data-theme-toggle>Dark</button>
   </header>
 
   <main class="mcpd-mobile-home">
     <section class="mcpd-mobile-greeting">
-      <p>Good afternoon,</p>
-      <h1>{{ user.display_name }}</h1>
-      <span>{{ user.section_unit or portal_effective_role_label }}</span>
+      <div class="mcpd-mobile-greeting-inner">
+        <p class="mcpd-mobile-greeting-sub">Welcome back</p>
+        <h1>{{ user.display_name }}</h1>
+        <span class="mcpd-mobile-greeting-role">{{ user.section_unit or portal_effective_role_label }}</span>
+      </div>
+      {% if active_incident_draft %}
+      <a class="mcpd-mobile-draft-badge" href="{{ url_for('mobile.incident_start') }}">
+        <span class="mcpd-mobile-draft-dot"></span>
+        Draft in progress
+      </a>
+      {% endif %}
     </section>
 
-    <section class="mcpd-mobile-grid" aria-label="Mobile actions">
-      <a href="{{ url_for('legal.legal_home') }}">
+    <section class="mcpd-mobile-grid" aria-label="Quick actions">
+      <a href="{{ url_for('legal.legal_home') }}" class="tile-law">
         <span class="mcpd-mobile-tile-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24"><path d="M12 3v18M5 7h14M7 7l-3 7h6L7 7Zm10 0-3 7h6l-3-7ZM9 21h6"/></svg>
         </span>
         Law Lookup
       </a>
-      <a href="{{ url_for('mobile.incident_start') }}">
+      <a href="{{ url_for('mobile.incident_start') }}" class="tile-report{% if active_incident_draft %} tile-active{% endif %}">
         <span class="mcpd-mobile-tile-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z"/><path d="M14 3v5h5M8 13h8M8 17h6"/></svg>
         </span>
         {% if active_incident_draft %}Continue Report{% else %}Start Report{% endif %}
       </a>
-      <a href="{{ url_for('forms.list_forms') }}">
+      <a href="{{ url_for('forms.list_forms') }}" class="tile-forms">
         <span class="mcpd-mobile-tile-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
         </span>
         Forms
       </a>
-      <a href="{{ url_for('orders.reference_search') }}">
+      <a href="{{ url_for('orders.reference_search') }}" class="tile-orders">
         <span class="mcpd-mobile-tile-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24"><path d="M6 4h11a2 2 0 0 1 2 2v14H8a2 2 0 0 1-2-2V4Z"/><path d="M9 8h7M9 12h7M9 16h5"/></svg>
         </span>
         Orders
       </a>
-      <a href="{{ url_for('training.training_menu') }}">
+      <a href="{{ url_for('training.training_menu') }}" class="tile-training">
         <span class="mcpd-mobile-tile-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24"><path d="m3 8 9-4 9 4-9 4-9-4Z"/><path d="M7 10v5c0 1.7 2.2 3 5 3s5-1.3 5-3v-5"/></svg>
         </span>
         Training
       </a>
-      <a href="{{ url_for('forms.saved_forms') }}">
+      <a href="{{ url_for('forms.saved_forms') }}" class="tile-saved">
         <span class="mcpd-mobile-tile-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24"><path d="M6 4h12v17l-6-3-6 3V4Z"/></svg>
         </span>
@@ -53,30 +64,55 @@
       </a>
     </section>
 
-    {% if active_incident_draft %}
-    <section class="mcpd-mobile-officer-panel">
-      <div>
-        <strong>Synced Draft</strong>
-        <span>{{ active_incident_draft.location or active_incident_draft.call_type or 'Active report in progress' }}</span>
+    <section class="mcpd-mobile-stats-row" aria-label="Officer summary">
+      <div class="mcpd-mobile-stat-chip">
+        <strong>{{ dashboard_saved_forms_count|default(0) }}</strong>
+        <span>Forms</span>
       </div>
-      <a href="{{ url_for('mobile.incident_start') }}">Open</a>
+      <div class="mcpd-mobile-stat-chip">
+        <strong>{{ dashboard_report_count|default(0) }}</strong>
+        <span>Reports</span>
+      </div>
+      <a class="mcpd-mobile-stat-chip mcpd-mobile-stat-link" href="{{ url_for('mobile.officer_stats') }}">
+        <strong>View</strong>
+        <span>Stats</span>
+      </a>
+      <a class="mcpd-mobile-stat-chip mcpd-mobile-stat-link" href="{{ url_for('mobile.officer_contact') }}">
+        <strong>Edit</strong>
+        <span>Profile</span>
+      </a>
+    </section>
+
+    {% if active_incident_draft %}
+    <section class="mcpd-mobile-officer-panel mcpd-mobile-panel-highlight">
+      <div>
+        <strong>Active Draft</strong>
+        <span>{{ active_incident_draft.location or active_incident_draft.call_type or 'Report in progress' }}</span>
+      </div>
+      <a href="{{ url_for('mobile.incident_start') }}">Open &rsaquo;</a>
     </section>
     {% endif %}
 
-    <section class="mcpd-mobile-officer-panel">
-      <div>
-        <strong>Officer Stats</strong>
-        <span>Forms: {{ dashboard_saved_forms_count|default(0) }} / Reports: {{ dashboard_report_count|default(0) }}</span>
+    <section class="mcpd-mobile-map-panel">
+      <div class="mcpd-mobile-map-head">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3l-6 18M3 9h18M3 15h18"/></svg>
+        <strong>MCLB Albany</strong>
+        <span>Marine Corps Logistics Base</span>
       </div>
-      <a href="{{ url_for('mobile.officer_stats') }}">View Stats</a>
-    </section>
-
-    <section class="mcpd-mobile-officer-panel">
-      <div>
-        <strong>Contact Info</strong>
-        <span>{{ user.phone_number or 'Phone not set' }}{% if user.email %} / {{ user.email }}{% endif %}</span>
+      <div class="mcpd-mobile-map-frame">
+        <iframe
+          title="Map of Marine Corps Logistics Base Albany, Georgia"
+          src="https://www.google.com/maps?q=31.5782,-84.0618&z=14&output=embed"
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          aria-label="Interactive map of MCLB Albany, Georgia"
+          allowfullscreen
+        ></iframe>
       </div>
-      <a href="{{ url_for('mobile.officer_contact') }}">Edit</a>
+      <a class="mcpd-mobile-map-directions" href="https://maps.google.com/maps?q=Marine+Corps+Logistics+Base+Albany+GA" target="_blank" rel="noopener noreferrer">
+        Open in Google Maps
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3"/></svg>
+      </a>
     </section>
 
   </main>
