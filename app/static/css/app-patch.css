@@ -760,3 +760,306 @@ body[data-theme="dark"] .card {
   font-weight: 700;
   letter-spacing: 0.01em;
 }
+
+/* ===================================================================
+   MOBILE HOME — PROFESSIONAL REDESIGN
+   =================================================================== */
+
+/* Greeting section */
+.mcpd-mobile-greeting {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 20px 12px;
+}
+.mcpd-mobile-greeting-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.mcpd-mobile-greeting-sub {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted, #64748b);
+  margin: 0;
+}
+.mcpd-mobile-greeting .mcpd-mobile-greeting-inner h1 {
+  font-size: 1.55rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0;
+  line-height: 1.15;
+  color: var(--text, #0f172a);
+}
+body[data-theme="dark"] .mcpd-mobile-greeting .mcpd-mobile-greeting-inner h1 {
+  color: #f1f5f9;
+}
+.mcpd-mobile-greeting-role {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--muted, #64748b);
+  letter-spacing: 0.01em;
+}
+.mcpd-mobile-draft-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: rgba(234,179,8,0.12);
+  border: 1px solid rgba(234,179,8,0.35);
+  color: #b45309;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+body[data-theme="dark"] .mcpd-mobile-draft-badge {
+  background: rgba(234,179,8,0.15);
+  border-color: rgba(234,179,8,0.3);
+  color: #fbbf24;
+}
+.mcpd-mobile-draft-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: mcpd-pulse 1.8s ease-in-out infinite;
+}
+@keyframes mcpd-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+/* Action grid — category-colored tiles */
+.mcpd-mobile-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 0 16px 8px;
+}
+.mcpd-mobile-grid a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 8px 14px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  color: #1e3a5f;
+  background: #f1f5f9;
+  border: 1px solid rgba(15,23,42,0.08);
+  transition: transform 0.14s ease, box-shadow 0.14s ease;
+  text-align: center;
+  -webkit-tap-highlight-color: transparent;
+}
+body[data-theme="dark"] .mcpd-mobile-grid a {
+  color: #dbeafe;
+  background: rgba(30,58,138,0.25);
+  border-color: rgba(148,163,184,0.12);
+}
+.mcpd-mobile-grid a:active {
+  transform: scale(0.96);
+}
+
+/* Per-category icon bg colors */
+.mcpd-mobile-grid a .mcpd-mobile-tile-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(22,103,199,0.12);
+  transition: background 0.14s ease;
+}
+.mcpd-mobile-grid a.tile-law .mcpd-mobile-tile-icon    { background: rgba(15,118,110,0.13); }
+.mcpd-mobile-grid a.tile-report .mcpd-mobile-tile-icon { background: rgba(220,38,38,0.11); }
+.mcpd-mobile-grid a.tile-forms .mcpd-mobile-tile-icon  { background: rgba(22,103,199,0.12); }
+.mcpd-mobile-grid a.tile-orders .mcpd-mobile-tile-icon { background: rgba(124,58,237,0.11); }
+.mcpd-mobile-grid a.tile-training .mcpd-mobile-tile-icon { background: rgba(234,88,12,0.11); }
+.mcpd-mobile-grid a.tile-saved .mcpd-mobile-tile-icon  { background: rgba(234,179,8,0.13); }
+
+.mcpd-mobile-grid a.tile-law    { color: #0f766e; }
+.mcpd-mobile-grid a.tile-report { color: #b91c1c; }
+.mcpd-mobile-grid a.tile-forms  { color: #1d4ed8; }
+.mcpd-mobile-grid a.tile-orders { color: #7c3aed; }
+.mcpd-mobile-grid a.tile-training { color: #c2410c; }
+.mcpd-mobile-grid a.tile-saved  { color: #92400e; }
+
+body[data-theme="dark"] .mcpd-mobile-grid a.tile-law      { color: #5eead4; }
+body[data-theme="dark"] .mcpd-mobile-grid a.tile-report    { color: #fca5a5; }
+body[data-theme="dark"] .mcpd-mobile-grid a.tile-forms     { color: #93c5fd; }
+body[data-theme="dark"] .mcpd-mobile-grid a.tile-orders    { color: #c4b5fd; }
+body[data-theme="dark"] .mcpd-mobile-grid a.tile-training  { color: #fdba74; }
+body[data-theme="dark"] .mcpd-mobile-grid a.tile-saved     { color: #fde68a; }
+
+.mcpd-mobile-grid a.tile-active {
+  border-color: rgba(234,179,8,0.5) !important;
+  box-shadow: 0 0 0 1px rgba(234,179,8,0.3);
+}
+.mcpd-mobile-grid a .mcpd-mobile-tile-icon svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Stats row */
+.mcpd-mobile-stats-row {
+  display: flex;
+  gap: 8px;
+  padding: 4px 16px 12px;
+}
+.mcpd-mobile-stat-chip {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 6px;
+  border-radius: 12px;
+  background: var(--card, #fff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  text-decoration: none;
+}
+.mcpd-mobile-stat-chip strong {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text, #0f172a);
+  line-height: 1;
+}
+.mcpd-mobile-stat-chip span {
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted, #64748b);
+}
+body[data-theme="dark"] .mcpd-mobile-stat-chip {
+  background: rgba(30,41,59,0.7);
+  border-color: rgba(148,163,184,0.14);
+}
+body[data-theme="dark"] .mcpd-mobile-stat-chip strong {
+  color: #f1f5f9;
+}
+.mcpd-mobile-stat-link:hover strong,
+.mcpd-mobile-stat-link:focus strong {
+  color: var(--primary, #1667c7);
+}
+
+/* Highlighted panel */
+.mcpd-mobile-panel-highlight {
+  border-left: 3px solid #eab308 !important;
+  background: rgba(234,179,8,0.06) !important;
+}
+
+/* Map panel — mobile */
+.mcpd-mobile-map-panel {
+  margin: 0 16px 100px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--border-color, #e2e8f0);
+  background: var(--card, #fff);
+}
+body[data-theme="dark"] .mcpd-mobile-map-panel {
+  background: rgba(15,23,42,0.7);
+  border-color: rgba(148,163,184,0.14);
+}
+.mcpd-mobile-map-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+}
+body[data-theme="dark"] .mcpd-mobile-map-head {
+  border-bottom-color: rgba(148,163,184,0.14);
+}
+.mcpd-mobile-map-head strong {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text, #0f172a);
+}
+body[data-theme="dark"] .mcpd-mobile-map-head strong { color: #f1f5f9; }
+.mcpd-mobile-map-head span {
+  font-size: 12px;
+  color: var(--muted, #64748b);
+  margin-left: auto;
+}
+.mcpd-mobile-map-frame {
+  position: relative;
+  width: 100%;
+  padding-top: 55%;
+}
+.mcpd-mobile-map-frame iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+.mcpd-mobile-map-directions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 14px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--primary, #1667c7);
+  text-decoration: none;
+  border-top: 1px solid var(--border-color, #e2e8f0);
+}
+body[data-theme="dark"] .mcpd-mobile-map-directions {
+  border-top-color: rgba(148,163,184,0.14);
+  color: #60a5fa;
+}
+.mcpd-mobile-map-directions:hover { text-decoration: underline; }
+
+/* ===================================================================
+   DESKTOP DASHBOARD — MAP PANEL
+   =================================================================== */
+.mcpd-panel-map {
+  grid-column: span 2;
+}
+@media (max-width: 900px) {
+  .mcpd-panel-map { grid-column: span 1; }
+}
+.mcpd-panel-map-frame {
+  position: relative;
+  width: 100%;
+  padding-top: 45%;
+}
+.mcpd-panel-map-frame iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 0 0 4px 4px;
+  display: block;
+}
+.mcpd-panel-map-caption {
+  font-size: 11.5px;
+  color: var(--muted, #64748b);
+  padding: 8px 14px;
+  margin: 0;
+  border-top: 1px solid var(--border-color, #e2e8f0);
+}
+body[data-theme="dark"] .mcpd-panel-map-caption {
+  border-top-color: rgba(148,163,184,0.14);
+}

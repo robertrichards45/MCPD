@@ -791,11 +791,12 @@ def create_app():
         "media-src 'self' blob:",
         "connect-src 'self'",
         "worker-src 'self' blob:",
-        "frame-src 'self'",
+        "frame-src 'self' https://www.google.com https://maps.google.com",
         "manifest-src 'self'",
         "base-uri 'self'",
         "form-action 'self'",
     ])
+
 
     @app.after_request
     def add_security_headers(response):

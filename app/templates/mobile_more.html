@@ -4,10 +4,12 @@
   {% elif name == 'command' %}<svg viewBox="0 0 24 24"><path d="M4 5h16v14H4z"/><path d="M8 9h8M8 13h5"/></svg>
   {% elif name == 'reports' %}<svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14h12a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>
   {% elif name == 'camera' %}<svg viewBox="0 0 24 24"><path d="M4 7h11a3 3 0 0 1 3 3v4a3 3 0 0 1-3 3H4z"/><path d="m18 11 3-2v6l-3-2"/><circle cx="9" cy="12" r="2"/></svg>
-  {% elif name == 'library' %}<svg viewBox="0 0 24 24"><path d="M4 5h16v14H4z"/><path d="M8 5v14M16 5v14"/></svg>
+  {% elif name == 'library' %}<svg viewBox="0 0 24 24"><path d="M3 5h2v14H3zM7 5h2v14H7z"/><path d="M11 5h10v14H11z"/></svg>
   {% elif name == 'narrative' %}<svg viewBox="0 0 24 24"><path d="M5 4h14v16H5z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
   {% elif name == 'saved' %}<svg viewBox="0 0 24 24"><path d="M6 4h12v17l-6-3-6 3V4Z"/></svg>
   {% elif name == 'builder' %}<svg viewBox="0 0 24 24"><path d="m12 3 2.4 5 5.6.8-4 3.9.9 5.5-4.9-2.6-4.9 2.6.9-5.5-4-3.9 5.6-.8z"/></svg>
+  {% elif name == 'desktop' %}<svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+  {% elif name == 'vehicle' %}<svg viewBox="0 0 24 24"><path d="M3 17a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5l-3-6H6L3 12v5Z"/><circle cx="7.5" cy="17" r="1.5"/><circle cx="16.5" cy="17" r="1.5"/><path d="M3 12h18"/></svg>
   {% else %}<svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>{% endif %}
 {%- endmacro %}
 {% macro tool_card(title, desc, href, icon, strong=False) -%}
