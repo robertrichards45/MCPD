@@ -41,10 +41,10 @@
 
 <aside class="mcpd-command-sidebar" data-nav-menu aria-label="Site navigation">
   <nav aria-label="Main navigation">
-    <a class="{% if endpoint == 'dashboard.dashboard' %}is-active{% endif %}" href="{{ url_for('dashboard.dashboard') }}"><span class="nav-icon">⌂</span>Dashboard</a>
-    <a class="{% if endpoint.startswith('legal.') %}is-active{% endif %}" href="{{ url_for('legal.legal_home') }}"><span class="nav-icon">⌕</span>Law Lookup</a>
+    <a class="{% if endpoint == 'dashboard.dashboard' %}is-active{% endif %}" href="{{ url_for('dashboard.dashboard') }}"><svg class="nav-icon" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>Dashboard</a>
+    <a class="{% if endpoint.startswith('legal.') %}is-active{% endif %}" href="{{ url_for('legal.legal_home') }}"><svg class="nav-icon" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="6.5" cy="6.5" r="4.5"/><line x1="10" y1="10" x2="15" y2="15"/></svg>Law Lookup</a>
     <details class="mcpd-sidebar-admin" {% if reports_active %}open{% endif %}>
-      <summary><span class="nav-icon">□</span>Reports</summary>
+      <summary><svg class="nav-icon" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 2h7l3 3v9H3V2z"/><path d="M10 2v3h3"/><line x1="5" y1="8" x2="11" y2="8"/><line x1="5" y1="11" x2="9" y2="11"/></svg>Reports</summary>
       <a href="{{ url_for('reports.list_reports') }}">All Reports</a>
       <a href="{{ url_for('bodycam.library') }}">Bodycam Footage</a>
       <a href="{{ url_for('bodycam.narrative_tool') }}">Narrative Creator</a>
@@ -52,24 +52,24 @@
       <a href="{{ url_for('reports.accidents') }}">Accident Tools</a>
       <a href="{{ url_for('reconstruction.case_list') }}">Reconstruction Cases</a>
     </details>
-    <a class="{% if forms_active %}is-active{% endif %}" href="{{ url_for('forms.list_forms') }}"><span class="nav-icon">▤</span>Forms</a>
-    <a class="{% if orders_active %}is-active{% endif %}" href="{{ url_for('orders.reference_search') }}"><span class="nav-icon">▥</span>Orders &amp; Memos</a>
-    <a class="{% if training_active %}is-active{% endif %}" href="{{ url_for('training.training_menu') }}"><span class="nav-icon">▴</span>Training</a>
+    <a class="{% if forms_active %}is-active{% endif %}" href="{{ url_for('forms.list_forms') }}"><svg class="nav-icon" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="3" width="10" height="12" rx="1"/><path d="M6 3V2a2 2 0 0 1 4 0v1"/><line x1="5" y1="8" x2="11" y2="8"/><line x1="5" y1="11" x2="9" y2="11"/></svg>Forms</a>
+    <a class="{% if orders_active %}is-active{% endif %}" href="{{ url_for('orders.reference_search') }}"><svg class="nav-icon" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2" y="3" width="10" height="12" rx="1"/><path d="M5 3V1h8v12h-1"/><line x1="4" y1="7" x2="9" y2="7"/><line x1="4" y1="10" x2="7" y2="10"/></svg>Orders &amp; Memos</a>
+    <a class="{% if training_active %}is-active{% endif %}" href="{{ url_for('training.training_menu') }}"><svg class="nav-icon" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><polygon points="8,2 15,6 8,10 1,6"/><path d="M4 8.5v3.5a4 4 0 0 0 8 0V8.5"/><line x1="14" y1="6" x2="14" y2="11"/></svg>Training</a>
     {% if user.can_manage_team() %}
       <a class="{% if personnel_active %}is-active{% endif %}" href="{{ url_for('auth.manage_users') }}">
-        <span class="nav-icon">◇</span>Personnel
+        <svg class="nav-icon" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>Personnel
         {% if portal_pending_approvals %}<span class="nav-pending-badge">{{ portal_pending_approvals }}</span>{% endif %}
       </a>
     {% else %}
-      <a class="{% if endpoint.startswith('officers.') %}is-active{% endif %}" href="{{ url_for('officers.profile') }}"><span class="nav-icon">◇</span>Personnel</a>
+      <a class="{% if endpoint.startswith('officers.') %}is-active{% endif %}" href="{{ url_for('officers.profile') }}"><svg class="nav-icon" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>Personnel</a>
     {% endif %}
-    <a class="{% if saved_work_active %}is-active{% endif %}" href="{{ url_for('forms.saved_forms') }}"><span class="nav-icon">☆</span>Saved Work</a>
+    <a class="{% if saved_work_active %}is-active{% endif %}" href="{{ url_for('forms.saved_forms') }}"><svg class="nav-icon" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 2h10v13l-5-3-5 3V2z"/></svg>Saved Work</a>
     {% if portal_can_access_assistant_operations|default(false) %}
-      <a class="{% if endpoint.startswith('assistant_operations.') %}is-active{% endif %}" href="{{ url_for('assistant_operations.dashboard') }}"><span class="nav-icon">AO</span>Assistant Ops</a>
+      <a class="{% if endpoint.startswith('assistant_operations.') %}is-active{% endif %}" href="{{ url_for('assistant_operations.dashboard') }}"><svg class="nav-icon" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M8 5v4M8 11v1"/></svg>Assistant Ops</a>
     {% endif %}
     {% if (user is defined and user.can_manage_team()) or portal_is_watch_commander_view|default(false) or portal_can_access_builder_mode|default(false) %}
       <details class="mcpd-sidebar-admin" {% if command_active %}open{% endif %}>
-        <summary><span class="nav-icon">WC</span>Watch Commander</summary>
+        <summary><svg class="nav-icon" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M8 2L2 5v4c0 3.3 2.5 5.5 6 7 3.5-1.5 6-3.7 6-7V5L8 2z"/></svg>Watch Commander</summary>
         <a href="{{ url_for('watch_commander.dashboard') }}">WC Dashboard</a>
         <a href="{{ url_for('auth.manage_users') }}">Approve / Assign Officers</a>
         <a href="{{ url_for('mobile.supervisor_dashboard') }}">Command Dashboard</a>
@@ -88,7 +88,7 @@
     {% endif %}
     {% if portal_effective_role == 'WEBSITE_CONTROLLER' %}
       <details class="mcpd-sidebar-admin" {% if endpoint.startswith('admin.') or endpoint in ['forms.call_type_rules_manager', 'forms.forms_manager'] or endpoint == 'reference.incident_paperwork_guide_manage' %}open{% endif %}>
-        <summary><span class="nav-icon">⚙</span>Administration</summary>
+        <summary><svg class="nav-icon" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="8" r="2.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41"/></svg>Administration</summary>
         <a href="{{ url_for('forms.call_type_rules_manager') }}">Call Types</a>
         <a href="{{ url_for('forms.forms_manager') }}">Forms Manager</a>
         <a href="{{ url_for('reference.incident_paperwork_guide_manage') }}">Navigator Editor</a>
@@ -101,7 +101,7 @@
       <a class="{% if endpoint.startswith('demo.') %}is-active{% endif %}" href="{{ url_for('demo.dashboard') }}"><span class="nav-icon">DM</span>Demo Mode</a>
     {% endif %}
     {% if portal_can_access_builder_mode %}
-      <a class="{% if endpoint == 'admin.site_builder' %}is-active{% endif %}" href="{{ url_for('admin.site_builder') }}"><span class="nav-icon">✦</span>Site Builder</a>
+      <a class="{% if endpoint == 'admin.site_builder' %}is-active{% endif %}" href="{{ url_for('admin.site_builder') }}"><svg class="nav-icon" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M11 2l3 3-8 8H3v-3L11 2z"/><line x1="9" y1="4" x2="12" y2="7"/></svg>Site Builder</a>
     {% endif %}
   </nav>
   {% if portal_is_site_owner|default(false) %}
