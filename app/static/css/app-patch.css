@@ -1309,3 +1309,357 @@ body[data-theme="dark"] .leaflet-control-attribution a {
 .leaflet-popup-tip-container {
   margin-top: -1px;
 }
+
+/* ===================================================================
+   PROFESSIONAL REDESIGN — DESKTOP PORTAL  2026-05-16
+   Dramatic visual improvements to header, sidebar, action cards,
+   dashboard layout and panels. All designed to override app.css.
+   =================================================================== */
+
+/* ── Top header bar ───────────────────────────────────────────────── */
+.mcpd-command-header {
+  background: linear-gradient(135deg, #071b33 0%, #0d2b52 60%, #0f3464 100%) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.10) !important;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.28) !important;
+  height: 68px !important;
+}
+.mcpd-header-brand strong {
+  font-size: 1.0rem !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.08em !important;
+  color: #ffffff !important;
+}
+.mcpd-header-search input {
+  border-radius: 8px 0 0 8px !important;
+  border: 1.5px solid rgba(255,255,255,0.18) !important;
+  background: rgba(255,255,255,0.10) !important;
+  color: #ffffff !important;
+  font-weight: 500 !important;
+  transition: background 0.15s ease, border-color 0.15s ease !important;
+}
+.mcpd-header-search input::placeholder { color: rgba(255,255,255,0.55) !important; }
+.mcpd-header-search input:focus {
+  background: rgba(255,255,255,0.18) !important;
+  border-color: rgba(255,255,255,0.4) !important;
+  outline: none !important;
+}
+.mcpd-header-search button {
+  background: #1667c7 !important;
+  border: 1.5px solid #1667c7 !important;
+  border-radius: 0 8px 8px 0 !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+  padding: 0 18px !important;
+  transition: background 0.15s ease !important;
+}
+.mcpd-header-search button:hover { background: #1259b0 !important; }
+
+/* ── Sidebar ──────────────────────────────────────────────────────── */
+.mcpd-command-sidebar {
+  background: linear-gradient(180deg, #071b33 0%, #081e38 55%, #060f1e 100%) !important;
+  border-right: 1px solid rgba(255,255,255,0.07) !important;
+  box-shadow: 4px 0 20px rgba(0,0,0,0.22) !important;
+}
+.mcpd-command-sidebar nav {
+  gap: 2px !important;
+}
+.mcpd-command-sidebar a,
+.mcpd-sidebar-admin summary {
+  border-radius: 10px !important;
+  font-weight: 700 !important;
+  font-size: 0.85rem !important;
+  letter-spacing: 0.01em !important;
+  padding: 9px 12px !important;
+  transition: background 0.13s ease, color 0.13s ease, border-color 0.13s ease !important;
+}
+.mcpd-command-sidebar a:hover,
+.mcpd-sidebar-admin summary:hover {
+  background: rgba(255,255,255,0.07) !important;
+  border-color: rgba(255,255,255,0.10) !important;
+  color: #ffffff !important;
+}
+.mcpd-command-sidebar a.is-active,
+.mcpd-sidebar-admin[open] > summary {
+  background: linear-gradient(135deg, rgba(22,103,199,0.32), rgba(37,99,235,0.20)) !important;
+  border-color: rgba(96,165,250,0.30) !important;
+  color: #ffffff !important;
+}
+.mcpd-sidebar-help {
+  background: rgba(255,255,255,0.04) !important;
+  border: 1px solid rgba(255,255,255,0.09) !important;
+}
+.mcpd-sidebar-logout button {
+  background: rgba(220,38,38,0.12) !important;
+  border-color: rgba(252,165,165,0.18) !important;
+  border-radius: 10px !important;
+  color: #fca5a5 !important;
+  transition: background 0.13s ease !important;
+}
+.mcpd-sidebar-logout button:hover {
+  background: rgba(220,38,38,0.24) !important;
+  border-color: rgba(252,165,165,0.35) !important;
+}
+
+/* ── Dashboard welcome head ───────────────────────────────────────── */
+.mcpd-dashboard-head {
+  align-items: flex-end !important;
+  padding: 0 0 6px !important;
+  border-bottom: 2px solid var(--border-color, #e2e8f0) !important;
+  margin-bottom: 4px !important;
+}
+body[data-theme="dark"] .mcpd-dashboard-head { border-bottom-color: rgba(148,163,184,0.15) !important; }
+.mcpd-dashboard-head h1 {
+  font-size: clamp(1.5rem, 2.2vw, 2rem) !important;
+  font-weight: 900 !important;
+  letter-spacing: -0.03em !important;
+  margin-bottom: 4px !important;
+}
+.mcpd-dashboard-head p {
+  font-size: 0.88rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.02em !important;
+  text-transform: uppercase !important;
+  color: var(--muted, #64748b) !important;
+}
+.mcpd-date-tile {
+  border-radius: 12px !important;
+  box-shadow: 0 1px 4px rgba(15,23,42,0.08) !important;
+  text-align: center !important;
+  padding: 10px 16px !important;
+}
+.mcpd-date-tile strong {
+  font-size: 0.95rem !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.04em !important;
+  color: var(--primary, #1667c7) !important;
+}
+
+/* ── Action cards ─────────────────────────────────────────────────── */
+.mcpd-action-grid {
+  gap: 14px !important;
+}
+.mcpd-action-card {
+  border-radius: 14px !important;
+  padding: 24px 16px 20px !important;
+  min-height: 160px !important;
+  border: 1.5px solid var(--border-color, #e2e8f0) !important;
+  box-shadow: 0 2px 8px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04) !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+.mcpd-action-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #1667c7, #3b82f6);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.mcpd-action-card:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 24px rgba(15,23,42,0.12), 0 2px 6px rgba(15,23,42,0.06) !important;
+  border-color: rgba(22,103,199,0.28) !important;
+}
+.mcpd-action-card:hover::before { opacity: 1; }
+body[data-theme="dark"] .mcpd-action-card {
+  border-color: rgba(148,163,184,0.14) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.22) !important;
+}
+body[data-theme="dark"] .mcpd-action-card:hover {
+  box-shadow: 0 8px 24px rgba(0,0,0,0.36) !important;
+  border-color: rgba(96,165,250,0.28) !important;
+}
+.mcpd-action-icon {
+  width: 48px !important;
+  height: 48px !important;
+  border-radius: 12px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: rgba(22,103,199,0.10) !important;
+  color: #1667c7 !important;
+  font-size: 1rem !important;
+  flex-shrink: 0 !important;
+}
+body[data-theme="dark"] .mcpd-action-icon {
+  background: rgba(96,165,250,0.12) !important;
+  color: #60a5fa !important;
+}
+.mcpd-action-icon svg {
+  width: 24px !important;
+  height: 24px !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 1.8 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+}
+.mcpd-action-card strong {
+  font-size: 0.95rem !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.01em !important;
+}
+.mcpd-action-card small {
+  font-size: 0.78rem !important;
+  font-weight: 500 !important;
+  line-height: 1.45 !important;
+  color: var(--muted, #64748b) !important;
+}
+
+/* ── Dashboard panels ─────────────────────────────────────────────── */
+.mcpd-dashboard-panels {
+  gap: 14px !important;
+}
+.mcpd-panel {
+  border-radius: 14px !important;
+  border: 1.5px solid var(--border-color, #e2e8f0) !important;
+  box-shadow: 0 2px 8px rgba(15,23,42,0.05) !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+body[data-theme="dark"] .mcpd-panel {
+  border-color: rgba(148,163,184,0.13) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+}
+.mcpd-panel-head {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 13px 16px !important;
+  border-bottom: 1px solid var(--border-color, #e2e8f0) !important;
+  margin-bottom: 0 !important;
+  background: rgba(248,250,252,0.7) !important;
+}
+body[data-theme="dark"] .mcpd-panel-head {
+  border-bottom-color: rgba(148,163,184,0.12) !important;
+  background: rgba(15,23,42,0.35) !important;
+}
+.mcpd-panel-head h2 {
+  font-size: 0.88rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+  color: var(--muted, #64748b) !important;
+}
+body[data-theme="dark"] .mcpd-panel-head h2 { color: #94a3b8 !important; }
+.mcpd-panel-head a {
+  font-size: 0.78rem !important;
+  font-weight: 700 !important;
+  padding: 4px 10px !important;
+  border-radius: 6px !important;
+  background: rgba(22,103,199,0.07) !important;
+  color: var(--primary, #1667c7) !important;
+  text-decoration: none !important;
+  transition: background 0.13s ease !important;
+}
+.mcpd-panel-head a:hover { background: rgba(22,103,199,0.14) !important; }
+body[data-theme="dark"] .mcpd-panel-head a {
+  background: rgba(96,165,250,0.10) !important;
+  color: #60a5fa !important;
+}
+.mcpd-list a {
+  padding: 11px 16px !important;
+  border-top: 1px solid var(--border-color, #e2e8f0) !important;
+  transition: background 0.12s ease !important;
+}
+.mcpd-list a:first-child { border-top: none !important; }
+.mcpd-list a:hover { background: rgba(22,103,199,0.04) !important; }
+body[data-theme="dark"] .mcpd-list a { border-top-color: rgba(148,163,184,0.10) !important; }
+body[data-theme="dark"] .mcpd-list a:hover { background: rgba(96,165,250,0.06) !important; }
+.mcpd-list a strong {
+  font-size: 0.88rem !important;
+  font-weight: 700 !important;
+}
+.mcpd-list a span {
+  font-size: 0.78rem !important;
+  color: var(--muted, #64748b) !important;
+}
+
+/* ── General card / content polish ───────────────────────────────── */
+body:not(.mobile-foundation) .page-wrap {
+  padding: 28px 32px 48px !important;
+}
+.page-head h2 {
+  font-size: 1.5rem !important;
+  font-weight: 900 !important;
+  letter-spacing: -0.02em !important;
+}
+.page-head {
+  border-bottom: 2px solid var(--border-color, #e2e8f0) !important;
+  padding-bottom: 16px !important;
+  margin-bottom: 24px !important;
+}
+body[data-theme="dark"] .page-head { border-bottom-color: rgba(148,163,184,0.15) !important; }
+.card {
+  border-radius: 14px !important;
+  border: 1.5px solid var(--border-color, #e2e8f0) !important;
+  box-shadow: 0 2px 8px rgba(15,23,42,0.05), 0 1px 2px rgba(15,23,42,0.03) !important;
+}
+body[data-theme="dark"] .card {
+  border-color: rgba(148,163,184,0.12) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.22) !important;
+}
+.btn {
+  border-radius: 8px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.01em !important;
+}
+.btn-primary {
+  background: #1667c7 !important;
+  border-color: #1667c7 !important;
+}
+.btn-primary:hover { background: #1259b0 !important; border-color: #1259b0 !important; }
+.btn-outline-secondary {
+  border-width: 1.5px !important;
+}
+.form-control, .form-select {
+  border-radius: 8px !important;
+  border: 1.5px solid var(--border-color, #d0d7de) !important;
+  font-size: 0.92rem !important;
+}
+.form-control:focus, .form-select:focus {
+  border-color: #1667c7 !important;
+  box-shadow: 0 0 0 3px rgba(22,103,199,0.14) !important;
+}
+.table th {
+  font-size: 0.78rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  color: var(--muted, #64748b) !important;
+}
+
+/* ── Mobile home — extra polish ───────────────────────────────────── */
+.mcpd-mobile-topbar {
+  background: linear-gradient(135deg, #071b33, #0d2b52) !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.25) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+}
+.mcpd-mobile-topbar strong {
+  font-size: 1rem !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.08em !important;
+}
+.mcpd-mobile-topbar button,
+.mcpd-mobile-topbar a {
+  font-size: 0.8rem !important;
+  font-weight: 700 !important;
+}
+.mcpd-mobile-grid a {
+  border-radius: 14px !important;
+  box-shadow: 0 1px 4px rgba(15,23,42,0.07) !important;
+}
+.mcpd-mobile-officer-panel {
+  margin: 0 16px 10px !important;
+  padding: 12px 14px !important;
+  border-radius: 12px !important;
+  border: 1px solid var(--border-color, #e2e8f0) !important;
+  background: var(--card, #fff) !important;
+  box-shadow: 0 1px 4px rgba(15,23,42,0.06) !important;
+}
+body[data-theme="dark"] .mcpd-mobile-officer-panel {
+  background: rgba(15,23,42,0.65) !important;
+  border-color: rgba(148,163,184,0.13) !important;
+}
