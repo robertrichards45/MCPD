@@ -263,7 +263,8 @@
         .bindPopup(
           '<div class="mcpd-map-popup"><strong>' + loc.name + '</strong><br>' + loc.detail + '</div>',
           { maxWidth: 260 }
-        );
+        )
+        .bindTooltip(loc.name, { permanent: true, direction: 'top', offset: [0, -28], className: 'mcpd-map-label' });
       markerLayer.push(m);
     });
   }
@@ -337,7 +338,8 @@
     LOCATIONS.forEach(function (loc) {
       var m = L.marker([loc.lat, loc.lng], { icon: pinIcon(loc.color) })
         .addTo(fsMap)
-        .bindPopup('<div class="mcpd-map-popup"><strong>' + loc.name + '</strong><br>' + loc.detail + '</div>', { maxWidth: 280 });
+        .bindPopup('<div class="mcpd-map-popup"><strong>' + loc.name + '</strong><br>' + loc.detail + '</div>', { maxWidth: 280 })
+        .bindTooltip(loc.name, { permanent: true, direction: 'top', offset: [0, -28], className: 'mcpd-map-label' });
       fsMarkerLayer.push(m);
     });
   }
