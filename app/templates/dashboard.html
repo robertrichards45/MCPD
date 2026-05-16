@@ -207,6 +207,36 @@
   var isDark = function () { return document.body.getAttribute('data-theme') === 'dark'; };
   var activeMode = 'satellite'; // 'satellite' | 'street'
 
+  // ── Handbook building-number overlays ────────────────────────────
+  // Bounds are approximate — the overview covers the full base footprint,
+  // the detail covers the central Building-2200 cantonment area.
+  var OVERLAY_BOUNDS_OV = [[31.558, -84.098], [31.598, -84.035]];
+  var OVERLAY_BOUNDS_DT = [[31.560, -84.082], [31.584, -84.049]];
+  var handbookOverviewLayer = L.imageOverlay(
+    '{{ url_for("static", filename="images/base_map_overview.jpg") }}',
+    OVERLAY_BOUNDS_OV,
+    { opacity: 0.55, interactive: false, className: 'mcpd-bldg-overlay' }
+  );
+  var handbookDetailLayer = L.imageOverlay(
+    '{{ url_for("static", filename="images/base_map_detail.jpg") }}',
+    OVERLAY_BOUNDS_DT,
+    { opacity: 0.65, interactive: false, className: 'mcpd-bldg-overlay' }
+  );
+  var handbookOverlayOn = false;
+
+  function toggleHandbookOverlay() {
+    handbookOverlayOn = !handbookOverlayOn;
+    if (handbookOverlayOn) {
+      handbookOverviewLayer.addTo(map);
+      handbookDetailLayer.addTo(map);
+    } else {
+      if (map.hasLayer(handbookOverviewLayer)) map.removeLayer(handbookOverviewLayer);
+      if (map.hasLayer(handbookDetailLayer)) map.removeLayer(handbookDetailLayer);
+    }
+    renderMarkersOnTop();
+    renderToggle();
+  }
+
   satelliteLayer.addTo(map);
   labelsLayer.addTo(map);
 
@@ -214,9 +244,11 @@
   function renderToggle() {
     toggleEl.innerHTML =
       '<button id="btn-sat" class="' + (activeMode === 'satellite' ? 'is-active' : '') + '">Satellite</button>' +
-      '<button id="btn-str" class="' + (activeMode === 'street'    ? 'is-active' : '') + '">Street</button>';
-    document.getElementById('btn-sat').onclick = function () { setLayer('satellite'); };
-    document.getElementById('btn-str').onclick = function () { setLayer('street'); };
+      '<button id="btn-str" class="' + (activeMode === 'street'    ? 'is-active' : '') + '">Street</button>' +
+      '<button id="btn-bldg" class="' + (handbookOverlayOn ? 'is-active' : '') + '" title="Show handbook building number overlay">Bldg #s</button>';
+    document.getElementById('btn-sat').onclick  = function () { setLayer('satellite'); };
+    document.getElementById('btn-str').onclick  = function () { setLayer('street'); };
+    document.getElementById('btn-bldg').onclick = function () { toggleHandbookOverlay(); };
   }
 
   function setLayer(mode) {
@@ -227,6 +259,10 @@
       labelsLayer.addTo(map);
     } else {
       (isDark() ? streetDarkLayer : streetLayer).addTo(map);
+    }
+    if (handbookOverlayOn) {
+      handbookOverviewLayer.addTo(map);
+      handbookDetailLayer.addTo(map);
     }
     renderMarkersOnTop();
     renderToggle();
@@ -295,7 +331,9 @@
   var fsActiveMode  = 'satellite';
 
   var fsSatLayer, fsLabelsLayer, fsStreetLayer, fsStreetDarkLayer;
+  var fsHandbookOverviewLayer, fsHandbookDetailLayer;
   var fsMarkerLayer = [];
+  var fsHandbookOn = false;
 
   function initFsMap() {
     if (fsInitialized) return;
@@ -335,6 +373,34 @@
     );
     fsSatLayer.addTo(fsMap);
     fsLabelsLayer.addTo(fsMap);
+    fsHandbookOverviewLayer = L.imageOverlay(
+      '{{ url_for("static", filename="images/base_map_overview.jpg") }}',
+      OVERLAY_BOUNDS_OV,
+      { opacity: 0.55, interactive: false, className: 'mcpd-bldg-overlay' }
+    );
+    fsHandbookDetailLayer = L.imageOverlay(
+      '{{ url_for("static", filename="images/base_map_detail.jpg") }}',
+      OVERLAY_BOUNDS_DT,
+      { opacity: 0.65, interactive: false, className: 'mcpd-bldg-overlay' }
+    );
+    if (fsHandbookOn) {
+      fsHandbookOverviewLayer.addTo(fsMap);
+      fsHandbookDetailLayer.addTo(fsMap);
+    }
+    renderFsMarkers();
+    renderFsToggle();
+  }
+
+  function toggleFsHandbookOverlay() {
+    fsHandbookOn = !fsHandbookOn;
+    if (!fsInitialized || !fsMap) return;
+    if (fsHandbookOn) {
+      if (fsHandbookOverviewLayer) fsHandbookOverviewLayer.addTo(fsMap);
+      if (fsHandbookDetailLayer)   fsHandbookDetailLayer.addTo(fsMap);
+    } else {
+      if (fsHandbookOverviewLayer && fsMap.hasLayer(fsHandbookOverviewLayer)) fsMap.removeLayer(fsHandbookOverviewLayer);
+      if (fsHandbookDetailLayer   && fsMap.hasLayer(fsHandbookDetailLayer))   fsMap.removeLayer(fsHandbookDetailLayer);
+    }
     renderFsMarkers();
     renderFsToggle();
   }
@@ -360,6 +426,8 @@
     } else {
       (isDark() ? fsStreetDarkLayer : fsStreetLayer).addTo(fsMap);
     }
+    if (fsHandbookOn && fsHandbookOverviewLayer) fsHandbookOverviewLayer.addTo(fsMap);
+    if (fsHandbookOn && fsHandbookDetailLayer)   fsHandbookDetailLayer.addTo(fsMap);
     renderFsMarkers();
     renderFsToggle();
   }
@@ -368,9 +436,11 @@
     if (!fsLayerBtn) return;
     fsLayerBtn.innerHTML =
       '<button id="fs-btn-sat" class="' + (fsActiveMode === 'satellite' ? 'is-active' : '') + '">Satellite</button>' +
-      '<button id="fs-btn-str" class="' + (fsActiveMode === 'street'    ? 'is-active' : '') + '">Street</button>';
-    document.getElementById('fs-btn-sat').onclick = function () { setFsLayer('satellite'); };
-    document.getElementById('fs-btn-str').onclick = function () { setFsLayer('street'); };
+      '<button id="fs-btn-str" class="' + (fsActiveMode === 'street'    ? 'is-active' : '') + '">Street</button>' +
+      '<button id="fs-btn-bldg" class="' + (fsHandbookOn ? 'is-active' : '') + '" title="Show handbook building number overlay">Bldg #s</button>';
+    document.getElementById('fs-btn-sat').onclick  = function () { setFsLayer('satellite'); };
+    document.getElementById('fs-btn-str').onclick  = function () { setFsLayer('street'); };
+    document.getElementById('fs-btn-bldg').onclick = function () { toggleFsHandbookOverlay(); };
   }
 
   function openFsModal() {

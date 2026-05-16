@@ -213,6 +213,13 @@
   satelliteLayer.addTo(map);
   labelsLayer.addTo(map);
 
+  // ── Handbook building-number overlays ────────────────────────────
+  var OVERLAY_BOUNDS_OV = [[31.558, -84.098], [31.598, -84.035]];
+  var OVERLAY_BOUNDS_DT = [[31.560, -84.082], [31.584, -84.049]];
+  var mbHbOv = L.imageOverlay('{{ url_for("static", filename="images/base_map_overview.jpg") }}', OVERLAY_BOUNDS_OV, { opacity: 0.55, interactive: false });
+  var mbHbDt = L.imageOverlay('{{ url_for("static", filename="images/base_map_detail.jpg") }}',   OVERLAY_BOUNDS_DT, { opacity: 0.65, interactive: false });
+  var mbHbOn = false;
+
   var markers = [];
   var LOCATIONS = [
     { lat: 31.5709, lng: -84.0765, color: '#1667c7', name: 'Main Gate (Gate 1)', detail: 'Radford Blvd primary entry — visitor control & DBIDS' },
@@ -260,15 +267,28 @@
   });
   new ExpandControl({ position: 'topleft' }).addTo(map);
 
+  function btnStyle(active) {
+    return 'border:none;font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;cursor:pointer;background:' +
+      (active ? '#1667c7' : 'transparent') + ';color:' + (active ? '#fff' : '#334155');
+  }
+
   function renderToggle() {
     if (!toggleEl) return;
     toggleEl.innerHTML =
-      '<button style="border:none;font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;cursor:pointer;background:' +
-      (activeMode === 'satellite' ? '#1667c7' : 'transparent') + ';color:' + (activeMode === 'satellite' ? '#fff' : '#334155') + '">SAT</button>' +
-      '<button style="border:none;font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;cursor:pointer;background:' +
-      (activeMode === 'street'    ? '#1667c7' : 'transparent') + ';color:' + (activeMode === 'street'    ? '#fff' : '#334155') + '">STR</button>';
+      '<button style="' + btnStyle(activeMode === 'satellite') + '">SAT</button>' +
+      '<button style="' + btnStyle(activeMode === 'street') + '">STR</button>' +
+      '<button style="' + btnStyle(mbHbOn) + '" title="Handbook building numbers">BLDG</button>';
     toggleEl.children[0].onclick = function () { setLayer('satellite'); };
     toggleEl.children[1].onclick = function () { setLayer('street'); };
+    toggleEl.children[2].onclick = function () { toggleMbHb(); };
+  }
+
+  function toggleMbHb() {
+    mbHbOn = !mbHbOn;
+    if (mbHbOn) { mbHbOv.addTo(map); mbHbDt.addTo(map); }
+    else { if (map.hasLayer(mbHbOv)) map.removeLayer(mbHbOv); if (map.hasLayer(mbHbDt)) map.removeLayer(mbHbDt); }
+    addMarkers();
+    renderToggle();
   }
 
   function setLayer(mode) {
@@ -276,6 +296,7 @@
     activeMode = mode;
     if (mode === 'satellite') { satelliteLayer.addTo(map); labelsLayer.addTo(map); }
     else (isDark() ? streetDarkLayer : streetLayer).addTo(map);
+    if (mbHbOn) { mbHbOv.addTo(map); mbHbDt.addTo(map); }
     addMarkers();
     renderToggle();
   }
@@ -330,6 +351,12 @@
 
     fsSat.addTo(fsMobileMap);
     fsLbl.addTo(fsMobileMap);
+
+    var fsHbOv = L.imageOverlay('{{ url_for("static", filename="images/base_map_overview.jpg") }}', OVERLAY_BOUNDS_OV, { opacity: 0.55, interactive: false });
+    var fsHbDt = L.imageOverlay('{{ url_for("static", filename="images/base_map_detail.jpg") }}',   OVERLAY_BOUNDS_DT, { opacity: 0.65, interactive: false });
+    var fsHbOn = mbHbOn;
+    if (fsHbOn) { fsHbOv.addTo(fsMobileMap); fsHbDt.addTo(fsMobileMap); }
+
     addFsMobileMarkers();
     renderFsMobileToggle();
 
@@ -345,11 +372,20 @@
       });
     }
 
+    function toggleFsHb() {
+      fsHbOn = !fsHbOn;
+      if (fsHbOn) { fsHbOv.addTo(fsMobileMap); fsHbDt.addTo(fsMobileMap); }
+      else { if (fsMobileMap.hasLayer(fsHbOv)) fsMobileMap.removeLayer(fsHbOv); if (fsMobileMap.hasLayer(fsHbDt)) fsMobileMap.removeLayer(fsHbDt); }
+      addFsMobileMarkers();
+      renderFsMobileToggle();
+    }
+
     function setFsMobileLayer(mode) {
       fsMobileMap.eachLayer(function (l) { if (l.options && l.options.attribution !== undefined) fsMobileMap.removeLayer(l); });
       fsMobileActiveMode = mode;
       if (mode === 'satellite') { fsSat.addTo(fsMobileMap); fsLbl.addTo(fsMobileMap); }
       else (isDark() ? fsDark : fsStr).addTo(fsMobileMap);
+      if (fsHbOn) { fsHbOv.addTo(fsMobileMap); fsHbDt.addTo(fsMobileMap); }
       addFsMobileMarkers();
       renderFsMobileToggle();
     }
@@ -359,9 +395,11 @@
       if (!mobileFsToggle) return;
       mobileFsToggle.innerHTML =
         '<button id="mfs-sat" class="' + (fsMobileActiveMode === 'satellite' ? 'is-active' : '') + '">Satellite</button>' +
-        '<button id="mfs-str" class="' + (fsMobileActiveMode === 'street'    ? 'is-active' : '') + '">Street</button>';
-      document.getElementById('mfs-sat').onclick = function () { setFsMobileLayer('satellite'); };
-      document.getElementById('mfs-str').onclick = function () { setFsMobileLayer('street'); };
+        '<button id="mfs-str" class="' + (fsMobileActiveMode === 'street'    ? 'is-active' : '') + '">Street</button>' +
+        '<button id="mfs-bldg" class="' + (fsHbOn ? 'is-active' : '') + '" title="Handbook building numbers">Bldg #s</button>';
+      document.getElementById('mfs-sat').onclick  = function () { setFsMobileLayer('satellite'); };
+      document.getElementById('mfs-str').onclick  = function () { setFsMobileLayer('street'); };
+      document.getElementById('mfs-bldg').onclick = function () { toggleFsHb(); };
     }
     window._renderFsMobileToggle = renderFsMobileToggle;
   }
