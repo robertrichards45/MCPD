@@ -187,8 +187,8 @@
   map.getPane('labelsPane').style.zIndex = 450;
   map.getPane('labelsPane').style.pointerEvents = 'none';
   var labelsLayer = L.tileLayer(
-    'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
-    { attribution: '', maxZoom: 20, opacity: 1, pane: 'labelsPane' }
+    'https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png',
+    { attribution: osmAttrib, subdomains: 'abcd', maxZoom: 20, pane: 'labelsPane' }
   );
 
   var streetLayer = L.tileLayer(
@@ -323,8 +323,8 @@
     fsMap.getPane('labelsPane').style.zIndex = 450;
     fsMap.getPane('labelsPane').style.pointerEvents = 'none';
     fsLabelsLayer = L.tileLayer(
-      'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
-      { attribution: '', maxZoom: 20, opacity: 1, pane: 'labelsPane' }
+      'https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png',
+      { attribution: osmAttrib, subdomains: 'abcd', maxZoom: 20, pane: 'labelsPane' }
     );
     fsSatLayer.addTo(fsMap);
     fsLabelsLayer.addTo(fsMap);
@@ -369,8 +369,14 @@
   function openFsModal() {
     fsOverlay.classList.add('is-open');
     document.body.style.overflow = 'hidden';
-    initFsMap();
-    setTimeout(function () { fsMap.invalidateSize(); }, 100);
+    setTimeout(function () {
+      initFsMap();
+      if (fsMap) {
+        fsMap.invalidateSize();
+        var bounds = LOCATIONS.map(function (l) { return [l.lat, l.lng]; });
+        fsMap.fitBounds(bounds, { padding: [60, 60], maxZoom: 17 });
+      }
+    }, 80);
   }
 
   function closeFsModal() {
