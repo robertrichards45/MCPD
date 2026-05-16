@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
 {% block body %}
-<div class="app-shell">
+<div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
-  <div class="page-wrap">
+  <main class="mcpd-command-main" id="main-content">
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         {% for category, message in messages %}
@@ -11,17 +11,40 @@
       {% endif %}
     {% endwith %}
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <section class="ops-head-card">
       <div>
         <h2>{{ module_title }}</h2>
-        <p class="text-muted">Unified {{ module_title }} operations: officer cards, weapon profiles, appointment-letter intake, asset registry, PIN verification, and immutable issue/return logging.</p>
+        <p class="ops-head-sub">Unified {{ module_title }} operations: officer cards, weapon profiles, appointment-letter intake, asset registry, PIN verification, and immutable issue/return logging.</p>
+        <p class="ops-head-meta">Last updated: <span data-live-refresh-label>{{ last_updated }}</span></p>
       </div>
-      <div class="text-muted small">Last updated: <span data-live-refresh-label>{{ last_updated }}</span></div>
+    </section>
+
+    <div class="ops-kpi-strip">
+      <div class="ops-kpi-card">
+        <p class="kpi-label">Weapon Profiles</p>
+        <p class="kpi-value">{{ rfi_total_profiles }}</p>
+      </div>
+      <div class="ops-kpi-card">
+        <p class="kpi-label">Pending Review</p>
+        <p class="kpi-value">{{ rfi_pending_count }}</p>
+      </div>
+      <div class="ops-kpi-card">
+        <p class="kpi-label">Total Assets</p>
+        <p class="kpi-value">{{ armory_asset_total }}</p>
+      </div>
+      <div class="ops-kpi-card">
+        <p class="kpi-label">Transactions</p>
+        <p class="kpi-value">{{ armory_summary.total }}</p>
+      </div>
+      <div class="ops-kpi-card">
+        <p class="kpi-label">Open</p>
+        <p class="kpi-value">{{ armory_summary.open_count }}</p>
+      </div>
     </div>
 
     <div class="row">
       <div class="col-lg-4">
-        <div class="card p-3 mb-3">
+        <div class="ops-panel mb-3">
           <h5>{{ module_title }} Activity</h5>
           <p class="text-muted">Recent {{ module_title }} actions refresh every 15 seconds without reloading the page.</p>
           <div class="list-group" data-module-feed data-feed-url="{{ url_for('ops_modules.rfi_feed') }}">
@@ -29,7 +52,7 @@
           </div>
         </div>
 
-        <div class="card p-3">
+        <div class="ops-panel">
           <h5>{{ module_title }} PIN Verification</h5>
           <p class="text-muted">Set or reset an officer PIN for {{ module_title }} verification.</p>
           <form method="post" action="{{ url_for('ops_modules.rfi_set_pin') }}">
@@ -50,7 +73,7 @@
           </form>
         </div>
 
-        <div class="card p-3 mt-3">
+        <div class="ops-panel mt-3">
           <h5>{{ module_title }} Card</h5>
           <p class="text-muted">Issue or reissue a revocable QR card token for an officer used at the {{ module_title }} station.</p>
           <form method="post" action="{{ url_for('ops_modules.rfi_card_issue') }}">
@@ -67,7 +90,7 @@
           </form>
         </div>
 
-        <div class="card p-3 mt-3">
+        <div class="ops-panel mt-3">
           <h5>Recent {{ module_title }} Cards</h5>
           <div class="d-flex gap-2 mb-2">
             <a class="btn btn-outline-secondary" href="{{ url_for('ops_modules.rfi_cards_print', all=1) }}" target="_blank">Print All Active</a>
@@ -115,9 +138,9 @@
       </div>
 
       <div class="col-lg-8">
-        <div class="card p-3">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <h5 class="mb-0">Weapons Profiles & Intake</h5>
+        <div class="ops-panel">
+          <div class="ops-panel-head">
+            <h5>Weapons Profiles &amp; Intake</h5>
             <div class="d-flex gap-2 align-items-center">
               <span class="small text-muted">Profiles: {{ rfi_total_profiles }}</span>
               <span class="small text-muted">Pending: {{ rfi_pending_count }}</span>
@@ -244,8 +267,8 @@
 
           {% if pending_uploads %}
             <div class="mt-3">
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <h6 class="mb-0">Pending Profile Review</h6>
+              <div class="ops-panel-head">
+                <h6>Pending Profile Review</h6>
                 <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('ops_modules.rfi_pending_export_csv', pending_q=pending_search_term) }}">CSV</a>
               </div>
               <div class="table-responsive">
@@ -294,9 +317,9 @@
           {% endif %}
         </div>
 
-        <div class="card p-3 mt-3">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <h5 class="mb-0">{{ module_title }} Equipment Registry</h5>
+        <div class="ops-panel mt-3">
+          <div class="ops-panel-head">
+            <h5>{{ module_title }} Equipment Registry</h5>
             <div class="d-flex gap-2 align-items-center">
               <span class="small text-muted">Assets: {{ armory_asset_total }}</span>
               <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('ops_modules.rfi_asset_export_csv', asset_q=armory_asset_q, asset_status=armory_asset_status) }}">CSV</a>
@@ -408,8 +431,10 @@
           </div>
         </div>
 
-        <div class="card p-3 mt-3">
-          <h5>{{ module_title }} Issue / Return Log</h5>
+        <div class="ops-panel mt-3">
+          <div class="ops-panel-head">
+            <h5>{{ module_title }} Issue / Return Log</h5>
+          </div>
           <p class="text-muted">Every transaction is server-timestamped and preserved. Use officer PIN verification on every action.</p>
           {% if armory_officer_id %}
             <div class="alert alert-info mb-3">Showing history for the selected officer only.</div>
@@ -566,6 +591,6 @@
         </div>
       </div>
     </div>
-  </div>
+  </main>
 </div>
 {% endblock %}

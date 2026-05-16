@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
 {% block body %}
-<div class="app-shell">
+<div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
-  <div class="page-wrap">
+  <main class="mcpd-command-main" id="main-content">
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         {% for category, message in messages %}
@@ -11,19 +11,32 @@
       {% endif %}
     {% endwith %}
 
-    <div class="card p-3 mb-3 page-head">
-      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-        <div>
-          <h2 class="mb-1">{{ module_title }}</h2>
-          <p class="text-muted mb-0">Profiles, cards, assets, and issue logs.</p>
-        </div>
-        <div class="text-muted small">Updated: <span data-live-refresh-label>{{ last_updated }}</span></div>
+    <section class="ops-head-card">
+      <div>
+        <h2>{{ module_title }}</h2>
+        <p class="ops-head-sub">Profiles, cards, assets, and issue logs.</p>
+        <p class="ops-head-meta">Last updated: <span data-live-refresh-label>{{ last_updated }}</span></p>
+      </div>
+    </section>
+
+    <div class="ops-kpi-strip">
+      <div class="ops-kpi-card">
+        <p class="kpi-label">Total Profiles</p>
+        <p class="kpi-value">{{ rfi_total_profiles }}</p>
+      </div>
+      <div class="ops-kpi-card">
+        <p class="kpi-label">Command-Level</p>
+        <p class="kpi-value">{{ rfi_command_profiles }}</p>
+      </div>
+      <div class="ops-kpi-card">
+        <p class="kpi-label">Pending Review</p>
+        <p class="kpi-value">{{ rfi_pending_count }}</p>
       </div>
     </div>
 
     <div class="row g-3">
       <div class="col-md-6">
-        <details class="card p-3 collapse-card" open>
+        <details class="ops-panel collapse-card" open>
           <summary>Scanner</summary>
           <h5>Scanner</h5>
           <p class="text-muted">This station only accepts RFI-authorized QR tokens.</p>
@@ -42,7 +55,7 @@
       </div>
 
       <div class="col-md-6">
-        <details class="card p-3 collapse-card" open>
+        <details class="ops-panel collapse-card" open>
           <summary>Live Activity Feed</summary>
           <h5>Live Activity Feed</h5>
           <p class="text-muted">RFI activity refreshes every 15 seconds without reloading the page.</p>
@@ -53,29 +66,8 @@
       </div>
     </div>
 
-    <div class="row mt-3">
-      <div class="col-md-4">
-        <div class="summary-box">
-          <strong>Total Profiles</strong><br />
-          {{ rfi_total_profiles }}
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="summary-box">
-          <strong>Command-Level Profiles</strong><br />
-          {{ rfi_command_profiles }}
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="summary-box">
-          <strong>Pending Review Queue</strong><br />
-          {{ rfi_pending_count }}
-        </div>
-      </div>
-    </div>
-
     {% if can_manage_module %}
-      <details class="card p-3 mt-3 collapse-card">
+      <details class="ops-panel collapse-card">
         <summary>Build Entries From Appointment Letter Info</summary>
         <h5>Build Entries From Appointment Letter Info</h5>
         <p class="text-muted">Use the file only to stage officer info into the pending list. No copy is kept.</p>
@@ -88,7 +80,7 @@
         </form>
       </details>
 
-      <details class="card p-3 mt-3 collapse-card" {% if editing_profile %}open{% endif %}>
+      <details class="ops-panel collapse-card" {% if editing_profile %}open{% endif %}>
         <summary>Weapons Profile</summary>
         <h5>Weapons Profile</h5>
         <p class="text-muted">Defaults use rack number for standard users and initials for command users.</p>
@@ -138,24 +130,24 @@
               <label class="form-label text-dark">Radio Identifier</label>
               <input class="form-control" name="radio_identifier" value="{{ editing_profile.radio_identifier if editing_profile else '' }}" placeholder="Leave blank for default" />
             </div>
-            </div>
-            <div class="d-flex gap-2 mt-2">
-              <button class="btn btn-primary" type="submit">{{ 'Update RFI Profile' if editing_profile else 'Save RFI Profile' }}</button>
-              {% if editing_profile %}
-                <a class="btn btn-secondary" href="{{ url_for('ops_modules.rfi') }}">Clear Form</a>
-              {% endif %}
-            </div>
+          </div>
+          <div class="d-flex gap-2 mt-2">
+            <button class="btn btn-primary" type="submit">{{ 'Update RFI Profile' if editing_profile else 'Save RFI Profile' }}</button>
+            {% if editing_profile %}
+              <a class="btn btn-secondary" href="{{ url_for('ops_modules.rfi') }}">Clear Form</a>
+            {% endif %}
+          </div>
+        </form>
+        {% if editing_profile %}
+          <form class="mt-2" method="post" action="{{ url_for('ops_modules.rfi_profile_reset_defaults') }}">
+            <input type="hidden" name="profile_id" value="{{ editing_profile.id }}" />
+            <button class="btn btn-outline-secondary" type="submit">Reset To Defaults</button>
           </form>
-          {% if editing_profile %}
-            <form class="mt-2" method="post" action="{{ url_for('ops_modules.rfi_profile_reset_defaults') }}">
-              <input type="hidden" name="profile_id" value="{{ editing_profile.id }}" />
-              <button class="btn btn-outline-secondary" type="submit">Reset To Defaults</button>
-            </form>
-          {% endif %}
-        </details>
-      {% endif %}
+        {% endif %}
+      </details>
+    {% endif %}
 
-    <details class="card p-3 mt-3 collapse-card" open>
+    <details class="ops-panel collapse-card" open>
       <summary>Weapons Profiles</summary>
       <h5>Weapons Profiles</h5>
       <form class="row g-2 mb-3" method="get" action="{{ url_for('ops_modules.rfi') }}">
@@ -220,9 +212,9 @@
     </details>
 
     {% if pending_uploads %}
-        <details class="card p-3 mt-3 collapse-card" open>
+        <details class="ops-panel collapse-card" open>
           <summary>Pending Review</summary>
-          <div class="d-flex justify-content-between align-items-center mb-2">
+          <div class="ops-panel-head">
             <h5 class="mb-0">Pending Review</h5>
             <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('ops_modules.rfi_pending_export_csv', pending_q=pending_search_term) }}">CSV</a>
           </div>
@@ -300,6 +292,6 @@
         </div>
       </details>
     {% endif %}
-  </div>
+  </main>
 </div>
 {% endblock %}
