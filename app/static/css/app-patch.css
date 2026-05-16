@@ -1063,3 +1063,249 @@ body[data-theme="dark"] .mcpd-mobile-map-directions {
 body[data-theme="dark"] .mcpd-panel-map-caption {
   border-top-color: rgba(148,163,184,0.14);
 }
+
+/* ===================================================================
+   LEAFLET MAP CARDS — DESKTOP + MOBILE
+   =================================================================== */
+
+/* Shared pin icon */
+.mcpd-map-pin {
+  width: 36px;
+  height: 36px;
+  color: #c53030;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35));
+}
+.mcpd-map-pin svg {
+  width: 100%;
+  height: 100%;
+}
+.mcpd-map-popup strong {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 2px;
+  color: #0f172a;
+}
+.mcpd-map-popup {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #475569;
+}
+
+/* ── Desktop map card ──────────────────────────────────────────── */
+.mcpd-map-card {
+  grid-column: span 2;
+  padding: 0;
+  overflow: hidden;
+}
+@media (max-width: 900px) {
+  .mcpd-map-card { grid-column: span 1; }
+}
+
+.mcpd-map-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+}
+body[data-theme="dark"] .mcpd-map-card-head {
+  border-bottom-color: rgba(148,163,184,0.14);
+}
+.mcpd-map-card-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.mcpd-map-card-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(197,48,48,0.10);
+  color: #c53030;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+body[data-theme="dark"] .mcpd-map-card-badge {
+  background: rgba(252,165,165,0.12);
+  color: #fca5a5;
+}
+.mcpd-map-card-head h2 {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text, #0f172a);
+}
+body[data-theme="dark"] .mcpd-map-card-head h2 { color: #f1f5f9; }
+.mcpd-map-card-head p {
+  font-size: 11.5px;
+  color: var(--muted, #64748b);
+  margin: 0;
+}
+.mcpd-map-card-extlink {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary, #1667c7);
+  text-decoration: none;
+  white-space: nowrap;
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  transition: background 0.14s ease;
+}
+.mcpd-map-card-extlink:hover {
+  background: rgba(22,103,199,0.06);
+  text-decoration: none;
+}
+body[data-theme="dark"] .mcpd-map-card-extlink {
+  color: #60a5fa;
+  border-color: rgba(148,163,184,0.2);
+}
+.mcpd-map-canvas-wrap {
+  height: 340px;
+  width: 100%;
+  background: #e8edf2;
+}
+body[data-theme="dark"] .mcpd-map-canvas-wrap { background: #1e293b; }
+.mcpd-map-card-footer {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 10px 18px;
+  border-top: 1px solid var(--border-color, #e2e8f0);
+  font-size: 11.5px;
+  color: var(--muted, #64748b);
+}
+body[data-theme="dark"] .mcpd-map-card-footer {
+  border-top-color: rgba(148,163,184,0.14);
+}
+.mcpd-map-card-footer span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* ── Mobile map panel ──────────────────────────────────────────── */
+.mcpd-mobile-map-panel {
+  margin: 0 16px 100px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--border-color, #e2e8f0);
+  background: var(--card, #fff);
+  box-shadow: 0 2px 8px rgba(15,23,42,0.06);
+}
+body[data-theme="dark"] .mcpd-mobile-map-panel {
+  background: rgba(15,23,42,0.75);
+  border-color: rgba(148,163,184,0.14);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+.mcpd-mobile-map-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+}
+body[data-theme="dark"] .mcpd-mobile-map-head {
+  border-bottom-color: rgba(148,163,184,0.14);
+}
+.mcpd-mobile-map-pin-badge {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: rgba(197,48,48,0.10);
+  color: #c53030;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+body[data-theme="dark"] .mcpd-mobile-map-pin-badge {
+  background: rgba(252,165,165,0.12);
+  color: #fca5a5;
+}
+.mcpd-mobile-map-title {
+  flex: 1;
+  min-width: 0;
+}
+.mcpd-mobile-map-title strong {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text, #0f172a);
+  line-height: 1.2;
+}
+body[data-theme="dark"] .mcpd-mobile-map-title strong { color: #f1f5f9; }
+.mcpd-mobile-map-title span {
+  font-size: 11px;
+  color: var(--muted, #64748b);
+}
+.mcpd-mobile-map-extlink {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary, #1667c7);
+  flex-shrink: 0;
+  text-decoration: none;
+}
+body[data-theme="dark"] .mcpd-mobile-map-extlink {
+  color: #60a5fa;
+  border-color: rgba(148,163,184,0.2);
+}
+.mcpd-mobile-map-canvas {
+  height: 220px;
+  width: 100%;
+  background: #e8edf2;
+  display: block;
+}
+body[data-theme="dark"] .mcpd-mobile-map-canvas { background: #1e293b; }
+.mcpd-mobile-map-footer {
+  padding: 9px 14px;
+  font-size: 11px;
+  color: var(--muted, #64748b);
+  border-top: 1px solid var(--border-color, #e2e8f0);
+  text-align: center;
+}
+body[data-theme="dark"] .mcpd-mobile-map-footer {
+  border-top-color: rgba(148,163,184,0.14);
+}
+
+/* Leaflet overrides — cleaner appearance inside our cards */
+.mcpd-map-canvas-wrap .leaflet-container,
+.mcpd-mobile-map-canvas.leaflet-container {
+  font-family: inherit;
+}
+.mcpd-map-canvas-wrap .leaflet-control-attribution,
+.mcpd-mobile-map-canvas.leaflet-container ~ * .leaflet-control-attribution,
+.leaflet-control-attribution {
+  font-size: 9.5px;
+  background: rgba(255,255,255,0.75) !important;
+  backdrop-filter: blur(4px);
+}
+body[data-theme="dark"] .leaflet-control-attribution {
+  background: rgba(15,23,42,0.75) !important;
+  color: #94a3b8;
+}
+body[data-theme="dark"] .leaflet-control-attribution a {
+  color: #60a5fa;
+}
+.leaflet-popup-content-wrapper {
+  border-radius: 10px !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.18) !important;
+  padding: 0 !important;
+}
+.leaflet-popup-content {
+  margin: 10px 14px !important;
+}
+.leaflet-popup-tip-container {
+  margin-top: -1px;
+}
