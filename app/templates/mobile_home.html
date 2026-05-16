@@ -170,12 +170,16 @@
   if (!el || typeof L === 'undefined') return;
 
   var BASE_CENTER = [31.5752, -84.0630];
+  var BASE_BOUNDS = L.latLngBounds([31.558, -84.098], [31.598, -84.035]);
   var isDark = function () { return document.body.getAttribute('data-theme') === 'dark'; };
   var activeMode = 'satellite';
 
   var map = L.map(el, {
     center: BASE_CENTER,
     zoom: 16,
+    minZoom: 13,
+    maxBounds: BASE_BOUNDS,
+    maxBoundsViscosity: 1.0,
     scrollWheelZoom: true,
     zoomControl: false,
     attributionControl: true,
@@ -301,6 +305,9 @@
     fsMobileMap = L.map(mobileFsMapEl, {
       center: BASE_CENTER,
       zoom: 16,
+      minZoom: 13,
+      maxBounds: BASE_BOUNDS,
+      maxBoundsViscosity: 1.0,
       scrollWheelZoom: true,
       zoomControl: true,
       attributionControl: true,

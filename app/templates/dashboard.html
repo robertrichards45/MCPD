@@ -164,10 +164,14 @@
 
   // MCLB Albany — verified public coordinates
   var BASE_CENTER = [31.5752, -84.0630];
+  var BASE_BOUNDS = L.latLngBounds([31.558, -84.098], [31.598, -84.035]);
 
   var map = L.map(el, {
     center: BASE_CENTER,
     zoom: 15,
+    minZoom: 13,
+    maxBounds: BASE_BOUNDS,
+    maxBoundsViscosity: 1.0,
     scrollWheelZoom: false,
     zoomControl: true,
     attributionControl: true,
@@ -315,6 +319,9 @@
     fsMap = L.map(fsMapEl, {
       center: BASE_CENTER,
       zoom: 16,
+      minZoom: 13,
+      maxBounds: BASE_BOUNDS,
+      maxBoundsViscosity: 1.0,
       scrollWheelZoom: true,
       zoomControl: true,
       attributionControl: true,
