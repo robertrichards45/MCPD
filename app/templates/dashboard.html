@@ -183,9 +183,12 @@
     { attribution: esriAttrib, maxZoom: 20 }
   );
   // Transparent labels overlay: road names, building numbers, place names
+  map.createPane('labelsPane');
+  map.getPane('labelsPane').style.zIndex = 450;
+  map.getPane('labelsPane').style.pointerEvents = 'none';
   var labelsLayer = L.tileLayer(
     'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
-    { attribution: '', maxZoom: 20, opacity: 1, pane: 'shadowPane' }
+    { attribution: '', maxZoom: 20, opacity: 1, pane: 'labelsPane' }
   );
 
   var streetLayer = L.tileLayer(
@@ -315,6 +318,13 @@
       zoomControl: true,
       attributionControl: true,
     });
+    fsMap.createPane('labelsPane');
+    fsMap.getPane('labelsPane').style.zIndex = 450;
+    fsMap.getPane('labelsPane').style.pointerEvents = 'none';
+    fsLabelsLayer = L.tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+      { attribution: '', maxZoom: 20, opacity: 1, pane: 'labelsPane' }
+    );
     fsSatLayer.addTo(fsMap);
     fsLabelsLayer.addTo(fsMap);
     renderFsMarkers();

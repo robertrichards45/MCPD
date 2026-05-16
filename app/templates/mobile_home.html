@@ -163,8 +163,8 @@
 
   var map = L.map(el, {
     center: BASE_CENTER,
-    zoom: 14,
-    scrollWheelZoom: false,
+    zoom: 16,
+    scrollWheelZoom: true,
     zoomControl: false,
     attributionControl: true,
   });
@@ -178,9 +178,12 @@
     { attribution: esriAttrib, maxZoom: 20 }
   );
   // Transparent labels overlay: street names, building numbers, place labels
+  map.createPane('labelsPane');
+  map.getPane('labelsPane').style.zIndex = 450;
+  map.getPane('labelsPane').style.pointerEvents = 'none';
   var labelsLayer = L.tileLayer(
     'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
-    { attribution: '', maxZoom: 20, pane: 'shadowPane' }
+    { attribution: '', maxZoom: 20, pane: 'labelsPane' }
   );
   var streetLayer     = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: osmAttrib, subdomains: 'abcd', maxZoom: 20 });
   var streetDarkLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',  { attribution: osmAttrib, subdomains: 'abcd', maxZoom: 20 });
