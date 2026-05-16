@@ -7,6 +7,9 @@
   {% elif name == 'training' %}<svg viewBox="0 0 24 24"><path d="m3 8 9-4 9 4-9 4-9-4Z"/><path d="M7 10v5c0 1.7 2.2 3 5 3s5-1.3 5-3v-5"/></svg>
   {% else %}<svg viewBox="0 0 24 24"><path d="M6 4h12v17l-6-3-6 3V4Z"/></svg>{% endif %}
 {%- endmacro %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='vendor/leaflet.min.css', v='1.9.4') }}" />
+{% endblock %}
 {% block body %}
 <div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
@@ -50,27 +53,97 @@
       </article>
       {% endfor %}
 
-      <article class="mcpd-panel mcpd-panel-map">
-        <div class="mcpd-panel-head">
-          <h2>
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><path d="M15 3l-6 18M3 9h18M3 15h18"/></svg>
-            MCLB Albany
-          </h2>
-          <a href="https://maps.google.com/maps?q=Marine+Corps+Logistics+Base+Albany+GA" target="_blank" rel="noopener noreferrer">Open in Maps</a>
+      <article class="mcpd-panel mcpd-map-card">
+        <div class="mcpd-map-card-head">
+          <div class="mcpd-map-card-title-group">
+            <span class="mcpd-map-card-badge">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5" fill="currentColor" stroke="none"/></svg>
+            </span>
+            <div>
+              <h2>MCLB Albany</h2>
+              <p>Marine Corps Logistics Base &mdash; Albany, Georgia</p>
+            </div>
+          </div>
+          <a class="mcpd-map-card-extlink" href="https://maps.google.com/maps?q=Marine+Corps+Logistics+Base+Albany+GA" target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3"/></svg>
+            Open in Maps
+          </a>
         </div>
-        <div class="mcpd-panel-map-frame">
-          <iframe
-            title="Map of Marine Corps Logistics Base Albany, Georgia"
-            src="https://www.google.com/maps?q=31.5782,-84.0618&z=14&output=embed"
-            loading="lazy"
-            referrerpolicy="no-referrer-when-downgrade"
-            aria-label="Interactive map of MCLB Albany, Georgia"
-            allowfullscreen
-          ></iframe>
+        <div class="mcpd-map-canvas-wrap" id="mcpd-dashboard-map" role="img" aria-label="Interactive map of Marine Corps Logistics Base Albany, Georgia"></div>
+        <div class="mcpd-map-card-footer">
+          <span>
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+            814 Radford Blvd, Albany, GA 31704
+          </span>
+          <span>
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.62 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.16 6.16l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            DSN 460-1110
+          </span>
         </div>
-        <p class="mcpd-panel-map-caption">Marine Corps Logistics Base Albany &mdash; Albany, Georgia 31704</p>
       </article>
     </section>
   </main>
 </div>
+{% endblock %}
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='vendor/leaflet.min.js', v='1.9.4') }}"></script>
+<script>
+(function () {
+  var el = document.getElementById('mcpd-dashboard-map');
+  if (!el || typeof L === 'undefined') return;
+
+  var LAT = 31.5782, LNG = -84.0618;
+
+  delete L.Icon.Default.prototype._getIconUrl;
+  L.Icon.Default.mergeOptions({
+    iconUrl: '{{ url_for("static", filename="vendor/images/marker-icon.png") }}',
+    iconRetinaUrl: '{{ url_for("static", filename="vendor/images/marker-icon-2x.png") }}',
+    shadowUrl: '{{ url_for("static", filename="vendor/images/marker-shadow.png") }}',
+  });
+
+  function isDark() {
+    return document.body.getAttribute('data-theme') === 'dark';
+  }
+
+  function tileUrl(dark) {
+    return dark
+      ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+      : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+  }
+
+  var attribution = '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OSM</a> contributors &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>';
+
+  var map = L.map(el, {
+    center: [LAT, LNG],
+    zoom: 15,
+    scrollWheelZoom: false,
+    zoomControl: true,
+  });
+
+  var tileLayer = L.tileLayer(tileUrl(isDark()), {
+    attribution: attribution,
+    subdomains: 'abcd',
+    maxZoom: 20,
+  }).addTo(map);
+
+  var pinHtml = '<div class="mcpd-map-pin"><svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg></div>';
+  var pin = L.divIcon({ html: pinHtml, className: '', iconSize: [36, 44], iconAnchor: [18, 44], popupAnchor: [0, -48] });
+
+  L.marker([LAT, LNG], { icon: pin })
+    .addTo(map)
+    .bindPopup(
+      '<div class="mcpd-map-popup"><strong>MCLB Albany</strong><br>Marine Corps Logistics Base<br>814 Radford Blvd, Albany, GA 31704</div>',
+      { maxWidth: 220 }
+    )
+    .openPopup();
+
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('[data-theme-toggle]')) return;
+    setTimeout(function () {
+      tileLayer.setUrl(tileUrl(isDark()));
+    }, 80);
+  });
+}());
+</script>
 {% endblock %}

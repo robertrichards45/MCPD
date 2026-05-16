@@ -1,4 +1,7 @@
 {% extends 'base.html' %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='vendor/leaflet.min.css', v='1.9.4') }}" />
+{% endblock %}
 {% block body %}
 <div class="mcpd-mobile-app">
   <header class="mcpd-mobile-topbar">
@@ -93,26 +96,23 @@
     </section>
     {% endif %}
 
-    <section class="mcpd-mobile-map-panel">
+    <section class="mcpd-mobile-map-panel" aria-label="MCLB Albany location">
       <div class="mcpd-mobile-map-head">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3l-6 18M3 9h18M3 15h18"/></svg>
-        <strong>MCLB Albany</strong>
-        <span>Marine Corps Logistics Base</span>
+        <span class="mcpd-mobile-map-pin-badge">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+        </span>
+        <div class="mcpd-mobile-map-title">
+          <strong>MCLB Albany</strong>
+          <span>Marine Corps Logistics Base</span>
+        </div>
+        <a class="mcpd-mobile-map-extlink" href="https://maps.google.com/maps?q=Marine+Corps+Logistics+Base+Albany+GA" target="_blank" rel="noopener noreferrer" aria-label="Open MCLB Albany in Google Maps">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3"/></svg>
+        </a>
       </div>
-      <div class="mcpd-mobile-map-frame">
-        <iframe
-          title="Map of Marine Corps Logistics Base Albany, Georgia"
-          src="https://www.google.com/maps?q=31.5782,-84.0618&z=14&output=embed"
-          loading="lazy"
-          referrerpolicy="no-referrer-when-downgrade"
-          aria-label="Interactive map of MCLB Albany, Georgia"
-          allowfullscreen
-        ></iframe>
+      <div class="mcpd-mobile-map-canvas" id="mcpd-mobile-map" role="img" aria-label="Interactive map of MCLB Albany, Albany Georgia"></div>
+      <div class="mcpd-mobile-map-footer">
+        814 Radford Blvd &bull; Albany, GA 31704 &bull; DSN 460-1110
       </div>
-      <a class="mcpd-mobile-map-directions" href="https://maps.google.com/maps?q=Marine+Corps+Logistics+Base+Albany+GA" target="_blank" rel="noopener noreferrer">
-        Open in Google Maps
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3"/></svg>
-      </a>
     </section>
 
   </main>
@@ -120,4 +120,69 @@
   {% set mobile_active_tab = 'home' %}
   {% include 'partials/mobile_tab_bar.html' %}
 </div>
+{% endblock %}
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='vendor/leaflet.min.js', v='1.9.4') }}"></script>
+<script>
+(function () {
+  var el = document.getElementById('mcpd-mobile-map');
+  if (!el || typeof L === 'undefined') return;
+
+  var LAT = 31.5782, LNG = -84.0618;
+
+  delete L.Icon.Default.prototype._getIconUrl;
+  L.Icon.Default.mergeOptions({
+    iconUrl: '{{ url_for("static", filename="vendor/images/marker-icon.png") }}',
+    iconRetinaUrl: '{{ url_for("static", filename="vendor/images/marker-icon-2x.png") }}',
+    shadowUrl: '{{ url_for("static", filename="vendor/images/marker-shadow.png") }}',
+  });
+
+  function isDark() {
+    return document.body.getAttribute('data-theme') === 'dark';
+  }
+
+  function tileUrl(dark) {
+    return dark
+      ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+      : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+  }
+
+  var attribution = '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OSM</a> &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>';
+
+  var map = L.map(el, {
+    center: [LAT, LNG],
+    zoom: 14,
+    scrollWheelZoom: false,
+    zoomControl: false,
+    attributionControl: true,
+  });
+
+  L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+  var tileLayer = L.tileLayer(tileUrl(isDark()), {
+    attribution: attribution,
+    subdomains: 'abcd',
+    maxZoom: 20,
+  }).addTo(map);
+
+  var pinHtml = '<div class="mcpd-map-pin"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg></div>';
+  var pin = L.divIcon({ html: pinHtml, className: '', iconSize: [32, 40], iconAnchor: [16, 40], popupAnchor: [0, -44] });
+
+  L.marker([LAT, LNG], { icon: pin })
+    .addTo(map)
+    .bindPopup(
+      '<div class="mcpd-map-popup"><strong>MCLB Albany</strong><br>Albany, GA 31704</div>',
+      { maxWidth: 180 }
+    )
+    .openPopup();
+
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('[data-theme-toggle]')) return;
+    setTimeout(function () {
+      tileLayer.setUrl(tileUrl(isDark()));
+    }, 80);
+  });
+}());
+</script>
 {% endblock %}
