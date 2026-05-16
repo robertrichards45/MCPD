@@ -165,10 +165,17 @@
   var esriAttrib = 'Tiles &copy; <a href="https://www.esri.com" target="_blank" rel="noopener">Esri</a>, Maxar, Earthstar Geographics';
   var osmAttrib  = '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>';
 
+  // Satellite base imagery
   var satelliteLayer = L.tileLayer(
     'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
     { attribution: esriAttrib, maxZoom: 20 }
   );
+  // Transparent labels overlay: road names, building numbers, place names
+  var labelsLayer = L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+    { attribution: '', maxZoom: 20, opacity: 1, pane: 'shadowPane' }
+  );
+
   var streetLayer = L.tileLayer(
     'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
     { attribution: osmAttrib, subdomains: 'abcd', maxZoom: 20 }
@@ -182,6 +189,7 @@
   var activeMode = 'satellite'; // 'satellite' | 'street'
 
   satelliteLayer.addTo(map);
+  labelsLayer.addTo(map);
 
   // ── Layer toggle buttons ─────────────────────────────────────────
   function renderToggle() {
@@ -197,6 +205,7 @@
     activeMode = mode;
     if (mode === 'satellite') {
       satelliteLayer.addTo(map);
+      labelsLayer.addTo(map);
     } else {
       (isDark() ? streetDarkLayer : streetLayer).addTo(map);
     }
