@@ -497,6 +497,21 @@
     }
     if (action.type === 'navigate' && action.url) {
       setTimeout(function () { window.location.assign(action.url); }, 1400);
+      return;
+    }
+    if (action.type === 'handbook' && action.url) {
+      var msgList = document.getElementById('ai-messages');
+      if (msgList) {
+        var btn = document.createElement('a');
+        btn.href = action.url;
+        btn.className = 'ai-handbook-link-btn';
+        btn.textContent = '📚 Open Handbook: ' + (action.label || 'Officer Handbook');
+        var wrapper = document.createElement('div');
+        wrapper.className = 'ai-handbook-action';
+        wrapper.appendChild(btn);
+        msgList.appendChild(wrapper);
+        msgList.scrollTop = msgList.scrollHeight;
+      }
     }
   }
 
@@ -605,7 +620,7 @@
         stopAudio();
         updateMessage(thinkingBubble, reply);
         addReadFullControl(thinkingBubble, reply);
-        speakText(reply);
+        speakText(reply, { full: true });
         history.push({ role: 'user',      content: text  });
         history.push({ role: 'assistant', content: reply });
         if (history.length > 20) history = history.slice(history.length - 20);

@@ -1965,3 +1965,38 @@ body[data-theme="dark"] .mcpd-mobile-nav-stop-btn {
   border-radius: 6px;
 }
 .mcpd-mobile-nav-gps-error.is-visible { display: block; }
+
+/* ── Sidebar over assistant panel ─────────────────────────────── */
+.mcpd-command-sidebar.is-open {
+  z-index: 10001 !important;
+}
+
+/* ── AI handbook deep-link button ─────────────────────────────── */
+.ai-handbook-action {
+  padding: 6px 12px 2px;
+}
+.ai-handbook-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  background: rgba(22, 103, 199, 0.14);
+  border: 1.5px solid #1667c7;
+  border-radius: 8px;
+  color: #1667c7;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.12s;
+}
+.ai-handbook-link-btn:hover {
+  background: rgba(22, 103, 199, 0.26);
+}
+body[data-theme="dark"] .ai-handbook-link-btn {
+  color: #60a5fa;
+  border-color: #2563eb;
+  background: rgba(37, 99, 235, 0.15);
+}
+body[data-theme="dark"] .ai-handbook-link-btn:hover {
+  background: rgba(37, 99, 235, 0.28);
+}

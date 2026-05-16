@@ -32,13 +32,50 @@ bp = Blueprint('assistant', __name__)
 
 _SYSTEM_PROMPT = (
     "You are MCPD Assistant, a knowledgeable and professional AI assistant built into the Marine Corps "
-    "Police Department field portal. You help officers with questions about law, policy, report writing, "
-    "incident procedures, UCMJ, use of force, traffic enforcement, and general police work. "
+    "Police Department field portal for MCLB Albany. You help officers with questions about law, policy, "
+    "report writing, incident procedures, UCMJ, use of force, traffic enforcement, and general police work. "
     "You can also help officers move around the portal and complete forms by asking one clear question at a time. "
     "Keep a natural multi-turn conversation like a professional voice assistant. "
     "Be concise, direct, and professional. When you don't know something with confidence, say so clearly. "
     "Avoid unnecessary filler phrases. Speak plainly as if briefing another officer. "
-    "Never invent form answers, legal citations, evidence, statements, or report facts."
+    "Never invent form answers, legal citations, evidence, statements, or report facts.\n\n"
+    "ALWAYS check the MCPD Officer Handbook first before answering questions about paperwork, "
+    "incidents, forms, or procedures. Use the handbook as your primary source.\n\n"
+    "MCPD OFFICER HANDBOOK — Section 4 Scenario Paperwork Guide:\n"
+    "- Domestic Disturbance: Required paperwork: Incident Report, Witness Statement(s), "
+    "Use of Force Report (if applicable), Evidence Form (if applicable). "
+    "Responsibilities: Separate parties, assess injuries, identify primary aggressor, "
+    "document victim/suspect statements, notify supervisor as required.\n"
+    "- Shoplifting: Required paperwork: Incident Report, Property/Evidence Form, Witness Statement(s). "
+    "Responsibilities: Preserve video references, inventory recovered property, document value/owner confirmation. "
+    "Note: Juvenile subjects require additional juvenile processing paperwork.\n"
+    "- Traffic Accident: Required paperwork: Incident/Accident Report, Witness Statement(s), "
+    "Vehicle Impound Form (if towed). "
+    "Responsibilities: Scene safety, injuries/medical actions, roadway factors, driver info, witness capture, photos.\n"
+    "- Suspicious Person: Required paperwork: Incident Report, Field Interview documentation, "
+    "Witness Statement(s) if needed. "
+    "Responsibilities: Document articulable facts, actions taken, and disposition.\n"
+    "- Theft: Required paperwork: Incident Report, Property Form, Evidence Form. "
+    "Responsibilities: Document ownership, value, suspect access/opportunity, and evidence chain.\n"
+    "- Assault: Required paperwork: Incident Report, Witness Statement(s), Evidence Form. "
+    "Responsibilities: Document injuries, photographs, statements, and suspect disposition.\n"
+    "- Drug Possession: Required paperwork: Incident Report, Evidence Form, Property Form (if applicable). "
+    "Responsibilities: Secure and package evidence correctly with clear chain-of-custody details.\n"
+    "- Lost Property: Required paperwork: Incident Report, Property Form. "
+    "Responsibilities: Collect detailed property descriptors and owner contact information.\n"
+    "- Found Property: Required paperwork: Incident Report, Property Form, Evidence Form (if required by policy). "
+    "Responsibilities: Document finder information and transfer into secure custody.\n"
+    "- Vehicle Impound: Required paperwork: Vehicle Impound Form, Incident Report, Property Inventory. "
+    "Responsibilities: Document legal basis, inventory, tow details, and destination.\n"
+    "- Juvenile Incident: Required paperwork: Incident Report, Juvenile-specific processing documents, "
+    "Witness/Guardian statements as required. "
+    "Responsibilities: Follow juvenile notification and custody procedures.\n"
+    "- Trespass After Warning: Required paperwork: Incident Report, Witness Statement(s), "
+    "Citation/notice documentation. "
+    "Responsibilities: Document prior warning details and jurisdictional authority.\n\n"
+    "When referencing handbook content, append [HANDBOOK:scenario-guides] for incident/paperwork questions "
+    "or [HANDBOOK:forms-overview] for form-specific guidance. "
+    "This tag causes the portal to display a direct link to that handbook section for the officer."
 )
 
 
@@ -149,8 +186,10 @@ def _assistant_action_for(message: str, page: dict | None = None) -> dict | None
         (('scanner', 'scan id', 'camera scanner', 'id scanner'), 'Mobile ID Scanner', url_for('mobile.incident_person_editor')),
         (('mobile home', 'phone home', 'mobile page', 'mobile dashboard'), 'Mobile Home', url_for('mobile.home')),
         (('stats', 'my stats', 'performance'), 'My Stats', url_for('performance.my_stats')),
+        (('officer handbook', 'ofc handbook', 'handbook', 'field guide'), 'Officer Handbook', url_for('reference.officer_handbook')),
+        (('paperwork guide', 'paperwork navigator', 'incident guide', 'what paperwork', 'what forms do i need'), 'Paperwork Guide', url_for('reference.incident_paperwork_guide')),
     ]
-    should_navigate = _message_has_any(text, ('open ', 'go to ', 'take me to ', 'navigate', 'show me ', 'pull up ', 'launch ', 'switch to '))
+    should_navigate = _message_has_any(text, ('open ', 'go to ', 'take me to ', 'send me to ', 'navigate', 'show me ', 'pull up ', 'launch ', 'switch to ', 'bring up '))
     short_direct_command = len(normalized_text.split()) <= 4
     if should_navigate or short_direct_command:
         for terms, label, target_url in navigation_targets:
@@ -194,6 +233,23 @@ def assistant_ask():
     if is_ai_unavailable_message(answer):
         answer = _local_assistant_reply(message)
         mode = 'local_fallback'
+
+    # Parse handbook citations and build a handbook action if present
+    handbook_section_map = {
+        'scenario-guides': ('Scenario Paperwork Guide', url_for('reference.officer_handbook') + '#scenario-guides'),
+        'forms-overview':  ('Forms Overview',           url_for('reference.officer_handbook') + '#forms-overview'),
+        'report-writing':  ('Report Writing Basics',    url_for('reference.officer_handbook') + '#report-writing'),
+        'introduction':    ('Introduction',             url_for('reference.officer_handbook') + '#introduction'),
+        'form-guides':     ('Form Completion Guides',   url_for('reference.officer_handbook') + '#form-guides'),
+    }
+    handbook_match = re.search(r'\[HANDBOOK:([a-z0-9-]+)\]', answer)
+    if handbook_match and not action:
+        section_id = handbook_match.group(1)
+        if section_id in handbook_section_map:
+            label, hurl = handbook_section_map[section_id]
+            action = {'type': 'handbook', 'section': section_id, 'label': label, 'url': hurl}
+    answer = re.sub(r'\[HANDBOOK:[a-z0-9-]+\]', '', answer).strip()
+
     if action and action.get('type') == 'navigate':
         answer = f"{answer}\n\nOpening {action.get('label')} now."
     if action and action.get('type') == 'form_interview':
