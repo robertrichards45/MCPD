@@ -194,8 +194,8 @@
   map.getPane('labelsPane').style.zIndex = 450;
   map.getPane('labelsPane').style.pointerEvents = 'none';
   var labelsLayer = L.tileLayer(
-    'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
-    { attribution: '', maxZoom: 20, pane: 'labelsPane' }
+    'https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png',
+    { attribution: osmAttrib, subdomains: 'abcd', maxZoom: 20, pane: 'labelsPane' }
   );
   var streetLayer     = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: osmAttrib, subdomains: 'abcd', maxZoom: 20 });
   var streetDarkLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',  { attribution: osmAttrib, subdomains: 'abcd', maxZoom: 20 });
@@ -309,8 +309,8 @@
     fsMobileMap.getPane('labelsPane').style.zIndex = 450;
     fsMobileMap.getPane('labelsPane').style.pointerEvents = 'none';
     var fsLbl = L.tileLayer(
-      'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
-      { attribution: '', maxZoom: 20, pane: 'labelsPane' }
+      'https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png',
+      { attribution: osmAttrib, subdomains: 'abcd', maxZoom: 20, pane: 'labelsPane' }
     );
     var fsStr  = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: osmAttrib, subdomains: 'abcd', maxZoom: 20 });
     var fsDark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',  { attribution: osmAttrib, subdomains: 'abcd', maxZoom: 20 });
@@ -358,8 +358,14 @@
   function openMobileFs() {
     mobileFs.classList.add('is-open');
     document.body.style.overflow = 'hidden';
-    initFsMobileMap();
-    setTimeout(function () { fsMobileMap && fsMobileMap.invalidateSize(); }, 120);
+    setTimeout(function () {
+      initFsMobileMap();
+      if (fsMobileMap) {
+        fsMobileMap.invalidateSize();
+        var bounds = LOCATIONS.map(function (l) { return [l.lat, l.lng]; });
+        fsMobileMap.fitBounds(bounds, { padding: [50, 50], maxZoom: 17 });
+      }
+    }, 80);
   }
 
   function closeMobileFs() {
