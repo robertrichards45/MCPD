@@ -1686,3 +1686,245 @@ body[data-theme="dark"] .mcpd-mobile-map-layer-row {
   color: var(--muted, #64748b);
   white-space: nowrap;
 }
+
+/* ── Fullscreen map modal (desktop) ─────────────────────────────── */
+.mcpd-map-fullscreen-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(3,7,18,0.82);
+  backdrop-filter: blur(4px);
+  align-items: center;
+  justify-content: center;
+}
+.mcpd-map-fullscreen-overlay.is-open {
+  display: flex;
+}
+.mcpd-map-fullscreen-inner {
+  position: relative;
+  width: min(96vw, 1280px);
+  height: min(90vh, 820px);
+  background: #fff;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.55);
+  display: flex;
+  flex-direction: column;
+}
+body[data-theme="dark"] .mcpd-map-fullscreen-inner {
+  background: #0f172a;
+}
+.mcpd-map-fullscreen-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+  flex-shrink: 0;
+}
+body[data-theme="dark"] .mcpd-map-fullscreen-header {
+  border-bottom-color: rgba(255,255,255,0.08);
+}
+.mcpd-map-fullscreen-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text, #0f172a);
+  flex: 1;
+}
+body[data-theme="dark"] .mcpd-map-fullscreen-title { color: #f1f5f9; }
+.mcpd-map-fullscreen-close {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: rgba(0,0,0,0.07);
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s;
+  flex-shrink: 0;
+}
+.mcpd-map-fullscreen-close:hover { background: rgba(0,0,0,0.15); }
+body[data-theme="dark"] .mcpd-map-fullscreen-close { background: rgba(255,255,255,0.1); color: #cbd5e1; }
+body[data-theme="dark"] .mcpd-map-fullscreen-close:hover { background: rgba(255,255,255,0.18); }
+.mcpd-map-fullscreen-canvas {
+  flex: 1;
+  min-height: 0;
+}
+.mcpd-map-fullscreen-layer-btn {
+  position: absolute;
+  top: 60px;
+  right: 52px;
+  z-index: 1001;
+  display: flex;
+  gap: 2px;
+  background: rgba(255,255,255,0.95);
+  border: 1px solid rgba(0,0,0,0.2);
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+}
+body[data-theme="dark"] .mcpd-map-fullscreen-layer-btn {
+  background: rgba(15,23,42,0.92);
+  border-color: rgba(255,255,255,0.15);
+}
+.mcpd-map-fullscreen-layer-btn button {
+  border: none;
+  background: transparent;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 5px 10px;
+  cursor: pointer;
+  color: #334155;
+  transition: background 0.12s, color 0.12s;
+}
+body[data-theme="dark"] .mcpd-map-fullscreen-layer-btn button { color: #cbd5e1; }
+.mcpd-map-fullscreen-layer-btn button.is-active { background: #1667c7; color: #fff; }
+.mcpd-map-canvas-wrap {
+  cursor: zoom-in;
+}
+
+/* ── Mobile GPS navigation panel ───────────────────────────────── */
+.mcpd-mobile-nav-panel {
+  background: var(--surface, #fff);
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 14px;
+  margin: 12px 16px 0;
+  padding: 14px 16px;
+  box-shadow: 0 2px 10px rgba(15,23,42,0.07);
+}
+body[data-theme="dark"] .mcpd-mobile-nav-panel {
+  background: rgba(15,23,42,0.7);
+  border-color: rgba(148,163,184,0.13);
+}
+.mcpd-mobile-nav-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted, #64748b);
+  margin: 0 0 10px;
+}
+.mcpd-mobile-nav-dest-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.mcpd-mobile-nav-dest-btn {
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 5px 11px;
+  border-radius: 20px;
+  border: 1.5px solid rgba(0,0,0,0.12);
+  background: rgba(0,0,0,0.03);
+  cursor: pointer;
+  color: var(--text, #0f172a);
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+  white-space: nowrap;
+}
+.mcpd-mobile-nav-dest-btn.is-selected {
+  background: #1667c7;
+  border-color: #1667c7;
+  color: #fff;
+}
+body[data-theme="dark"] .mcpd-mobile-nav-dest-btn {
+  border-color: rgba(148,163,184,0.22);
+  background: rgba(255,255,255,0.04);
+  color: #e2e8f0;
+}
+body[data-theme="dark"] .mcpd-mobile-nav-dest-btn.is-selected {
+  background: #1667c7;
+  border-color: #1667c7;
+  color: #fff;
+}
+.mcpd-mobile-nav-info {
+  display: none;
+  background: linear-gradient(135deg, #0f2d5e 0%, #1667c7 100%);
+  border-radius: 10px;
+  padding: 12px 14px;
+  color: #fff;
+  margin-bottom: 10px;
+}
+.mcpd-mobile-nav-info.is-active { display: block; }
+.mcpd-mobile-nav-info-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.mcpd-mobile-nav-stat {
+  text-align: center;
+  flex: 1;
+}
+.mcpd-mobile-nav-stat strong {
+  display: block;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+.mcpd-mobile-nav-stat span {
+  font-size: 10px;
+  opacity: 0.75;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.mcpd-mobile-nav-dest-name {
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  opacity: 0.9;
+}
+.mcpd-mobile-nav-status {
+  font-size: 11px;
+  opacity: 0.72;
+  margin-top: 6px;
+}
+.mcpd-mobile-nav-actions {
+  display: flex;
+  gap: 8px;
+}
+.mcpd-mobile-nav-go-btn {
+  flex: 1;
+  padding: 9px 14px;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  background: #1667c7;
+  color: #fff;
+  transition: background 0.12s;
+}
+.mcpd-mobile-nav-go-btn:hover { background: #1355a8; }
+.mcpd-mobile-nav-stop-btn {
+  padding: 9px 14px;
+  border: 1.5px solid rgba(0,0,0,0.12);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  background: transparent;
+  color: #c53030;
+  display: none;
+  transition: background 0.12s;
+}
+.mcpd-mobile-nav-stop-btn.is-visible { display: block; }
+.mcpd-mobile-nav-stop-btn:hover { background: rgba(197,48,48,0.07); }
+body[data-theme="dark"] .mcpd-mobile-nav-stop-btn {
+  border-color: rgba(255,255,255,0.15);
+}
+.mcpd-mobile-nav-gps-error {
+  display: none;
+  font-size: 11.5px;
+  color: #c53030;
+  margin-top: 6px;
+  padding: 6px 10px;
+  background: rgba(197,48,48,0.07);
+  border-radius: 6px;
+}
+.mcpd-mobile-nav-gps-error.is-visible { display: block; }

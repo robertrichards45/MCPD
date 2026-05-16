@@ -806,7 +806,7 @@ def create_app():
         response.headers.setdefault('Referrer-Policy', 'strict-origin-when-cross-origin')
         response.headers.setdefault(
             'Permissions-Policy',
-            'camera=(self), microphone=(), geolocation=(), payment=(), usb=()',
+            'camera=(self), microphone=(), geolocation=(self), payment=(), usb=()',
         )
         response.headers.setdefault('Cross-Origin-Opener-Policy', 'same-origin')
         if app.config.get('HSTS_ENABLED') and (request.is_secure or _external_request_scheme() == 'https'):

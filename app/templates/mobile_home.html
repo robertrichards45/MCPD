@@ -113,6 +113,35 @@
       </div>
     </section>
 
+    <!-- GPS Navigation panel -->
+    <div class="mcpd-mobile-nav-panel" id="mcpd-nav-panel">
+      <p class="mcpd-mobile-nav-title">Navigate to Location</p>
+      <div class="mcpd-mobile-nav-dest-list" id="mcpd-nav-dest-list"></div>
+      <div class="mcpd-mobile-nav-info" id="mcpd-nav-info">
+        <div class="mcpd-mobile-nav-dest-name" id="mcpd-nav-dest-name"></div>
+        <div class="mcpd-mobile-nav-info-row">
+          <div class="mcpd-mobile-nav-stat">
+            <strong id="mcpd-nav-dist">--</strong>
+            <span id="mcpd-nav-dist-unit">ft</span>
+          </div>
+          <div class="mcpd-mobile-nav-stat">
+            <strong id="mcpd-nav-bearing">--</strong>
+            <span>direction</span>
+          </div>
+          <div class="mcpd-mobile-nav-stat">
+            <strong id="mcpd-nav-eta">--</strong>
+            <span>min walk</span>
+          </div>
+        </div>
+        <div class="mcpd-mobile-nav-status" id="mcpd-nav-status">Locating your position&hellip;</div>
+      </div>
+      <div class="mcpd-mobile-nav-gps-error" id="mcpd-nav-gps-error"></div>
+      <div class="mcpd-mobile-nav-actions">
+        <button class="mcpd-mobile-nav-go-btn" id="mcpd-nav-go-btn" type="button">Find My Location &amp; Navigate</button>
+        <button class="mcpd-mobile-nav-stop-btn" id="mcpd-nav-stop-btn" type="button">Stop</button>
+      </div>
+    </div>
+
   </main>
 
   {% set mobile_active_tab = 'home' %}
@@ -217,6 +246,194 @@
     if (!e.target.closest('[data-theme-toggle]')) return;
     setTimeout(function () { if (activeMode === 'street') setLayer('street'); }, 80);
   });
+}());
+</script>
+<script>
+// GPS Navigation panel
+(function () {
+  var NAV_LOCATIONS = [
+    { lat: 31.5709, lng: -84.0765, name: 'Main Gate', detail: 'Gate 1 — Radford Blvd' },
+    { lat: 31.5748, lng: -84.0730, name: 'PMO / Police', detail: 'Provost Marshal Office' },
+    { lat: 31.5770, lng: -84.0640, name: 'Headquarters', detail: 'CO & Command Staff' },
+    { lat: 31.5760, lng: -84.0700, name: 'Gate 2', detail: 'Industrial / Commercial Access' },
+  ];
+
+  var destList   = document.getElementById('mcpd-nav-dest-list');
+  var navInfo    = document.getElementById('mcpd-nav-info');
+  var destName   = document.getElementById('mcpd-nav-dest-name');
+  var distEl     = document.getElementById('mcpd-nav-dist');
+  var distUnit   = document.getElementById('mcpd-nav-dist-unit');
+  var bearingEl  = document.getElementById('mcpd-nav-bearing');
+  var etaEl      = document.getElementById('mcpd-nav-eta');
+  var statusEl   = document.getElementById('mcpd-nav-status');
+  var goBtn      = document.getElementById('mcpd-nav-go-btn');
+  var stopBtn    = document.getElementById('mcpd-nav-stop-btn');
+  var gpsError   = document.getElementById('mcpd-nav-gps-error');
+  var mapEl      = document.getElementById('mcpd-mobile-map');
+
+  var selectedDest = null;
+  var watchId      = null;
+  var posMarker    = null;
+  var routeLine    = null;
+  var navMap       = null;
+
+  // Build destination chips
+  NAV_LOCATIONS.forEach(function (loc, idx) {
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'mcpd-mobile-nav-dest-btn';
+    btn.textContent = loc.name;
+    btn.dataset.idx = idx;
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.mcpd-mobile-nav-dest-btn').forEach(function (b) { b.classList.remove('is-selected'); });
+      btn.classList.add('is-selected');
+      selectedDest = loc;
+      destName.textContent = loc.name + ' — ' + loc.detail;
+    });
+    destList.appendChild(btn);
+  });
+
+  // Select first by default
+  if (destList.children.length > 0) {
+    destList.children[0].click();
+  }
+
+  function toRad(deg) { return deg * Math.PI / 180; }
+  function toDeg(rad) { return rad * 180 / Math.PI; }
+
+  function haversineM(lat1, lng1, lat2, lng2) {
+    var R = 6371000;
+    var dLat = toRad(lat2 - lat1);
+    var dLng = toRad(lng2 - lng1);
+    var a = Math.sin(dLat/2)*Math.sin(dLat/2) +
+            Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLng/2)*Math.sin(dLng/2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  }
+
+  function bearing(lat1, lng1, lat2, lng2) {
+    var dLng = toRad(lng2 - lng1);
+    var y = Math.sin(dLng) * Math.cos(toRad(lat2));
+    var x = Math.cos(toRad(lat1))*Math.sin(toRad(lat2)) - Math.sin(toRad(lat1))*Math.cos(toRad(lat2))*Math.cos(dLng);
+    var brng = (toDeg(Math.atan2(y, x)) + 360) % 360;
+    var dirs = ['N','NE','E','SE','S','SW','W','NW'];
+    return dirs[Math.round(brng / 45) % 8];
+  }
+
+  function formatDist(meters) {
+    var feet = meters * 3.28084;
+    if (feet < 1000) return { val: Math.round(feet), unit: 'ft' };
+    var miles = (feet / 5280).toFixed(2);
+    return { val: miles, unit: 'mi' };
+  }
+
+  function getMap() {
+    // Access the already-initialized Leaflet map on the mobile map canvas
+    // We look for the Leaflet map instance via the _leaflet_id property
+    if (navMap) return navMap;
+    if (mapEl && mapEl._leaflet_id) {
+      // Leaflet stores map instances by element id
+      for (var id in L.Map._instances || {}) {
+        if (L.Map._instances[id].getContainer() === mapEl) {
+          navMap = L.Map._instances[id];
+          return navMap;
+        }
+      }
+    }
+    return null;
+  }
+
+  function updateNav(pos) {
+    if (!selectedDest) return;
+    var lat = pos.coords.latitude;
+    var lng = pos.coords.longitude;
+    var distM = haversineM(lat, lng, selectedDest.lat, selectedDest.lng);
+    var d = formatDist(distM);
+    var brng = bearing(lat, lng, selectedDest.lat, selectedDest.lng);
+    var etaMins = Math.ceil(distM / 83); // ~83 m/min walking pace
+
+    distEl.textContent = d.val;
+    distUnit.textContent = d.unit;
+    bearingEl.textContent = brng;
+    etaEl.textContent = etaMins < 1 ? '<1' : etaMins;
+    statusEl.textContent = 'Live position active — accuracy ±' + Math.round(pos.coords.accuracy) + ' m';
+    navInfo.classList.add('is-active');
+    gpsError.classList.remove('is-visible');
+
+    var m = getMap();
+    if (m) {
+      var latlng = [lat, lng];
+      if (posMarker) {
+        posMarker.setLatLng(latlng);
+      } else {
+        posMarker = L.circleMarker(latlng, {
+          radius: 8,
+          fillColor: '#1667c7',
+          color: '#fff',
+          weight: 2.5,
+          fillOpacity: 1,
+        }).addTo(m).bindPopup('Your location');
+      }
+      if (routeLine) m.removeLayer(routeLine);
+      routeLine = L.polyline([[lat, lng], [selectedDest.lat, selectedDest.lng]], {
+        color: '#1667c7',
+        weight: 3,
+        dashArray: '6 8',
+        opacity: 0.85,
+      }).addTo(m);
+      m.fitBounds([[lat, lng], [selectedDest.lat, selectedDest.lng]], { padding: [30, 30] });
+    }
+  }
+
+  function stopNav() {
+    if (watchId !== null) {
+      navigator.geolocation.clearWatch(watchId);
+      watchId = null;
+    }
+    var m = getMap();
+    if (m) {
+      if (posMarker) { m.removeLayer(posMarker); posMarker = null; }
+      if (routeLine)  { m.removeLayer(routeLine);  routeLine = null; }
+    }
+    navInfo.classList.remove('is-active');
+    stopBtn.classList.remove('is-visible');
+    goBtn.textContent = 'Find My Location & Navigate';
+    statusEl.textContent = 'Locating your position…';
+  }
+
+  function startNav() {
+    if (!selectedDest) {
+      gpsError.textContent = 'Please select a destination first.';
+      gpsError.classList.add('is-visible');
+      return;
+    }
+    if (!navigator.geolocation) {
+      gpsError.textContent = 'Geolocation is not supported on this device.';
+      gpsError.classList.add('is-visible');
+      return;
+    }
+    gpsError.classList.remove('is-visible');
+    goBtn.textContent = 'Navigating…';
+    stopBtn.classList.add('is-visible');
+    navInfo.classList.add('is-active');
+    statusEl.textContent = 'Acquiring GPS signal…';
+
+    watchId = navigator.geolocation.watchPosition(
+      updateNav,
+      function (err) {
+        var msg = 'GPS error';
+        if (err.code === 1) msg = 'Location access denied. Enable location permissions for this site.';
+        else if (err.code === 2) msg = 'Position unavailable. Check device GPS.';
+        else if (err.code === 3) msg = 'GPS timed out. Try again.';
+        gpsError.textContent = msg;
+        gpsError.classList.add('is-visible');
+        statusEl.textContent = 'GPS unavailable.';
+      },
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
+    );
+  }
+
+  if (goBtn) goBtn.addEventListener('click', startNav);
+  if (stopBtn) stopBtn.addEventListener('click', stopNav);
 }());
 </script>
 {% endblock %}

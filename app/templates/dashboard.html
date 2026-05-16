@@ -118,7 +118,7 @@
             </span>
             <div>
               <h2>MCLB Albany — Installation Map</h2>
-              <p>Marine Corps Logistics Base Albany, Georgia &bull; Satellite &amp; Street view</p>
+              <p>Marine Corps Logistics Base Albany, Georgia &bull; Satellite &amp; Street view &bull; <em>Click map to expand</em></p>
             </div>
           </div>
           <div class="mcpd-map-card-info">
@@ -126,7 +126,7 @@
           </div>
         </div>
         <div style="position:relative;">
-          <div class="mcpd-map-canvas-wrap" id="mcpd-dashboard-map" role="img" aria-label="Satellite installation map of Marine Corps Logistics Base Albany, Georgia"></div>
+          <div class="mcpd-map-canvas-wrap" id="mcpd-dashboard-map" role="img" aria-label="Satellite installation map of Marine Corps Logistics Base Albany, Georgia" title="Click to expand map"></div>
           <div class="mcpd-map-layer-btn" id="mcpd-layer-toggle" aria-label="Map layer controls"></div>
         </div>
         <div class="mcpd-map-legend">
@@ -139,6 +139,18 @@
       </article>
     </section>
   </main>
+</div>
+
+<!-- Fullscreen map modal -->
+<div class="mcpd-map-fullscreen-overlay" id="mcpd-fs-overlay" role="dialog" aria-modal="true" aria-label="Expanded installation map">
+  <div class="mcpd-map-fullscreen-inner">
+    <div class="mcpd-map-fullscreen-header">
+      <span class="mcpd-map-fullscreen-title">MCLB Albany — Installation Map (Full View)</span>
+      <div id="mcpd-fs-layer-btn" class="mcpd-map-fullscreen-layer-btn" aria-label="Map layer controls"></div>
+      <button class="mcpd-map-fullscreen-close" id="mcpd-fs-close" aria-label="Close map">&times;</button>
+    </div>
+    <div class="mcpd-map-fullscreen-canvas" id="mcpd-fs-map" role="img" aria-label="Full-screen satellite map of MCLB Albany"></div>
+  </div>
 </div>
 {% endblock %}
 {% block scripts %}
@@ -261,7 +273,110 @@
     if (!e.target.closest('[data-theme-toggle]')) return;
     setTimeout(function () {
       if (activeMode === 'street') setLayer('street');
+      if (fsActiveMode === 'street') setFsLayer('street');
     }, 80);
+  });
+
+  // ── Fullscreen modal ─────────────────────────────────────────────
+  var fsOverlay  = document.getElementById('mcpd-fs-overlay');
+  var fsMapEl    = document.getElementById('mcpd-fs-map');
+  var fsClose    = document.getElementById('mcpd-fs-close');
+  var fsLayerBtn = document.getElementById('mcpd-fs-layer-btn');
+  var fsMap      = null;
+  var fsInitialized = false;
+  var fsActiveMode  = 'satellite';
+
+  var fsSatLayer, fsLabelsLayer, fsStreetLayer, fsStreetDarkLayer;
+  var fsMarkerLayer = [];
+
+  function initFsMap() {
+    if (fsInitialized) return;
+    fsInitialized = true;
+    fsSatLayer = L.tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      { attribution: esriAttrib, maxZoom: 20 }
+    );
+    fsLabelsLayer = L.tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+      { attribution: '', maxZoom: 20, opacity: 1, pane: 'shadowPane' }
+    );
+    fsStreetLayer = L.tileLayer(
+      'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+      { attribution: osmAttrib, subdomains: 'abcd', maxZoom: 20 }
+    );
+    fsStreetDarkLayer = L.tileLayer(
+      'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+      { attribution: osmAttrib, subdomains: 'abcd', maxZoom: 20 }
+    );
+    fsMap = L.map(fsMapEl, {
+      center: BASE_CENTER,
+      zoom: 16,
+      scrollWheelZoom: true,
+      zoomControl: true,
+      attributionControl: true,
+    });
+    fsSatLayer.addTo(fsMap);
+    fsLabelsLayer.addTo(fsMap);
+    renderFsMarkers();
+    renderFsToggle();
+  }
+
+  function renderFsMarkers() {
+    fsMarkerLayer.forEach(function (m) { fsMap.removeLayer(m); });
+    fsMarkerLayer = [];
+    LOCATIONS.forEach(function (loc) {
+      var m = L.marker([loc.lat, loc.lng], { icon: pinIcon(loc.color) })
+        .addTo(fsMap)
+        .bindPopup('<div class="mcpd-map-popup"><strong>' + loc.name + '</strong><br>' + loc.detail + '</div>', { maxWidth: 280 });
+      fsMarkerLayer.push(m);
+    });
+  }
+
+  function setFsLayer(mode) {
+    fsMap.eachLayer(function (l) { if (l !== undefined && l.options && l.options.attribution !== undefined) fsMap.removeLayer(l); });
+    fsActiveMode = mode;
+    if (mode === 'satellite') {
+      fsSatLayer.addTo(fsMap);
+      fsLabelsLayer.addTo(fsMap);
+    } else {
+      (isDark() ? fsStreetDarkLayer : fsStreetLayer).addTo(fsMap);
+    }
+    renderFsMarkers();
+    renderFsToggle();
+  }
+
+  function renderFsToggle() {
+    if (!fsLayerBtn) return;
+    fsLayerBtn.innerHTML =
+      '<button id="fs-btn-sat" class="' + (fsActiveMode === 'satellite' ? 'is-active' : '') + '">Satellite</button>' +
+      '<button id="fs-btn-str" class="' + (fsActiveMode === 'street'    ? 'is-active' : '') + '">Street</button>';
+    document.getElementById('fs-btn-sat').onclick = function () { setFsLayer('satellite'); };
+    document.getElementById('fs-btn-str').onclick = function () { setFsLayer('street'); };
+  }
+
+  function openFsModal() {
+    fsOverlay.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+    initFsMap();
+    setTimeout(function () { fsMap.invalidateSize(); }, 100);
+  }
+
+  function closeFsModal() {
+    fsOverlay.classList.remove('is-open');
+    document.body.style.overflow = '';
+  }
+
+  el.addEventListener('click', function (e) {
+    if (e.target.closest('.leaflet-control') || e.target.closest('.leaflet-popup')) return;
+    openFsModal();
+  });
+
+  if (fsClose) fsClose.addEventListener('click', closeFsModal);
+  if (fsOverlay) fsOverlay.addEventListener('click', function (e) {
+    if (e.target === fsOverlay) closeFsModal();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeFsModal();
   });
 }());
 </script>
