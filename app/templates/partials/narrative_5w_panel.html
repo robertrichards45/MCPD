@@ -1,18 +1,27 @@
 <section class="narrative-5w-grid narrative-5w-grid-single">
   <article class="card p-3 narrative-5w-card">
-    <h3>Incident Information</h3>
+    <h3>
+      {% if tool_mode == '5w' %}Incident Notes → 5W Summary
+      {% elif tool_mode == 'blotter' %}Call Log → Watch Blotter
+      {% else %}Incident Notes → Narrative Draft
+      {% endif %}
+    </h3>
     {% if tool_mode == '5w' %}
-      <p class="text-muted mb-2">Put everything you know in one box. The tool will organize it into Who, What, When, Where, Why/How, and Officer Actions, while keeping the full officer notes at the bottom so facts are not dropped.</p>
+      <p class="text-muted mb-2">Enter everything you know. The tool will organize it into Who, What, When, Where, Why/How, and Officer Actions.</p>
+    {% elif tool_mode == 'blotter' %}
+      <p class="text-muted mb-2">Enter your call log for the watch (one call per line or paragraph). AI will format it into a professional watch blotter.</p>
     {% else %}
-      <p class="text-muted mb-2">Put everything you know in one box. The tool will draft a professional narrative using only the officer-entered facts.</p>
+      <p class="text-muted mb-2">Enter your incident notes. The tool will draft a professional narrative — then use AI Quality Check to score it and get specific feedback.</p>
     {% endif %}
     <label>
-      Incident notes
-      <textarea id="n5w-intake" class="form-control mobile-input" rows="12" placeholder="Example: On 05/05/2026 at 1430, I responded to the PX for a larceny. Subject John Smith concealed items in a backpack. Witness Jane Doe saw him pass all points of sale. I detained him outside, recovered the property, photographed the items, and notified the Watch Commander."></textarea>
+      {% if tool_mode == 'blotter' %}Call log entries{% else %}Incident notes{% endif %}
+      <textarea id="n5w-intake" class="form-control mobile-input" rows="12"
+        placeholder="{% if tool_mode == 'blotter' %}Example: 1423 — Responded to PX for larceny. Subject John Smith. Watch Commander notified.
+1647 — Domestic disturbance at Bldg 2215. Separated parties. Victim statement obtained.{% elif tool_mode == '5w' %}Example: On 05/05/2026 at 1430, I responded to the PX for a larceny. Subject John Smith concealed items in a backpack. Witness Jane Doe saw him pass all points of sale. I detained him outside, recovered the property, photographed the items, and notified the Watch Commander.{% else %}Example: On 05/05/2026 at 1430, I responded to the PX for a larceny. Subject John Smith concealed items in a backpack. Witness Jane Doe saw him pass all points of sale. I detained him outside, recovered the property, photographed the items, and notified the Watch Commander.{% endif %}"></textarea>
     </label>
     <div class="bodycam-control-row">
       <button id="n5w-build" class="btn btn-primary mobile-primary-action" type="button" data-tool-mode="{{ tool_mode or 'narrative' }}">
-        {% if tool_mode == '5w' %}Generate 5W Summary{% else %}Generate Narrative{% endif %}
+        {% if tool_mode == '5w' %}Generate 5W Summary{% elif tool_mode == 'blotter' %}Generate Blotter (AI){% else %}Generate Narrative{% endif %}
       </button>
       <button id="n5w-clear" class="btn btn-outline-secondary mobile-secondary-action" type="button">Clear</button>
     </div>
@@ -21,19 +30,56 @@
   <article class="card p-3 narrative-5w-card">
     {% if tool_mode == '5w' %}
       <h3>5W Summary</h3>
-      <textarea id="n5w-output" class="form-control mobile-input" rows="16" placeholder="The organized 5W summary will appear here. Review before texting, emailing, or using in a report."></textarea>
+      <textarea id="n5w-output" class="form-control mobile-input" rows="16" placeholder="The organized 5W summary will appear here. Review before using in a report."></textarea>
+    {% elif tool_mode == 'blotter' %}
+      <h3>Watch Blotter</h3>
+      <textarea id="n5w-output" class="form-control mobile-input" rows="16" placeholder="The formatted watch blotter will appear here. Review before distribution."></textarea>
     {% else %}
       <h3>Narrative Draft</h3>
       <textarea id="n5w-output" class="form-control mobile-input" rows="16" placeholder="The draft narrative will appear here. Review and edit before using in a report."></textarea>
     {% endif %}
     <div class="bodycam-control-row">
       <button id="n5w-copy" class="btn btn-outline-secondary mobile-secondary-action" type="button">Copy</button>
-      <a id="n5w-text" class="btn btn-outline-secondary mobile-secondary-action" href="#">Text</a>
+      <a id="n5w-text"  class="btn btn-outline-secondary mobile-secondary-action" href="#">Text</a>
       <a id="n5w-email" class="btn btn-outline-secondary mobile-secondary-action" href="#">Email</a>
+      {% if tool_mode != 'blotter' %}
+      <button id="n5w-check" class="btn btn-outline-primary mobile-secondary-action" type="button" title="AI quality check — score your narrative and get improvement tips">Quality Check</button>
+      {% endif %}
     </div>
     <div class="bodycam-warning mt-2">
       <strong>Review required</strong>
-      <span>This tool organizes facts only. It must not invent evidence, statements, charges, or probable cause.</span>
+      <span>This tool organizes and formats facts only. It must not invent evidence, statements, charges, or probable cause.</span>
     </div>
   </article>
+</section>
+
+<section id="n5w-quality-panel" class="n5w-quality-panel" style="display:none;" aria-live="polite">
+  <div class="n5w-quality-inner">
+    <div class="n5w-quality-header">
+      <div>
+        <h3>Narrative Quality Check</h3>
+        <p class="text-muted" style="margin:0;">AI evaluation against MCPD narrative standards</p>
+      </div>
+      <div class="n5w-score-badge" id="n5w-score-badge">—</div>
+    </div>
+    <div class="n5w-quality-grid">
+      <div class="n5w-quality-col">
+        <h4>&#10003; Strengths</h4>
+        <ul id="n5w-strengths"></ul>
+      </div>
+      <div class="n5w-quality-col">
+        <h4>&#9888; Issues Found</h4>
+        <ul id="n5w-issues"></ul>
+      </div>
+      <div class="n5w-quality-col">
+        <h4>&#8593; Improvement Actions</h4>
+        <ul id="n5w-suggestions"></ul>
+      </div>
+    </div>
+    <div id="n5w-improved-opening" class="n5w-improved-opening" style="display:none;">
+      <strong>Suggested Opening:</strong>
+      <span id="n5w-improved-text"></span>
+    </div>
+    <p style="font-size:11px;color:#9aa5b4;margin:10px 0 0;">Edit your narrative above and click Quality Check again to see how it improves.</p>
+  </div>
 </section>

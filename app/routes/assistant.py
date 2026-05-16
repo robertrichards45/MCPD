@@ -178,6 +178,7 @@ def _assistant_action_for(message: str, page: dict | None = None) -> dict | None
         (('bodycam footage', 'body cam footage', 'bodycam library'), 'Bodycam Footage', url_for('bodycam.library')),
         (('narrative creator', 'narrative tool'), 'Narrative Creator', url_for('bodycam.narrative_tool')),
         (('5w', '5ws', '5 w', 'five w', 'five ws', '5w builder'), '5W Builder', url_for('bodycam.five_w_tool')),
+        (('blotter', 'blotter writer', 'watch blotter', 'write blotter', 'blotter tool'), 'Blotter Writer', url_for('bodycam.blotter_tool')),
         (('mock report', 'mock reports', 'cleo report', 'cleo reports'), 'Mock Report Writing', url_for('cleo_api.cleo_reports_page')),
         (('site builder', 'builder', 'builder mode'), 'Site Builder', url_for('admin.site_builder')),
         (('accident tools', 'crash tools', 'accident diagram'), 'Accident Tools', url_for('reports.accidents')),

@@ -1,12 +1,14 @@
+import hmac
 import os
 from pathlib import Path
 
-from flask import Blueprint, abort, current_app, jsonify, redirect, render_template, request, send_file, url_for
+from flask import Blueprint, abort, current_app, jsonify, redirect, render_template, request, send_file, session, url_for
 from flask_login import current_user, login_required
 from werkzeug.utils import secure_filename
 
 from ..extensions import db
 from ..models import AuditLog, BodycamFootage, Report, utcnow_naive
+from ..services.ai_client import ask_openai_with_system, configured_openai_api_key, is_ai_unavailable_message
 
 bp = Blueprint('bodycam', __name__)
 
@@ -221,3 +223,122 @@ def mobile_five_w_tool():
             'tool_mode': '5w',
         },
     )
+
+
+@bp.get('/tools/blotter')
+@login_required
+def blotter_tool():
+    return render_template('narrative_5w_tool.html', user=current_user, mobile_mode=False, tool_mode='blotter')
+
+
+@bp.get('/mobile/tools/blotter')
+@login_required
+def mobile_blotter_tool():
+    return render_template(
+        'mobile_narrative_5w_tool.html',
+        **{
+            'title': 'Blotter Writer | MCPD Mobile',
+            'body_class': 'mobile-foundation',
+            'mobile_title': 'Blotter Writer',
+            'mobile_active_tab': 'more',
+            'user': current_user,
+            'tool_mode': 'blotter',
+        },
+    )
+
+
+_NARRATIVE_CHECK_PROMPT = (
+    "You are an MCPD narrative quality evaluator. You evaluate police incident report narratives and 5W summaries "
+    "against Marine Corps Police Department standards.\n\n"
+    "Evaluate the submitted text and return a JSON object with:\n"
+    "- score: integer 1-10 (10 = publication-ready)\n"
+    "- grade: letter grade (A/B/C/D/F)\n"
+    "- strengths: list of 1-3 specific things done well\n"
+    "- issues: list of specific problems found\n"
+    "- suggestions: list of 1-3 concrete improvement actions\n"
+    "- improved_opening: one improved opening sentence using the facts given\n\n"
+    "MCPD Narrative Standards:\n"
+    "- Must include: date/time, location, who (victim/suspect/witness with identifiers), what happened, "
+    "officer arrival and observations, actions taken, disposition, supervisor notification if required.\n"
+    "- Must use chronological order starting with officer dispatch or response.\n"
+    "- Must use objective language — no assumptions or opinions.\n"
+    "- Must include legal basis language for any detention, arrest, or search.\n"
+    "- Must document evidence collection and chain of custody if applicable.\n"
+    "- Common failures: missing times, no legal authority stated, vague dispositions, undefined acronyms, "
+    "inconsistent person references, invented facts.\n\n"
+    "Return only the JSON object. No extra text."
+)
+
+_BLOTTER_PROMPT = (
+    "You are an MCPD blotter writer. Convert the officer's call log entries into a professionally formatted "
+    "watch blotter for MCLB Albany.\n\n"
+    "A blotter entry should be 1-3 sentences per call: time, nature of call, location, disposition. "
+    "Use past tense, objective language, and standard police terminology. "
+    "Do not invent facts not in the officer's notes.\n\n"
+    "Format: numbered list. Example:\n"
+    "1. 1423 — Larceny report at PX parking lot. Vehicle broken into; laptop stolen. Victim statement taken; "
+    "case forwarded for follow-up.\n\n"
+    "Convert the following call log into a watch blotter. Include a header line: "
+    "'MCLB Albany Watch Blotter — [infer date/shift if stated, otherwise [Date/Shift]]'"
+)
+
+
+def _csrf_ok() -> bool:
+    token = (
+        request.headers.get('X-CSRFToken')
+        or (request.get_json(silent=True) or {}).get('_csrf_token')
+        or ''
+    )
+    expected = session.get('_csrf_token', '')
+    return bool(expected and hmac.compare_digest(str(token), str(expected)))
+
+
+@bp.post('/api/tools/narrative/check')
+@login_required
+def narrative_quality_check():
+    if not _csrf_ok():
+        return jsonify({'ok': False, 'error': 'Invalid request.'}), 403
+    body = request.get_json(silent=True) or {}
+    text = (body.get('text') or '').strip()
+    if not text:
+        return jsonify({'ok': False, 'error': 'No text provided.'}), 400
+    if len(text) > 8000:
+        text = text[:8000]
+
+    api_key = configured_openai_api_key()
+    raw = ask_openai_with_system(text, _NARRATIVE_CHECK_PROMPT, api_key)
+    if is_ai_unavailable_message(raw):
+        return jsonify({'ok': False, 'error': 'AI quality check is unavailable. Check your OpenAI key.'}), 503
+
+    import json as _json
+    try:
+        start = raw.find('{')
+        end = raw.rfind('}') + 1
+        result = _json.loads(raw[start:end]) if start >= 0 and end > start else {}
+    except Exception:
+        result = {}
+
+    if not result.get('score'):
+        return jsonify({'ok': False, 'error': 'Could not parse quality check result.'}), 500
+
+    return jsonify({'ok': True, 'result': result})
+
+
+@bp.post('/api/tools/blotter/generate')
+@login_required
+def blotter_generate():
+    if not _csrf_ok():
+        return jsonify({'ok': False, 'error': 'Invalid request.'}), 403
+    body = request.get_json(silent=True) or {}
+    text = (body.get('text') or '').strip()
+    if not text:
+        return jsonify({'ok': False, 'error': 'No call log provided.'}), 400
+    if len(text) > 8000:
+        text = text[:8000]
+
+    api_key = configured_openai_api_key()
+    result = ask_openai_with_system(text, _BLOTTER_PROMPT, api_key)
+    if is_ai_unavailable_message(result):
+        return jsonify({'ok': False, 'error': 'AI blotter generation is unavailable.'}), 503
+
+    return jsonify({'ok': True, 'blotter': result})
