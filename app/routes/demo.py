@@ -148,6 +148,7 @@ DEMO_ADMIN_USERS = [
 WORKFLOW_LAUNCHERS = [
     ('officer-report', 'Officer Report Demo', '/mobile/incident/start', 'Patrol report workflow with AI narrative and packet submission.'),
     ('law-lookup', 'Law Lookup Demo', '/demo/law-lookup', 'Plain-language legal/reference examples using approved sample records.'),
+    ('completed-reports', 'Completed Report Samples', '/demo/report-samples', 'View and print two fully completed, approved incident reports with all fields and paperwork.'),
     ('watch-commander', 'Watch Commander Demo', '/watch-commander/dashboard', 'Shift command, approvals, saved work, assignments, and briefing.'),
     ('desk-sgt', 'Desk Sgt Demo', '/demo/workflows/desk-sgt', 'Report review queue, blotter checks, and correction-note examples.'),
     ('training', 'Training Demo', '/watch-commander/training', 'Roster completion and overdue signature tracking.'),
@@ -775,6 +776,115 @@ def law_lookup():
         if not query or query in haystack:
             results.append(payload)
     return render_template('demo/law_lookup.html', title='Demo Law Lookup', user=current_user, query=query, results=results, examples=DEMO_LAW_RESULTS)
+
+
+DEMO_SAMPLE_REPORTS = [
+    {
+        'id': 'demo-1',
+        'incident_number': 'MCPD-2026-00141',
+        'call_type': 'Domestic Disturbance',
+        'occurred_date': '2026-05-12',
+        'occurred_time': '20:47',
+        'reported_time': '20:49',
+        'location': 'Building 2200, MCLB Albany, GA',
+        'disposition': 'Separated parties; subject transported to PMO for processing',
+        'status': 'APPROVED',
+        'officer': 'Ofc. Carter',
+        'badge': 'MCPD-114',
+        'supervisor': 'Sgt. Brooks',
+        'parties': [
+            {'role': 'Victim', 'name': 'Jane M. Doe', 'dob': '1994-03-11', 'id_type': 'Military ID', 'id_number': '2212-0311-A', 'phone': '(229) 555-0102', 'address': 'BEQ Bldg 2215 Rm 104, MCLB Albany'},
+            {'role': 'Suspect', 'name': 'John R. Smith', 'dob': '1991-07-22', 'id_type': 'Military ID', 'id_number': '1918-0722-B', 'phone': '(229) 555-0178', 'address': 'BEQ Bldg 2215 Rm 106, MCLB Albany'},
+            {'role': 'Witness', 'name': 'Cpl. Mark A. Lewis', 'dob': '1998-01-05', 'id_type': 'Military ID', 'id_number': '3041-0105-C', 'phone': '(229) 555-0135', 'address': 'BEQ Bldg 2215 Rm 110, MCLB Albany'},
+        ],
+        'narrative': (
+            'On 2026-05-12 at approximately 2047 hours, this officer responded to a domestic disturbance call at Building 2200, '
+            'MCLB Albany, GA, in reference to a verbal dispute that had escalated to a physical altercation. '
+            'Upon arrival at 2051 hours, this officer was met by Cpl. Lewis who stated he had heard shouting and sounds of '
+            'a physical struggle from Room 104 approximately ten minutes prior and called the PMO dispatch line at 2049 hours.\n\n'
+            'This officer knocked on the door of Room 104 and was answered by Jane M. Doe, who appeared visibly distressed, '
+            'had a red mark consistent with a slap on her left cheek, and was crying. Doe stated that John R. Smith had '
+            'come to her room, began arguing about personal matters, and struck her on the face with an open hand. '
+            'Smith was located in the hallway near the stairwell exit and was cooperative. Smith stated the altercation '
+            'was verbal only and denied striking Doe. Parties were separated and interviewed independently.\n\n'
+            'Supervisor Sgt. Brooks was notified at 2058 hours. Based on observable injury to Doe and conflicting statements, '
+            'Smith was identified as the primary physical aggressor. Smith was transported to the PMO for further processing. '
+            'Doe was offered medical assistance and declined. A civilian witness statement was obtained from Cpl. Lewis.\n\n'
+            'Evidence: photographs taken of victim injury (attached, File Ref: MCPD-2026-00141-PHO-01 through 04). '
+            'No weapons were involved. Scene was cleared at 2137 hours.'
+        ),
+        'paperwork': [
+            {'form': 'Incident Report', 'completed': True},
+            {'form': 'Witness Statement — Cpl. Lewis', 'completed': True},
+            {'form': 'Victim Statement — Doe, Jane M.', 'completed': True},
+            {'form': 'Use of Force Report', 'completed': False, 'note': 'Not applicable — no force used'},
+            {'form': 'Evidence Form (Photographs)', 'completed': True},
+        ],
+        'supervisor_notes': 'Reviewed. Narrative complete and consistent with physical evidence. Approved for record.',
+        'approved_by': 'Sgt. Brooks',
+        'approved_date': '2026-05-12',
+    },
+    {
+        'id': 'demo-2',
+        'incident_number': 'MCPD-2026-00137',
+        'call_type': 'Traffic Accident',
+        'occurred_date': '2026-05-11',
+        'occurred_time': '14:22',
+        'reported_time': '14:24',
+        'location': 'Main Gate Parking Lot C, MCLB Albany, GA',
+        'disposition': 'No injuries; vehicles documented; one vehicle towed',
+        'status': 'APPROVED',
+        'officer': 'Ofc. Daniels',
+        'badge': 'MCPD-107',
+        'supervisor': 'Lt. Adams',
+        'parties': [
+            {'role': 'Driver 1', 'name': 'SSgt. Robert T. Hill', 'dob': '1988-09-14', 'id_type': 'Military ID', 'id_number': '0912-0914-D', 'phone': '(229) 555-0144', 'address': 'Housing Area, MCLB Albany'},
+            {'role': 'Driver 2', 'name': 'Emily R. Pearson', 'dob': '1995-04-30', 'id_type': 'GA DL', 'id_number': 'GA-047-221-904', 'phone': '(229) 555-0199', 'address': '114 Warehouse Rd, Albany, GA 31701'},
+            {'role': 'Witness', 'name': 'Ofc. Nguyen', 'dob': '', 'id_type': 'MCPD Badge', 'id_number': 'MCPD-112', 'phone': '', 'address': 'PMO, MCLB Albany'},
+        ],
+        'narrative': (
+            'On 2026-05-11 at approximately 1422 hours, this officer responded to the Main Gate Parking Lot C, MCLB Albany, '
+            'in reference to a two-vehicle traffic accident. Upon arrival at 1427 hours, this officer observed a gray 2019 '
+            'Chevrolet Tahoe (GA plate: RZQ-4821) and a blue 2022 Honda Civic (GA plate: LKP-0093) in contact near the '
+            'parking lot exit lane. Both vehicles sustained front-end damage.\n\n'
+            'SSgt. Hill stated he was pulling forward out of a parking space and did not see the approaching Civic. '
+            'Pearson stated she had the right of way in the exit lane and had no time to stop. No injuries were reported '
+            'by either party. Ofc. Nguyen, who was on gate duty, observed the collision and confirmed the account of Pearson.\n\n'
+            'A DD Form 1408 was completed for both operators. Photographs of damage and road position were taken '
+            '(File Ref: MCPD-2026-00137-PHO-01 through 08). SSgt. Hill\'s vehicle was determined to be not drivable '
+            'and was towed by Base Motor Transport. A vehicle impound form was completed. '
+            'Supervisor Lt. Adams was notified at 1435 hours. Scene was cleared at 1519 hours.'
+        ),
+        'paperwork': [
+            {'form': 'Incident/Accident Report', 'completed': True},
+            {'form': 'DD Form 1408 — Driver 1', 'completed': True},
+            {'form': 'DD Form 1408 — Driver 2', 'completed': True},
+            {'form': 'Witness Statement — Ofc. Nguyen', 'completed': True},
+            {'form': 'Vehicle Impound Form — SSgt. Hill Tahoe', 'completed': True},
+            {'form': 'Evidence Form (Photographs)', 'completed': True},
+        ],
+        'supervisor_notes': 'Report complete. Diagram attached. No force. Vehicle tow confirmed. Approved.',
+        'approved_by': 'Lt. Adams',
+        'approved_date': '2026-05-11',
+    },
+]
+
+
+@bp.route('/report-samples')
+@login_required
+def report_samples():
+    _require_demo_controller()
+    return render_template('demo/report_samples.html', title='Demo Report Samples', user=current_user, reports=DEMO_SAMPLE_REPORTS)
+
+
+@bp.route('/report-samples/<report_id>')
+@login_required
+def report_sample_detail(report_id):
+    _require_demo_controller()
+    report = next((r for r in DEMO_SAMPLE_REPORTS if r['id'] == report_id), None)
+    if not report:
+        abort(404)
+    return render_template('demo/report_sample_detail.html', title=f'Demo Report — {report["incident_number"]}', user=current_user, report=report)
 
 
 @bp.route('/api/law-lookup')

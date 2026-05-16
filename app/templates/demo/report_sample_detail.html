@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% block head %}
+<style>
+  .rpt-print-wrap { max-width: 860px; margin: 0 auto; padding: 24px 16px 60px; }
+  .rpt-header { text-align: center; border-bottom: 3px double #071b33; padding-bottom: 14px; margin-bottom: 20px; }
+  .rpt-header h1 { font-size: 18px; font-weight: 800; letter-spacing: 0.05em; margin: 0 0 2px; text-transform: uppercase; }
+  .rpt-header p { font-size: 13px; color: #5a6a7e; margin: 0; }
+  .rpt-meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1.5px solid #c0cad8; margin-bottom: 18px; }
+  .rpt-meta-cell { padding: 7px 12px; border-bottom: 1px solid #c0cad8; font-size: 13px; }
+  .rpt-meta-cell:nth-child(odd) { border-right: 1px solid #c0cad8; }
+  .rpt-meta-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: #667085; display: block; margin-bottom: 1px; }
+  .rpt-section-title { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: #071b33; background: #e8edf4; padding: 5px 12px; border-left: 4px solid #1667c7; margin: 18px 0 0; }
+  .rpt-party-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 0; }
+  .rpt-party-table th { background: #f1f4f9; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 5px 10px; border: 1px solid #c0cad8; text-align: left; }
+  .rpt-party-table td { padding: 6px 10px; border: 1px solid #c0cad8; vertical-align: top; }
+  .rpt-narrative { border: 1.5px solid #c0cad8; padding: 14px 16px; font-size: 13.5px; line-height: 1.75; white-space: pre-wrap; background: #fff; margin-bottom: 0; }
+  .rpt-paperwork-list { border: 1.5px solid #c0cad8; padding: 0; list-style: none; margin-bottom: 0; }
+  .rpt-paperwork-list li { padding: 7px 14px; border-bottom: 1px solid #e4eaf2; font-size: 13px; display: flex; align-items: center; gap: 10px; }
+  .rpt-paperwork-list li:last-child { border-bottom: none; }
+  .rpt-check { display: inline-block; width: 16px; height: 16px; border: 1.5px solid #c0cad8; border-radius: 3px; flex-shrink: 0; text-align: center; font-size: 11px; line-height: 14px; }
+  .rpt-check.done { background: #1667c7; border-color: #1667c7; color: #fff; }
+  .rpt-check.na { background: #f1f4f9; color: #9aa5b4; }
+  .rpt-supervisor-box { border: 1.5px solid #c0cad8; padding: 12px 16px; font-size: 13px; background: #f8fafc; }
+  .rpt-sig-row { display: flex; gap: 32px; margin-top: 30px; }
+  .rpt-sig-line { flex: 1; border-top: 1px solid #071b33; padding-top: 4px; font-size: 11px; color: #667085; text-align: center; }
+  .rpt-status-badge { display: inline-block; padding: 2px 10px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+  .rpt-status-approved { background: #d1fae5; color: #065f46; }
+  .rpt-actions { display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; }
+  @media print {
+    .rpt-actions, nav, .mcpd-command-sidebar, .demo-mode-banner, .skip-nav-link, .ai-panel { display: none !important; }
+    .rpt-print-wrap { padding: 0; }
+    body { background: #fff !important; }
+  }
+  body[data-theme="dark"] .rpt-narrative { background: #0d1828; color: #e8edf4; }
+  body[data-theme="dark"] .rpt-supervisor-box { background: #0d1828; }
+  body[data-theme="dark"] .rpt-meta-grid,
+  body[data-theme="dark"] .rpt-meta-cell,
+  body[data-theme="dark"] .rpt-party-table th,
+  body[data-theme="dark"] .rpt-party-table td,
+  body[data-theme="dark"] .rpt-narrative,
+  body[data-theme="dark"] .rpt-paperwork-list li,
+  body[data-theme="dark"] .rpt-supervisor-box { border-color: #26374d; }
+  body[data-theme="dark"] .rpt-section-title { background: #0d1828; color: #93c5fd; }
+  body[data-theme="dark"] .rpt-party-table th { background: #111e2e; }
+</style>
+{% endblock %}
+{% block body %}
+<div class="app-shell mcpd-command-app demo-mode-app">
+  {% include 'partials/nav.html' %}
+  <main class="mcpd-command-main">
+    <div class="rpt-print-wrap">
+
+      <div class="rpt-actions">
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('demo.report_samples') }}">← All Samples</a>
+        <button class="btn btn-primary btn-sm" onclick="window.print()">🖨 Print / Save PDF</button>
+      </div>
+
+      <div class="rpt-header">
+        <h1>Marine Corps Police Department — MCLB Albany</h1>
+        <p>Incident Report — {{ report.call_type }} &nbsp;|&nbsp; {{ report.incident_number }}</p>
+        <p style="margin-top:4px;"><span class="rpt-status-badge rpt-status-approved">{{ report.status }}</span></p>
+        <p style="font-size:11px;color:#c53030;margin-top:8px;"><strong>SAMPLE DATA ONLY — FOR DEMONSTRATION PURPOSES</strong></p>
+      </div>
+
+      <div class="rpt-meta-grid">
+        <div class="rpt-meta-cell"><span class="rpt-meta-label">Incident Number</span>{{ report.incident_number }}</div>
+        <div class="rpt-meta-cell"><span class="rpt-meta-label">Call Type</span>{{ report.call_type }}</div>
+        <div class="rpt-meta-cell"><span class="rpt-meta-label">Date of Occurrence</span>{{ report.occurred_date }}</div>
+        <div class="rpt-meta-cell"><span class="rpt-meta-label">Time of Occurrence</span>{{ report.occurred_time }}</div>
+        <div class="rpt-meta-cell"><span class="rpt-meta-label">Time Reported</span>{{ report.reported_time }}</div>
+        <div class="rpt-meta-cell"><span class="rpt-meta-label">Location</span>{{ report.location }}</div>
+        <div class="rpt-meta-cell"><span class="rpt-meta-label">Reporting Officer</span>{{ report.officer }} ({{ report.badge }})</div>
+        <div class="rpt-meta-cell"><span class="rpt-meta-label">Supervisor on Duty</span>{{ report.supervisor }}</div>
+        <div class="rpt-meta-cell" style="grid-column: span 2;"><span class="rpt-meta-label">Disposition</span>{{ report.disposition }}</div>
+      </div>
+
+      <div class="rpt-section-title">Involved Parties</div>
+      <table class="rpt-party-table">
+        <thead>
+          <tr>
+            <th>Role</th>
+            <th>Name</th>
+            <th>DOB</th>
+            <th>ID Type / Number</th>
+            <th>Phone</th>
+            <th>Address</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in report.parties %}
+          <tr>
+            <td><strong>{{ p.role }}</strong></td>
+            <td>{{ p.name }}</td>
+            <td>{{ p.dob or '—' }}</td>
+            <td>{{ p.id_type }}<br><small>{{ p.id_number }}</small></td>
+            <td>{{ p.phone or '—' }}</td>
+            <td style="font-size:12px;">{{ p.address }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <div class="rpt-section-title">Narrative</div>
+      <div class="rpt-narrative">{{ report.narrative }}</div>
+
+      <div class="rpt-section-title">Paperwork Completed</div>
+      <ul class="rpt-paperwork-list">
+        {% for item in report.paperwork %}
+        <li>
+          {% if item.completed %}
+          <span class="rpt-check done">✓</span>
+          {% else %}
+          <span class="rpt-check na">—</span>
+          {% endif %}
+          {{ item.form }}
+          {% if item.note %}<small style="color:#9aa5b4;"> ({{ item.note }})</small>{% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+
+      <div class="rpt-section-title">Supervisor Review</div>
+      <div class="rpt-supervisor-box">
+        <p style="margin:0 0 6px;"><strong>Notes:</strong> {{ report.supervisor_notes }}</p>
+        <p style="margin:0;font-size:12px;color:#667085;">Approved by {{ report.approved_by }} on {{ report.approved_date }}</p>
+      </div>
+
+      <div class="rpt-sig-row">
+        <div class="rpt-sig-line">Reporting Officer Signature &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Date</div>
+        <div class="rpt-sig-line">Supervisor Signature &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Date</div>
+      </div>
+
+      <p style="font-size:11px;color:#c53030;margin-top:28px;text-align:center;">
+        DEMO MODE — ALL INFORMATION IS FICTIONAL — DO NOT FILE OR DISTRIBUTE
+      </p>
+
+    </div>
+  </main>
+</div>
+{% endblock %}

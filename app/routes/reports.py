@@ -280,6 +280,21 @@ def _build_reconstruction_pdf(row):
     return buffer
 
 
+@bp.route('/reports/draft/discard', methods=['POST'])
+@login_required
+def discard_draft():
+    draft = (
+        IncidentDraft.query
+        .filter_by(officer_user_id=current_user.id, status='ACTIVE')
+        .first()
+    )
+    if draft:
+        draft.status = 'ABANDONED'
+        db.session.commit()
+        flash('Draft discarded.', 'info')
+    return redirect(url_for('reports.list_reports'))
+
+
 @bp.route('/reports')
 @login_required
 def list_reports():

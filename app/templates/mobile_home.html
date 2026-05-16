@@ -21,10 +21,16 @@
         <span class="mcpd-mobile-greeting-role">{{ user.section_unit or portal_effective_role_label }}</span>
       </div>
       {% if active_incident_draft %}
-      <a class="mcpd-mobile-draft-badge" href="{{ url_for('mobile.incident_start') }}">
-        <span class="mcpd-mobile-draft-dot"></span>
-        Draft in progress
-      </a>
+      <div class="mcpd-mobile-draft-row">
+        <a class="mcpd-mobile-draft-badge" href="{{ url_for('mobile.incident_start') }}">
+          <span class="mcpd-mobile-draft-dot"></span>
+          Draft in progress
+        </a>
+        <form method="post" action="{{ url_for('reports.discard_draft') }}" style="display:inline;" onsubmit="return confirm('Discard this draft?');">
+          <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}" />
+          <button type="submit" class="mcpd-mobile-draft-discard">✕</button>
+        </form>
+      </div>
       {% endif %}
     </section>
 

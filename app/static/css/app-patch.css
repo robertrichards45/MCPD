@@ -1966,6 +1966,33 @@ body[data-theme="dark"] .mcpd-mobile-nav-stop-btn {
 }
 .mcpd-mobile-nav-gps-error.is-visible { display: block; }
 
+/* ── Mobile draft discard row ─────────────────────────────────── */
+.mcpd-mobile-draft-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.mcpd-mobile-draft-discard {
+  background: none;
+  border: 1.5px solid rgba(255,255,255,0.3);
+  border-radius: 50%;
+  color: rgba(255,255,255,0.7);
+  cursor: pointer;
+  font-size: 11px;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.mcpd-mobile-draft-discard:hover {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+}
+
 /* ── Sidebar over assistant panel ─────────────────────────────── */
 .mcpd-command-sidebar.is-open {
   z-index: 10001 !important;
