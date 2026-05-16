@@ -96,20 +96,18 @@
     </section>
     {% endif %}
 
-    <section class="mcpd-mobile-map-panel" aria-label="MCLB Albany location">
+    <section class="mcpd-mobile-map-panel" aria-label="MCLB Albany installation map">
       <div class="mcpd-mobile-map-head">
         <span class="mcpd-mobile-map-pin-badge">
           <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
         </span>
         <div class="mcpd-mobile-map-title">
           <strong>MCLB Albany</strong>
-          <span>Marine Corps Logistics Base</span>
+          <span>Installation Map &mdash; Satellite View</span>
         </div>
-        <a class="mcpd-mobile-map-extlink" href="https://maps.google.com/maps?q=Marine+Corps+Logistics+Base+Albany+GA" target="_blank" rel="noopener noreferrer" aria-label="Open MCLB Albany in Google Maps">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3"/></svg>
-        </a>
+        <div class="mcpd-mobile-map-layer-row" id="mcpd-mobile-layer-toggle"></div>
       </div>
-      <div class="mcpd-mobile-map-canvas" id="mcpd-mobile-map" role="img" aria-label="Interactive map of MCLB Albany, Albany Georgia"></div>
+      <div class="mcpd-mobile-map-canvas" id="mcpd-mobile-map" role="img" aria-label="Satellite installation map of MCLB Albany, Georgia"></div>
       <div class="mcpd-mobile-map-footer">
         814 Radford Blvd &bull; Albany, GA 31704 &bull; DSN 460-1110
       </div>
@@ -127,61 +125,91 @@
 <script>
 (function () {
   var el = document.getElementById('mcpd-mobile-map');
+  var toggleEl = document.getElementById('mcpd-mobile-layer-toggle');
   if (!el || typeof L === 'undefined') return;
 
-  var LAT = 31.5782, LNG = -84.0618;
-
-  delete L.Icon.Default.prototype._getIconUrl;
-  L.Icon.Default.mergeOptions({
-    iconUrl: '{{ url_for("static", filename="vendor/images/marker-icon.png") }}',
-    iconRetinaUrl: '{{ url_for("static", filename="vendor/images/marker-icon-2x.png") }}',
-    shadowUrl: '{{ url_for("static", filename="vendor/images/marker-shadow.png") }}',
-  });
-
-  function isDark() {
-    return document.body.getAttribute('data-theme') === 'dark';
-  }
-
-  function tileUrl(dark) {
-    return dark
-      ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-      : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
-  }
-
-  var attribution = '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OSM</a> &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>';
+  var BASE_CENTER = [31.5752, -84.0630];
+  var isDark = function () { return document.body.getAttribute('data-theme') === 'dark'; };
+  var activeMode = 'satellite';
 
   var map = L.map(el, {
-    center: [LAT, LNG],
+    center: BASE_CENTER,
     zoom: 14,
     scrollWheelZoom: false,
     zoomControl: false,
     attributionControl: true,
   });
-
   L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-  var tileLayer = L.tileLayer(tileUrl(isDark()), {
-    attribution: attribution,
-    subdomains: 'abcd',
-    maxZoom: 20,
-  }).addTo(map);
+  var esriAttrib = 'Tiles &copy; <a href="https://www.esri.com" target="_blank" rel="noopener">Esri</a>';
+  var osmAttrib  = '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OSM</a> &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>';
 
-  var pinHtml = '<div class="mcpd-map-pin"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg></div>';
-  var pin = L.divIcon({ html: pinHtml, className: '', iconSize: [32, 40], iconAnchor: [16, 40], popupAnchor: [0, -44] });
+  var satelliteLayer = L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    { attribution: esriAttrib, maxZoom: 20 }
+  );
+  var streetLayer     = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: osmAttrib, subdomains: 'abcd', maxZoom: 20 });
+  var streetDarkLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',  { attribution: osmAttrib, subdomains: 'abcd', maxZoom: 20 });
 
-  L.marker([LAT, LNG], { icon: pin })
-    .addTo(map)
-    .bindPopup(
-      '<div class="mcpd-map-popup"><strong>MCLB Albany</strong><br>Albany, GA 31704</div>',
-      { maxWidth: 180 }
-    )
-    .openPopup();
+  satelliteLayer.addTo(map);
+
+  var markers = [];
+  var LOCATIONS = [
+    { lat: 31.5709, lng: -84.0765, color: '#1667c7', name: 'Main Gate (Gate 1)', detail: 'Radford Blvd primary entry — visitor control & DBIDS' },
+    { lat: 31.5748, lng: -84.0730, color: '#c53030', name: 'PMO / Police', detail: 'Provost Marshal Office — dispatch & police ops' },
+    { lat: 31.5770, lng: -84.0640, color: '#0f766e', name: 'Headquarters', detail: 'CO, XO, and command staff sections' },
+    { lat: 31.5760, lng: -84.0700, color: '#d97706', name: 'Gate 2', detail: 'Industrial / commercial vehicle access' },
+  ];
+
+  function pinIcon(color) {
+    return L.divIcon({
+      html: '<div style="width:24px;height:30px;color:' + color + ';filter:drop-shadow(0 2px 3px rgba(0,0,0,0.45))">' +
+            '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>' +
+            '</div>',
+      className: '',
+      iconSize: [24, 30],
+      iconAnchor: [12, 30],
+      popupAnchor: [0, -34],
+    });
+  }
+
+  function addMarkers() {
+    markers.forEach(function (m) { map.removeLayer(m); });
+    markers = [];
+    LOCATIONS.forEach(function (loc) {
+      var m = L.marker([loc.lat, loc.lng], { icon: pinIcon(loc.color) })
+        .addTo(map)
+        .bindPopup('<div class="mcpd-map-popup"><strong>' + loc.name + '</strong><br>' + loc.detail + '</div>', { maxWidth: 200 });
+      markers.push(m);
+    });
+  }
+
+  function renderToggle() {
+    if (!toggleEl) return;
+    toggleEl.innerHTML =
+      '<button style="border:none;font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;cursor:pointer;background:' +
+      (activeMode === 'satellite' ? '#1667c7' : 'transparent') + ';color:' + (activeMode === 'satellite' ? '#fff' : '#334155') + '">SAT</button>' +
+      '<button style="border:none;font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;cursor:pointer;background:' +
+      (activeMode === 'street'    ? '#1667c7' : 'transparent') + ';color:' + (activeMode === 'street'    ? '#fff' : '#334155') + '">STR</button>';
+    toggleEl.children[0].onclick = function () { setLayer('satellite'); };
+    toggleEl.children[1].onclick = function () { setLayer('street'); };
+  }
+
+  function setLayer(mode) {
+    map.eachLayer(function (l) { if (l.options && l.options.attribution !== undefined) map.removeLayer(l); });
+    activeMode = mode;
+    if (mode === 'satellite') satelliteLayer.addTo(map);
+    else (isDark() ? streetDarkLayer : streetLayer).addTo(map);
+    addMarkers();
+    renderToggle();
+  }
+
+  addMarkers();
+  renderToggle();
 
   document.addEventListener('click', function (e) {
     if (!e.target.closest('[data-theme-toggle]')) return;
-    setTimeout(function () {
-      tileLayer.setUrl(tileUrl(isDark()));
-    }, 80);
+    setTimeout(function () { if (activeMode === 'street') setLayer('street'); }, 80);
   });
 }());
 </script>

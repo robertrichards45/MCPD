@@ -1663,3 +1663,26 @@ body[data-theme="dark"] .mcpd-mobile-officer-panel {
   background: rgba(15,23,42,0.65) !important;
   border-color: rgba(148,163,184,0.13) !important;
 }
+
+/* Mobile map layer toggle row */
+.mcpd-mobile-map-layer-row {
+  display: flex;
+  gap: 2px;
+  background: rgba(255,255,255,0.90);
+  border: 1px solid rgba(0,0,0,0.15);
+  border-radius: 6px;
+  padding: 2px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+body[data-theme="dark"] .mcpd-mobile-map-layer-row {
+  background: rgba(15,23,42,0.88);
+  border-color: rgba(255,255,255,0.14);
+}
+
+/* Desktop map card info line */
+.mcpd-map-card-info {
+  font-size: 11.5px;
+  color: var(--muted, #64748b);
+  white-space: nowrap;
+}
