@@ -327,6 +327,15 @@ def ensure_schema():
     if 'ix_user_email_unique' not in user_indexes:
         _safe_schema_execute(f'CREATE UNIQUE INDEX IF NOT EXISTS ix_user_email_unique ON {user_table} (email) WHERE email IS NOT NULL')
 
+    if 'watch_assignment' in table_names:
+        wa_columns = {column['name'] for column in inspector.get_columns('watch_assignment')}
+        if 'unit_lat' not in wa_columns:
+            _safe_schema_execute("ALTER TABLE watch_assignment ADD COLUMN unit_lat REAL")
+        if 'unit_lng' not in wa_columns:
+            _safe_schema_execute("ALTER TABLE watch_assignment ADD COLUMN unit_lng REAL")
+        if 'location_updated_at' not in wa_columns:
+            _safe_schema_execute(f"ALTER TABLE watch_assignment ADD COLUMN location_updated_at {datetime_type}")
+
     if 'truck_gate_log' in table_names:
         truck_gate_log_columns = {column['name'] for column in inspector.get_columns('truck_gate_log')}
         if 'log_date' not in truck_gate_log_columns:

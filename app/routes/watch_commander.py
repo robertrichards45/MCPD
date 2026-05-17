@@ -1,6 +1,7 @@
+import json
 from datetime import date
 
-from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
+from flask import Blueprint, abort, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
 from ..extensions import db
@@ -33,6 +34,69 @@ from ..permissions import can_manage_site, effective_role
 bp = Blueprint('watch_commander', __name__, url_prefix='/watch-commander')
 
 OFFICER_STATUSES = ['On Duty', 'Patrol', 'Gate', 'Report Writing', 'Training', 'Meal', 'Off Duty', 'Leave']
+
+# Known MCLB Albany locations mapped to coordinates for demo/location-name fallback
+_MCLB_LOCATIONS = {
+    'main gate': (31.5709, -84.0765),
+    'gate 1': (31.5709, -84.0765),
+    'gate 2': (31.5760, -84.0700),
+    'industrial': (31.5760, -84.0700),
+    'gate 3': (31.5800, -84.0690),
+    'north gate': (31.5800, -84.0690),
+    'pmo': (31.5748, -84.0730),
+    'provost': (31.5748, -84.0730),
+    'police': (31.5748, -84.0730),
+    'hq': (31.5770, -84.0640),
+    'headquarters': (31.5770, -84.0640),
+    'mcx': (31.5730, -84.0590),
+    'exchange': (31.5730, -84.0590),
+    'chapel': (31.5720, -84.0650),
+    'logistics': (31.5795, -84.0580),
+    'patrol zone a': (31.5735, -84.0670),
+    'zone a': (31.5735, -84.0670),
+    'patrol zone b': (31.5768, -84.0615),
+    'zone b': (31.5768, -84.0615),
+    'patrol zone c': (31.5752, -84.0740),
+    'zone c': (31.5752, -84.0740),
+    'desk': (31.5748, -84.0730),
+    'dispatch': (31.5748, -84.0730),
+}
+
+# Demo scatter positions (lat, lng jitter) for units without a mapped location
+_DEMO_SCATTER = [
+    (31.5722, -84.0720), (31.5741, -84.0658), (31.5779, -84.0702),
+    (31.5762, -84.0645), (31.5715, -84.0600), (31.5793, -84.0648),
+    (31.5731, -84.0637), (31.5755, -84.0718),
+]
+
+# Roles that appear on the unit map (field roles only)
+_MAP_ROLES = {ROLE_PATROL_OFFICER, ROLE_DESK_SGT, ROLE_WATCH_COMMANDER}
+_OFF_DUTY_STATUSES = {'Off Duty', 'Leave'}
+
+
+def _resolve_location(assignment, idx: int):
+    """Return (lat, lng) for a WatchAssignment; prefers stored coords, falls back to location name."""
+    if assignment.unit_lat and assignment.unit_lng:
+        return (assignment.unit_lat, assignment.unit_lng)
+    loc = (assignment.assignment_location or '').lower().strip()
+    for key, coords in _MCLB_LOCATIONS.items():
+        if key in loc:
+            return coords
+    return _DEMO_SCATTER[idx % len(_DEMO_SCATTER)]
+
+
+def _status_color(status: str) -> str:
+    mapping = {
+        'Patrol': '#22c55e',
+        'On Duty': '#22c55e',
+        'Gate': '#06b6d4',
+        'Report Writing': '#3b82f6',
+        'Training': '#a855f7',
+        'Meal': '#f59e0b',
+        'Off Duty': '#6b7280',
+        'Leave': '#6b7280',
+    }
+    return mapping.get(status, '#94a3b8')
 ASSIGNMENT_TYPES = ['Patrol Zone', 'Gate Post', 'Desk Duty', 'Training Duty', 'Report Follow-Up', 'Special Task', 'RAM / Security Check']
 
 
@@ -428,3 +492,103 @@ def notifications():
         return redirect(url_for('watch_commander.notifications'))
     notes = WatchNote.query.order_by(WatchNote.created_at.desc()).limit(60).all()
     return render_template('watch_commander/notifications.html', title='Notifications', user=current_user, notes=notes, officers=_officers())
+
+
+# ── Unit Operational Map ───────────────────────────────────────────────────
+
+@bp.route('/unit-map')
+@login_required
+def unit_map():
+    _require_watch_tools()
+    return render_template('watch_commander/unit_map.html', title='Unit Map', user=current_user,
+                           statuses=OFFICER_STATUSES)
+
+
+@bp.route('/api/units')
+@login_required
+def api_units():
+    _require_watch_tools()
+    # Pull latest assignment per officer for all field-role users
+    active_users = (
+        User.query.filter(User.active.is_(True), User.role.in_(_MAP_ROLES))
+        .order_by(User.last_name.asc(), User.first_name.asc())
+        .all()
+    )
+    units = []
+    for idx, officer in enumerate(active_users):
+        assignment = (
+            WatchAssignment.query
+            .filter_by(officer_id=officer.id)
+            .order_by(WatchAssignment.updated_at.desc(), WatchAssignment.id.desc())
+            .first()
+        )
+        status = assignment.status if assignment else 'Off Duty'
+        if status in _OFF_DUTY_STATUSES:
+            continue
+        lat, lng = _resolve_location(assignment, idx) if assignment else _DEMO_SCATTER[idx % len(_DEMO_SCATTER)]
+        units.append({
+            'id': officer.id,
+            'name': officer.display_name,
+            'badge': officer.badge_employee_id or officer.officer_number or '',
+            'role': getattr(officer, 'role_label', officer.role),
+            'status': status,
+            'color': _status_color(status),
+            'location': assignment.assignment_location or 'Unassigned' if assignment else 'Unassigned',
+            'assignment_type': assignment.assignment_type if assignment else '',
+            'lat': lat,
+            'lng': lng,
+            'location_fresh': bool(assignment and assignment.unit_lat),
+        })
+    return jsonify({'units': units})
+
+
+@bp.route('/api/units/<int:officer_id>/status', methods=['POST'])
+@login_required
+def api_update_unit_status(officer_id):
+    _require_watch_tools()
+    new_status = (request.json or {}).get('status', '').strip()
+    if new_status not in OFFICER_STATUSES:
+        return jsonify({'error': 'Invalid status'}), 400
+    officer = User.query.get_or_404(officer_id)
+    assignment = (
+        WatchAssignment.query
+        .filter_by(officer_id=officer.id)
+        .order_by(WatchAssignment.updated_at.desc(), WatchAssignment.id.desc())
+        .first()
+    )
+    if not assignment:
+        assignment = WatchAssignment(officer_id=officer.id, assignment_type='Patrol')
+        db.session.add(assignment)
+    assignment.status = new_status
+    _audit('unit_status_changed', f'officer_id={officer.id}|status={new_status}')
+    db.session.commit()
+    return jsonify({'ok': True, 'status': new_status, 'color': _status_color(new_status)})
+
+
+@bp.route('/api/unit-location', methods=['POST'])
+@login_required
+def api_update_unit_location():
+    """Officer self-reports their GPS location from their device."""
+    data = request.json or {}
+    lat = data.get('lat')
+    lng = data.get('lng')
+    if not lat or not lng:
+        return jsonify({'error': 'lat/lng required'}), 400
+    try:
+        lat, lng = float(lat), float(lng)
+    except (TypeError, ValueError):
+        return jsonify({'error': 'Invalid coordinates'}), 400
+    assignment = (
+        WatchAssignment.query
+        .filter_by(officer_id=current_user.id)
+        .order_by(WatchAssignment.updated_at.desc(), WatchAssignment.id.desc())
+        .first()
+    )
+    if not assignment:
+        assignment = WatchAssignment(officer_id=current_user.id, assignment_type='Patrol')
+        db.session.add(assignment)
+    assignment.unit_lat = lat
+    assignment.unit_lng = lng
+    assignment.location_updated_at = utcnow_naive()
+    db.session.commit()
+    return jsonify({'ok': True})
