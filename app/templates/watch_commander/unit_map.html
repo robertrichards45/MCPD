@@ -183,6 +183,64 @@
   margin-top: 4px;
 }
 /* ── Message compose ──────────────────────────────────────────── */
+.unit-msg-to-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #0a1e35;
+  border: 1px solid #2a4060;
+  border-radius: 6px;
+  padding: 6px 9px;
+  margin-bottom: 6px;
+  min-height: 32px;
+  flex-wrap: wrap;
+}
+.unit-msg-to-label {
+  font-size: .64rem;
+  font-weight: 700;
+  color: rgba(255,255,255,.38);
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  flex-shrink: 0;
+}
+#msg-to-display {
+  font-size: .75rem;
+  color: #c8d8f0;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.unit-msg-to-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.unit-msg-to-actions button {
+  background: rgba(22,103,199,.28);
+  border: 1px solid rgba(96,165,250,.3);
+  border-radius: 4px;
+  color: #60a5fa;
+  font-size: .62rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  line-height: 1.4;
+}
+.unit-msg-to-actions button:hover { background: rgba(22,103,199,.5); }
+.unit-msg-priority {
+  width: 100%;
+  background: #0a1e35;
+  border: 1px solid #2a4060;
+  border-radius: 6px;
+  color: #e0eaf8;
+  font-size: .75rem;
+  padding: 5px 8px;
+  margin-bottom: 6px;
+}
 .unit-msg-textarea {
   width: 100%;
   background: #0a1e35;
@@ -194,20 +252,14 @@
   resize: vertical;
   min-height: 60px;
   margin-bottom: 6px;
+  box-sizing: border-box;
 }
-.unit-msg-row {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 6px;
-}
-.unit-msg-row select, .unit-msg-row input {
-  flex: 1;
-  background: #0a1e35;
-  border: 1px solid #2a4060;
-  border-radius: 6px;
-  color: #e0eaf8;
-  font-size: .75rem;
-  padding: 5px 8px;
+.unit-msg-check {
+  accent-color: #1667c7;
+  width: 13px;
+  height: 13px;
+  cursor: pointer;
+  flex-shrink: 0;
 }
 .unit-msg-send {
   width: 100%;
@@ -358,18 +410,20 @@
     <!-- Quick message compose -->
     <div class="unit-sidebar-section">
       <p class="unit-sidebar-head">Send Message</p>
-      <div class="unit-msg-row">
-        <select id="msg-recipient">
-          <option value="">All On-Duty (Broadcast)</option>
-        </select>
+      <!-- Recipients bar — checks in the roster control this -->
+      <div class="unit-msg-to-bar">
+        <span class="unit-msg-to-label">To</span>
+        <span id="msg-to-display">All On-Duty (Broadcast)</span>
+        <div class="unit-msg-to-actions">
+          <button type="button" onclick="selectAllUnits()">All</button>
+          <button type="button" onclick="clearUnitSelection()">Clear</button>
+        </div>
       </div>
-      <div class="unit-msg-row">
-        <select id="msg-priority">
-          <option value="Normal">Normal</option>
-          <option value="Urgent">Urgent</option>
-          <option value="Emergency">Emergency</option>
-        </select>
-      </div>
+      <select class="unit-msg-priority" id="msg-priority">
+        <option value="Normal">Normal</option>
+        <option value="Urgent">Urgent</option>
+        <option value="Emergency">Emergency</option>
+      </select>
       <textarea class="unit-msg-textarea" id="msg-body" placeholder="Type your message…"></textarea>
       <button class="unit-msg-send" id="msg-send-btn">Send</button>
       <div class="unit-msg-sent" id="msg-sent-status"></div>
@@ -463,28 +517,57 @@
   var unitsData = [];
   var selectedId = null;
 
-  // ── Roster sidebar + recipient dropdown ────────────────────────
-  function renderRoster() {
-    var roster = document.getElementById('unit-roster');
-    var sel = document.getElementById('msg-recipient');
-    if (!unitsData.length) {
-      roster.innerHTML = '<div style="color:#8ba5c0;font-size:.78rem;">No on-duty field units.</div>';
-      sel.innerHTML = '<option value="">All On-Duty (Broadcast)</option>';
+  // ── Recipient helpers ─────────────────────────────────────────
+  function getSelectedIds() {
+    return Array.from(document.querySelectorAll('.unit-msg-check:checked'))
+      .map(function (cb) { return parseInt(cb.value, 10); });
+  }
+
+  function updateRecipientDisplay() {
+    var ids = getSelectedIds();
+    var el = document.getElementById('msg-to-display');
+    if (!ids.length) {
+      el.textContent = 'All On-Duty (Broadcast)';
       return;
     }
+    var names = ids.map(function (id) {
+      var u = unitsData.find(function (x) { return x.id === id; });
+      return u ? u.name.split(' ').pop() : 'Unit ' + id;
+    });
+    el.textContent = names.join(', ') + (ids.length > 1 ? '  (' + ids.length + ')' : '');
+  }
+
+  window.selectAllUnits = function () {
+    document.querySelectorAll('.unit-msg-check').forEach(function (cb) { cb.checked = true; });
+    updateRecipientDisplay();
+  };
+
+  window.clearUnitSelection = function () {
+    document.querySelectorAll('.unit-msg-check').forEach(function (cb) { cb.checked = false; });
+    updateRecipientDisplay();
+  };
+
+  // ── Roster sidebar ────────────────────────────────────────────
+  function renderRoster() {
+    var roster = document.getElementById('unit-roster');
+    if (!unitsData.length) {
+      roster.innerHTML = '<div style="color:#8ba5c0;font-size:.78rem;">No on-duty field units.</div>';
+      updateRecipientDisplay();
+      return;
+    }
+    // Preserve existing checked state across refreshes
+    var checked = new Set(getSelectedIds());
     roster.innerHTML = unitsData.map(function (u) {
-      return '<div class="unit-roster-row" data-id="' + u.id + '" onclick="selectUnit(' + u.id + ')">' +
-        '<span class="unit-roster-dot" style="background:' + u.color + '"></span>' +
-        '<span class="unit-roster-name">' + u.name + '</span>' +
+      var isChecked = checked.has(u.id) ? ' checked' : '';
+      return '<div class="unit-roster-row" data-id="' + u.id + '">' +
+        '<input type="checkbox" class="unit-msg-check" id="check-' + u.id + '" value="' + u.id + '"' + isChecked +
+          ' onchange="updateRecipientDisplay()" onclick="event.stopPropagation()">' +
+        '<span class="unit-roster-dot" style="background:' + u.color + ';cursor:pointer" onclick="selectUnit(' + u.id + ')"></span>' +
+        '<span class="unit-roster-name" style="cursor:pointer" onclick="selectUnit(' + u.id + ')">' + u.name + '</span>' +
         '<span class="unit-roster-status">' + u.status + '</span>' +
         '</div>';
     }).join('');
-    var prev = sel.value;
-    sel.innerHTML = '<option value="">All On-Duty (Broadcast)</option>' +
-      unitsData.map(function (u) {
-        return '<option value="' + u.id + '">' + u.name + '</option>';
-      }).join('');
-    sel.value = prev;
+    updateRecipientDisplay();
   }
 
   window.selectUnit = function (id) {
@@ -585,10 +668,11 @@
   };
 
   window.msgUnit = function (id) {
-    var sel = document.getElementById('msg-recipient');
-    if (sel) sel.value = String(id);
+    // Pre-check this unit's checkbox in the roster so the To: bar shows their name
+    var cb = document.getElementById('check-' + id);
+    if (cb) { cb.checked = true; updateRecipientDisplay(); }
     var ta = document.getElementById('msg-body');
-    if (ta) ta.focus();
+    if (ta) { ta.focus(); ta.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
     map.closePopup();
   };
 
@@ -647,46 +731,60 @@
       .catch(function () {});
   }
 
-  // ── Message send ───────────────────────────────────────────────
+  // ── Message send (single, multi, or broadcast) ─────────────────
   document.getElementById('msg-send-btn').addEventListener('click', function () {
-    var body = (document.getElementById('msg-body').value || '').trim();
+    var body     = (document.getElementById('msg-body').value || '').trim();
     if (!body) return;
-    var recipientId = document.getElementById('msg-recipient').value;
-    var priority    = document.getElementById('msg-priority').value;
-    var statusEl    = document.getElementById('msg-sent-status');
-    var btn         = this;
+    var priority = document.getElementById('msg-priority').value;
+    var statusEl = document.getElementById('msg-sent-status');
+    var btn      = this;
+    var ids      = getSelectedIds();
     btn.disabled    = true;
     btn.textContent = 'Sending…';
-    statusEl.textContent  = '';
-    statusEl.style.color  = '#22c55e';
-    var fd = new FormData();
-    if (recipientId) fd.append('recipient_id', recipientId);
-    fd.append('priority', priority);
-    fd.append('body', body);
-    fetch('/notifications/send', {
-      method: 'POST',
-      headers: { 'X-Requested-With': 'fetch' },
-      body: fd,
-    })
-    .then(function (r) { return r.json(); })
-    .then(function (data) {
+    statusEl.textContent = '';
+    statusEl.style.color = '#22c55e';
+
+    function onDone(label) {
       btn.disabled    = false;
       btn.textContent = 'Send';
-      if (data.ok) {
-        document.getElementById('msg-body').value = '';
-        statusEl.textContent = 'Message sent.';
-        setTimeout(function () { statusEl.textContent = ''; }, 3000);
-      } else {
-        statusEl.style.color = '#ef4444';
-        statusEl.textContent = data.error || 'Failed to send.';
-      }
-    })
-    .catch(function () {
+      document.getElementById('msg-body').value = '';
+      statusEl.textContent = label;
+      setTimeout(function () { statusEl.textContent = ''; }, 3000);
+    }
+    function onError(msg) {
       btn.disabled    = false;
       btn.textContent = 'Send';
       statusEl.style.color = '#ef4444';
-      statusEl.textContent = 'Network error.';
-    });
+      statusEl.textContent = msg || 'Failed to send.';
+    }
+
+    function sendOne(recipientId) {
+      var fd = new FormData();
+      if (recipientId) fd.append('recipient_id', recipientId);
+      fd.append('priority', priority);
+      fd.append('body', body);
+      return fetch('/notifications/send', {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'fetch' },
+        body: fd,
+      }).then(function (r) { return r.json(); });
+    }
+
+    if (ids.length === 0) {
+      // Broadcast to all on-duty
+      sendOne(null)
+        .then(function (d) { d.ok ? onDone('Broadcast sent.') : onError(d.error); })
+        .catch(function () { onError('Network error.'); });
+    } else if (ids.length === 1) {
+      sendOne(ids[0])
+        .then(function (d) { d.ok ? onDone('Message sent.') : onError(d.error); })
+        .catch(function () { onError('Network error.'); });
+    } else {
+      // Send individually to each selected recipient
+      Promise.all(ids.map(sendOne))
+        .then(function () { onDone('Sent to ' + ids.length + ' units.'); })
+        .catch(function () { onError('Some messages failed.'); });
+    }
   });
 
   loadUnits();
