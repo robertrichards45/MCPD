@@ -1,7 +1,7 @@
 import json
 from datetime import date
 
-from flask import Blueprint, abort, flash, jsonify, redirect, render_template, request, url_for
+from flask import Blueprint, abort, flash, jsonify, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_required
 
 from ..extensions import db
@@ -545,20 +545,24 @@ def unit_map():
     )
 
 
+_DEMO_STATUSES = ['Patrol', 'On Duty', 'Gate', 'Report Writing', 'On Duty', 'Patrol', 'Training', 'Meal']
+
+
 @bp.route('/api/units')
 @login_required
 def api_units():
     if not _can_access_unit_map(current_user):
         abort(403)
     scope_id = _unit_map_supervisor_filter(current_user)
+    is_demo = bool(session.get('demo_mode'))
 
     # Build filtered user list based on viewer scope
     q = User.query.filter(User.active.is_(True), User.role.in_(_MAP_ROLES))
     if scope_id is not None:
-        # Watch Commander / Desk Sgt: only see their direct reports (supervisor_id = self)
         q = q.filter(User.supervisor_id == scope_id)
     active_users = q.order_by(User.last_name.asc(), User.first_name.asc()).all()
 
+    # In demo mode, show all active officers even without assignments
     units = []
     for idx, officer in enumerate(active_users):
         assignment = (
@@ -567,7 +571,12 @@ def api_units():
             .order_by(WatchAssignment.updated_at.desc(), WatchAssignment.id.desc())
             .first()
         )
-        status = assignment.status if assignment else 'Off Duty'
+        if assignment:
+            status = assignment.status
+        elif is_demo:
+            status = _DEMO_STATUSES[idx % len(_DEMO_STATUSES)]
+        else:
+            status = 'Off Duty'
         if status in _OFF_DUTY_STATUSES:
             continue
         lat, lng = _resolve_location(assignment, idx) if assignment else _DEMO_SCATTER[idx % len(_DEMO_SCATTER)]
@@ -578,7 +587,7 @@ def api_units():
             'role': getattr(officer, 'role_label', officer.role),
             'status': status,
             'color': _status_color(status),
-            'location': assignment.assignment_location or 'Unassigned' if assignment else 'Unassigned',
+            'location': (assignment.assignment_location or 'Unassigned') if assignment else 'MCLB Albany',
             'assignment_type': assignment.assignment_type if assignment else '',
             'lat': lat,
             'lng': lng,

@@ -414,6 +414,10 @@
     zoomControl: true,
   });
 
+  var osmLayer = L.tileLayer(
+    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    { attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>', subdomains: 'abc', maxZoom: 19 }
+  );
   var satLayer = L.tileLayer(
     'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
     { attribution: 'Tiles &copy; Esri, Maxar', maxZoom: 20 }
@@ -422,8 +426,23 @@
     'https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png',
     { attribution: '&copy; CARTO', subdomains: 'abcd', maxZoom: 20 }
   );
-  satLayer.addTo(map);
-  labelsLayer.addTo(map);
+
+  // Start with OSM (universally accessible); offer satellite as an option
+  osmLayer.addTo(map);
+  L.control.layers(
+    { 'Street Map': osmLayer, 'Satellite': satLayer },
+    { 'Labels': labelsLayer },
+    { position: 'topright', collapsed: true }
+  ).addTo(map);
+
+  // If OSM tiles fail, switch to satellite automatically
+  osmLayer.on('tileerror', function () {
+    if (!map.hasLayer(satLayer)) {
+      map.removeLayer(osmLayer);
+      satLayer.addTo(map);
+      labelsLayer.addTo(map);
+    }
+  });
 
   // ── Unit marker icon ───────────────────────────────────────────
   function unitIcon(color, size) {
