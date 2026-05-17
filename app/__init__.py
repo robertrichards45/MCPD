@@ -336,6 +336,22 @@ def ensure_schema():
         if 'location_updated_at' not in wa_columns:
             _safe_schema_execute(f"ALTER TABLE watch_assignment ADD COLUMN location_updated_at {datetime_type}")
 
+    if 'command_message' not in table_names:
+        _safe_schema_execute(
+            f"CREATE TABLE IF NOT EXISTS command_message ("
+            f"id INTEGER PRIMARY KEY AUTOINCREMENT, "
+            f"sender_id INTEGER NOT NULL REFERENCES \"user\"(id), "
+            f"recipient_id INTEGER REFERENCES \"user\"(id), "
+            f"subject VARCHAR(200), "
+            f"body TEXT NOT NULL, "
+            f"priority VARCHAR(20) NOT NULL DEFAULT 'Normal', "
+            f"is_broadcast BOOLEAN NOT NULL DEFAULT 0, "
+            f"read_at {datetime_type}, "
+            f"is_demo BOOLEAN NOT NULL DEFAULT 0, "
+            f"created_at {datetime_type} NOT NULL"
+            f")"
+        )
+
     if 'truck_gate_log' in table_names:
         truck_gate_log_columns = {column['name'] for column in inspector.get_columns('truck_gate_log')}
         if 'log_date' not in truck_gate_log_columns:
@@ -923,7 +939,7 @@ def create_app():
     db.init_app(app)
     login_manager.init_app(app)
 
-    from .routes import auth, assistant, assistant_operations, bolo, bodycam, dashboard, forms, training, qual_tracker, performance, stats, annual_ai, admin, cleo_api, reports, reconstruction, officers, ops_modules, legal, orders, reference, announcements, mobile, watch_commander, demo
+    from .routes import auth, assistant, assistant_operations, bolo, bodycam, dashboard, forms, training, qual_tracker, performance, stats, annual_ai, admin, cleo_api, reports, reconstruction, officers, ops_modules, legal, orders, reference, announcements, mobile, watch_commander, demo, notifications
     app.register_blueprint(auth.bp)
     app.register_blueprint(assistant.bp)
     app.register_blueprint(assistant_operations.bp)
@@ -948,6 +964,7 @@ def create_app():
     app.register_blueprint(announcements.bp)
     app.register_blueprint(mobile.bp)
     app.register_blueprint(watch_commander.bp)
+    app.register_blueprint(notifications.bp)
     app.register_blueprint(demo.bp)
 
     @app.get('/manifest.webmanifest')

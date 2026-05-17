@@ -176,27 +176,57 @@
   transition: background .12s;
 }
 .unit-status-btn:hover { background: #1259b0; }
-/* ── Geolocation share btn ────────────────────────────────────── */
-.unit-geo-btn {
-  width: 100%;
-  background: transparent;
-  border: 1px solid #2a4060;
-  border-radius: 6px;
-  color: #93c5fd;
-  font-size: .75rem;
-  font-weight: 600;
-  padding: 7px 12px;
-  cursor: pointer;
-  text-align: center;
-  transition: background .12s, border-color .12s;
-  margin-top: 4px;
-}
-.unit-geo-btn:hover { background: rgba(22,103,199,.14); border-color: #3b74d8; }
 .unit-geo-status {
   font-size: .7rem;
   color: #64748b;
   text-align: center;
   margin-top: 4px;
+}
+/* ── Message compose ──────────────────────────────────────────── */
+.unit-msg-textarea {
+  width: 100%;
+  background: #0a1e35;
+  border: 1px solid #2a4060;
+  border-radius: 6px;
+  color: #e0eaf8;
+  font-size: .78rem;
+  padding: 7px 10px;
+  resize: vertical;
+  min-height: 60px;
+  margin-bottom: 6px;
+}
+.unit-msg-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.unit-msg-row select, .unit-msg-row input {
+  flex: 1;
+  background: #0a1e35;
+  border: 1px solid #2a4060;
+  border-radius: 6px;
+  color: #e0eaf8;
+  font-size: .75rem;
+  padding: 5px 8px;
+}
+.unit-msg-send {
+  width: 100%;
+  background: #1259b0;
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  font-size: .75rem;
+  font-weight: 700;
+  padding: 7px;
+  cursor: pointer;
+}
+.unit-msg-send:hover { background: #0f4fa4; }
+.unit-msg-sent {
+  font-size: .7rem;
+  color: #22c55e;
+  text-align: center;
+  margin-top: 4px;
+  min-height: 16px;
 }
 /* ── Leaflet popup override ────────────────────────────────────── */
 .leaflet-popup-content-wrapper {
@@ -299,6 +329,26 @@
       {% endif %}
     </div>
 
+    <!-- Quick message compose -->
+    <div class="unit-sidebar-section">
+      <p class="unit-sidebar-head">Send Message</p>
+      <div class="unit-msg-row">
+        <select id="msg-recipient">
+          <option value="">All On-Duty (Broadcast)</option>
+        </select>
+      </div>
+      <div class="unit-msg-row">
+        <select id="msg-priority">
+          <option value="Normal">Normal</option>
+          <option value="Urgent">Urgent</option>
+          <option value="Emergency">Emergency</option>
+        </select>
+      </div>
+      <textarea class="unit-msg-textarea" id="msg-body" placeholder="Type your message…"></textarea>
+      <button class="unit-msg-send" id="msg-send-btn">Send</button>
+      <div class="unit-msg-sent" id="msg-sent-status"></div>
+    </div>
+
     <!-- Status legend quick-ref -->
     <div class="unit-sidebar-section">
       <p class="unit-sidebar-head">Status Key</p>
@@ -368,11 +418,13 @@
   var unitsData = [];
   var selectedId = null;
 
-  // ── Roster sidebar ─────────────────────────────────────────────
+  // ── Roster sidebar + recipient dropdown ────────────────────────
   function renderRoster() {
     var roster = document.getElementById('unit-roster');
+    var sel = document.getElementById('msg-recipient');
     if (!unitsData.length) {
       roster.innerHTML = '<div style="color:#8ba5c0;font-size:.78rem;">No on-duty field units.</div>';
+      sel.innerHTML = '<option value="">All On-Duty (Broadcast)</option>';
       return;
     }
     roster.innerHTML = unitsData.map(function (u) {
@@ -382,6 +434,12 @@
         '<span class="unit-roster-status">' + u.status + '</span>' +
         '</div>';
     }).join('');
+    var prev = sel.value;
+    sel.innerHTML = '<option value="">All On-Duty (Broadcast)</option>' +
+      unitsData.map(function (u) {
+        return '<option value="' + u.id + '">' + u.name + '</option>';
+      }).join('');
+    sel.value = prev;
   }
 
   window.selectUnit = function (id) {
@@ -431,8 +489,17 @@
       '</div>' +
       '<select class="unit-popup-select" id="popup-sel-' + u.id + '">' + opts + '</select>' +
       '<button class="unit-popup-btn" onclick="updateFromPopup(' + u.id + ')">Update Status</button>' +
+      '<button class="unit-popup-btn" style="margin-top:5px;background:#1259b0;" onclick="msgUnit(' + u.id + ')">Send Message</button>' +
       '</div>';
   }
+
+  window.msgUnit = function (id) {
+    var sel = document.getElementById('msg-recipient');
+    if (sel) sel.value = String(id);
+    var ta = document.getElementById('msg-body');
+    if (ta) ta.focus();
+    map.closePopup();
+  };
 
   window.updateFromPopup = function (id) {
     var sel = document.getElementById('popup-sel-' + id);
@@ -488,6 +555,48 @@
       })
       .catch(function () {});
   }
+
+  // ── Message send ───────────────────────────────────────────────
+  document.getElementById('msg-send-btn').addEventListener('click', function () {
+    var body = (document.getElementById('msg-body').value || '').trim();
+    if (!body) return;
+    var recipientId = document.getElementById('msg-recipient').value;
+    var priority    = document.getElementById('msg-priority').value;
+    var statusEl    = document.getElementById('msg-sent-status');
+    var btn         = this;
+    btn.disabled    = true;
+    btn.textContent = 'Sending…';
+    statusEl.textContent  = '';
+    statusEl.style.color  = '#22c55e';
+    var fd = new FormData();
+    if (recipientId) fd.append('recipient_id', recipientId);
+    fd.append('priority', priority);
+    fd.append('body', body);
+    fetch('/notifications/send', {
+      method: 'POST',
+      headers: { 'X-Requested-With': 'fetch' },
+      body: fd,
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      btn.disabled    = false;
+      btn.textContent = 'Send';
+      if (data.ok) {
+        document.getElementById('msg-body').value = '';
+        statusEl.textContent = 'Message sent.';
+        setTimeout(function () { statusEl.textContent = ''; }, 3000);
+      } else {
+        statusEl.style.color = '#ef4444';
+        statusEl.textContent = data.error || 'Failed to send.';
+      }
+    })
+    .catch(function () {
+      btn.disabled    = false;
+      btn.textContent = 'Send';
+      statusEl.style.color = '#ef4444';
+      statusEl.textContent = 'Network error.';
+    });
+  });
 
   loadUnits();
   setInterval(loadUnits, 20000); // auto-refresh every 20s

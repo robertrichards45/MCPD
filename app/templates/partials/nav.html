@@ -64,6 +64,7 @@
       <a class="{% if endpoint.startswith('officers.') %}is-active{% endif %}" href="{{ url_for('officers.profile') }}"><svg class="nav-icon" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>Personnel</a>
     {% endif %}
     <a class="{% if saved_work_active %}is-active{% endif %}" href="{{ url_for('forms.saved_forms') }}"><svg class="nav-icon" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 2h10v13l-5-3-5 3V2z"/></svg>Saved Work</a>
+    <a class="{% if endpoint.startswith('notifications.') %}is-active{% endif %}" href="{{ url_for('notifications.inbox') }}"><svg class="nav-icon" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 4h12v8a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4z"/><path d="M2 4l6 5 6-5"/></svg>Messages <span id="nav-unread-badge" class="nav-pending-badge" style="display:none"></span></a>
     {% if portal_can_access_assistant_operations|default(false) %}
       <a class="{% if endpoint.startswith('assistant_operations.') %}is-active{% endif %}" href="{{ url_for('assistant_operations.dashboard') }}"><svg class="nav-icon" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M8 5v4M8 11v1"/></svg>Assistant Ops</a>
     {% endif %}

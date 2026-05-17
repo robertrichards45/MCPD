@@ -1264,3 +1264,21 @@ class YearSubmission(db.Model):
 
     officer  = db.relationship('User', foreign_keys=[officer_id],  backref='perf_submissions')
     reviewer = db.relationship('User', foreign_keys=[reviewed_by], backref='perf_reviewed')
+
+
+class CommandMessage(db.Model):
+    """Message sent from a commander to one officer or broadcast to all on-duty units."""
+    __tablename__ = 'command_message'
+    id           = db.Column(db.Integer, primary_key=True)
+    sender_id    = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    recipient_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
+    subject      = db.Column(db.String(200), nullable=True)
+    body         = db.Column(db.Text, nullable=False)
+    priority     = db.Column(db.String(20), default='Normal', nullable=False, index=True)
+    is_broadcast = db.Column(db.Boolean, default=False, nullable=False)
+    read_at      = db.Column(db.DateTime, nullable=True)
+    is_demo      = db.Column(db.Boolean, default=False, nullable=False)
+    created_at   = db.Column(db.DateTime, default=utcnow_naive, nullable=False, index=True)
+
+    sender    = db.relationship('User', foreign_keys=[sender_id],    backref='sent_messages')
+    recipient = db.relationship('User', foreign_keys=[recipient_id], backref='received_messages')

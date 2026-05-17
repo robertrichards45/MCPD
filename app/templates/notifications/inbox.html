@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell mcpd-command-app">
+  {% include 'partials/nav.html' %}
+  <main class="mcpd-command-main" id="main-content">
+    <section class="ops-head-card">
+      <div>
+        <h2>Command Messages</h2>
+        <p class="ops-head-sub">Messages from command staff and broadcast notices.</p>
+      </div>
+      {% if can_compose %}
+      <div class="ops-head-actions">
+        <button class="btn btn-primary btn-sm" onclick="document.getElementById('compose-panel').open=true">Compose</button>
+      </div>
+      {% endif %}
+    </section>
+
+    {% if can_compose %}
+    <details class="ops-panel mb-3 collapse-card" id="compose-panel">
+      <summary>Compose Message</summary>
+      <form method="post" action="{{ url_for('notifications.send') }}" class="mt-3">
+        <input type="hidden" name="csrf_token" value="{{ g.csrf_token }}">
+        <div class="row g-3">
+          <div class="col-md-5">
+            <label class="form-label text-dark">Recipient</label>
+            <select class="form-control" name="recipient_id">
+              <option value="">All On-Duty Units (Broadcast)</option>
+              {% for u in field_users %}
+              <option value="{{ u.id }}">{{ u.display_name }} — {{ u.role_label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label text-dark">Priority</label>
+            <select class="form-control" name="priority">
+              <option value="Normal">Normal</option>
+              <option value="Urgent">Urgent</option>
+              <option value="Emergency">Emergency</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label text-dark">Subject (optional)</label>
+            <input class="form-control" name="subject" placeholder="Quick heads up…">
+          </div>
+          <div class="col-12">
+            <label class="form-label text-dark">Message</label>
+            <textarea class="form-control" name="body" rows="3" required placeholder="Type your message here…"></textarea>
+          </div>
+          <div class="col-12">
+            <button class="btn btn-primary" type="submit">Send</button>
+          </div>
+        </div>
+      </form>
+    </details>
+    {% endif %}
+
+    <div class="d-grid gap-3">
+      {% for m in messages %}
+      <article class="ops-panel {% if m.priority == 'Emergency' %}border-danger{% elif m.priority == 'Urgent' %}border-warning{% endif %}"
+               id="msg-{{ m.id }}"
+               style="{% if m.priority == 'Emergency' %}border-left:4px solid #ef4444{% elif m.priority == 'Urgent' %}border-left:4px solid #f59e0b{% endif %}">
+        <div class="ops-panel-head">
+          <div>
+            <div class="small text-muted">
+              {% if m.is_broadcast %}<span class="badge bg-secondary me-1">Broadcast</span>{% endif %}
+              <span class="badge {% if m.priority == 'Emergency' %}bg-danger{% elif m.priority == 'Urgent' %}bg-warning text-dark{% else %}bg-dark{% endif %}">{{ m.priority }}</span>
+              From <strong>{{ m.sender.display_name }}</strong> · {{ m.created_at.strftime('%Y-%m-%d %H:%M') if m.created_at else '' }}
+            </div>
+            {% if m.subject %}<h3 class="mb-0" style="font-size:1rem;">{{ m.subject }}</h3>{% endif %}
+          </div>
+          {% if not m.read_at and m.recipient_id == current_user.id %}
+          <form method="post" action="{{ url_for('notifications.mark_read', msg_id=m.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ g.csrf_token }}">
+            <button class="btn btn-sm btn-outline-secondary">Mark Read</button>
+          </form>
+          {% elif m.read_at %}
+          <span class="small text-muted">Read {{ m.read_at.strftime('%H:%M') }}</span>
+          {% endif %}
+        </div>
+        <p class="mb-0">{{ m.body }}</p>
+      </article>
+      {% else %}
+      <div class="ops-panel text-center text-muted">No messages yet.</div>
+      {% endfor %}
+    </div>
+  </main>
+</div>
+{% endblock %}

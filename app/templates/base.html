@@ -122,14 +122,14 @@
   {% block scripts %}{% endblock %}
   {% if current_user and current_user.is_authenticated %}
   <script>
-  /* Auto-location reporter: silently pushes GPS every 5 min for on-duty units */
+  /* ── Location reporter ──────────────────────────────────────────────────
+     Uses watchPosition so tracking persists across page navigations.
+     Throttled to one push per 5 minutes to conserve bandwidth.          */
   (function () {
     if (!navigator.geolocation) return;
-    var KEY = 'mcpd-loc-ts';
-    var INTERVAL = 5 * 60 * 1000; // 5 minutes
-    var csrf = document.querySelector('meta[name="csrf-token"]')
-               ? document.querySelector('meta[name="csrf-token"]').content
-               : (document.getElementById('csrf-token') ? document.getElementById('csrf-token').value : '');
+    var KEY      = 'mcpd-loc-ts';
+    var INTERVAL = 5 * 60 * 1000;
+    var csrf     = (document.querySelector('meta[name="csrf-token"]') || {}).content || '';
 
     function push(lat, lng) {
       fetch('/watch-commander/api/unit-location', {
@@ -139,23 +139,114 @@
       }).catch(function () {});
     }
 
-    function tryShare() {
+    var _lastPush = parseInt(localStorage.getItem(KEY) || '0', 10);
+
+    navigator.geolocation.watchPosition(
+      function (pos) {
+        var now = Date.now();
+        if (now - _lastPush >= INTERVAL) {
+          push(pos.coords.latitude, pos.coords.longitude);
+          _lastPush = now;
+          localStorage.setItem(KEY, now);
+        }
+      },
+      function () { /* permission denied or unavailable — silent */ },
+      { timeout: 10000, maximumAge: 120000, enableHighAccuracy: false }
+    );
+
+    /* Immediate push on load if overdue */
+    if (Date.now() - _lastPush >= INTERVAL) {
       navigator.geolocation.getCurrentPosition(
         function (pos) {
           push(pos.coords.latitude, pos.coords.longitude);
-          localStorage.setItem(KEY, Date.now());
+          _lastPush = Date.now();
+          localStorage.setItem(KEY, _lastPush);
         },
-        function () { /* silently fail — permission denied or unavailable */ },
+        function () {},
         { timeout: 8000, maximumAge: 60000, enableHighAccuracy: false }
       );
     }
+  }());
+  </script>
 
-    /* Share on load if it's been more than 5 minutes since last push */
-    var last = parseInt(localStorage.getItem(KEY) || '0', 10);
-    if (Date.now() - last > INTERVAL) tryShare();
+  <script>
+  /* ── Command Notification System ────────────────────────────────────────
+     Connects to SSE stream for real-time messages, shows Browser
+     Notifications, and maintains an unread-count badge in the sidebar.  */
+  (function () {
+    /* ── Unread badge helper ── */
+    function updateUnreadBadge(count) {
+      var badge = document.getElementById('nav-unread-badge');
+      if (!badge) return;
+      if (count > 0) {
+        badge.textContent = count > 9 ? '9+' : String(count);
+        badge.style.display = '';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
 
-    /* Then every 5 minutes while the tab is open */
-    setInterval(tryShare, INTERVAL);
+    /* ── Browser Notification permission ── */
+    if (window.Notification && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+
+    /* ── Show a browser notification for an incoming command message ── */
+    function showDesktopNotification(msg) {
+      if (!window.Notification || Notification.permission !== 'granted') return;
+      var title = (msg.priority && msg.priority !== 'Normal' ? '[' + msg.priority + '] ' : '') +
+                  (msg.subject || 'Command Message');
+      var n = new Notification(title, {
+        body: msg.body,
+        icon: '/static/icons/mcpd-icon-32.png',
+        tag: 'mcpd-msg-' + msg.id,
+        requireInteraction: msg.priority === 'Emergency',
+      });
+      n.onclick = function () {
+        window.focus();
+        window.location.href = '/notifications/inbox';
+        n.close();
+      };
+    }
+
+    /* ── SSE connection with auto-reconnect ── */
+    var _sseRetry = 2000;
+    function connectSSE() {
+      var src = new EventSource('/notifications/stream');
+
+      src.addEventListener('command_message', function (evt) {
+        try {
+          var msg = JSON.parse(evt.data);
+          showDesktopNotification(msg);
+          /* Refresh badge without a separate poll on this event */
+          fetch('/notifications/unread')
+            .then(function (r) { return r.json(); })
+            .then(function (d) { updateUnreadBadge(d.count); })
+            .catch(function () {});
+        } catch (e) {}
+      });
+
+      src.addEventListener('connected', function () {
+        _sseRetry = 2000; /* reset backoff on successful connect */
+      });
+
+      src.addEventListener('error', function () {
+        src.close();
+        setTimeout(connectSSE, _sseRetry);
+        _sseRetry = Math.min(_sseRetry * 2, 30000); /* exponential backoff up to 30s */
+      });
+    }
+    connectSSE();
+
+    /* ── Poll unread count every 30 s ── */
+    function pollUnread() {
+      fetch('/notifications/unread')
+        .then(function (r) { return r.json(); })
+        .then(function (d) { updateUnreadBadge(d.count); })
+        .catch(function () {});
+    }
+    pollUnread();
+    setInterval(pollUnread, 30000);
   }());
   </script>
   {% endif %}
