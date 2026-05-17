@@ -651,3 +651,100 @@ def api_update_unit_location():
     assignment.location_updated_at = utcnow_naive()
     db.session.commit()
     return jsonify({'ok': True})
+
+
+# ── Shift Sign-On / Sign-Off ───────────────────────────────────────────────
+
+@bp.route('/sign-on', methods=['GET', 'POST'])
+@login_required
+def sign_on():
+    """Any authenticated officer can check in to start their shift."""
+    existing = (
+        WatchAssignment.query
+        .filter_by(officer_id=current_user.id)
+        .order_by(WatchAssignment.updated_at.desc())
+        .first()
+    )
+    is_on_duty = bool(existing and existing.status not in _OFF_DUTY_STATUSES)
+
+    if request.method == 'POST':
+        action = request.form.get('action', 'sign_on')
+
+        if action == 'sign_off':
+            if existing:
+                existing.status = 'Off Duty'
+                existing.updated_at = utcnow_naive()
+                db.session.commit()
+                _audit('shift_sign_off', 'self')
+            flash('Shift ended. Stay safe out there.', 'success')
+            return redirect(url_for('dashboard.dashboard'))
+
+        location = (request.form.get('location') or '').strip()
+        atype = (request.form.get('assignment_type') or ASSIGNMENT_TYPES[0]).strip()
+        if atype not in ASSIGNMENT_TYPES:
+            atype = ASSIGNMENT_TYPES[0]
+
+        if existing:
+            existing.status = 'On Duty'
+            if location:
+                existing.assignment_location = location
+            existing.assignment_type = atype
+            existing.updated_at = utcnow_naive()
+        else:
+            existing = WatchAssignment(
+                officer_id=current_user.id,
+                assignment_type=atype,
+                assignment_location=location,
+                status='On Duty',
+            )
+            db.session.add(existing)
+        db.session.commit()
+        _audit('shift_sign_on', f'type={atype}|location={location}')
+        flash('Shift started. You are now visible on the unit map.', 'success')
+        return redirect(url_for('dashboard.dashboard'))
+
+    wcs = [u for u in User.query.filter(User.active.is_(True)).all()
+           if getattr(u, 'has_role', lambda r: False)(ROLE_WATCH_COMMANDER)]
+
+    return render_template(
+        'watch_commander/sign_on.html',
+        title='Shift Check-In',
+        user=current_user,
+        assignment=existing,
+        is_on_duty=is_on_duty,
+        assignment_types=ASSIGNMENT_TYPES,
+        locations=sorted(_MCLB_LOCATIONS.keys()),
+    )
+
+
+# ── Close Shift (WC / Desk Sgt) ───────────────────────────────────────────
+
+@bp.route('/api/close-shift', methods=['POST'])
+@login_required
+def api_close_shift():
+    """Mark all on-duty units (in scope) as Off Duty for shift handoff."""
+    if not _can_access_unit_map(current_user):
+        abort(403)
+    scope_id = _unit_map_supervisor_filter(current_user)
+
+    q = (
+        WatchAssignment.query
+        .join(User, WatchAssignment.officer_id == User.id)
+        .filter(
+            User.active.is_(True),
+            User.role.in_(_MAP_ROLES),
+            WatchAssignment.status.notin_(list(_OFF_DUTY_STATUSES)),
+        )
+    )
+    if scope_id is not None:
+        q = q.filter(User.supervisor_id == scope_id)
+
+    count = 0
+    for a in q.all():
+        a.status = 'Off Duty'
+        a.updated_at = utcnow_naive()
+        count += 1
+    db.session.commit()
+    _audit('close_shift', f'count={count}|scope={scope_id}')
+    return jsonify({'ok': True, 'closed': count})
+

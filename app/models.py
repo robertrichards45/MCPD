@@ -1282,3 +1282,15 @@ class CommandMessage(db.Model):
 
     sender    = db.relationship('User', foreign_keys=[sender_id],    backref='sent_messages')
     recipient = db.relationship('User', foreign_keys=[recipient_id], backref='received_messages')
+
+
+class CommandMessageRead(db.Model):
+    """Per-user read receipt so each officer can individually mark a broadcast read."""
+    __tablename__ = 'command_message_read'
+    id         = db.Column(db.Integer, primary_key=True)
+    message_id = db.Column(db.Integer, db.ForeignKey('command_message.id'), nullable=False, index=True)
+    user_id    = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    read_at    = db.Column(db.DateTime, default=utcnow_naive, nullable=False)
+    __table_args__ = (db.UniqueConstraint('message_id', 'user_id', name='uq_cmd_msg_read'),)
+    message = db.relationship('CommandMessage', backref='reads')
+    user    = db.relationship('User', backref='message_reads')

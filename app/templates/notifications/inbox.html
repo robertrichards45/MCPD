@@ -68,12 +68,20 @@
             </div>
             {% if m.subject %}<h3 class="mb-0" style="font-size:1rem;">{{ m.subject }}</h3>{% endif %}
           </div>
-          {% if not m.read_at and m.recipient_id == current_user.id %}
+          {% set user_read = m.reads | selectattr('user_id', 'equalto', current_user.id) | list %}
+          {% if m.is_broadcast and not user_read %}
           <form method="post" action="{{ url_for('notifications.mark_read', msg_id=m.id) }}">
             <input type="hidden" name="csrf_token" value="{{ g.csrf_token }}">
             <button class="btn btn-sm btn-outline-secondary">Mark Read</button>
           </form>
-          {% elif m.read_at %}
+          {% elif m.is_broadcast and user_read %}
+          <span class="small text-muted">Read {{ user_read[0].read_at.strftime('%H:%M') }}</span>
+          {% elif not m.is_broadcast and not m.read_at and m.recipient_id == current_user.id %}
+          <form method="post" action="{{ url_for('notifications.mark_read', msg_id=m.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ g.csrf_token }}">
+            <button class="btn btn-sm btn-outline-secondary">Mark Read</button>
+          </form>
+          {% elif not m.is_broadcast and m.read_at %}
           <span class="small text-muted">Read {{ m.read_at.strftime('%H:%M') }}</span>
           {% endif %}
         </div>

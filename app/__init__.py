@@ -352,6 +352,17 @@ def ensure_schema():
             f")"
         )
 
+    if 'command_message_read' not in table_names:
+        _safe_schema_execute(
+            f"CREATE TABLE IF NOT EXISTS command_message_read ("
+            f"id INTEGER PRIMARY KEY AUTOINCREMENT, "
+            f"message_id INTEGER NOT NULL REFERENCES command_message(id), "
+            f"user_id INTEGER NOT NULL REFERENCES \"user\"(id), "
+            f"read_at {datetime_type} NOT NULL, "
+            f"UNIQUE(message_id, user_id)"
+            f")"
+        )
+
     if 'truck_gate_log' in table_names:
         truck_gate_log_columns = {column['name'] for column in inspector.get_columns('truck_gate_log')}
         if 'log_date' not in truck_gate_log_columns:
@@ -911,6 +922,19 @@ def create_app():
             except Exception:
                 pending_approvals_count = 0
 
+        # Shift status for header badge and nav sign-on link
+        try:
+            from .models import WatchAssignment as _WA
+            _shift = (
+                _WA.query
+                .filter_by(officer_id=current_user.id)
+                .order_by(_WA.updated_at.desc())
+                .first()
+            )
+            shift_status = _shift.status if _shift else 'Off Duty'
+        except Exception:
+            shift_status = None
+
         return {
             'role_labels': ROLE_LABELS,
             'portal_origin_label': host_display,
@@ -934,6 +958,7 @@ def create_app():
             'portal_demo_batch_id': session.get('demo_batch_id'),
             'portal_is_site_owner': is_site_owner(current_user),
             'portal_can_control_demo': is_site_owner(current_user),
+            'portal_shift_status': shift_status,
         }
 
     db.init_app(app)

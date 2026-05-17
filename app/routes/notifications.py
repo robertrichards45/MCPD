@@ -18,6 +18,7 @@ from flask_login import current_user, login_required
 from ..extensions import db
 from ..models import (
     CommandMessage,
+    CommandMessageRead,
     ROLE_ASSISTANT_OPERATIONS_OFFICER,
     ROLE_DESK_SGT,
     ROLE_WATCH_COMMANDER,
@@ -203,11 +204,16 @@ def unread():
         CommandMessage.recipient_id == uid,
         CommandMessage.read_at.is_(None),
     ).order_by(CommandMessage.created_at.desc()).limit(10).all()
-    # Broadcasts not yet read (no per-read tracking for broadcasts — use created_at vs session)
+
+    # Broadcasts not yet individually acknowledged by this user
+    read_broadcast_ids = {
+        r.message_id for r in
+        CommandMessageRead.query.filter_by(user_id=uid).all()
+    }
     broadcasts = CommandMessage.query.filter(
         CommandMessage.is_broadcast.is_(True),
         CommandMessage.sender_id != uid,
-        CommandMessage.read_at.is_(None),
+        CommandMessage.id.notin_(read_broadcast_ids) if read_broadcast_ids else db.true(),
     ).order_by(CommandMessage.created_at.desc()).limit(5).all()
 
     msgs = personal + broadcasts
@@ -236,11 +242,19 @@ def unread():
 @login_required
 def mark_read(msg_id):
     msg = CommandMessage.query.get_or_404(msg_id)
-    if msg.recipient_id and msg.recipient_id != current_user.id:
-        abort(403)
-    if not msg.read_at:
-        msg.read_at = utcnow_naive()
-        db.session.commit()
+    uid = current_user.id
+    if msg.is_broadcast:
+        # Per-user read receipt for broadcasts
+        exists = CommandMessageRead.query.filter_by(message_id=msg.id, user_id=uid).first()
+        if not exists:
+            db.session.add(CommandMessageRead(message_id=msg.id, user_id=uid))
+            db.session.commit()
+    else:
+        if msg.recipient_id and msg.recipient_id != uid:
+            abort(403)
+        if not msg.read_at:
+            msg.read_at = utcnow_naive()
+            db.session.commit()
     return jsonify({'ok': True})
 
 
