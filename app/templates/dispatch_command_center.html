@@ -3,7 +3,164 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/command_center.css', v='2026-05-16-dispatch') }}" />
 <link rel="stylesheet" href="{{ url_for('static', filename='vendor/leaflet.min.css', v='1.9.4') }}" />
 <style>
-#mcpd-dashboard-map { height: 340px; width: 100%; border-radius: 8px; background: #0d1f35; }
+/* ── Dispatch map layout ──────────────────────────────────────── */
+.dispatch-map-wrap {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 0;
+  min-height: 540px;
+}
+#mcpd-dashboard-map {
+  height: 540px;
+  width: 100%;
+  background: #071b33;
+}
+.dispatch-map-sidebar {
+  background: #071b33;
+  border-left: 1px solid rgba(255,255,255,.08);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  max-height: 540px;
+}
+.dispatch-sidebar-section {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+}
+.dispatch-sidebar-head {
+  color: rgba(255,255,255,.45);
+  font-size: .64rem;
+  font-weight: 700;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  margin: 0 0 8px;
+}
+.dispatch-roster { display: flex; flex-direction: column; gap: 5px; }
+.dispatch-roster-row {
+  display: flex; align-items: center; gap: 7px;
+  padding: 5px 6px; border-radius: 6px; cursor: pointer;
+  transition: background .1s;
+}
+.dispatch-roster-row:hover { background: rgba(255,255,255,.06); }
+.dispatch-roster-dot {
+  width: 9px; height: 9px; border-radius: 50%;
+  flex-shrink: 0; border: 1.5px solid rgba(255,255,255,.2);
+}
+.dispatch-roster-name {
+  font-size: .78rem; font-weight: 700; color: #e0eaf8;
+  flex: 1; min-width: 0; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+}
+.dispatch-roster-status { font-size: .66rem; font-weight: 600; color: #8ba5c0; }
+.dispatch-status-panel {
+  display: none; border-top: 1px solid rgba(255,255,255,.08);
+  margin-top: 8px; padding-top: 8px;
+}
+.dispatch-status-panel.is-open { display: block; }
+.dispatch-status-name {
+  color: #c0d6f0; font-size: .78rem; font-weight: 700; margin: 0 0 6px;
+}
+.dispatch-status-select, .dispatch-msg-priority, .dispatch-msg-textarea {
+  width: 100%; background: #0a1e35; border: 1px solid #2a4060;
+  border-radius: 6px; color: #e0eaf8; font-size: .78rem;
+  padding: 5px 8px; margin-bottom: 6px; box-sizing: border-box;
+}
+.dispatch-msg-textarea { resize: vertical; min-height: 54px; }
+.dispatch-status-btn, .dispatch-msg-send {
+  width: 100%; background: #1667c7; border: none; border-radius: 6px;
+  color: #fff; font-size: .75rem; font-weight: 700; padding: 7px;
+  cursor: pointer; transition: background .12s; margin-bottom: 4px;
+}
+.dispatch-status-btn:hover, .dispatch-msg-send:hover { background: #1259b0; }
+.dispatch-close-btn {
+  width: 100%; background: #7f1d1d; border: none; border-radius: 6px;
+  color: #fff; font-size: .75rem; font-weight: 700; padding: 7px;
+  cursor: pointer; transition: background .12s;
+}
+.dispatch-close-btn:hover { background: #991b1b; }
+.dispatch-msg-to-bar {
+  display: flex; align-items: center; gap: 5px;
+  background: #0a1e35; border: 1px solid #2a4060;
+  border-radius: 6px; padding: 5px 8px; margin-bottom: 5px;
+  min-height: 28px; flex-wrap: wrap;
+}
+.dispatch-msg-to-label {
+  font-size: .62rem; font-weight: 700; color: rgba(255,255,255,.35);
+  text-transform: uppercase; letter-spacing: .07em; flex-shrink: 0;
+}
+#dispatch-to-display {
+  font-size: .73rem; color: #c8d8f0; flex: 1; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.dispatch-to-btns { display: flex; gap: 4px; flex-shrink: 0; }
+.dispatch-to-btns button {
+  background: rgba(22,103,199,.28); border: 1px solid rgba(96,165,250,.3);
+  border-radius: 4px; color: #60a5fa; font-size: .6rem;
+  font-weight: 700; padding: 2px 6px; cursor: pointer;
+  text-transform: uppercase; letter-spacing: .05em; line-height: 1.4;
+}
+.dispatch-to-btns button:hover { background: rgba(22,103,199,.5); }
+.dispatch-msg-check {
+  accent-color: #1667c7; width: 13px; height: 13px;
+  cursor: pointer; flex-shrink: 0;
+}
+.dispatch-msg-sent {
+  font-size: .68rem; color: #22c55e; text-align: center;
+  min-height: 14px; margin-top: 2px;
+}
+.dispatch-map-live-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #22c55e; display: inline-block;
+  animation: blink 1.8s ease-in-out infinite; margin-right: 5px;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+/* Popup overrides */
+.leaflet-popup-content-wrapper {
+  background: #071b33 !important; border: 1px solid #2a4060 !important;
+  border-radius: 8px !important; box-shadow: 0 8px 24px rgba(0,0,0,.5) !important;
+}
+.leaflet-popup-tip { background: #071b33 !important; }
+.leaflet-popup-content { color: #e0eaf8 !important; margin: 10px 14px !important; }
+.unit-popup { min-width: 220px; }
+.unit-popup-name { font-size: .88rem; font-weight: 800; color: #e8f0fb; margin: 0 0 2px; }
+.unit-popup-detail { font-size: .72rem; color: #8ba5c0; margin: 0 0 8px; }
+.unit-popup-status-row { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; }
+.unit-popup-status-badge {
+  font-size: .7rem; font-weight: 700; border-radius: 4px;
+  padding: 2px 8px; border: 1px solid rgba(255,255,255,.15);
+}
+.unit-popup-select {
+  width: 100%; background: #0a1e35; border: 1px solid #2a4060;
+  border-radius: 5px; color: #e0eaf8; font-size: .78rem;
+  padding: 5px 8px; margin-bottom: 6px;
+}
+.unit-popup-btn {
+  background: #1667c7; border: none; border-radius: 5px; color: #fff;
+  font-size: .75rem; font-weight: 700; padding: 6px 10px; cursor: pointer; flex: 1;
+}
+.unit-popup-btn:hover { background: #1259b0; }
+.unit-popup-btn-row { display: flex; gap: 5px; margin-top: 4px; }
+.unit-popup-divider { border-top: 1px solid rgba(255,255,255,.1); margin: 9px 0 7px; }
+.unit-popup-label {
+  font-size: .64rem; font-weight: 700; color: rgba(255,255,255,.4);
+  letter-spacing: .07em; text-transform: uppercase; margin-bottom: 4px;
+}
+.unit-popup-textarea {
+  width: 100%; background: #0a1e35; border: 1px solid #2a4060;
+  border-radius: 5px; color: #e0eaf8; font-size: .78rem;
+  padding: 6px 8px; resize: none; min-height: 54px; box-sizing: border-box;
+}
+.unit-popup-textarea:focus { outline: none; border-color: #1667c7; }
+.unit-popup-pri {
+  flex: 0 0 100px; background: #0a1e35; border: 1px solid #2a4060;
+  border-radius: 5px; color: #e0eaf8; font-size: .72rem; padding: 5px 6px;
+}
+.unit-popup-sent { font-size: .65rem; min-height: 14px; margin-top: 3px; text-align: center; }
+@media (max-width: 900px) {
+  .dispatch-map-wrap { grid-template-columns: 1fr; }
+  .dispatch-map-sidebar { max-height: 320px; border-left: none; border-top: 1px solid rgba(255,255,255,.08); }
+  #mcpd-dashboard-map { height: 380px; }
+}
 </style>
 {% endblock %}
 {% block body %}
@@ -13,12 +170,12 @@
     <section class="command-hero">
       <div>
         <h1>Dispatch / Command Center</h1>
-        <p>Live operational view for Watch Commanders, Desk Sergeants, dispatcher-style monitoring, active incidents, unit status, and command-level workflow visibility.</p>
+        <p>Live operational view — real-time unit positions, status tracking, inline messaging, active incidents, and shift control.</p>
         <div class="command-badge-row">
-          <span class="command-badge">DEMO READY</span>
-          <span class="command-badge">RADIO MODE</span>
-          <span class="command-badge">SHIFT OVERVIEW</span>
-          <span class="command-badge">MAP / UNIT STATUS</span>
+          <span class="command-badge">LIVE TRACKING</span>
+          <span class="command-badge">INLINE MESSAGING</span>
+          <span class="command-badge">SHIFT CONTROL</span>
+          <span class="command-badge">OFFLINE MAP</span>
         </div>
       </div>
       <div class="command-clock-card">
@@ -38,39 +195,84 @@
       {% endfor %}
     </section>
 
-    <section class="command-grid">
-      <article class="command-panel">
+    <!-- ── Full-width operational map ──────────────────────────── -->
+    <section style="margin-bottom:16px;">
+      <article class="command-panel command-map-panel" style="overflow:hidden;">
         <div class="command-panel-head">
-          <h2>Unit Status</h2>
-          <span>{{ unit_status|length }} Units</span>
+          <h2><span class="dispatch-map-live-dot"></span>Installation Operational Map</h2>
+          <span>Live — refreshes every 20s</span>
         </div>
-        <div class="command-list">
-          {% for unit in unit_status %}
-          <div class="command-row">
-            <span class="command-status-dot {{ unit.state_class }}" aria-hidden="true"></span>
-            <div>
-              <strong>{{ unit.name }}</strong>
-              <small>{{ unit.assignment }}</small>
+        <div class="dispatch-map-wrap">
+          <!-- Map canvas -->
+          <div id="mcpd-dashboard-map" role="img" aria-label="MCLB Albany live unit positions"></div>
+
+          <!-- Sidebar -->
+          <div class="dispatch-map-sidebar">
+
+            <!-- Unit roster -->
+            <div class="dispatch-sidebar-section" style="flex:1 1 auto;overflow-y:auto;">
+              <p class="dispatch-sidebar-head">On-Duty Units</p>
+              <div class="dispatch-roster" id="dispatch-roster">
+                <div style="color:#8ba5c0;font-size:.75rem;">Loading…</div>
+              </div>
+              <div class="dispatch-status-panel" id="dispatch-status-panel">
+                <div class="dispatch-status-name" id="dispatch-status-name">—</div>
+                <select class="dispatch-status-select" id="dispatch-status-select">
+                  {% for s in statuses %}
+                  <option value="{{ s }}">{{ s }}</option>
+                  {% endfor %}
+                </select>
+                <button class="dispatch-status-btn" id="dispatch-status-save">Update Status</button>
+              </div>
             </div>
-            <span class="command-pill">{{ unit.status }}</span>
+
+            <!-- Message compose -->
+            <div class="dispatch-sidebar-section">
+              <p class="dispatch-sidebar-head">Send Message</p>
+              <div class="dispatch-msg-to-bar">
+                <span class="dispatch-msg-to-label">To</span>
+                <span id="dispatch-to-display">All On-Duty (Broadcast)</span>
+                <div class="dispatch-to-btns">
+                  <button type="button" onclick="dispatchSelectAll()">All</button>
+                  <button type="button" onclick="dispatchClearAll()">Clear</button>
+                </div>
+              </div>
+              <select class="dispatch-msg-priority" id="dispatch-msg-priority">
+                <option value="Normal">Normal</option>
+                <option value="Urgent">Urgent</option>
+                <option value="Emergency">Emergency</option>
+              </select>
+              <textarea class="dispatch-msg-textarea" id="dispatch-msg-body" placeholder="Type your message…"></textarea>
+              <button class="dispatch-msg-send" id="dispatch-msg-btn">Send</button>
+              <div class="dispatch-msg-sent" id="dispatch-msg-status"></div>
+            </div>
+
+            <!-- Shift control -->
+            <div class="dispatch-sidebar-section">
+              <p class="dispatch-sidebar-head">Shift Control</p>
+              <button class="dispatch-close-btn" id="dispatch-close-btn">Close Shift</button>
+              <div id="dispatch-close-status" style="font-size:.66rem;color:#94a3b8;text-align:center;min-height:12px;margin-top:3px;"></div>
+            </div>
+
+            <!-- Legend -->
+            <div class="dispatch-sidebar-section">
+              <p class="dispatch-sidebar-head">Status Key</p>
+              {% for label, color in [('Patrol / On Duty','#22c55e'),('Gate Post','#06b6d4'),('Report Writing','#3b82f6'),('Training','#a855f7'),('Meal Break','#f59e0b')] %}
+              <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px;">
+                <span style="width:9px;height:9px;border-radius:50%;background:{{ color }};flex-shrink:0;display:inline-block;"></span>
+                <span style="font-size:.69rem;color:#94a3b8;font-weight:600;">{{ label }}</span>
+              </div>
+              {% endfor %}
+            </div>
+
           </div>
-          {% endfor %}
         </div>
       </article>
+    </section>
 
-      <article class="command-panel command-map-panel">
-        <div class="command-panel-head">
-          <h2>Installation Operational Map</h2>
-          <span>Command View</span>
-        </div>
-        <div id="mcpd-dashboard-map" aria-label="Installation operational map"></div>
-        <div class="command-radio-box">
-          <strong>Dispatch / Radio AI Mode</strong>
-          <p>{{ radio_summary }}</p>
-        </div>
-      </article>
-
-      <article class="command-panel">
+    <!-- ── Unit status + Active incidents ──────────────────────── -->
+    <section class="command-grid">
+      <article class="command-panel" style="grid-column: span 1;">
         <div class="command-panel-head">
           <h2>Active Incidents</h2>
           <span>{{ active_incidents|length }} Open</span>
@@ -88,11 +290,21 @@
           {% endfor %}
         </div>
       </article>
+
+      <article class="command-panel" style="grid-column: span 2;">
+        <div class="command-panel-head">
+          <h2>Radio / Dispatch Log</h2>
+          <span>Current Shift</span>
+        </div>
+        <div style="padding:14px 16px;color:#94a3b8;font-size:.85rem;line-height:1.6;">
+          {{ radio_summary }}
+        </div>
+      </article>
     </section>
 
     <section class="command-actions" aria-label="Command center actions">
       <a class="command-action-btn" href="{{ url_for('watch_commander.dashboard') }}">Watch Commander Hub</a>
-      <a class="command-action-btn" href="{{ url_for('watch_commander.unit_map') }}">Operational Map</a>
+      <a class="command-action-btn" href="{{ url_for('watch_commander.unit_map') }}">Full Unit Map</a>
       <a class="command-action-btn" href="{{ url_for('dashboard.k9_dashboard') }}">K-9 Dashboard</a>
       <a class="command-action-btn" href="{{ url_for('dashboard.cvi_dashboard') }}">CVI Dashboard</a>
       <a class="command-action-btn" href="{{ url_for('dashboard.srt_dashboard') }}">SRT Readiness</a>
@@ -101,79 +313,328 @@
     </section>
   </main>
 </div>
+<input type="hidden" id="csrf-token" value="{{ g.csrf_token }}">
 {% endblock %}
+
 {% block scripts %}
 <script src="{{ url_for('static', filename='vendor/leaflet.min.js', v='1.9.4') }}"></script>
 <script>
 (function () {
-  var BASE_BOUNDS = [[31.560, -84.085], [31.595, -84.048]];
-  var CENTER = [31.577, -84.065];
+  'use strict';
 
-  var _svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 950">'
-    + '<rect width="1000" height="950" fill="#0d1f35"/>'
-    + '<polygon points="80,200 920,200 920,820 80,820" fill="none" stroke="#1e3a5c" stroke-width="3" stroke-dasharray="12,6"/>'
-    + '<line x1="80" y1="510" x2="920" y2="510" stroke="#233d5e" stroke-width="6" stroke-linecap="round"/>'
-    + '<line x1="80" y1="510" x2="920" y2="510" stroke="#2a4f78" stroke-width="2"/>'
-    + '<line x1="500" y1="200" x2="500" y2="820" stroke="#233d5e" stroke-width="6" stroke-linecap="round"/>'
-    + '<line x1="500" y1="200" x2="500" y2="820" stroke="#2a4f78" stroke-width="2"/>'
-    + '<line x1="80" y1="340" x2="500" y2="340" stroke="#1d3450" stroke-width="4"/>'
-    + '<line x1="500" y1="650" x2="920" y2="650" stroke="#1d3450" stroke-width="4"/>'
-    + '<rect x="140" y="460" width="90" height="55" rx="4" fill="#102035" stroke="#2563a8" stroke-width="2"/>'
-    + '<text x="185" y="493" font-family="Arial" font-size="14" fill="#5b9bd5" text-anchor="middle">PMO</text>'
-    + '<rect x="630" y="255" width="90" height="55" rx="4" fill="#102035" stroke="#2563a8" stroke-width="2"/>'
-    + '<text x="675" y="288" font-family="Arial" font-size="14" fill="#5b9bd5" text-anchor="middle">HQ</text>'
-    + '<rect x="630" y="675" width="90" height="55" rx="4" fill="#102035" stroke="#2563a8" stroke-width="2"/>'
-    + '<text x="675" y="708" font-family="Arial" font-size="14" fill="#5b9bd5" text-anchor="middle">CVI</text>'
-    + '<circle cx="90" cy="340" r="18" fill="#102035" stroke="#2563a8" stroke-width="2"/>'
-    + '<text x="90" y="368" font-family="Arial" font-size="10" fill="#5b9bd5" text-anchor="middle">Main Gate</text>'
-    + '<text x="90" y="184" font-family="Arial" font-size="10" fill="#5b9bd5" text-anchor="middle">N Gate</text>'
-    + '</svg>';
+  var BASE_CENTER = [31.5752, -84.0630];
+  var BASE_BOUNDS = [[31.560, -84.085], [31.590, -84.048]];
+  var STATUSES = {{ statuses | tojson }};
+  var csrfToken = (document.getElementById('csrf-token') || {}).value || '';
 
-  var blob = new Blob([_svg], { type: 'image/svg+xml' });
-  var svgUrl = URL.createObjectURL(blob);
-
+  // ── Map init ────────────────────────────────────────────────────
   var map = L.map('mcpd-dashboard-map', {
-    center: CENTER,
-    zoom: 13,
-    zoomControl: true,
+    center: BASE_CENTER,
+    zoom: 15,
+    minZoom: 13,
     scrollWheelZoom: false,
-    dragging: true,
-    touchZoom: true,
-    doubleClickZoom: false,
+    zoomControl: true,
     attributionControl: false,
     maxBounds: BASE_BOUNDS,
-    maxBoundsViscosity: 0.2,
+    maxBoundsViscosity: 0.15,
   });
 
-  L.imageOverlay(svgUrl, BASE_BOUNDS, { interactive: false, zIndex: 1 }).addTo(map);
+  // ── Full offline SVG schematic of MCLB Albany ───────────────────
+  var _svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 950">'
+    + '<defs><radialGradient id="vig" cx="50%" cy="50%" r="70%" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1000" y2="950"><stop offset="0%" stop-color="transparent"/><stop offset="100%" stop-color="#020c1b" stop-opacity="0.7"/></radialGradient></defs>'
+    + '<rect width="1000" height="950" fill="#07111f"/>'
+    + '<polygon points="140,720 230,650 270,610 310,490 390,360 445,270 545,225 695,250 800,305 825,445 790,580 730,690 615,760 410,790 275,770 195,735" fill="#0d1f38" stroke="#1a3a6a" stroke-width="2.5"/>'
+    + '<ellipse cx="490" cy="500" rx="120" ry="90" fill="#0a1e10" opacity="0.6"/>'
+    + '<ellipse cx="690" cy="390" rx="70" ry="55" fill="#0a1e10" opacity="0.5"/>'
+    + '<line x1="230" y1="605" x2="324" y2="481" stroke="#1e3a6a" stroke-width="14" stroke-linecap="round"/>'
+    + '<line x1="230" y1="605" x2="324" y2="481" stroke="#2a5080" stroke-width="8" stroke-linecap="round"/>'
+    + '<line x1="324" y1="481" x2="405" y2="443" stroke="#1e3a6a" stroke-width="14" stroke-linecap="round"/>'
+    + '<line x1="324" y1="481" x2="405" y2="443" stroke="#2a5080" stroke-width="8" stroke-linecap="round"/>'
+    + '<line x1="405" y1="443" x2="568" y2="411" stroke="#1e3a6a" stroke-width="14" stroke-linecap="round"/>'
+    + '<line x1="405" y1="443" x2="568" y2="411" stroke="#2a5080" stroke-width="8" stroke-linecap="round"/>'
+    + '<line x1="568" y1="411" x2="703" y2="538" stroke="#1a3460" stroke-width="10" stroke-linecap="round"/>'
+    + '<line x1="568" y1="411" x2="703" y2="538" stroke="#223d72" stroke-width="6" stroke-linecap="round"/>'
+    + '<line x1="324" y1="481" x2="432" y2="317" stroke="#1a3460" stroke-width="10" stroke-linecap="round"/>'
+    + '<line x1="324" y1="481" x2="432" y2="317" stroke="#223d72" stroke-width="6" stroke-linecap="round"/>'
+    + '<line x1="432" y1="317" x2="568" y2="411" stroke="#1a3460" stroke-width="10" stroke-linecap="round"/>'
+    + '<line x1="432" y1="317" x2="568" y2="411" stroke="#223d72" stroke-width="6" stroke-linecap="round"/>'
+    + '<line x1="432" y1="317" x2="730" y2="333" stroke="#192f55" stroke-width="8" stroke-linecap="round"/>'
+    + '<line x1="432" y1="317" x2="730" y2="333" stroke="#1e3a63" stroke-width="5" stroke-linecap="round"/>'
+    + '<line x1="568" y1="411" x2="730" y2="333" stroke="#192f55" stroke-width="7" stroke-linecap="round"/>'
+    + '<line x1="541" y1="570" x2="568" y2="411" stroke="#162840" stroke-width="5" stroke-linecap="round"/>'
+    + '<line x1="324" y1="481" x2="486" y2="523" stroke="#162840" stroke-width="5" stroke-linecap="round"/>'
+    + '<line x1="486" y1="523" x2="568" y2="411" stroke="#162840" stroke-width="5" stroke-linecap="round"/>'
+    + '<rect x="212" y="589" width="38" height="33" rx="3" fill="#162d52"/>'
+    + '<rect x="210" y="587" width="42" height="37" rx="4" fill="none" stroke="#2a5a9a" stroke-width="1.5"/>'
+    + '<text x="231" y="641" text-anchor="middle" fill="#60a0d0" font-family="Arial,sans-serif" font-size="10.5" font-weight="bold" letter-spacing="0.5">MAIN GATE</text>'
+    + '<rect x="303" y="460" width="48" height="42" rx="3" fill="#1a3060"/>'
+    + '<rect x="301" y="458" width="52" height="46" rx="4" fill="none" stroke="#3a7acc" stroke-width="2"/>'
+    + '<text x="327" y="478" text-anchor="middle" fill="#93c5fd" font-family="Arial,sans-serif" font-size="11" font-weight="bold">PMO</text>'
+    + '<text x="327" y="492" text-anchor="middle" fill="#6090b8" font-family="Arial,sans-serif" font-size="8.5">DISPATCH</text>'
+    + '<rect x="387" y="428" width="36" height="30" rx="3" fill="#162d52"/>'
+    + '<rect x="385" y="426" width="40" height="34" rx="3" fill="none" stroke="#2a5a9a" stroke-width="1.5"/>'
+    + '<text x="405" y="476" text-anchor="middle" fill="#60a0d0" font-family="Arial,sans-serif" font-size="10" font-weight="bold">GATE 2</text>'
+    + '<rect x="414" y="300" width="37" height="30" rx="3" fill="#162d52"/>'
+    + '<rect x="412" y="298" width="41" height="34" rx="3" fill="none" stroke="#2a5a9a" stroke-width="1.5"/>'
+    + '<text x="432" y="349" text-anchor="middle" fill="#60a0d0" font-family="Arial,sans-serif" font-size="10" font-weight="bold">N. GATE</text>'
+    + '<rect x="543" y="389" width="52" height="46" rx="3" fill="#162240"/>'
+    + '<rect x="541" y="387" width="56" height="50" rx="4" fill="none" stroke="#2a4a80" stroke-width="1.5"/>'
+    + '<text x="569" y="418" text-anchor="middle" fill="#a0c4e8" font-family="Arial,sans-serif" font-size="12" font-weight="bold">HQ</text>'
+    + '<rect x="682" y="520" width="44" height="38" rx="3" fill="#121e34"/>'
+    + '<text x="704" y="548" text-anchor="middle" fill="#7090b0" font-family="Arial,sans-serif" font-size="10">MCX</text>'
+    + '<rect x="710" y="314" width="50" height="38" rx="3" fill="#121e34"/>'
+    + '<text x="735" y="338" text-anchor="middle" fill="#7090b0" font-family="Arial,sans-serif" font-size="9.5">LOGISTICS</text>'
+    + '<rect x="524" y="554" width="36" height="30" rx="3" fill="#121e34"/>'
+    + '<text x="542" y="604" text-anchor="middle" fill="#7090b0" font-family="Arial,sans-serif" font-size="9.5">CHAPEL</text>'
+    + '<circle cx="486" cy="523" r="22" fill="rgba(22,103,199,0.08)" stroke="#1667c7" stroke-width="1" stroke-dasharray="5,4"/>'
+    + '<text x="486" y="552" text-anchor="middle" fill="#4a80b8" font-family="Arial,sans-serif" font-size="9.5" font-weight="bold">ZONE A</text>'
+    + '<circle cx="635" cy="418" r="22" fill="rgba(22,103,199,0.08)" stroke="#1667c7" stroke-width="1" stroke-dasharray="5,4"/>'
+    + '<text x="635" y="447" text-anchor="middle" fill="#4a80b8" font-family="Arial,sans-serif" font-size="9.5" font-weight="bold">ZONE B</text>'
+    + '<circle cx="297" cy="469" r="22" fill="rgba(22,103,199,0.08)" stroke="#1667c7" stroke-width="1" stroke-dasharray="5,4"/>'
+    + '<text x="297" y="498" text-anchor="middle" fill="#4a80b8" font-family="Arial,sans-serif" font-size="9.5" font-weight="bold">ZONE C</text>'
+    + '<rect width="1000" height="950" fill="url(#vig)"/>'
+    + '</svg>';
 
-  var _STATUS_COLOR = { '': '#22c55e', busy: '#f59e0b', alert: '#ef4444', standby: '#64748b' };
-  var _UNIT_COORDS = {
-    'Patrol 1':    [31.5625, -84.082],
-    'Patrol 2':    [31.565,  -84.070],
-    'Desk Sgt':    [31.575,  -84.066],
-    'K-9 1':       [31.573,  -84.063],
-    'CVI 1':       [31.568,  -84.061],
-    'SRT Element': [31.582,  -84.057],
+  var _blob = new Blob([_svg], { type: 'image/svg+xml' });
+  L.imageOverlay(URL.createObjectURL(_blob), BASE_BOUNDS, { interactive: false, zIndex: 1 }).addTo(map);
+
+  // ── State ───────────────────────────────────────────────────────
+  var markers  = {};
+  var unitsData = [];
+  var selectedId = null;
+
+  // ── Unit icon ───────────────────────────────────────────────────
+  function unitIcon(color) {
+    return L.divIcon({
+      html: '<div style="width:18px;height:18px;border-radius:50%;background:' + color +
+            ';border:2.5px solid rgba(255,255,255,0.7);box-shadow:0 0 0 3px ' + color + '44,0 2px 6px rgba(0,0,0,.5)"></div>',
+      className: '', iconSize: [18, 18], iconAnchor: [9, 9], popupAnchor: [0, -15],
+    });
+  }
+
+  // ── Recipient helpers ───────────────────────────────────────────
+  function getCheckedIds() {
+    return Array.from(document.querySelectorAll('.dispatch-check:checked'))
+      .map(function (cb) { return parseInt(cb.value, 10); });
+  }
+
+  function updateToDisplay() {
+    var ids = getCheckedIds();
+    var el  = document.getElementById('dispatch-to-display');
+    if (!ids.length) { el.textContent = 'All On-Duty (Broadcast)'; return; }
+    var names = ids.map(function (id) {
+      var u = unitsData.find(function (x) { return x.id === id; });
+      return u ? u.name.split(' ').pop() : 'Unit ' + id;
+    });
+    el.textContent = names.join(', ') + (ids.length > 1 ? ' (' + ids.length + ')' : '');
+  }
+
+  window.dispatchSelectAll = function () {
+    document.querySelectorAll('.dispatch-check').forEach(function (cb) { cb.checked = true; });
+    updateToDisplay();
+  };
+  window.dispatchClearAll = function () {
+    document.querySelectorAll('.dispatch-check').forEach(function (cb) { cb.checked = false; });
+    updateToDisplay();
   };
 
-  var units = {{ unit_status | tojson }};
-  units.forEach(function (u) {
-    var coords = _UNIT_COORDS[u.name];
-    if (!coords) return;
-    var color = _STATUS_COLOR[u.state_class] || '#22c55e';
-    var icon = L.divIcon({
-      className: '',
-      html: '<div style="width:14px;height:14px;border-radius:50%;background:' + color + ';border:2px solid rgba(255,255,255,0.6);box-shadow:0 0 6px ' + color + ';"></div>',
-      iconSize: [14, 14],
-      iconAnchor: [7, 7],
-    });
-    L.marker(coords, { icon: icon })
-      .bindTooltip('<strong>' + u.name + '</strong><br>' + u.status + ' — ' + u.assignment, { direction: 'top', offset: [0, -8] })
-      .addTo(map);
+  // ── Roster ──────────────────────────────────────────────────────
+  function renderRoster() {
+    var roster  = document.getElementById('dispatch-roster');
+    if (!unitsData.length) {
+      roster.innerHTML = '<div style="color:#8ba5c0;font-size:.75rem;">No on-duty units.</div>';
+      updateToDisplay();
+      return;
+    }
+    var checked = new Set(getCheckedIds());
+    roster.innerHTML = unitsData.map(function (u) {
+      var chk = checked.has(u.id) ? ' checked' : '';
+      return '<div class="dispatch-roster-row" data-id="' + u.id + '">'
+        + '<input type="checkbox" class="dispatch-check" id="dchk-' + u.id + '" value="' + u.id + '"' + chk
+        + ' onchange="updateToDisplay()" onclick="event.stopPropagation()">'
+        + '<span class="dispatch-roster-dot" style="background:' + u.color + ';cursor:pointer" onclick="selectDispatchUnit(' + u.id + ')"></span>'
+        + '<span class="dispatch-roster-name" onclick="selectDispatchUnit(' + u.id + ')">' + u.name + '</span>'
+        + '<span class="dispatch-roster-status">' + u.status + '</span>'
+        + '</div>';
+    }).join('');
+    updateToDisplay();
+  }
+
+  window.selectDispatchUnit = function (id) {
+    selectedId = id;
+    var u = unitsData.find(function (x) { return x.id === id; });
+    if (!u) return;
+    document.getElementById('dispatch-status-name').textContent = u.name;
+    document.getElementById('dispatch-status-select').value = u.status;
+    document.getElementById('dispatch-status-panel').classList.add('is-open');
+    if (markers[id]) {
+      map.setView([u.lat, u.lng], Math.max(map.getZoom(), 16));
+      markers[id].openPopup();
+    }
+  };
+
+  // ── Status update ───────────────────────────────────────────────
+  document.getElementById('dispatch-status-save').addEventListener('click', function () {
+    if (!selectedId) return;
+    var status = document.getElementById('dispatch-status-select').value;
+    fetch('/watch-commander/api/units/' + selectedId + '/status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+      body: JSON.stringify({ status: status }),
+    }).then(function (r) { return r.json(); }).then(function (d) { if (d.ok) loadUnits(); });
   });
 
-  setTimeout(function () { map.invalidateSize(); }, 150);
+  // ── Popup builder ───────────────────────────────────────────────
+  function buildPopup(u) {
+    var opts = STATUSES.map(function (s) {
+      return '<option value="' + s + '"' + (s === u.status ? ' selected' : '') + '>' + s + '</option>';
+    }).join('');
+    return '<div class="unit-popup">'
+      + '<div class="unit-popup-name">' + u.name + '</div>'
+      + '<div class="unit-popup-detail">' + u.role + (u.badge ? ' · #' + u.badge : '') + '</div>'
+      + '<div class="unit-popup-status-row">'
+        + '<span class="unit-popup-status-badge" style="background:' + u.color + '22;color:' + u.color + ';border-color:' + u.color + '44">' + u.status + '</span>'
+        + '<span style="font-size:.7rem;color:#8ba5c0;">' + u.location + '</span>'
+      + '</div>'
+      + '<div class="unit-popup-label">Status</div>'
+      + '<select class="unit-popup-select" id="popup-sel-' + u.id + '">' + opts + '</select>'
+      + '<div class="unit-popup-btn-row"><button class="unit-popup-btn" onclick="updateFromPopup(' + u.id + ')">Update Status</button></div>'
+      + '<div class="unit-popup-divider"></div>'
+      + '<div class="unit-popup-label">Quick Message</div>'
+      + '<textarea class="unit-popup-textarea" id="popup-msg-' + u.id + '" placeholder="Message ' + u.name.split(' ').pop() + '…"></textarea>'
+      + '<div class="unit-popup-btn-row">'
+        + '<select class="unit-popup-pri" id="popup-pri-' + u.id + '"><option>Normal</option><option>Urgent</option><option>Emergency</option></select>'
+        + '<button class="unit-popup-btn" onclick="sendFromPopup(' + u.id + ')">Send</button>'
+      + '</div>'
+      + '<div class="unit-popup-sent" id="popup-sent-' + u.id + '"></div>'
+      + '</div>';
+  }
+
+  window.sendFromPopup = function (id) {
+    var ta = document.getElementById('popup-msg-' + id);
+    var pri = document.getElementById('popup-pri-' + id);
+    var sentEl = document.getElementById('popup-sent-' + id);
+    if (!ta || !(ta.value || '').trim()) return;
+    var fd = new FormData();
+    fd.append('recipient_id', String(id));
+    fd.append('priority', pri ? pri.value : 'Normal');
+    fd.append('body', ta.value.trim());
+    sentEl.style.color = '#94a3b8';
+    sentEl.textContent = 'Sending…';
+    fetch('/notifications/send', { method: 'POST', headers: { 'X-Requested-With': 'fetch' }, body: fd })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        ta.value = '';
+        sentEl.style.color = d.ok ? '#22c55e' : '#ef4444';
+        sentEl.textContent = d.ok ? 'Sent.' : (d.error || 'Failed.');
+        if (d.ok) setTimeout(function () { sentEl.textContent = ''; }, 2500);
+      })
+      .catch(function () { sentEl.style.color = '#ef4444'; sentEl.textContent = 'Network error.'; });
+  };
+
+  window.updateFromPopup = function (id) {
+    var sel = document.getElementById('popup-sel-' + id);
+    if (!sel) return;
+    fetch('/watch-commander/api/units/' + id + '/status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+      body: JSON.stringify({ status: sel.value }),
+    }).then(function (r) { return r.json(); }).then(function (d) { if (d.ok) loadUnits(); });
+  };
+
+  // ── Load / refresh units ────────────────────────────────────────
+  function loadUnits() {
+    fetch('/watch-commander/api/units')
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        unitsData = data.units || [];
+        Object.keys(markers).forEach(function (id) {
+          if (!unitsData.find(function (u) { return String(u.id) === id; })) {
+            map.removeLayer(markers[id]);
+            delete markers[id];
+          }
+        });
+        unitsData.forEach(function (u) {
+          var ex = markers[String(u.id)];
+          if (ex) {
+            ex.setLatLng([u.lat, u.lng]);
+            ex.setIcon(unitIcon(u.color));
+            ex.setPopupContent(buildPopup(u));
+            ex.setTooltipContent(u.name + ' — ' + u.status);
+          } else {
+            var m = L.marker([u.lat, u.lng], { icon: unitIcon(u.color) })
+              .addTo(map)
+              .bindPopup(buildPopup(u), { maxWidth: 280 })
+              .bindTooltip(u.name + ' — ' + u.status, { direction: 'top', offset: [0, -12] });
+            markers[String(u.id)] = m;
+          }
+        });
+        renderRoster();
+        if (selectedId) {
+          var u = unitsData.find(function (x) { return x.id === selectedId; });
+          if (u) document.getElementById('dispatch-status-select').value = u.status;
+        }
+      })
+      .catch(function () {});
+  }
+
+  // ── Sidebar message send ────────────────────────────────────────
+  document.getElementById('dispatch-msg-btn').addEventListener('click', function () {
+    var body     = (document.getElementById('dispatch-msg-body').value || '').trim();
+    if (!body) return;
+    var priority = document.getElementById('dispatch-msg-priority').value;
+    var statusEl = document.getElementById('dispatch-msg-status');
+    var btn      = this;
+    var ids      = getCheckedIds();
+    btn.disabled = true; btn.textContent = 'Sending…'; statusEl.textContent = '';
+
+    function onDone(label) {
+      btn.disabled = false; btn.textContent = 'Send';
+      document.getElementById('dispatch-msg-body').value = '';
+      statusEl.style.color = '#22c55e'; statusEl.textContent = label;
+      setTimeout(function () { statusEl.textContent = ''; }, 3000);
+    }
+    function onError(msg) {
+      btn.disabled = false; btn.textContent = 'Send';
+      statusEl.style.color = '#ef4444'; statusEl.textContent = msg || 'Failed.';
+    }
+    function sendOne(recipientId) {
+      var fd = new FormData();
+      if (recipientId) fd.append('recipient_id', recipientId);
+      fd.append('priority', priority); fd.append('body', body);
+      return fetch('/notifications/send', { method: 'POST', headers: { 'X-Requested-With': 'fetch' }, body: fd })
+        .then(function (r) { return r.json(); });
+    }
+
+    if (!ids.length) {
+      sendOne(null).then(function (d) { d.ok ? onDone('Broadcast sent.') : onError(d.error); }).catch(function () { onError('Network error.'); });
+    } else if (ids.length === 1) {
+      sendOne(ids[0]).then(function (d) { d.ok ? onDone('Message sent.') : onError(d.error); }).catch(function () { onError('Network error.'); });
+    } else {
+      Promise.all(ids.map(sendOne)).then(function () { onDone('Sent to ' + ids.length + ' units.'); }).catch(function () { onError('Some failed.'); });
+    }
+  });
+
+  // ── Close Shift ─────────────────────────────────────────────────
+  document.getElementById('dispatch-close-btn').addEventListener('click', function () {
+    if (!confirm('End the current shift? All on-duty units in your scope will be set to Off Duty.')) return;
+    var statusEl = document.getElementById('dispatch-close-status');
+    this.disabled = true; this.textContent = 'Closing…';
+    var btn = this;
+    fetch('/watch-commander/api/close-shift', { method: 'POST' })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        btn.disabled = false; btn.textContent = 'Close Shift';
+        statusEl.style.color = d.ok ? '#22c55e' : '#ef4444';
+        statusEl.textContent = d.ok ? d.closed + ' unit' + (d.closed !== 1 ? 's' : '') + ' signed off.' : 'Failed.';
+        if (d.ok) loadUnits();
+      })
+      .catch(function () { btn.disabled = false; btn.textContent = 'Close Shift'; statusEl.textContent = 'Network error.'; });
+  });
+
+  loadUnits();
+  setInterval(loadUnits, 20000);
+  setTimeout(function () { map.invalidateSize(); }, 200);
 }());
 </script>
 {% endblock %}

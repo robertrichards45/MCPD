@@ -448,10 +448,12 @@ def dashboard():
 @bp.route('/command-center')
 @login_required
 def dispatch_command_center():
+    from ..routes.watch_commander import OFFICER_STATUSES
     return _no_store_response(
         render_template(
             'dispatch_command_center.html',
             user=current_user,
+            statuses=OFFICER_STATUSES,
             **_dispatch_demo_context(),
         )
     )
