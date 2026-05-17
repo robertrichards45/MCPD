@@ -817,12 +817,11 @@ def create_app():
 
     # Precomputed once at startup; unsafe-inline required for theme/CSRF scripts that must
     # run before first render. blob:/data: required for camera scanning and signature canvas.
-    # https://*.basemaps.cartocdn.com required for Leaflet map tiles (CartoDB Positron/Dark).
     _csp_policy = '; '.join([
         "default-src 'self'",
         "script-src 'self' 'unsafe-inline'",
         "style-src 'self' 'unsafe-inline'",
-        "img-src 'self' data: blob: https://*.basemaps.cartocdn.com https://*.tile.openstreetmap.org https://server.arcgisonline.com https://services.arcgisonline.com",
+        "img-src 'self' data: blob:",
         "font-src 'self'",
         "object-src 'self'",
         "media-src 'self' blob:",
@@ -833,7 +832,6 @@ def create_app():
         "base-uri 'self'",
         "form-action 'self'",
     ])
-
 
     @app.after_request
     def add_security_headers(response):
