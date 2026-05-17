@@ -449,12 +449,22 @@ def dashboard():
 @login_required
 def dispatch_command_center():
     from ..routes.watch_commander import OFFICER_STATUSES
+    demo = _demo_mode()
+    ctx = {'demo': demo}
+    if demo:
+        ctx.update(_dispatch_demo_context())
+    else:
+        ctx['dispatch_summary'] = {
+            'current_time': datetime.now().strftime('%H%M'),
+            'shift_name': 'Live Operational View',
+            'shift_status': 'Real-time data — unit positions update every 20s',
+        }
     return _no_store_response(
         render_template(
             'dispatch_command_center.html',
             user=current_user,
             statuses=OFFICER_STATUSES,
-            **_dispatch_demo_context(),
+            **ctx,
         )
     )
 
