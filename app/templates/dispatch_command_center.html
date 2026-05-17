@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/command_center.css', v='2026-05-16-dispatch') }}" />
+{% endblock %}
+{% block body %}
+<div class="app-shell mcpd-command-app">
+  {% include 'partials/nav.html' %}
+  <main class="command-center" id="main-content">
+    <section class="command-hero">
+      <div>
+        <h1>Dispatch / Command Center</h1>
+        <p>Live operational view for Watch Commanders, Desk Sergeants, dispatcher-style monitoring, active incidents, unit status, and command-level workflow visibility.</p>
+        <div class="command-badge-row">
+          <span class="command-badge">DEMO READY</span>
+          <span class="command-badge">RADIO MODE</span>
+          <span class="command-badge">SHIFT OVERVIEW</span>
+          <span class="command-badge">MAP / UNIT STATUS</span>
+        </div>
+      </div>
+      <div class="command-clock-card">
+        <strong>{{ dispatch_summary.current_time }}</strong>
+        <span>{{ dispatch_summary.shift_name }}</span>
+        <small>{{ dispatch_summary.shift_status }}</small>
+      </div>
+    </section>
+
+    <section class="command-metrics-grid" aria-label="Command center metrics">
+      {% for metric in dispatch_metrics %}
+      <article class="command-metric">
+        <span>{{ metric.label }}</span>
+        <strong>{{ metric.value }}</strong>
+        <small>{{ metric.detail }}</small>
+      </article>
+      {% endfor %}
+    </section>
+
+    <section class="command-grid">
+      <article class="command-panel">
+        <div class="command-panel-head">
+          <h2>Unit Status</h2>
+          <span>{{ unit_status|length }} Units</span>
+        </div>
+        <div class="command-list">
+          {% for unit in unit_status %}
+          <div class="command-row">
+            <span class="command-status-dot {{ unit.state_class }}" aria-hidden="true"></span>
+            <div>
+              <strong>{{ unit.name }}</strong>
+              <small>{{ unit.assignment }}</small>
+            </div>
+            <span class="command-pill">{{ unit.status }}</span>
+          </div>
+          {% endfor %}
+        </div>
+      </article>
+
+      <article class="command-panel command-map-panel">
+        <div class="command-panel-head">
+          <h2>Installation Operational Map</h2>
+          <span>Command View</span>
+        </div>
+        <div class="command-map-shell" aria-label="Command center map overview">
+          <div class="command-map-gridline"></div>
+          <div class="command-map-area"></div>
+          <span class="command-map-label" style="left:9%;top:18%;">Main Gate</span>
+          <span class="command-map-label" style="left:42%;top:38%;">PMO</span>
+          <span class="command-map-label" style="left:63%;top:25%;">HQ</span>
+          <span class="command-map-label" style="left:66%;top:68%;">CVI</span>
+          <span class="command-map-unit" style="left:19%;top:31%;" title="Patrol 1 available"></span>
+          <span class="command-map-unit busy" style="left:48%;top:51%;" title="Patrol 2 on call"></span>
+          <span class="command-map-unit" style="left:72%;top:42%;" title="K-9 available"></span>
+          <span class="command-map-unit alert" style="left:31%;top:67%;" title="Open incident"></span>
+        </div>
+        <div class="command-radio-box">
+          <strong>Dispatch / Radio AI Mode</strong>
+          <p>{{ radio_summary }}</p>
+        </div>
+      </article>
+
+      <article class="command-panel">
+        <div class="command-panel-head">
+          <h2>Active Incidents</h2>
+          <span>{{ active_incidents|length }} Open</span>
+        </div>
+        <div class="command-list">
+          {% for incident in active_incidents %}
+          <div class="command-row">
+            <span class="command-status-dot {{ incident.state_class }}" aria-hidden="true"></span>
+            <div>
+              <strong>{{ incident.title }}</strong>
+              <small>{{ incident.detail }}</small>
+            </div>
+            <span class="command-pill">{{ incident.priority }}</span>
+          </div>
+          {% endfor %}
+        </div>
+      </article>
+    </section>
+
+    <section class="command-actions" aria-label="Command center actions">
+      <a class="command-action-btn" href="{{ url_for('watch_commander.dashboard') }}">Watch Commander Hub</a>
+      <a class="command-action-btn" href="{{ url_for('watch_commander.shift') }}">Shift Management</a>
+      <a class="command-action-btn" href="{{ url_for('watch_commander.reports') }}">Report Review</a>
+      <a class="command-action-btn" href="{{ url_for('bolo.bolo_board') }}">BOLO Board</a>
+      <a class="command-action-btn" href="{{ url_for('mobile.supervisor_dashboard') }}">Supervisor Dashboard</a>
+    </section>
+  </main>
+</div>
+{% endblock %}
