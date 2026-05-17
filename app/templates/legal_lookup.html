@@ -33,7 +33,7 @@
       </div>
     </section>
 
-    <div class="card p-3 mb-3 search-panel ops-search-shell authority-search-shell">
+    <div class="ops-panel mb-3 search-panel ops-search-shell authority-search-shell">
       <form method="get" action="{{ url_for('legal.legal_lookup') }}" class="legal-search-form" data-law-lookup-form>
         <div class="legal-search-grid">
           <div class="legal-statement-field">
@@ -92,7 +92,7 @@
     {% endif %}
 
     {% if ai_candidates %}
-    <section class="card p-3 mb-3 ai-law-candidates">
+    <section class="ops-panel mb-3 ai-law-candidates">
       <div class="section-tight mb-2">
         <div class="eyebrow">AI-Assisted Jurisdiction Sweep</div>
         <h5 class="mb-1">Related / Review If Needed</h5>
@@ -173,7 +173,7 @@
 
     {% if lead_item %}
     {% set lead_download = lead_download_info if lead_download_info is defined else reference_download_info(lead_item.entry) %}
-    <section class="card p-3 mb-3 lead-match-card authority-lead-card">
+    <section class="ops-panel mb-3 lead-match-card authority-lead-card">
       <div class="lead-match-head">
         <div>
           <div class="eyebrow">Best Legal Path</div>
@@ -228,7 +228,7 @@
     {% endif %}
 
     {% if order_reference_matches %}
-    <div class="card p-3 mb-3">
+    <div class="ops-panel mb-3">
       <div class="section-tight mb-2">
         <h5 class="mb-1">Related Orders and Memorandums</h5>
         <p class="small text-muted mb-0">Approved policy references that align with the same scenario.</p>
@@ -262,7 +262,7 @@
     </div>
     {% endif %}
 
-    <div class="card p-3" id="legal-results">
+    <div class="ops-panel" id="legal-results">
       <div class="d-flex justify-content-between align-items-center mb-2 legal-results-header">
         <div>
           <h5 class="mb-0">Additional Results</h5>

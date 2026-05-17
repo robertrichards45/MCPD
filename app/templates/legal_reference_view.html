@@ -21,7 +21,7 @@
       </div>
     </div>
 
-    <div class="card p-3 mb-3">
+    <div class="ops-panel mb-3">
       <div class="row g-2 small mb-2">
         <div class="col-md-4"><strong>Source:</strong> {{ entry.source_group or entry.source_label or entry.source }}</div>
         <div class="col-md-4"><strong>Category:</strong> {{ entry.category or '-' }}</div>
@@ -36,7 +36,7 @@
       {% endif %}
     </div>
 
-    <details class="card p-3 collapse-card mb-3" open>
+    <details class="ops-panel collapse-card mb-3" open>
       <summary>Required Elements</summary>
       <ol class="mb-0 mt-2">
         {% for element in entry.required_elements or entry.elements %}
@@ -46,7 +46,7 @@
     </details>
 
     {% if entry.penalties or entry.minimum_punishment or entry.maximum_punishment %}
-    <details class="card p-3 collapse-card mb-3">
+    <details class="ops-panel collapse-card mb-3">
       <summary>Penalties and Disposition Notes</summary>
       <div class="mt-2">
         {% if entry.penalties %}<p class="mb-2">{{ entry.penalties }}</p>{% endif %}
@@ -57,7 +57,7 @@
     {% endif %}
 
     {% if entry.related_statutes or entry.related_orders or entry.related_codes %}
-    <details class="card p-3 collapse-card mb-3">
+    <details class="ops-panel collapse-card mb-3">
       <summary>Related References</summary>
       <div class="mt-2 small">
         {% if entry.related_statutes %}<div><strong>Related Statutes:</strong> {{ entry.related_statutes|join(', ') }}</div>{% endif %}
@@ -67,7 +67,7 @@
     </details>
     {% endif %}
 
-    <details class="card p-3 collapse-card" id="reference-full-text" open>
+    <details class="ops-panel collapse-card" id="reference-full-text" open>
       <summary>Full Text</summary>
       {% if entry.official_text %}
       <div class="reader-panel mt-2" style="white-space:pre-wrap;">{{ entry.official_text }}</div>

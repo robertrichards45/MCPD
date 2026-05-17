@@ -28,7 +28,7 @@
     </section>
 
     {% if policy.is_no_retention %}
-    <div class="card p-3 mb-3">
+    <div class="ops-panel mb-3">
       <strong>No-Retention PII Mode</strong>
       <div class="small text-muted mt-1">
         Completed form data is not saved on this website. Use Preview, Print, Email, or Download before leaving this session.
@@ -69,7 +69,7 @@
     </div>
     {% endif %}
 
-    <form method="post" class="card p-3 form-workflow-shell forms-fill-shell" id="form-fill-shell">
+    <form method="post" class="ops-panel form-workflow-shell forms-fill-shell" id="form-fill-shell">
       <input type="hidden" name="saved_title" value="{{ (saved_record.title if saved_record else form.title) or form.title }}" />
 
       <div class="forms-fill-layout">
@@ -143,7 +143,7 @@
           {% endif %}
 
           {% if not fill_state.is_ready %}
-          <div class="card p-3 mb-3 form-not-ready-notice">
+          <div class="ops-panel mb-3 form-not-ready-notice">
             <strong>Online Completion Not Available Yet</strong>
             <div class="small text-muted mt-1">{{ fill_state.fallback_message }}</div>
           </div>

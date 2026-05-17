@@ -3,7 +3,7 @@
 <div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
   <div class="page-wrap">
-    <div class="card p-3 mb-3">
+    <div class="ops-panel mb-3">
       <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
         <div>
           <h2 class="mb-1">Orders Source Controls</h2>
@@ -18,7 +18,7 @@
 
     <div class="row g-3 mb-3">
       <div class="col-md-6">
-        <div class="card p-3 h-100">
+        <div class="ops-panel h-100">
           <h5 class="mb-2">Approved Domains</h5>
           <form method="post" class="d-flex gap-2 mb-3">
             <input type="hidden" name="action" value="add_domain" />
@@ -37,7 +37,7 @@
         </div>
       </div>
       <div class="col-md-6">
-        <div class="card p-3 h-100">
+        <div class="ops-panel h-100">
           <h5 class="mb-2">Approved Internal Source Groups</h5>
           <form method="post" class="d-flex gap-2 mb-3">
             <input type="hidden" name="action" value="add_source_group" />
@@ -57,7 +57,7 @@
       </div>
     </div>
 
-    <div class="card p-3 mb-3">
+    <div class="ops-panel mb-3">
       <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
         <div>
           <h5 class="mb-1">Source Audit</h5>
@@ -108,7 +108,7 @@
       </div>
     </div>
 
-    <div class="card p-3">
+    <div class="ops-panel">
       <h5 class="mb-2">Unapproved Indexed Documents</h5>
       {% if unapproved_documents %}
       <div class="table-responsive">

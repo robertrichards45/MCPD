@@ -8,7 +8,7 @@
       <p class="text-muted mb-0">{{ form.title }} | Schema: {{ schema_id }}</p>
     </div>
 
-    <div class="card p-3 mb-3">
+    <div class="ops-panel mb-3">
       <div class="small text-muted mb-2">Source PDF: {{ source_pdf if source_pdf else 'Not found' }}</div>
       <div class="small text-muted">Detected PDF fields: {{ source_fields.field_count }}</div>
     </div>
@@ -28,7 +28,7 @@
       </div>
     </details>
 
-    <form method="post" class="card p-3">
+    <form method="post" class="ops-panel">
       <label class="form-label text-dark">Template JSON</label>
       <textarea class="form-control" id="template_json" name="template_json" rows="28" spellcheck="false" style="font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;">{{ template_json }}</textarea>
       <div id="template-validate-result" class="small text-muted mt-2"></div>

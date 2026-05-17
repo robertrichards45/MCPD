@@ -10,7 +10,7 @@
 
     <div class="results-list">
       {% for section in sections %}
-      <details class="card p-3 collapse-card" {% if loop.first %}open{% endif %}>
+      <details class="ops-panel collapse-card" {% if loop.first %}open{% endif %}>
         <summary>{{ section.title }}</summary>
         <ul class="mb-0">
           {% for item in section.items %}

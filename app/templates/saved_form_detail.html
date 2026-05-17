@@ -61,7 +61,7 @@
     {% endif %}
 
     {% for section in sections %}
-    <details class="card p-3 mb-3 collapse-card saved-form-section-card" {% if loop.first %}open{% endif %}>
+    <details class="ops-panel mb-3 collapse-card saved-form-section-card" {% if loop.first %}open{% endif %}>
       <summary>{{ section.title }}</summary>
       <div class="saved-form-field-grid mt-2">
         {% for row in section.rows %}

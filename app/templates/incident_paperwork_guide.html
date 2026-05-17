@@ -55,7 +55,7 @@
       </div>
     </section>
 
-    <section class="card p-3 mb-3 incident-reference-rail navigator-reference-rail">
+    <section class="ops-panel mb-3 incident-reference-rail navigator-reference-rail">
       <div class="incident-reference-links">
         <a class="lane-link" href="{{ url_for('legal.legal_home') }}">
           <span>Law Lookup</span>
@@ -72,7 +72,7 @@
       </div>
     </section>
 
-    <section class="card p-3 mb-3 incident-guide-summary navigator-summary-bar">
+    <section class="ops-panel mb-3 incident-guide-summary navigator-summary-bar">
       <div class="incident-summary-row">
         <div class="incident-summary-copy">
           <h4 class="mb-1">Navigator Results</h4>
@@ -170,7 +170,7 @@
         </div>
       </article>
       {% else %}
-      <div class="card p-3 incident-empty-state">
+      <div class="ops-panel incident-empty-state">
         <h4 class="mb-1">No incident matched that search.</h4>
         <p class="text-muted mb-3">Try a broader term like `domestic`, `traffic accident`, `assault`, `shoplifting`, or `trespass`.</p>
         <a class="btn btn-primary" href="{{ url_for('reference.incident_paperwork_guide') }}">Show All Incident Workflows</a>

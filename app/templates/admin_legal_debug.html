@@ -3,12 +3,12 @@
 <div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
   <div class="page-wrap">
-    <div class="card p-3 mb-3">
+    <div class="ops-panel mb-3">
       <h2 class="mb-1">Legal Search Debug</h2>
       <p class="text-muted mb-0">Admin-only search diagnostics for ranking, filtering, and gating behavior.</p>
     </div>
 
-    <div class="card p-3 mb-3">
+    <div class="ops-panel mb-3">
       <form method="get" action="{{ url_for('legal.legal_debug') }}">
         <div class="row g-2">
           <div class="col-md-7">
@@ -39,7 +39,7 @@
     </div>
 
     {% if query %}
-    <div class="card p-3 mb-3">
+    <div class="ops-panel mb-3">
       <h5 class="mb-2">Save Tuning Case</h5>
       <div class="small text-muted mb-2">Store this query and expected codes for future ranking/regression tuning.</div>
       <form method="post" action="{{ url_for('legal.legal_debug_save_case') }}">
@@ -63,25 +63,25 @@
 
     <div class="row g-3 mb-3">
       <div class="col-md-3">
-        <div class="card p-3">
+        <div class="ops-panel">
           <div class="small text-muted">Source</div>
           <div class="fw-semibold">{{ source_label }}</div>
         </div>
       </div>
       <div class="col-md-3">
-        <div class="card p-3">
+        <div class="ops-panel">
           <div class="small text-muted">Strict Matches</div>
           <div class="fw-semibold">{{ strict_results|length }}</div>
         </div>
       </div>
       <div class="col-md-3">
-        <div class="card p-3">
+        <div class="ops-panel">
           <div class="small text-muted">Shown to User</div>
           <div class="fw-semibold">{{ displayed_results|length }}</div>
         </div>
       </div>
       <div class="col-md-3">
-        <div class="card p-3">
+        <div class="ops-panel">
           <div class="small text-muted">Relaxed-only Candidates</div>
           <div class="fw-semibold">{{ only_in_relaxed|length }}</div>
         </div>
@@ -89,7 +89,7 @@
     </div>
     {% endif %}
 
-    <div class="card p-3 mb-3">
+    <div class="ops-panel mb-3">
       <h5 class="mb-2">Recent Tuning Cases</h5>
       {% if tuning_cases %}
       <div class="table-responsive">
@@ -131,7 +131,7 @@
     </div>
 
     {% if query %}
-    <div class="card p-3 mb-3">
+    <div class="ops-panel mb-3">
       <h5 class="mb-2">Displayed Results (After UI Filter)</h5>
       {% if displayed_results %}
       <div class="table-responsive">
@@ -169,7 +169,7 @@
       {% endif %}
     </div>
 
-    <div class="card p-3 mb-3">
+    <div class="ops-panel mb-3">
       <h5 class="mb-2">Strict Candidates Hidden by Display Filter</h5>
       {% if hidden_from_display %}
       <div class="table-responsive">
@@ -201,7 +201,7 @@
       {% endif %}
     </div>
 
-    <div class="card p-3">
+    <div class="ops-panel">
       <h5 class="mb-2">Relaxed-only Candidates (Potential Recall Gaps)</h5>
       {% if only_in_relaxed %}
       <div class="table-responsive">

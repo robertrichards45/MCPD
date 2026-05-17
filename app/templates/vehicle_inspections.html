@@ -66,7 +66,7 @@
 
     <div class="row">
       <div class="col-lg-6">
-        <details class="card p-3 collapse-card" {% if editing_inspection %}open{% else %}open{% endif %}>
+        <details class="ops-panel collapse-card" {% if editing_inspection %}open{% else %}open{% endif %}>
           <summary>{{ 'Edit Inspection' if editing_inspection else 'New Inspection' }}</summary>
           <h5>{{ 'Edit Inspection' if editing_inspection else 'New Inspection' }}</h5>
           <form method="post" action="{{ url_for('ops_modules.vehicle_inspection_save') }}">
@@ -191,7 +191,7 @@
       </div>
 
       <div class="col-lg-6">
-        <details class="card p-3 collapse-card" open>
+        <details class="ops-panel collapse-card" open>
           <summary>Daily Inspection Log</summary>
           <div class="d-flex justify-content-between align-items-center mb-2">
             <h5 class="mb-0">Daily Inspection Log</h5>

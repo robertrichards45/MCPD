@@ -3,7 +3,7 @@
 <div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
   <main class="page-wrap bodycam-page">
-    <section class="card p-3 mb-3">
+    <section class="ops-panel mb-3">
       <div class="report-panel-head">
         <div>
           <div class="eyebrow">Bodycam Footage</div>
@@ -21,10 +21,10 @@
     </section>
 
     <section class="bodycam-grid">
-      <article class="card p-3">
+      <article class="ops-panel">
         <video class="bodycam-preview" controls playsinline src="{{ url_for('bodycam.media', footage_id=item.id) }}"></video>
       </article>
-      <aside class="card p-3 bodycam-meta-card">
+      <aside class="ops-panel bodycam-meta-card">
         <h2>Metadata</h2>
         <dl class="bodycam-dl">
           <dt>Officer</dt><dd>{{ item.officer.display_name if item.officer else item.officer_user_id }}</dd>
@@ -36,7 +36,7 @@
       </aside>
     </section>
 
-    <section class="card p-3 mt-3">
+    <section class="ops-panel mt-3">
       <h2>Transcript</h2>
       <pre class="bodycam-transcript-read">{{ item.transcript_text or 'No transcript was saved for this footage.' }}</pre>
     </section>

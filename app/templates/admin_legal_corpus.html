@@ -3,12 +3,12 @@
 <div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
   <div class="page-wrap">
-    <div class="card p-3 mb-3">
+    <div class="ops-panel mb-3">
       <h2 class="mb-1">Legal Corpus Admin</h2>
       <p class="text-muted mb-0">Website Controller only. Upload Georgia and UCMJ datasets used by Law Lookup.</p>
     </div>
 
-    <div class="card p-3 mb-3">
+    <div class="ops-panel mb-3">
       <div class="small text-muted">
         Georgia entries: {{ corpus_status.georgia_count }}{% if corpus_status.using_builtin_georgia %} (built-in fallback){% endif %}
       </div>
@@ -38,7 +38,7 @@
       </div>
     </div>
 
-    <div class="card p-3">
+    <div class="ops-panel">
       <form method="post" action="{{ url_for('admin.legal_corpus_admin') }}" enctype="multipart/form-data">
         <input type="hidden" name="action" value="import_corpus" />
         <div class="row g-2">
@@ -66,7 +66,7 @@
       </form>
     </div>
 
-    <div class="card p-3 mt-3">
+    <div class="ops-panel mt-3">
       <h3 class="mb-1">Automated Source Ingestion</h3>
       <p class="text-muted mb-2">Bulk ingest legal source material (JSON/CSV/XLSX/PDF/DOCX/TXT), auto-parse, normalize, and import.</p>
       <form method="post" action="{{ url_for('admin.legal_corpus_admin') }}" enctype="multipart/form-data">
@@ -148,7 +148,7 @@
       </form>
     </div>
 
-    <div class="card p-3 mt-3">
+    <div class="ops-panel mt-3">
       <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
         <div>
           <h3 class="mb-1">Legal QA</h3>

@@ -2,7 +2,7 @@
 {% block body %}
 <div class="app-shell mcpd-command-app">
   <div class="page-wrap form-preview-wrap">
-    <div class="card p-3 mb-3 no-print">
+    <div class="ops-panel mb-3 no-print">
       <div class="d-flex justify-content-between align-items-center gap-2">
         <div>
           <h2 class="mb-1">{{ preview_title }}</h2>
@@ -42,7 +42,7 @@
       {% endif %}
 
       {% if no_retention_mode %}
-      <div class="card p-2 mb-2 no-print">
+      <div class="ops-panel mb-2 no-print">
         <strong>No-Retention Mode:</strong> This completed data is temporary and will not be saved on the website.
       </div>
       {% endif %}
