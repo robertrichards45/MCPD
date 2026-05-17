@@ -88,6 +88,9 @@
         <a href="{{ url_for('watch_commander.reports') }}">Report Review</a>
         <a href="{{ url_for('watch_commander.approvals') }}">Approvals Center</a>
         <a href="{{ url_for('watch_commander.unit_map') }}" {% if endpoint == 'watch_commander.unit_map' %}class="is-active"{% endif %}>Unit Map</a>
+        <a href="{{ url_for('dashboard.k9_dashboard') }}" {% if endpoint == 'dashboard.k9_dashboard' %}class="is-active"{% endif %}>K-9 Dashboard</a>
+        <a href="{{ url_for('dashboard.cvi_dashboard') }}" {% if endpoint == 'dashboard.cvi_dashboard' %}class="is-active"{% endif %}>CVI Dashboard</a>
+        <a href="{{ url_for('dashboard.srt_dashboard') }}" {% if endpoint == 'dashboard.srt_dashboard' %}class="is-active"{% endif %}>SRT Readiness</a>
         <a href="{{ url_for('watch_commander.briefing') }}">Shift Briefing</a>
         <a href="{{ url_for('performance.pending') }}">Stats Approvals</a>
         <a href="{{ url_for('performance.team_overview') }}">Team Stats</a>

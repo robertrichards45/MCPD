@@ -92,10 +92,12 @@
 
     <section class="command-actions" aria-label="Command center actions">
       <a class="command-action-btn" href="{{ url_for('watch_commander.dashboard') }}">Watch Commander Hub</a>
-      <a class="command-action-btn" href="{{ url_for('watch_commander.shift') }}">Shift Management</a>
+      <a class="command-action-btn" href="{{ url_for('watch_commander.unit_map') }}">Operational Map</a>
+      <a class="command-action-btn" href="{{ url_for('dashboard.k9_dashboard') }}">K-9 Dashboard</a>
+      <a class="command-action-btn" href="{{ url_for('dashboard.cvi_dashboard') }}">CVI Dashboard</a>
+      <a class="command-action-btn" href="{{ url_for('dashboard.srt_dashboard') }}">SRT Readiness</a>
       <a class="command-action-btn" href="{{ url_for('watch_commander.reports') }}">Report Review</a>
       <a class="command-action-btn" href="{{ url_for('bolo.bolo_board') }}">BOLO Board</a>
-      <a class="command-action-btn" href="{{ url_for('mobile.supervisor_dashboard') }}">Supervisor Dashboard</a>
     </section>
   </main>
 </div>

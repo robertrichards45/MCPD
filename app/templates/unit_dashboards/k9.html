@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/watch_commander.css', v='2026-05-12') }}" />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/command_center.css', v='2026-05-16-dispatch') }}" />
+{% endblock %}
+{% block body %}
+<div class="app-shell mcpd-command-app wc-module">
+  {% include 'partials/nav.html' %}
+  <main class="wc-page-shell">
+    <header class="wc-page-header">
+      <div>
+        <p class="eyebrow">Specialized Unit</p>
+        <h1>K-9 Unit Dashboard</h1>
+        <p>Team status, deployment tracking, sweep log, and certification readiness for K-9 operations.</p>
+      </div>
+      <nav class="wc-page-tabs" aria-label="Unit navigation">
+        <a href="{{ url_for('dashboard.k9_dashboard') }}" aria-current="page">K-9</a>
+        <a href="{{ url_for('dashboard.cvi_dashboard') }}">CVI</a>
+        <a href="{{ url_for('dashboard.srt_dashboard') }}">SRT</a>
+        <a href="{{ url_for('dashboard.dispatch_command_center') }}">Command Center</a>
+      </nav>
+    </header>
+
+    {% if demo %}
+    <section class="wc-summary-grid">
+      {% for m in metrics %}
+      <article class="wc-summary-card"><span>{{ m.label }}</span><strong>{{ m.value }}</strong><small>{{ m.detail }}</small></article>
+      {% endfor %}
+    </section>
+
+    <div class="wc-two-column">
+      <section>
+        <h2 class="wc-big-number" style="font-size:1rem;font-weight:600;margin:1.2rem 0 .5rem">Team Status</h2>
+        <div class="ops-panel">
+          {% for officer in team %}
+          <div class="command-row">
+            <span class="command-status-dot {{ officer.state_class }}" aria-hidden="true"></span>
+            <div>
+              <strong>{{ officer.name }}</strong> &mdash; <em>{{ officer.partner }}</em>
+              <small>{{ officer.assignment }}</small>
+            </div>
+            <span class="command-pill">{{ officer.status }}</span>
+          </div>
+          {% endfor %}
+        </div>
+      </section>
+
+      <section>
+        <h2 class="wc-big-number" style="font-size:1rem;font-weight:600;margin:1.2rem 0 .5rem">Active Alerts &amp; Admin</h2>
+        <div class="ops-panel">
+          {% for alert in alerts %}
+          <div class="command-row">
+            <div>
+              <strong>{{ alert.title }}</strong>
+              <small>{{ alert.detail }}</small>
+            </div>
+            <span class="command-pill">{{ alert.priority }}</span>
+          </div>
+          {% else %}
+          <p class="wc-row-card">No active alerts.</p>
+          {% endfor %}
+        </div>
+
+        <h2 class="wc-big-number" style="font-size:1rem;font-weight:600;margin:1.5rem 0 .5rem">Quick Actions</h2>
+        <div class="wc-action-grid">
+          <a href="{{ url_for('watch_commander.unit_map') }}">Unit Map<span>Live positions for all K-9 teams.</span></a>
+          <a href="{{ url_for('watch_commander.reports') }}">Reports<span>Review K-9 incident and sweep reports.</span></a>
+          <a href="{{ url_for('watch_commander.briefing') }}">Briefing<span>Current BOLOs and shift notices.</span></a>
+          <a href="{{ url_for('notifications.inbox') }}">Messages<span>Command messages and notifications.</span></a>
+        </div>
+      </section>
+    </div>
+    {% else %}
+    <div class="ops-panel" style="margin:2rem auto;max-width:600px;text-align:center;padding:2rem;">
+      <strong>Live data requires officer sign-on.</strong>
+      <p style="margin-top:.5rem;color:var(--text-secondary)">K-9 team members must check in via the shift sign-on page to appear here. Enable Demo Mode to see sample data.</p>
+      <a class="command-action-btn" href="{{ url_for('watch_commander.sign_on') }}" style="display:inline-block;margin-top:1rem">Check In</a>
+    </div>
+    {% endif %}
+  </main>
+</div>
+{% endblock %}
