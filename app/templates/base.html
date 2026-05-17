@@ -120,5 +120,44 @@
   }());
   </script>
   {% block scripts %}{% endblock %}
+  {% if current_user and current_user.is_authenticated %}
+  <script>
+  /* Auto-location reporter: silently pushes GPS every 5 min for on-duty units */
+  (function () {
+    if (!navigator.geolocation) return;
+    var KEY = 'mcpd-loc-ts';
+    var INTERVAL = 5 * 60 * 1000; // 5 minutes
+    var csrf = document.querySelector('meta[name="csrf-token"]')
+               ? document.querySelector('meta[name="csrf-token"]').content
+               : (document.getElementById('csrf-token') ? document.getElementById('csrf-token').value : '');
+
+    function push(lat, lng) {
+      fetch('/watch-commander/api/unit-location', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+        body: JSON.stringify({ lat: lat, lng: lng }),
+      }).catch(function () {});
+    }
+
+    function tryShare() {
+      navigator.geolocation.getCurrentPosition(
+        function (pos) {
+          push(pos.coords.latitude, pos.coords.longitude);
+          localStorage.setItem(KEY, Date.now());
+        },
+        function () { /* silently fail — permission denied or unavailable */ },
+        { timeout: 8000, maximumAge: 60000, enableHighAccuracy: false }
+      );
+    }
+
+    /* Share on load if it's been more than 5 minutes since last push */
+    var last = parseInt(localStorage.getItem(KEY) || '0', 10);
+    if (Date.now() - last > INTERVAL) tryShare();
+
+    /* Then every 5 minutes while the tab is open */
+    setInterval(tryShare, INTERVAL);
+  }());
+  </script>
+  {% endif %}
 </body>
 </html>

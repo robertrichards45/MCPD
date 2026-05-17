@@ -1,6 +1,6 @@
 {% extends "watch_commander/_layout.html" %}
 {% block wc_title %}Unit Map{% endblock %}
-{% block wc_subtitle %}Real-time operational positions for on-duty patrol units. WC-only view.{% endblock %}
+{% block wc_subtitle %}Real-time operational positions for on-duty patrol units. {% if can_see_all %}Viewing all installations.{% else %}Viewing your assigned officers only.{% endif %}{% endblock %}
 {% block head %}
 {{ super() }}
 <link rel="stylesheet" href="{{ url_for('static', filename='vendor/leaflet.min.css', v='1.9.4') }}" />
@@ -288,11 +288,15 @@
       </div>
     </div>
 
-    <!-- Self-location share -->
+    <!-- Location sharing status -->
     <div class="unit-sidebar-section">
-      <p class="unit-sidebar-head">My Location</p>
-      <button class="unit-geo-btn" id="geo-share-btn">Share My GPS Position</button>
-      <div class="unit-geo-status" id="geo-status"></div>
+      <p class="unit-sidebar-head">Location Sharing</p>
+      <div id="geo-status" class="unit-geo-status">Auto-sharing active — position updates every 5 min.</div>
+      {% if can_see_all %}
+      <div style="margin-top:6px;font-size:.68rem;color:#3b74d8;font-weight:600;letter-spacing:.04em;text-transform:uppercase;">All Installations Visible</div>
+      {% else %}
+      <div style="margin-top:6px;font-size:.68rem;color:#8ba5c0;letter-spacing:.04em;font-weight:600;text-transform:uppercase;">Your Officers Only</div>
+      {% endif %}
     </div>
 
     <!-- Status legend quick-ref -->
@@ -488,38 +492,7 @@
   loadUnits();
   setInterval(loadUnits, 20000); // auto-refresh every 20s
 
-  // ── Geolocation share ──────────────────────────────────────────
-  var geoBtn = document.getElementById('geo-share-btn');
-  var geoStatus = document.getElementById('geo-status');
-  geoBtn.addEventListener('click', function () {
-    if (!navigator.geolocation) {
-      geoStatus.textContent = 'Geolocation not supported on this device.';
-      return;
-    }
-    geoStatus.textContent = 'Acquiring position…';
-    navigator.geolocation.getCurrentPosition(
-      function (pos) {
-        var lat = pos.coords.latitude;
-        var lng = pos.coords.longitude;
-        fetch('/watch-commander/api/unit-location', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
-          body: JSON.stringify({ lat: lat, lng: lng }),
-        })
-        .then(function (r) { return r.json(); })
-        .then(function (d) {
-          if (d.ok) {
-            geoStatus.textContent = 'Position shared (' + lat.toFixed(4) + ', ' + lng.toFixed(4) + ')';
-            loadUnits();
-          }
-        });
-      },
-      function (err) {
-        geoStatus.textContent = 'Could not get location: ' + err.message;
-      },
-      { timeout: 10000, enableHighAccuracy: true }
-    );
-  });
+  // Geolocation is auto-pushed by base.html on every page load (5-min interval).
 }());
 </script>
 {% endblock %}

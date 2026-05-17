@@ -77,6 +77,7 @@
         <a href="{{ url_for('watch_commander.shift') }}">Shift Management</a>
         <a href="{{ url_for('watch_commander.reports') }}">Report Review</a>
         <a href="{{ url_for('watch_commander.approvals') }}">Approvals Center</a>
+        <a href="{{ url_for('watch_commander.unit_map') }}" {% if endpoint == 'watch_commander.unit_map' %}class="is-active"{% endif %}>Unit Map</a>
         <a href="{{ url_for('watch_commander.briefing') }}">Shift Briefing</a>
         <a href="{{ url_for('performance.pending') }}">Stats Approvals</a>
         <a href="{{ url_for('performance.team_overview') }}">Team Stats</a>

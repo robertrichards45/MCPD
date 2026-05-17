@@ -29,6 +29,7 @@ from ..models import (
     WatchShift,
     utcnow_naive,
 )
+from ..models import ROLE_ASSISTANT_OPERATIONS_OFFICER
 from ..permissions import can_manage_site, effective_role
 
 bp = Blueprint('watch_commander', __name__, url_prefix='/watch-commander')
@@ -69,9 +70,41 @@ _DEMO_SCATTER = [
     (31.5731, -84.0637), (31.5755, -84.0718),
 ]
 
-# Roles that appear on the unit map (field roles only)
+# Roles that appear as units on the operational map
 _MAP_ROLES = {ROLE_PATROL_OFFICER, ROLE_DESK_SGT, ROLE_WATCH_COMMANDER}
 _OFF_DUTY_STATUSES = {'Off Duty', 'Leave'}
+
+# Roles that can VIEW the unit map (broadened from watch tools)
+_MAP_VIEWER_ROLES = {
+    ROLE_WATCH_COMMANDER,
+    ROLE_DESK_SGT,
+    ROLE_ASSISTANT_OPERATIONS_OFFICER,
+    'WEBSITE_CONTROLLER',
+}
+
+
+def _can_access_unit_map(user) -> bool:
+    """Unit map is visible to command-level roles and site controllers."""
+    if not user or not getattr(user, 'is_authenticated', False):
+        return False
+    return (
+        effective_role(user) in _MAP_VIEWER_ROLES
+        or can_manage_site(user)
+        or bool(getattr(user, 'builder_mode_access', False))
+    )
+
+
+def _unit_map_supervisor_filter(viewer):
+    """
+    Returns the supervisor_id to scope unit queries, or None meaning 'see all'.
+
+    WEBSITE_CONTROLLER + ASSISTANT_OPERATIONS_OFFICER → None (see everyone)
+    WATCH_COMMANDER + DESK_SGT → viewer.id (see their direct reports only)
+    """
+    role = effective_role(viewer)
+    if role in {ROLE_WEBSITE_CONTROLLER, ROLE_ASSISTANT_OPERATIONS_OFFICER} or can_manage_site(viewer):
+        return None
+    return viewer.id
 
 
 def _resolve_location(assignment, idx: int):
@@ -499,21 +532,33 @@ def notifications():
 @bp.route('/unit-map')
 @login_required
 def unit_map():
-    _require_watch_tools()
-    return render_template('watch_commander/unit_map.html', title='Unit Map', user=current_user,
-                           statuses=OFFICER_STATUSES)
+    if not _can_access_unit_map(current_user):
+        abort(403)
+    scope_id = _unit_map_supervisor_filter(current_user)
+    can_see_all = scope_id is None
+    return render_template(
+        'watch_commander/unit_map.html',
+        title='Unit Map',
+        user=current_user,
+        statuses=OFFICER_STATUSES,
+        can_see_all=can_see_all,
+    )
 
 
 @bp.route('/api/units')
 @login_required
 def api_units():
-    _require_watch_tools()
-    # Pull latest assignment per officer for all field-role users
-    active_users = (
-        User.query.filter(User.active.is_(True), User.role.in_(_MAP_ROLES))
-        .order_by(User.last_name.asc(), User.first_name.asc())
-        .all()
-    )
+    if not _can_access_unit_map(current_user):
+        abort(403)
+    scope_id = _unit_map_supervisor_filter(current_user)
+
+    # Build filtered user list based on viewer scope
+    q = User.query.filter(User.active.is_(True), User.role.in_(_MAP_ROLES))
+    if scope_id is not None:
+        # Watch Commander / Desk Sgt: only see their direct reports (supervisor_id = self)
+        q = q.filter(User.supervisor_id == scope_id)
+    active_users = q.order_by(User.last_name.asc(), User.first_name.asc()).all()
+
     units = []
     for idx, officer in enumerate(active_users):
         assignment = (
@@ -539,17 +584,22 @@ def api_units():
             'lng': lng,
             'location_fresh': bool(assignment and assignment.unit_lat),
         })
-    return jsonify({'units': units})
+    return jsonify({'units': units, 'scope': 'all' if scope_id is None else 'supervised'})
 
 
 @bp.route('/api/units/<int:officer_id>/status', methods=['POST'])
 @login_required
 def api_update_unit_status(officer_id):
-    _require_watch_tools()
+    if not _can_access_unit_map(current_user):
+        abort(403)
     new_status = (request.json or {}).get('status', '').strip()
     if new_status not in OFFICER_STATUSES:
         return jsonify({'error': 'Invalid status'}), 400
     officer = User.query.get_or_404(officer_id)
+    # Scoped commanders can only update their own officers
+    scope_id = _unit_map_supervisor_filter(current_user)
+    if scope_id is not None and officer.supervisor_id != scope_id:
+        return jsonify({'error': 'Not in your scope'}), 403
     assignment = (
         WatchAssignment.query
         .filter_by(officer_id=officer.id)
