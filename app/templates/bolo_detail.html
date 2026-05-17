@@ -1,23 +1,32 @@
 {% extends 'base.html' %}
 {% block body %}
-<div class="app-shell">
+<div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
-  <div class="page-wrap">
+  <main class="mcpd-command-main" id="main-content">
 
-    <div class="mobile-back-bar">
-      <a class="mobile-back-btn" href="{{ url_for('bolo.bolo_board') }}">&#8592; BOLO Board</a>
-    </div>
-
-    <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
-      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('bolo.bolo_board') }}">&#8592; Board</a>
-      {% if can_manage and entry.status == BOLO_STATUS_ACTIVE %}
-      <a class="btn btn-outline-dark btn-sm" href="{{ url_for('bolo.bolo_edit', entry_id=entry.id) }}">Edit</a>
-      {% endif %}
-    </div>
+    <section class="ops-head-card">
+      <div>
+        <p class="eyebrow" style="color:rgba(255,255,255,.55);font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;margin:0 0 .25rem;">BOLO Detail</p>
+        <h2>{{ entry.subject_name }}</h2>
+        {% if entry.aliases %}<p class="ops-head-sub">AKA: {{ entry.aliases }}</p>{% endif %}
+      </div>
+      <div class="d-flex gap-2 align-items-center flex-wrap">
+        <span class="bolo-threat-badge bolo-threat-badge-{{ entry.threat_level | lower }}">{{ entry.threat_level }}</span>
+        {% if entry.status == BOLO_STATUS_ACTIVE %}
+          <span class="badge bg-success">ACTIVE</span>
+        {% else %}
+          <span class="badge bg-secondary">{{ entry.status }}</span>
+        {% endif %}
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('bolo.bolo_board') }}">← Board</a>
+        {% if can_manage and entry.status == BOLO_STATUS_ACTIVE %}
+          <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('bolo.bolo_edit', entry_id=entry.id) }}">Edit</a>
+        {% endif %}
+      </div>
+    </section>
 
     <div class="row g-3">
       <div class="col-lg-4">
-        <div class="card p-0 overflow-hidden bolo-detail-photo-card">
+        <div class="ops-panel p-0 overflow-hidden bolo-detail-photo-card">
           {% if entry.photo_path %}
           <img src="{{ url_for('bolo.bolo_photo', entry_id=entry.id) }}" alt="Subject photo" class="bolo-detail-photo" />
           {% else %}
@@ -33,23 +42,7 @@
       </div>
 
       <div class="col-lg-8">
-        <div class="card p-3 mb-3">
-          <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
-            <div>
-              <div class="eyebrow">Subject</div>
-              <h2 class="mb-0">{{ entry.subject_name }}</h2>
-              {% if entry.aliases %}<div class="text-muted">AKA: {{ entry.aliases }}</div>{% endif %}
-            </div>
-            <div class="d-flex gap-1 flex-wrap">
-              <span class="bolo-threat-badge bolo-threat-badge-{{ entry.threat_level | lower }}">{{ entry.threat_level }}</span>
-              {% if entry.status == BOLO_STATUS_ACTIVE %}
-              <span class="badge bg-success">ACTIVE</span>
-              {% else %}
-              <span class="badge bg-secondary">{{ entry.status }}</span>
-              {% endif %}
-            </div>
-          </div>
-
+        <div class="ops-panel mb-3">
           {% if entry.offense %}
           <div class="notice-panel notice-panel-soft mb-3">
             <strong>Wanted For:</strong> {{ entry.offense }}
@@ -89,7 +82,7 @@
         </div>
 
         {% if entry.status != BOLO_STATUS_ACTIVE %}
-        <div class="card p-3 mb-3">
+        <div class="ops-panel mb-3">
           <div class="eyebrow mb-1">Resolution</div>
           <div><strong>Status:</strong> {{ entry.status }}</div>
           {% if entry.resolved_at %}<div><strong>Resolved:</strong> {{ entry.resolved_at.strftime('%B %d, %Y %H:%M') }}</div>{% endif %}
@@ -99,7 +92,7 @@
         {% endif %}
 
         {% if entry.status == BOLO_STATUS_ACTIVE %}
-        <div class="card p-3 mb-3">
+        <div class="ops-panel mb-3">
           <div class="eyebrow mb-2">Actions</div>
           <form method="post" action="{{ url_for('bolo.bolo_locate', entry_id=entry.id) }}" class="mb-2">
             <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}" />
@@ -121,6 +114,6 @@
       </div>
     </div>
 
-  </div>
+  </main>
 </div>
 {% endblock %}

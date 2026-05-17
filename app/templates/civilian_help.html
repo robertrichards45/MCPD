@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 {% block body %}
-<div class="app-shell">
+<div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
   <div class="page-wrap">
-    <div class="card p-3 mb-3 legal-search-card search-panel">
+    <div class="ops-panel mb-3 legal-search-card search-panel">
       <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
         <div>
           <h2 class="mb-1">Civilian Search</h2>
@@ -29,7 +29,7 @@
     </form>
     </div>
 
-  <div class="card p-3 mb-3">
+  <div class="ops-panel mb-3">
     <h5 class="mb-2">Quick Guidance</h5>
     {% if suggestions %}
       <ul class="mb-0">
@@ -43,13 +43,13 @@
   </div>
 
   {% if ai_guidance %}
-  <div class="card p-3 mb-3">
+  <div class="ops-panel mb-3">
     <h5 class="mb-2">AI Guidance</h5>
     <div>{{ ai_guidance }}</div>
   </div>
   {% endif %}
 
-  <div class="card p-3" id="civilian-orders-results">
+  <div class="ops-panel" id="civilian-orders-results">
     <div class="d-flex justify-content-between align-items-center mb-2 legal-results-header">
       <h5 class="mb-0">Results</h5>
       <span class="small text-muted">{{ documents|length }} match{% if documents|length != 1 %}es{% endif %}</span>

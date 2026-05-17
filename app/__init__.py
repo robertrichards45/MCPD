@@ -223,6 +223,37 @@ def ensure_schema():
     user_indexes = {index['name'] for index in inspector.get_indexes('user')}
     user_table = _quoted_identifier('user')
     datetime_type = _schema_datetime_type()
+
+    def _ensure_demo_columns(table_name):
+        if table_name not in table_names:
+            return
+        quoted = _quoted_identifier(table_name)
+        columns = {column['name'] for column in inspector.get_columns(table_name)}
+        if 'is_demo' not in columns:
+            if _safe_schema_execute(f'ALTER TABLE {quoted} ADD COLUMN is_demo BOOLEAN'):
+                _safe_schema_execute(f'UPDATE {quoted} SET is_demo = false WHERE is_demo IS NULL')
+        if 'demo_batch_id' not in columns:
+            _safe_schema_execute(f'ALTER TABLE {quoted} ADD COLUMN demo_batch_id VARCHAR(80)')
+
+    for _demo_table in (
+        'user',
+        'form',
+        'saved_form',
+        'training_roster',
+        'training_signature',
+        'report',
+        'accident_reconstruction',
+        'incident_packet',
+        'incident_draft',
+        'watch_shift',
+        'watch_assignment',
+        'watch_note',
+        'watch_approval',
+        'operations_task',
+        'shift_brief',
+    ):
+        _ensure_demo_columns(_demo_table)
+
     if 'edipi' not in user_columns:
         _safe_schema_execute(f'ALTER TABLE {user_table} ADD COLUMN edipi VARCHAR(20)')
     if 'first_name' not in user_columns:
@@ -296,6 +327,42 @@ def ensure_schema():
     if 'ix_user_email_unique' not in user_indexes:
         _safe_schema_execute(f'CREATE UNIQUE INDEX IF NOT EXISTS ix_user_email_unique ON {user_table} (email) WHERE email IS NOT NULL')
 
+    if 'watch_assignment' in table_names:
+        wa_columns = {column['name'] for column in inspector.get_columns('watch_assignment')}
+        if 'unit_lat' not in wa_columns:
+            _safe_schema_execute("ALTER TABLE watch_assignment ADD COLUMN unit_lat REAL")
+        if 'unit_lng' not in wa_columns:
+            _safe_schema_execute("ALTER TABLE watch_assignment ADD COLUMN unit_lng REAL")
+        if 'location_updated_at' not in wa_columns:
+            _safe_schema_execute(f"ALTER TABLE watch_assignment ADD COLUMN location_updated_at {datetime_type}")
+
+    if 'command_message' not in table_names:
+        _safe_schema_execute(
+            f"CREATE TABLE IF NOT EXISTS command_message ("
+            f"id INTEGER PRIMARY KEY AUTOINCREMENT, "
+            f"sender_id INTEGER NOT NULL REFERENCES \"user\"(id), "
+            f"recipient_id INTEGER REFERENCES \"user\"(id), "
+            f"subject VARCHAR(200), "
+            f"body TEXT NOT NULL, "
+            f"priority VARCHAR(20) NOT NULL DEFAULT 'Normal', "
+            f"is_broadcast BOOLEAN NOT NULL DEFAULT 0, "
+            f"read_at {datetime_type}, "
+            f"is_demo BOOLEAN NOT NULL DEFAULT 0, "
+            f"created_at {datetime_type} NOT NULL"
+            f")"
+        )
+
+    if 'command_message_read' not in table_names:
+        _safe_schema_execute(
+            f"CREATE TABLE IF NOT EXISTS command_message_read ("
+            f"id INTEGER PRIMARY KEY AUTOINCREMENT, "
+            f"message_id INTEGER NOT NULL REFERENCES command_message(id), "
+            f"user_id INTEGER NOT NULL REFERENCES \"user\"(id), "
+            f"read_at {datetime_type} NOT NULL, "
+            f"UNIQUE(message_id, user_id)"
+            f")"
+        )
+
     if 'truck_gate_log' in table_names:
         truck_gate_log_columns = {column['name'] for column in inspector.get_columns('truck_gate_log')}
         if 'log_date' not in truck_gate_log_columns:
@@ -347,6 +414,23 @@ def ensure_schema():
             _safe_schema_execute("ALTER TABLE saved_form ADD COLUMN access_scope VARCHAR(40)")
         if 'rendered_output_path' not in saved_form_columns:
             _safe_schema_execute("ALTER TABLE saved_form ADD COLUMN rendered_output_path VARCHAR(255)")
+
+    if 'operations_task' in table_names:
+        operations_task_columns = {column['name'] for column in inspector.get_columns('operations_task')}
+        if 'assignment_target' not in operations_task_columns:
+            if _safe_schema_execute("ALTER TABLE operations_task ADD COLUMN assignment_target VARCHAR(80)"):
+                _safe_schema_execute("UPDATE operations_task SET assignment_target = 'SPECIFIC_LEAD' WHERE assignment_target IS NULL OR assignment_target = ''")
+        if 'assigned_user_ids_json' not in operations_task_columns:
+            _safe_schema_execute("ALTER TABLE operations_task ADD COLUMN assigned_user_ids_json TEXT")
+        if 'assigned_user_names' not in operations_task_columns:
+            _safe_schema_execute("ALTER TABLE operations_task ADD COLUMN assigned_user_names TEXT")
+        if 'completion_target' not in operations_task_columns:
+            if _safe_schema_execute("ALTER TABLE operations_task ADD COLUMN completion_target VARCHAR(80)"):
+                _safe_schema_execute("UPDATE operations_task SET completion_target = 'CUSTOM_COUNT' WHERE completion_target IS NULL OR completion_target = ''")
+        if 'required_user_ids_json' not in operations_task_columns:
+            _safe_schema_execute("ALTER TABLE operations_task ADD COLUMN required_user_ids_json TEXT")
+        if 'required_user_names' not in operations_task_columns:
+            _safe_schema_execute("ALTER TABLE operations_task ADD COLUMN required_user_names TEXT")
 
     if 'form' in table_names:
         form_columns = {column['name'] for column in inspector.get_columns('form')}
@@ -731,6 +815,24 @@ def create_app():
         redirect_code = 301 if request.method in {'GET', 'HEAD'} else 308
         return redirect(target, code=redirect_code)
 
+    # Precomputed once at startup; unsafe-inline required for theme/CSRF scripts that must
+    # run before first render. blob:/data: required for camera scanning and signature canvas.
+    _csp_policy = '; '.join([
+        "default-src 'self'",
+        "script-src 'self' 'unsafe-inline' https://unpkg.com",
+        "style-src 'self' 'unsafe-inline' https://unpkg.com",
+        "img-src 'self' data: blob:",
+        "font-src 'self'",
+        "object-src 'self'",
+        "media-src 'self' blob:",
+        "connect-src 'self'",
+        "worker-src 'self' blob:",
+        "frame-src 'self'",
+        "manifest-src 'self'",
+        "base-uri 'self'",
+        "form-action 'self'",
+    ])
+
     @app.after_request
     def add_security_headers(response):
         response.headers.setdefault('X-Content-Type-Options', 'nosniff')
@@ -738,7 +840,7 @@ def create_app():
         response.headers.setdefault('Referrer-Policy', 'strict-origin-when-cross-origin')
         response.headers.setdefault(
             'Permissions-Policy',
-            'camera=(self), microphone=(), geolocation=(), payment=(), usb=()',
+            'camera=(self), microphone=(), geolocation=(self), payment=(), usb=()',
         )
         response.headers.setdefault('Cross-Origin-Opener-Policy', 'same-origin')
         if app.config.get('HSTS_ENABLED') and (request.is_secure or _external_request_scheme() == 'https'):
@@ -747,6 +849,7 @@ def create_app():
                 'max-age={}; includeSubDomains'.format(app.config.get('HSTS_MAX_AGE', 31536000)),
             )
         response.headers.setdefault('X-Robots-Tag', 'index, follow')
+        response.headers.setdefault('Content-Security-Policy', _csp_policy)
         return response
 
     @app.errorhandler(403)
@@ -777,15 +880,22 @@ def create_app():
                 'portal_origin_label': host_display,
                 'portal_show_origin_banner': show_origin_banner,
                 'portal_write_limited_notice': 'Running in limited write mode' if app.config.get('PORTAL_WRITE_LIMITED_MODE') else '',
+                'portal_demo_mode': bool(session.get('demo_mode')),
+                'portal_demo_viewing_as': session.get('demo_viewing_as'),
+                'portal_demo_batch_id': session.get('demo_batch_id'),
+                'portal_is_site_owner': False,
+                'portal_can_control_demo': False,
             }
 
         from .permissions import (
             can_access_armory,
+            can_access_assistant_operations,
             can_access_builder_mode,
             can_access_rfi,
             can_access_truck_gate,
             effective_role,
             is_site_controller,
+            is_site_owner,
             watch_commander_scope_id,
         )
         from .models import INSTALLATION_LABELS
@@ -810,6 +920,19 @@ def create_app():
             except Exception:
                 pending_approvals_count = 0
 
+        # Shift status for header badge and nav sign-on link
+        try:
+            from .models import WatchAssignment as _WA
+            _shift = (
+                _WA.query
+                .filter_by(officer_id=current_user.id)
+                .order_by(_WA.updated_at.desc())
+                .first()
+            )
+            shift_status = _shift.status if _shift else 'Off Duty'
+        except Exception:
+            shift_status = None
+
         return {
             'role_labels': ROLE_LABELS,
             'portal_origin_label': host_display,
@@ -823,18 +946,26 @@ def create_app():
             'portal_watch_commander_scope_id': watch_commander_scope_id(current_user),
             'portal_role_keys': sorted(current_user.role_keys),
             'portal_can_access_armory': can_access_armory(current_user),
+            'portal_can_access_assistant_operations': can_access_assistant_operations(current_user),
             'portal_can_access_builder_mode': can_access_builder_mode(current_user),
             'portal_can_access_truck_gate': can_access_truck_gate(current_user),
             'portal_can_access_rfi': can_access_rfi(current_user),
             'portal_pending_approvals': pending_approvals_count,
+            'portal_demo_mode': bool(session.get('demo_mode')),
+            'portal_demo_viewing_as': session.get('demo_viewing_as'),
+            'portal_demo_batch_id': session.get('demo_batch_id'),
+            'portal_is_site_owner': is_site_owner(current_user),
+            'portal_can_control_demo': is_site_owner(current_user),
+            'portal_shift_status': shift_status,
         }
 
     db.init_app(app)
     login_manager.init_app(app)
 
-    from .routes import auth, assistant, bolo, bodycam, dashboard, forms, training, qual_tracker, performance, stats, annual_ai, admin, cleo_api, reports, reconstruction, officers, ops_modules, legal, orders, reference, announcements, mobile, watch_commander
+    from .routes import auth, assistant, assistant_operations, bolo, bodycam, dashboard, forms, training, qual_tracker, performance, stats, annual_ai, admin, cleo_api, reports, reconstruction, officers, ops_modules, legal, orders, reference, announcements, mobile, watch_commander, demo, notifications
     app.register_blueprint(auth.bp)
     app.register_blueprint(assistant.bp)
+    app.register_blueprint(assistant_operations.bp)
     app.register_blueprint(bolo.bp)
     app.register_blueprint(bodycam.bp)
     app.register_blueprint(dashboard.bp)
@@ -856,6 +987,8 @@ def create_app():
     app.register_blueprint(announcements.bp)
     app.register_blueprint(mobile.bp)
     app.register_blueprint(watch_commander.bp)
+    app.register_blueprint(notifications.bp)
+    app.register_blueprint(demo.bp)
 
     @app.get('/manifest.webmanifest')
     def pwa_manifest():

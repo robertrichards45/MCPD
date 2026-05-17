@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block body %}
-<div class="app-shell">
+<div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
 
   <div class="page-wrap manager-page-wrap">
@@ -21,7 +21,7 @@
 
     <div class="row g-3 manager-grid">
       <div class="col-lg-4">
-        <section class="card p-3 h-100">
+        <section class="ops-panel h-100">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
               <h3 class="h5 mb-1">Guide Entries</h3>
@@ -55,7 +55,7 @@
       </div>
 
       <div class="col-lg-8">
-        <section class="card p-3">
+        <section class="ops-panel">
           <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
             <div>
               <h2 class="h4 mb-1">{{ 'Edit Entry' if edit_scenario.title else 'Add New Entry' }}</h2>

@@ -1,0 +1,354 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell mcpd-command-app assistant-ops-app">
+  {% include 'partials/nav.html' %}
+  <main class="mcpd-command-main assistant-ops-main">
+    <section class="assistant-ops-hero">
+      <div>
+        <p class="eyebrow">Assistant Operations</p>
+        <h1>Command Due-Out Tracker</h1>
+        <p>Assign due-outs, training, inspections, suspense items, and projects to Lt/Sgt/watch commanders. Track who owns the task, who must complete it, and command readiness at a glance.</p>
+      </div>
+      <div class="assistant-ops-hero-actions">
+        <a class="btn btn-outline-secondary" href="{{ url_for('watch_commander.dashboard') }}">Watch Commander Hub</a>
+        <a class="btn btn-primary" href="#task-list">View Tasks</a>
+      </div>
+    </section>
+
+    <section class="assistant-ops-kpis" aria-label="Assistant Operations summary">
+      <article><span>Total Tasks</span><strong>{{ metrics.total }}</strong><small>All tracked items</small></article>
+      <article><span>Open Tasks</span><strong>{{ metrics.open }}</strong><small>Not complete/cancelled</small></article>
+      <article class="{% if metrics.overdue %}is-danger{% endif %}"><span>Overdue</span><strong>{{ metrics.overdue }}</strong><small>Past suspense date</small></article>
+      <article><span>Due Within 7</span><strong>{{ metrics.due_soon }}</strong><small>Near-term suspense</small></article>
+      <article><span>Completion</span><strong>{{ metrics.completion_rate }}%</strong><small>Personnel/task weighted</small></article>
+      <article class="{% if metrics.command_critical %}is-warning{% endif %}"><span>Command Critical</span><strong>{{ metrics.command_critical }}</strong><small>Open critical items</small></article>
+    </section>
+
+    <section class="assistant-ops-grid">
+      {% if can_create_tasks %}
+      <article class="assistant-ops-panel assistant-ops-create">
+        <div class="assistant-ops-panel-head">
+          <div>
+            <p class="eyebrow">New Assignment</p>
+            <h2>Create Operations Task</h2>
+          </div>
+          <span class="assistant-ops-badge">AOO</span>
+        </div>
+        <form method="post" action="{{ url_for('assistant_operations.create_task') }}" class="assistant-ops-form">
+          <input type="hidden" name="csrf_token" value="{{ g.csrf_token }}">
+          <label>Task Title
+            <input name="task_title" required placeholder="Annual OC spray recertification">
+          </label>
+          <div class="assistant-ops-two">
+            <label>Category
+              <select name="task_category" required>
+                <option value="">Choose category</option>
+                {% for item in task_categories %}<option value="{{ item }}">{{ item }}</option>{% endfor %}
+              </select>
+            </label>
+            <label>Assigned Watch
+              <select name="assigned_watch" required>
+                <option value="">Choose watch</option>
+                {% for item in watch_choices %}<option value="{{ item }}">{{ item }}</option>{% endfor %}
+              </select>
+            </label>
+          </div>
+          <label>Description
+            <textarea name="description" rows="3" placeholder="What needs to happen, required standard, and suspense instructions."></textarea>
+          </label>
+          <label>Assign To
+            <select name="assignment_target" id="assistant-ops-assignment-target" required>
+              {% for value, label in assignment_target_choices %}
+              <option value="{{ value }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <div class="assistant-ops-target-panel" data-assignment-panel="SPECIFIC_WATCH_COMMANDERS">
+            <label>Certain Watch Commanders
+              <select name="watch_commander_ids" multiple size="5">
+                {% for officer in watch_commanders %}
+                <option value="{{ officer.id }}">{{ officer.display_name }} / {{ officer.role_label }}</option>
+                {% else %}
+                <option value="" disabled>No active Watch Commanders found</option>
+                {% endfor %}
+              </select>
+            </label>
+            <small>Hold Ctrl to select more than one Watch Commander.</small>
+          </div>
+          <div class="assistant-ops-target-panel" data-assignment-panel="SPECIFIC_DESK_SGTS">
+            <label>Certain Desk Sgt's
+              <select name="desk_sgt_ids" multiple size="5">
+                {% for officer in desk_sgts %}
+                <option value="{{ officer.id }}">{{ officer.display_name }} / {{ officer.role_label }}</option>
+                {% else %}
+                <option value="" disabled>No active Desk Sgt users found</option>
+                {% endfor %}
+              </select>
+            </label>
+            <small>Hold Ctrl to select more than one Desk Sgt.</small>
+          </div>
+          <div class="assistant-ops-two">
+            <label data-assignment-panel="SPECIFIC_LEAD">One Specific Lead
+              <select name="assigned_lead_id">
+                <option value="">Unassigned</option>
+                {% for lead in leads %}<option value="{{ lead.id }}">{{ lead.display_name }} / {{ lead.role_label }}</option>{% endfor %}
+              </select>
+            </label>
+            <label>Due Date
+              <input type="date" name="due_date" required>
+            </label>
+          </div>
+          <label>Who Must Complete This?
+            <select name="completion_target" id="assistant-ops-completion-target" required>
+              {% for value, label in completion_target_choices %}
+              <option value="{{ value }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <div class="assistant-ops-target-panel" data-completion-panel="SPECIFIC_PERSONNEL">
+            <label>Certain People Required to Complete
+              <select name="completion_user_ids" multiple size="8">
+                {% for officer in personnel %}
+                <option value="{{ officer.id }}">{{ officer.display_name }} / {{ officer.role_label }}{% if officer.section_unit %} / {{ officer.section_unit }}{% endif %}</option>
+                {% else %}
+                <option value="" disabled>No active personnel found</option>
+                {% endfor %}
+              </select>
+            </label>
+            <small>Use this for tasking a precise list of officers, sergeants, commanders, or support personnel.</small>
+          </div>
+          <div class="assistant-ops-target-panel" data-completion-panel="CUSTOM_COUNT">
+            <strong>Custom count tracking</strong>
+            <small>Use this when the task is tracked by a number instead of named portal accounts. Example: 12 Marines need the training, 7 completed.</small>
+          </div>
+          <div class="assistant-ops-three">
+            <label>Priority
+              <select name="priority">
+                {% for item in priority_choices %}<option value="{{ item }}" {% if item == 'Normal' %}selected{% endif %}>{{ item }}</option>{% endfor %}
+              </select>
+            </label>
+            <label>Total Required
+              <input type="number" name="total_personnel_required" min="0" value="0">
+              <small>Auto-filled for named groups. Used directly for Custom Count.</small>
+            </label>
+            <label>Completed
+              <input type="number" name="personnel_completed" min="0" value="0">
+            </label>
+          </div>
+          <div class="assistant-ops-two">
+            <label>Start Date
+              <input type="date" name="start_date">
+            </label>
+            <label>Recurrence
+              <select name="recurrence_type">
+                {% for item in recurrence_choices %}<option value="{{ item }}">{{ item }}</option>{% endfor %}
+              </select>
+            </label>
+          </div>
+          <label>Attachment Link
+            <input name="attachment_link" placeholder="SharePoint, Teams, or local reference link">
+          </label>
+          <label>Commander Notes
+            <textarea name="commander_notes" rows="2" placeholder="Optional command notes or review instructions."></textarea>
+          </label>
+          <label class="assistant-ops-check"><input type="checkbox" name="recurring" value="1"> Recurring task / future reminder eligible</label>
+          <button type="submit" class="btn btn-primary">Create Task</button>
+        </form>
+      </article>
+      {% endif %}
+
+      <article class="assistant-ops-panel">
+        <div class="assistant-ops-panel-head">
+          <div>
+            <p class="eyebrow">Power BI Readiness</p>
+            <h2>Watch Readiness</h2>
+          </div>
+          <span class="assistant-ops-badge">Dashboard-ready</span>
+        </div>
+        <div class="assistant-ops-readiness-list">
+          {% for row in watch_readiness %}
+          <div class="assistant-ops-readiness-row">
+            <div>
+              <strong>{{ row.watch }}</strong>
+              <small>{{ row.task_count }} task{{ '' if row.task_count == 1 else 's' }} / {{ row.open_count }} open / {{ row.overdue_count }} overdue</small>
+            </div>
+            <div class="assistant-ops-progress" aria-label="{{ row.watch }} {{ row.average_complete }} percent complete">
+              <span style="width: {{ row.average_complete }}%"></span>
+            </div>
+            <b>{{ row.average_complete }}%</b>
+          </div>
+          {% else %}
+          <p class="assistant-ops-empty">No tasks yet. Create the first task to start watch readiness tracking.</p>
+          {% endfor %}
+        </div>
+      </article>
+    </section>
+
+    <section class="assistant-ops-panel" id="task-list">
+      <div class="assistant-ops-panel-head assistant-ops-filter-head">
+        <div>
+          <p class="eyebrow">Tracker</p>
+          <h2>Operations Tasks</h2>
+        </div>
+        <form method="get" class="assistant-ops-filters">
+          <select name="status" aria-label="Filter by status">
+            <option value="">All Statuses</option>
+            {% for item in status_choices %}<option value="{{ item }}" {% if selected_status == item %}selected{% endif %}>{{ item }}</option>{% endfor %}
+          </select>
+          <select name="watch" aria-label="Filter by watch">
+            <option value="">All Watches</option>
+            {% for item in watch_choices %}<option value="{{ item }}" {% if selected_watch == item %}selected{% endif %}>{{ item }}</option>{% endfor %}
+          </select>
+          <button class="btn btn-outline-secondary" type="submit">Filter</button>
+        </form>
+      </div>
+
+      <div class="assistant-ops-task-list">
+        {% for task in tasks %}
+        <details class="assistant-ops-task-card" {% if loop.first %}open{% endif %}>
+          <summary>
+            <span>
+              <strong>{{ task.task_title }}</strong>
+              <small>{{ task.task_id }} / {{ task.task_category }} / {{ task.assigned_watch }}</small>
+            </span>
+            <span class="assistant-ops-status status-{{ task.status|lower|replace(' ', '-') }}">{{ task.status }}</span>
+            <span class="assistant-ops-due {% if task.is_overdue %}is-danger{% endif %}">
+              Due {{ task.due_date.strftime('%m/%d/%Y') if task.due_date else 'TBD' }}
+            </span>
+            <span class="assistant-ops-percent">{{ task.percent_complete }}%</span>
+          </summary>
+          <div class="assistant-ops-task-body">
+            <div class="assistant-ops-task-copy">
+              <div class="assistant-ops-task-chart" aria-label="{{ task.task_title }} completion graph">
+                <div class="assistant-ops-ring" style="background: conic-gradient(var(--primary, #2364c8) {{ task.percent_complete }}%, rgba(59, 130, 246, 0.14) 0);">
+                  <span>{{ task.percent_complete }}%</span>
+                </div>
+                <div class="assistant-ops-chart-copy">
+                  <strong>Task Completion</strong>
+                  <small>{{ task.personnel_completed }} complete / {{ task.personnel_pending }} pending</small>
+                  <div class="assistant-ops-completion-bar" role="img" aria-label="{{ task.percent_complete }} percent complete">
+                    <span style="width: {{ task.percent_complete }}%"></span>
+                  </div>
+                </div>
+              </div>
+              <p>{{ task.description or 'No description entered.' }}</p>
+              <dl>
+                <div><dt>Assigned To</dt><dd>{{ assignment_label(task.assignment_target) }}</dd></div>
+                <div><dt>Recipients</dt><dd>
+                  {% if task.assigned_user_names %}
+                    {{ task.assigned_user_names }}
+                  {% elif task.assigned_lead %}
+                    {{ task.assigned_lead.display_name }}
+                  {% else %}
+                    {{ task.assigned_lead_name or 'Unassigned' }}
+                  {% endif %}
+                </dd></div>
+                <div><dt>Completion</dt><dd>{{ completion_label(task.completion_target) }}</dd></div>
+                <div><dt>Required</dt><dd>
+                  {% if task.required_user_names %}
+                    <span class="assistant-ops-name-list">{{ task.required_user_names }}</span>
+                  {% else %}
+                    {{ task.total_personnel_required }} required
+                  {% endif %}
+                </dd></div>
+                <div><dt>Priority</dt><dd>{{ task.priority }}</dd></div>
+                <div><dt>Personnel</dt><dd>{{ task.personnel_completed }} / {{ task.total_personnel_required }} complete{% if task.personnel_pending %}, {{ task.personnel_pending }} pending{% endif %}</dd></div>
+                <div><dt>Days Until Due</dt><dd>{{ task.days_until_due }}</dd></div>
+                <div><dt>Updated</dt><dd>{{ task.last_updated_date.strftime('%m/%d/%Y %H:%M') if task.last_updated_date else 'Not updated' }}</dd></div>
+              </dl>
+              {% if task.attachment_link %}
+              <a class="assistant-ops-link" href="{{ task.attachment_link }}" target="_blank" rel="noopener">Open Attachment / Reference</a>
+              {% endif %}
+            </div>
+
+            <form method="post" action="{{ url_for('assistant_operations.update_task', task_pk=task.id, status=selected_status, watch=selected_watch) }}" class="assistant-ops-update-form">
+              <input type="hidden" name="csrf_token" value="{{ g.csrf_token }}">
+              <div class="assistant-ops-two">
+                <label>Status
+                  <select name="status">
+                    {% for item in status_choices %}<option value="{{ item }}" {% if task.status == item %}selected{% endif %}>{{ item }}</option>{% endfor %}
+                  </select>
+                </label>
+                <label>Assigned Lead
+                  <select name="assigned_lead_id">
+                    <option value="">Keep current</option>
+                    {% for lead in leads %}<option value="{{ lead.id }}" {% if task.assigned_lead_id == lead.id %}selected{% endif %}>{{ lead.display_name }} / {{ lead.role_label }}</option>{% endfor %}
+                  </select>
+                </label>
+              </div>
+              <div class="assistant-ops-three">
+                <label>Total Required
+                  <input type="number" name="total_personnel_required" min="0" value="{{ task.total_personnel_required }}">
+                </label>
+                <label>Completed
+                  <input type="number" name="personnel_completed" min="0" value="{{ task.personnel_completed }}">
+                </label>
+                <label>Manual %
+                  <input type="number" name="percent_complete" min="0" max="100" value="{{ task.percent_complete }}">
+                </label>
+              </div>
+              <label>Attachment Link
+                <input name="attachment_link" value="{{ task.attachment_link or '' }}">
+              </label>
+              <label>Commander Notes
+                <textarea name="commander_notes" rows="2">{{ task.commander_notes or '' }}</textarea>
+              </label>
+              <button class="btn btn-primary" type="submit">Save Status</button>
+            </form>
+
+            <div class="assistant-ops-comments">
+              <h3>Comments</h3>
+              <form method="post" action="{{ url_for('assistant_operations.add_comment', task_pk=task.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ g.csrf_token }}">
+                <textarea name="comment_text" rows="2" placeholder="Add status note, blocker, completion detail, or follow-up item." required></textarea>
+                <div class="assistant-ops-two">
+                  <label class="assistant-ops-check"><input type="checkbox" name="follow_up_required" value="1"> Follow-up required</label>
+                  <label>Follow-up Date <input type="date" name="follow_up_date"></label>
+                </div>
+                <button class="btn btn-outline-secondary" type="submit">Add Comment</button>
+              </form>
+              <div class="assistant-ops-comment-list">
+                {% for comment in task.comments.limit(5).all() %}
+                <div>
+                  <strong>{{ comment.commenter.display_name if comment.commenter else 'Unknown' }}</strong>
+                  <small>{{ comment.comment_date.strftime('%m/%d/%Y %H:%M') if comment.comment_date else '' }} / {{ comment.status_at_comment }} / {{ comment.percent_at_comment }}%</small>
+                  <p>{{ comment.comment_text }}</p>
+                </div>
+                {% else %}
+                <p class="assistant-ops-empty">No comments yet.</p>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </details>
+        {% else %}
+        <p class="assistant-ops-empty">No tasks match the current filter.</p>
+        {% endfor %}
+      </div>
+    </section>
+  </main>
+</div>
+{% endblock %}
+{% block scripts %}
+{{ super() }}
+<script>
+(function () {
+  function bindPanelSelect(selectId, panelAttribute, fallback) {
+    var target = document.getElementById(selectId);
+    if (!target) return;
+    var panels = Array.prototype.slice.call(document.querySelectorAll('[' + panelAttribute + ']'));
+    function syncPanels() {
+      var selected = target.value || fallback;
+      panels.forEach(function (panel) {
+        var panelTarget = panel.getAttribute(panelAttribute);
+        panel.hidden = panelTarget !== selected;
+      });
+    }
+    target.addEventListener('change', syncPanels);
+    syncPanels();
+  }
+  bindPanelSelect('assistant-ops-assignment-target', 'data-assignment-panel', 'ALL_WATCH_COMMANDERS');
+  bindPanelSelect('assistant-ops-completion-target', 'data-completion-panel', 'ALL_ACTIVE_PERSONNEL');
+}());
+</script>
+{% endblock %}

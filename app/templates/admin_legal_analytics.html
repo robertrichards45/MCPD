@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 {% block body %}
-<div class="app-shell">
+<div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
   <div class="page-wrap">
-    <div class="card p-3 mb-3">
+    <div class="ops-panel mb-3">
       <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-md-between gap-2">
         <div>
           <h2 class="mb-1">Legal Analytics</h2>
@@ -35,7 +35,11 @@
     </div>
 
     {% if coverage_warnings %}
+<<<<<<< HEAD
     <div class="card p-3 mb-3 form-not-ready-notice">
+=======
+    <div class="ops-panel mb-3 form-not-ready-notice">
+>>>>>>> 73c725b38f1e058b3b8f8f481446ade5f6f049b4
       <h4 class="mb-2">Coverage Warnings</h4>
       <ul class="mb-0">
         {% for warning in coverage_warnings %}
@@ -49,7 +53,7 @@
     <div class="row g-2 mb-2">
       {% for source, metrics in coverage.items() %}
       <div class="col-md-6 col-lg-3">
-        <div class="card p-3 h-100">
+        <div class="ops-panel h-100">
           <h5 class="mb-2">{{ source }}</h5>
           <div class="small">Total: {{ metrics.total }}</div>
           <div class="small">Missing elements: {{ metrics.missing_elements }}</div>
@@ -67,7 +71,7 @@
 
     <div class="row g-2 mb-2">
       <div class="col-md-6">
-        <div class="card p-3">
+        <div class="ops-panel">
           <h4 class="mb-2">Likely Coverage Gaps</h4>
           {% if likely_coverage_gaps %}
             <div class="table-responsive">
@@ -86,7 +90,7 @@
         </div>
       </div>
       <div class="col-md-6">
-        <div class="card p-3">
+        <div class="ops-panel">
           <h4 class="mb-2">Missing Term Suggestions</h4>
           {% if weak_term_suggestions %}
             <div class="table-responsive">
@@ -106,7 +110,7 @@
       </div>
     </div>
 
-    <div class="card p-3 mb-3">
+    <div class="ops-panel mb-3">
       <h4 class="mb-2">Backfill Queue</h4>
       {% if backfill_queue %}
         <div class="table-responsive">
@@ -135,7 +139,7 @@
 
     <div class="row g-2">
       <div class="col-md-6">
-        <div class="card p-3">
+        <div class="ops-panel">
           <h4 class="mb-2">Top Queries</h4>
           {% if top_queries %}
             <div class="table-responsive">
@@ -157,7 +161,7 @@
       </div>
 
       <div class="col-md-6">
-        <div class="card p-3">
+        <div class="ops-panel">
           <h4 class="mb-2">Top Returned Codes</h4>
           {% if top_codes %}
             <div class="table-responsive">
@@ -181,7 +185,7 @@
 
     <div class="row g-2 mt-2">
       <div class="col-md-6">
-        <div class="card p-3">
+        <div class="ops-panel">
           <h4 class="mb-2">Zero-Result Queries</h4>
           {% if zero_queries %}
             <div class="table-responsive">
@@ -203,7 +207,7 @@
       </div>
 
       <div class="col-md-6">
-        <div class="card p-3">
+        <div class="ops-panel">
           <h4 class="mb-2">Low-Result Queries (0-1)</h4>
           {% if low_queries %}
             <div class="table-responsive">

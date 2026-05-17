@@ -1,12 +1,9 @@
 {% extends 'base.html' %}
 {% block body %}
-<div class="app-shell">
+<div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
-  <div class="page-wrap">
-    <div class="mobile-back-bar">
-      <a class="mobile-back-btn" href="{{ url_for('mobile.home') }}">&#8592; Field Portal</a>
-    </div>
-    <div class="card p-3 mb-3 legal-search-card search-panel">
+  <main class="mcpd-command-main" id="main-content">
+    <div class="ops-panel mb-3 legal-search-card search-panel">
       <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
         <div>
           <h2 class="mb-1">Orders and References</h2>
@@ -97,7 +94,7 @@
     </div>
 
   {% if can_upload_orders %}
-  <details class="card p-3 mb-3 collapse-card">
+  <details class="ops-panel mb-3 collapse-card">
     <summary>Admin Upload and Versioning</summary>
     <div class="mt-3">
     <div class="d-flex flex-wrap gap-2 mb-3">
@@ -214,7 +211,7 @@
   {% endif %}
 
   {% if ai_guidance %}
-  <details class="card p-3 mb-3 collapse-card">
+  <details class="ops-panel mb-3 collapse-card">
     <summary>AI Recommendation</summary>
     <div class="mt-2">
     <div>{{ ai_guidance }}</div>
@@ -222,7 +219,7 @@
   </details>
   {% endif %}
 
-  <div class="card p-3" id="orders-results">
+  <div class="ops-panel" id="orders-results">
     <div class="d-flex justify-content-between align-items-center mb-2 legal-results-header">
       <h5 class="mb-0">Results</h5>
       <span class="small text-muted">{{ documents|length }} match{% if documents|length != 1 %}es{% endif %}</span>
@@ -290,6 +287,6 @@
       </div>
     {% endif %}
   </div>
-  </div>
+  </main>
 </div>
 {% endblock %}

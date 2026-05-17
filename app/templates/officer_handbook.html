@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 {% block body %}
-<div class="app-shell">
+<div class="app-shell mcpd-command-app">
   {% if not print_mode %}
   {% include 'partials/nav.html' %}
   {% endif %}
   <div class="page-wrap handbook-wrap">
-    <div class="card p-3 mb-3 page-head no-print">
+    <div class="ops-head-card mb-3">
       <div class="d-flex justify-content-between align-items-center gap-2">
         <div>
           <h2 class="mb-1">Officer Handbook</h2>
@@ -33,7 +33,7 @@
       </form>
     </div>
 
-    <div class="card p-3 mb-3">
+    <div class="ops-panel mb-3">
       <h5 class="mb-1">Original New Officer Handbook (Authoritative Source)</h5>
       <p class="text-muted mb-2">
         The uploaded handbook remains the foundation. Enhancements on this page are supplemental and do not overwrite the source document.
@@ -49,13 +49,13 @@
         <iframe
           title="Original Officer Handbook PDF"
           src="{{ url_for('reference.download_officer_handbook_pdf') }}"
-          style="width:100%;height:70vh;border:1px solid #d7dde7;border-radius:8px;background:#fff;"
+          class="pdf-embed-frame" style="width:100%;height:70vh;"
         ></iframe>
       </div>
       {% endif %}
     </div>
 
-    <div class="card p-3 mb-3 no-print">
+    <div class="ops-panel mb-3 no-print">
       <h5 class="mb-2">Table of Contents</h5>
       <div class="d-flex flex-wrap gap-2">
         <a class="btn btn-sm btn-outline-secondary" href="#supplemental-guides">Supplemental Guides</a>
@@ -66,7 +66,7 @@
       </div>
     </div>
 
-    <div class="card p-3 mb-3" id="supplemental-guides">
+    <div class="ops-panel mb-3" id="supplemental-guides">
       <h5 class="mb-1">Supplemental Handbook Additions</h5>
       <div class="small text-muted">These additions improve usability and training but do not replace the original handbook document.</div>
       <div class="mt-2">
@@ -76,7 +76,7 @@
 
     <div class="results-list">
       {% for section in handbook.sections %}
-      <details class="card p-3 collapse-card handbook-section" id="{{ section.id }}" {% if loop.first or print_mode %}open{% endif %}>
+      <details class="ops-panel collapse-card handbook-section" id="{{ section.id }}" {% if loop.first or print_mode %}open{% endif %}>
         <summary>{{ section.title }}</summary>
         <p class="text-muted mt-2">{{ section.summary }}</p>
 
@@ -115,7 +115,7 @@
         {% if section.form_guides %}
         <div class="results-list">
           {% for guide in section.form_guides %}
-          <details class="card p-3 collapse-card" id="guide-{{ guide.form_name|lower|replace(' ', '-') }}">
+          <details class="ops-panel collapse-card" id="guide-{{ guide.form_name|lower|replace(' ', '-') }}">
             <summary>{{ guide.form_name }}</summary>
             <div class="mt-2"><strong>Purpose:</strong> {{ guide.purpose }}</div>
             <div><strong>When Used:</strong> {{ guide.when_used }}</div>
@@ -152,11 +152,11 @@
         {% endif %}
       </details>
       {% else %}
-      <div class="card p-3 text-muted">No handbook sections matched your search.</div>
+      <div class="ops-panel text-muted">No handbook sections matched your search.</div>
       {% endfor %}
     </div>
 
-    <div class="card p-3 mt-3" id="appendix-forms">
+    <div class="ops-panel mt-3" id="appendix-forms">
       <h4 class="mb-2">Appendix A - Blank Forms</h4>
       <div class="results-list">
         {% for form in forms %}

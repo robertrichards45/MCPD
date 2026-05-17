@@ -1,27 +1,26 @@
 {% extends 'base.html' %}
 {% block body %}
-<div class="app-shell">
+<div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
-  <div class="page-wrap">
-    <div class="card p-3 mb-3 page-head">
-      <div class="d-flex justify-content-between align-items-center">
-        <div>
-          <strong>{{ roster.title }}</strong>
-          <div class="text-muted">{{ roster.description }}</div>
-        </div>
-        <div class="d-flex gap-2">
-          <a class="btn btn-outline-secondary" href="{{ url_for('training.training_list') }}">Back to Rosters</a>
-          <a class="btn btn-primary" href="{{ url_for('training.training_download', roster_id=roster.id) }}">Download Latest</a>
-        </div>
+  <main class="mcpd-command-main" id="main-content">
+    <section class="ops-head-card">
+      <div>
+        <h2>{{ roster.title }}</h2>
+        <p class="ops-head-sub">{{ roster.description or 'Training Roster' }}</p>
       </div>
-    </div>
-    <div class="card p-3 mb-3">
+      <div class="ops-head-actions">
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('training.training_list') }}">Back to Rosters</a>
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('training.training_download', roster_id=roster.id) }}">Download Latest</a>
+      </div>
+    </section>
+
+    <div class="ops-panel mb-3">
       <div class="pdf-viewer CLEOC-pdf">
         <iframe src="{{ url_for('training.training_download', roster_id=roster.id) }}" title="Roster"></iframe>
       </div>
     </div>
 
-    <div class="card p-3 mb-3">
+    <div class="ops-panel mb-3">
       <h5 class="mb-2">Sign Roster</h5>
       <div class="signature-box CLEOC-signature">
         <canvas id="sig-pad" width="600" height="200"></canvas>
@@ -39,7 +38,7 @@
       </div>
     </div>
 
-    <details class="card p-3 collapse-card" open>
+    <details class="ops-panel collapse-card" open>
       <summary>Signed By</summary>
       <table class="table table-striped mt-2">
         <thead>
@@ -58,6 +57,6 @@
         </tbody>
       </table>
     </details>
-  </div>
+  </main>
 </div>
 {% endblock %}

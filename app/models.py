@@ -8,6 +8,7 @@ def utcnow_naive():
 
 
 ROLE_WEBSITE_CONTROLLER = 'WEBSITE_CONTROLLER'
+ROLE_ASSISTANT_OPERATIONS_OFFICER = 'ASSISTANT_OPERATIONS_OFFICER'
 ROLE_WATCH_COMMANDER = 'WATCH_COMMANDER'
 ROLE_DESK_SGT = 'DESK_SGT'
 ROLE_FIELD_TRAINING = 'FIELD_TRAINING_OFFICER'
@@ -17,10 +18,25 @@ ROLE_TRUCK_GATE_WATCH_COMMANDER = 'TRUCK_GATE_WATCH_COMMANDER'
 ROLE_TRUCK_GATE_PATROL_OFFICER = 'TRUCK_GATE_PATROL_OFFICER'
 ROLE_RFI_WATCH_COMMANDER = 'RFI_WATCH_COMMANDER'
 ROLE_RFI_PATROL_OFFICER = 'RFI_PATROL_OFFICER'
+ROLE_SITE_OWNER = 'SITE_OWNER'
+ROLE_CVI_LIEUTENANT = 'CVI_LIEUTENANT'
+ROLE_CVI_OFFICER = 'CVI_OFFICER'
+ROLE_AID_LIEUTENANT = 'AID_LIEUTENANT'
+ROLE_AID_OFFICER = 'AID_OFFICER'
+ROLE_SRT_COMMANDER = 'SRT_COMMANDER'
+ROLE_SRT_OFFICER = 'SRT_OFFICER'
+ROLE_KENNEL_MASTER = 'KENNEL_MASTER'
+ROLE_K9_SERGEANT = 'K9_SERGEANT'
+ROLE_K9_OFFICER = 'K9_OFFICER'
+ROLE_TRAINING_MANAGER = 'TRAINING_MANAGER'
+ROLE_FORMS_MANAGER = 'FORMS_MANAGER'
+ROLE_REPORT_REVIEWER = 'REPORT_REVIEWER'
+ROLE_ACCIDENT_INVESTIGATOR = 'ACCIDENT_INVESTIGATOR'
 
 ROLE_LABELS = {
     'ADMIN': 'Website Controller',
     ROLE_WEBSITE_CONTROLLER: 'Website Controller',
+    ROLE_ASSISTANT_OPERATIONS_OFFICER: 'Assistant Operations Officer',
     ROLE_WATCH_COMMANDER: 'Watch Commander',
     ROLE_DESK_SGT: 'Desk Sgt',
     'FIELD_TRAINING': 'Field Training Officer',
@@ -31,10 +47,25 @@ ROLE_LABELS = {
     ROLE_TRUCK_GATE_PATROL_OFFICER: 'Truck Gate Patrol Officer',
     ROLE_RFI_WATCH_COMMANDER: 'RFI Watch Commander',
     ROLE_RFI_PATROL_OFFICER: 'RFI Patrol Officer',
+    ROLE_SITE_OWNER: 'Site Owner',
+    ROLE_CVI_LIEUTENANT: 'CVI Lieutenant',
+    ROLE_CVI_OFFICER: 'CVI Officer',
+    ROLE_AID_LIEUTENANT: 'AID Lieutenant',
+    ROLE_AID_OFFICER: 'AID Officer',
+    ROLE_SRT_COMMANDER: 'SRT Commander',
+    ROLE_SRT_OFFICER: 'SRT Officer',
+    ROLE_KENNEL_MASTER: 'Kennel Master',
+    ROLE_K9_SERGEANT: 'K9 Sergeant',
+    ROLE_K9_OFFICER: 'K9 Officer',
+    ROLE_TRAINING_MANAGER: 'Training Manager',
+    ROLE_FORMS_MANAGER: 'Forms Manager',
+    ROLE_REPORT_REVIEWER: 'Report Reviewer',
+    ROLE_ACCIDENT_INVESTIGATOR: 'Accident Investigator',
 }
 
 ALL_PORTAL_ROLES = [
     ROLE_WEBSITE_CONTROLLER,
+    ROLE_ASSISTANT_OPERATIONS_OFFICER,
     ROLE_WATCH_COMMANDER,
     ROLE_DESK_SGT,
     ROLE_FIELD_TRAINING,
@@ -43,6 +74,20 @@ ALL_PORTAL_ROLES = [
     ROLE_TRUCK_GATE_PATROL_OFFICER,
     ROLE_RFI_WATCH_COMMANDER,
     ROLE_RFI_PATROL_OFFICER,
+    ROLE_SITE_OWNER,
+    ROLE_CVI_LIEUTENANT,
+    ROLE_CVI_OFFICER,
+    ROLE_AID_LIEUTENANT,
+    ROLE_AID_OFFICER,
+    ROLE_SRT_COMMANDER,
+    ROLE_SRT_OFFICER,
+    ROLE_KENNEL_MASTER,
+    ROLE_K9_SERGEANT,
+    ROLE_K9_OFFICER,
+    ROLE_TRAINING_MANAGER,
+    ROLE_FORMS_MANAGER,
+    ROLE_REPORT_REVIEWER,
+    ROLE_ACCIDENT_INVESTIGATOR,
 ]
 
 USMC_INSTALLATIONS = [
@@ -113,6 +158,8 @@ class User(UserMixin, db.Model):
     builder_mode_access = db.Column(db.Boolean, default=False, nullable=False)
     builder_mode_granted_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     builder_mode_granted_at = db.Column(db.DateTime, nullable=True)
+    is_demo = db.Column(db.Boolean, default=False, nullable=False)
+    demo_batch_id = db.Column(db.String(80), nullable=True, index=True)
     created_at = db.Column(db.DateTime, default=utcnow_naive)
     supervisor = db.relationship('User', remote_side=[id], backref='direct_reports', foreign_keys=[supervisor_id])
     roles = db.relationship('Role', secondary='user_role', back_populates='users')
@@ -200,6 +247,8 @@ class Form(db.Model):
     uploaded_by = db.Column(db.Integer, db.ForeignKey('user.id'))
     uploaded_at = db.Column(db.DateTime, default=utcnow_naive)
     is_active = db.Column(db.Boolean, default=True)
+    is_demo = db.Column(db.Boolean, default=False, nullable=False)
+    demo_batch_id = db.Column(db.String(80), nullable=True, index=True)
     notes = db.Column(db.Text, nullable=True)
 
 
@@ -212,6 +261,8 @@ class SavedForm(db.Model):
     field_data_json = db.Column(db.Text, nullable=False, default='{}')
     rendered_output_path = db.Column(db.String(255), nullable=True)
     access_scope = db.Column(db.String(40), nullable=False, default='OFFICER_AND_WATCH_COMMAND')
+    is_demo = db.Column(db.Boolean, default=False, nullable=False)
+    demo_batch_id = db.Column(db.String(80), nullable=True, index=True)
     created_at = db.Column(db.DateTime, default=utcnow_naive, index=True)
     updated_at = db.Column(db.DateTime, default=utcnow_naive, onupdate=utcnow_naive, index=True)
 
@@ -280,6 +331,8 @@ class TrainingRoster(db.Model):
     uploaded_by = db.Column(db.Integer, db.ForeignKey('user.id'))
     uploaded_at = db.Column(db.DateTime, default=utcnow_naive)
     status = db.Column(db.String(20), default='ACTIVE')
+    is_demo = db.Column(db.Boolean, default=False, nullable=False)
+    demo_batch_id = db.Column(db.String(80), nullable=True, index=True)
 
 class TrainingSignature(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -288,6 +341,8 @@ class TrainingSignature(db.Model):
     signature_path = db.Column(db.String(255), nullable=False)
     signed_at = db.Column(db.DateTime, default=utcnow_naive)
     comment = db.Column(db.String(255), nullable=True)
+    is_demo = db.Column(db.Boolean, default=False, nullable=False)
+    demo_batch_id = db.Column(db.String(80), nullable=True, index=True)
 
 class StatCategory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -316,6 +371,23 @@ class AuditLog(db.Model):
     action = db.Column(db.String(100), nullable=False)
     details = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=utcnow_naive)
+
+
+class DemoRecord(db.Model):
+    __tablename__ = 'demo_record'
+    id = db.Column(db.Integer, primary_key=True)
+    record_type = db.Column(db.String(80), nullable=False, index=True)
+    title = db.Column(db.String(200), nullable=False)
+    status = db.Column(db.String(60), nullable=True, index=True)
+    summary = db.Column(db.Text, nullable=True)
+    payload_json = db.Column(db.Text, nullable=False, default='{}')
+    source_route = db.Column(db.String(160), nullable=True)
+    owner_user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
+    is_demo = db.Column(db.Boolean, default=True, nullable=False)
+    demo_batch_id = db.Column(db.String(80), nullable=False, index=True)
+    created_at = db.Column(db.DateTime, default=utcnow_naive, nullable=False, index=True)
+
+    owner = db.relationship('User', foreign_keys=[owner_user_id], backref='demo_records')
 
 
 class EnrollmentCode(db.Model):
@@ -445,6 +517,8 @@ class Report(db.Model):
     title = db.Column(db.String(200), nullable=False)
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     status = db.Column(db.String(20), default='DRAFT')
+    is_demo = db.Column(db.Boolean, default=False, nullable=False)
+    demo_batch_id = db.Column(db.String(80), nullable=True, index=True)
     created_at = db.Column(db.DateTime, default=utcnow_naive)
     updated_at = db.Column(db.DateTime, default=utcnow_naive)
 
@@ -514,6 +588,8 @@ class AccidentReconstruction(db.Model):
     road_surface = db.Column(db.String(120), nullable=True)
     notes = db.Column(db.Text, nullable=True)
     diagram_data_json = db.Column(db.Text, nullable=True)
+    is_demo = db.Column(db.Boolean, default=False, nullable=False)
+    demo_batch_id = db.Column(db.String(80), nullable=True, index=True)
     created_at = db.Column(db.DateTime, default=utcnow_naive)
     updated_at = db.Column(db.DateTime, default=utcnow_naive, onupdate=utcnow_naive)
 
@@ -859,6 +935,8 @@ class IncidentPacket(db.Model):
     reviewer_user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     reviewed_at = db.Column(db.DateTime, nullable=True)
     supervisor_notes = db.Column(db.Text, nullable=True)
+    is_demo = db.Column(db.Boolean, default=False, nullable=False)
+    demo_batch_id = db.Column(db.String(80), nullable=True, index=True)
 
     officer = db.relationship('User', foreign_keys=[officer_user_id], backref='incident_packets')
     reviewer = db.relationship('User', foreign_keys=[reviewer_user_id], backref='reviewed_packets')
@@ -873,6 +951,8 @@ class IncidentDraft(db.Model):
     location = db.Column(db.String(255), nullable=True)
     summary = db.Column(db.String(500), nullable=True)
     draft_json = db.Column(db.Text, nullable=False, default='{}')
+    is_demo = db.Column(db.Boolean, default=False, nullable=False)
+    demo_batch_id = db.Column(db.String(80), nullable=True, index=True)
     created_at = db.Column(db.DateTime, default=utcnow_naive, nullable=False, index=True)
     updated_at = db.Column(db.DateTime, default=utcnow_naive, onupdate=utcnow_naive, nullable=False, index=True)
 
@@ -890,6 +970,8 @@ class WatchShift(db.Model):
     start_time = db.Column(db.String(20), nullable=True)
     end_time = db.Column(db.String(20), nullable=True)
     notes = db.Column(db.Text, nullable=True)
+    is_demo = db.Column(db.Boolean, default=False, nullable=False)
+    demo_batch_id = db.Column(db.String(80), nullable=True, index=True)
     created_at = db.Column(db.DateTime, default=utcnow_naive, nullable=False)
     updated_at = db.Column(db.DateTime, default=utcnow_naive, onupdate=utcnow_naive, nullable=False)
 
@@ -908,6 +990,11 @@ class WatchAssignment(db.Model):
     start_time = db.Column(db.String(20), nullable=True)
     end_time = db.Column(db.String(20), nullable=True)
     notes = db.Column(db.Text, nullable=True)
+    unit_lat = db.Column(db.Float, nullable=True)
+    unit_lng = db.Column(db.Float, nullable=True)
+    location_updated_at = db.Column(db.DateTime, nullable=True)
+    is_demo = db.Column(db.Boolean, default=False, nullable=False)
+    demo_batch_id = db.Column(db.String(80), nullable=True, index=True)
     created_at = db.Column(db.DateTime, default=utcnow_naive, nullable=False)
     updated_at = db.Column(db.DateTime, default=utcnow_naive, onupdate=utcnow_naive, nullable=False)
 
@@ -924,6 +1011,8 @@ class WatchNote(db.Model):
     title = db.Column(db.String(180), nullable=False)
     body = db.Column(db.Text, nullable=False)
     priority = db.Column(db.String(20), nullable=False, default='Normal', index=True)
+    is_demo = db.Column(db.Boolean, default=False, nullable=False)
+    demo_batch_id = db.Column(db.String(80), nullable=True, index=True)
     created_at = db.Column(db.DateTime, default=utcnow_naive, nullable=False)
 
     shift = db.relationship('WatchShift', backref='watch_notes')
@@ -939,11 +1028,76 @@ class WatchApproval(db.Model):
     reviewed_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
     status = db.Column(db.String(30), nullable=False, default='PENDING', index=True)
     comments = db.Column(db.Text, nullable=True)
+    is_demo = db.Column(db.Boolean, default=False, nullable=False)
+    demo_batch_id = db.Column(db.String(80), nullable=True, index=True)
     created_at = db.Column(db.DateTime, default=utcnow_naive, nullable=False)
     updated_at = db.Column(db.DateTime, default=utcnow_naive, onupdate=utcnow_naive, nullable=False)
 
     requester = db.relationship('User', foreign_keys=[requested_by], backref='watch_approval_requests')
     reviewer = db.relationship('User', foreign_keys=[reviewed_by], backref='watch_approvals_reviewed')
+
+
+class OperationsTask(db.Model):
+    __tablename__ = 'operations_task'
+
+    id = db.Column(db.Integer, primary_key=True)
+    task_id = db.Column(db.String(40), unique=True, nullable=False, index=True)
+    task_title = db.Column(db.String(180), nullable=False, index=True)
+    task_category = db.Column(db.String(80), nullable=False, index=True)
+    description = db.Column(db.Text, nullable=True)
+    assigned_watch = db.Column(db.String(80), nullable=False, index=True)
+    assignment_target = db.Column(db.String(80), nullable=False, default='SPECIFIC_LEAD', index=True)
+    assigned_user_ids_json = db.Column(db.Text, nullable=True)
+    assigned_user_names = db.Column(db.Text, nullable=True)
+    assigned_lead_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
+    assigned_lead_name = db.Column(db.String(120), nullable=True)
+    completion_target = db.Column(db.String(80), nullable=False, default='CUSTOM_COUNT', index=True)
+    required_user_ids_json = db.Column(db.Text, nullable=True)
+    required_user_names = db.Column(db.Text, nullable=True)
+    created_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
+    created_date = db.Column(db.DateTime, default=utcnow_naive, nullable=False, index=True)
+    start_date = db.Column(db.DateTime, nullable=True)
+    due_date = db.Column(db.DateTime, nullable=False, index=True)
+    priority = db.Column(db.String(40), nullable=False, default='Normal', index=True)
+    status = db.Column(db.String(40), nullable=False, default='Not Started', index=True)
+    percent_complete = db.Column(db.Integer, default=0, nullable=False)
+    total_personnel_required = db.Column(db.Integer, default=0, nullable=False)
+    personnel_completed = db.Column(db.Integer, default=0, nullable=False)
+    personnel_pending = db.Column(db.Integer, default=0, nullable=False)
+    is_overdue = db.Column(db.Boolean, default=False, nullable=False, index=True)
+    days_until_due = db.Column(db.Integer, default=0, nullable=False)
+    completion_date = db.Column(db.DateTime, nullable=True, index=True)
+    recurring = db.Column(db.Boolean, default=False, nullable=False)
+    recurrence_type = db.Column(db.String(40), nullable=True)
+    attachment_link = db.Column(db.String(500), nullable=True)
+    last_updated_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    last_updated_date = db.Column(db.DateTime, default=utcnow_naive, onupdate=utcnow_naive, nullable=False)
+    commander_notes = db.Column(db.Text, nullable=True)
+    is_demo = db.Column(db.Boolean, default=False, nullable=False)
+    demo_batch_id = db.Column(db.String(80), nullable=True, index=True)
+
+    assigned_lead = db.relationship('User', foreign_keys=[assigned_lead_id], backref='operations_tasks_led')
+    creator = db.relationship('User', foreign_keys=[created_by_id], backref='operations_tasks_created')
+    last_updated_by = db.relationship('User', foreign_keys=[last_updated_by_id])
+
+
+class OperationsTaskComment(db.Model):
+    __tablename__ = 'operations_task_comment'
+
+    id = db.Column(db.Integer, primary_key=True)
+    comment_id = db.Column(db.String(40), unique=True, nullable=False, index=True)
+    task_id = db.Column(db.Integer, db.ForeignKey('operations_task.id'), nullable=False, index=True)
+    comment_date = db.Column(db.DateTime, default=utcnow_naive, nullable=False, index=True)
+    comment_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
+    watch = db.Column(db.String(80), nullable=True, index=True)
+    comment_text = db.Column(db.Text, nullable=False)
+    status_at_comment = db.Column(db.String(40), nullable=True)
+    percent_at_comment = db.Column(db.Integer, default=0, nullable=False)
+    follow_up_required = db.Column(db.Boolean, default=False, nullable=False)
+    follow_up_date = db.Column(db.DateTime, nullable=True)
+
+    task = db.relationship('OperationsTask', backref=db.backref('comments', lazy='dynamic', order_by='OperationsTaskComment.comment_date.desc()'))
+    commenter = db.relationship('User', foreign_keys=[comment_by_id])
 
 
 class ShiftBrief(db.Model):
@@ -954,6 +1108,8 @@ class ShiftBrief(db.Model):
     title = db.Column(db.String(180), nullable=False)
     body = db.Column(db.Text, nullable=False)
     status = db.Column(db.String(30), nullable=False, default='DRAFT', index=True)
+    is_demo = db.Column(db.Boolean, default=False, nullable=False)
+    demo_batch_id = db.Column(db.String(80), nullable=True, index=True)
     created_at = db.Column(db.DateTime, default=utcnow_naive, nullable=False)
     updated_at = db.Column(db.DateTime, default=utcnow_naive, onupdate=utcnow_naive, nullable=False)
 
@@ -1108,3 +1264,33 @@ class YearSubmission(db.Model):
 
     officer  = db.relationship('User', foreign_keys=[officer_id],  backref='perf_submissions')
     reviewer = db.relationship('User', foreign_keys=[reviewed_by], backref='perf_reviewed')
+
+
+class CommandMessage(db.Model):
+    """Message sent from a commander to one officer or broadcast to all on-duty units."""
+    __tablename__ = 'command_message'
+    id           = db.Column(db.Integer, primary_key=True)
+    sender_id    = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    recipient_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
+    subject      = db.Column(db.String(200), nullable=True)
+    body         = db.Column(db.Text, nullable=False)
+    priority     = db.Column(db.String(20), default='Normal', nullable=False, index=True)
+    is_broadcast = db.Column(db.Boolean, default=False, nullable=False)
+    read_at      = db.Column(db.DateTime, nullable=True)
+    is_demo      = db.Column(db.Boolean, default=False, nullable=False)
+    created_at   = db.Column(db.DateTime, default=utcnow_naive, nullable=False, index=True)
+
+    sender    = db.relationship('User', foreign_keys=[sender_id],    backref='sent_messages')
+    recipient = db.relationship('User', foreign_keys=[recipient_id], backref='received_messages')
+
+
+class CommandMessageRead(db.Model):
+    """Per-user read receipt so each officer can individually mark a broadcast read."""
+    __tablename__ = 'command_message_read'
+    id         = db.Column(db.Integer, primary_key=True)
+    message_id = db.Column(db.Integer, db.ForeignKey('command_message.id'), nullable=False, index=True)
+    user_id    = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    read_at    = db.Column(db.DateTime, default=utcnow_naive, nullable=False)
+    __table_args__ = (db.UniqueConstraint('message_id', 'user_id', name='uq_cmd_msg_read'),)
+    message = db.relationship('CommandMessage', backref='reads')
+    user    = db.relationship('User', backref='message_reads')

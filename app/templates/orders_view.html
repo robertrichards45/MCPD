@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 {% block body %}
-<div class="app-shell">
+<div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
-  <div class="page-wrap">
-    <div class="card p-3 mb-3 page-head">
+  <main class="mcpd-command-main" id="main-content">
+    <section class="ops-head-card">
       <h2 class="mb-1">{{ document.title }}</h2>
       <div class="small text-muted">
         {{ document.order_number or document.memo_number or 'No formal reference listed' }} |
@@ -13,12 +13,16 @@
     </div>
 
     {% if freshness_warning %}
+<<<<<<< HEAD
     <div class="card p-3 mb-3 form-not-ready-notice">
+=======
+    <div class="ops-panel mb-3 form-not-ready-notice">
+>>>>>>> 73c725b38f1e058b3b8f8f481446ade5f6f049b4
       <strong>{{ freshness_warning }}</strong>
     </div>
     {% endif %}
 
-    <div class="card p-3 mb-3">
+    <div class="ops-panel mb-3">
       <div class="row g-2 small mb-2">
         <div class="col-md-4"><strong>Authority:</strong> {{ document.issuing_authority or '-' }}</div>
         <div class="col-md-4"><strong>Version:</strong> {{ document.source_version or document.version_label or '-' }}</div>
@@ -39,7 +43,7 @@
       </div>
     </div>
 
-    <details class="card p-3 collapse-card mb-3" open>
+    <details class="ops-panel collapse-card mb-3" open>
       <summary>Relevant Section First</summary>
       {% if excerpt_text %}
         {% if excerpt_reference %}
@@ -50,7 +54,11 @@
             <p class="mb-2 text-muted">{{ block.text }}</p>
           {% endfor %}
           {% for block in reader_context.focus_blocks %}
+<<<<<<< HEAD
             <div class="p-3 mb-2 border rounded" class="order-matched-block">
+=======
+            <div class="p-3 mb-2 border rounded order-matched-block">
+>>>>>>> 73c725b38f1e058b3b8f8f481446ade5f6f049b4
               <div class="small text-muted mb-1">Matched section</div>
               <div id="order-excerpt-text">{{ block.text }}</div>
             </div>
@@ -85,13 +93,17 @@
       {% endif %}
     </details>
 
-    <details class="card p-3 collapse-card" id="full-text-reader" open>
+    <details class="ops-panel collapse-card" id="full-text-reader" open>
       <summary>Full Text Preview</summary>
       {% if body_text %}
         <div style="max-height:70vh;overflow:auto;">
           {% for block in reader_context.all_blocks %}
             {% if loop.index0 == reader_context.focus_index %}
+<<<<<<< HEAD
               <div id="matched-full-text-block" class="p-3 mb-2 border rounded" class="order-matched-block">
+=======
+              <div id="matched-full-text-block" class="p-3 mb-2 border rounded order-matched-block">
+>>>>>>> 73c725b38f1e058b3b8f8f481446ade5f6f049b4
                 <div class="small text-muted mb-1">Matched location</div>
                 <div>{{ block.text }}</div>
               </div>
@@ -106,7 +118,7 @@
         <div class="text-muted">Full text preview unavailable. Use the source download if available.</div>
       {% endif %}
     </details>
-  </div>
+  </main>
 </div>
 {% endblock %}
 

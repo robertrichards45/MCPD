@@ -3,11 +3,26 @@ import os
 from flask import session
 
 from .models import (
+    ROLE_ACCIDENT_INVESTIGATOR,
+    ROLE_AID_LIEUTENANT,
+    ROLE_AID_OFFICER,
+    ROLE_ASSISTANT_OPERATIONS_OFFICER,
+    ROLE_CVI_LIEUTENANT,
+    ROLE_CVI_OFFICER,
     ROLE_DESK_SGT,
     ROLE_FIELD_TRAINING,
+    ROLE_FORMS_MANAGER,
+    ROLE_K9_OFFICER,
+    ROLE_K9_SERGEANT,
+    ROLE_KENNEL_MASTER,
     ROLE_PATROL_OFFICER,
+    ROLE_REPORT_REVIEWER,
     ROLE_RFI_PATROL_OFFICER,
     ROLE_RFI_WATCH_COMMANDER,
+    ROLE_SITE_OWNER,
+    ROLE_SRT_COMMANDER,
+    ROLE_SRT_OFFICER,
+    ROLE_TRAINING_MANAGER,
     ROLE_TRUCK_GATE_PATROL_OFFICER,
     ROLE_TRUCK_GATE_WATCH_COMMANDER,
     ROLE_WEBSITE_CONTROLLER,
@@ -82,6 +97,23 @@ def can_grade_cleoc_reports(user):
 
 def can_manage_team(user):
     return effective_role(user) in {ROLE_WEBSITE_CONTROLLER, ROLE_WATCH_COMMANDER}
+
+
+def can_access_assistant_operations(user):
+    if not user or not getattr(user, 'is_authenticated', False):
+        return False
+    return user.has_any_role(
+        ROLE_WEBSITE_CONTROLLER,
+        ROLE_ASSISTANT_OPERATIONS_OFFICER,
+        ROLE_WATCH_COMMANDER,
+        ROLE_DESK_SGT,
+    )
+
+
+def can_create_assistant_operations_tasks(user):
+    if not user or not getattr(user, 'is_authenticated', False):
+        return False
+    return user.has_any_role(ROLE_WEBSITE_CONTROLLER, ROLE_ASSISTANT_OPERATIONS_OFFICER)
 
 
 def can_access_truck_gate(user):
@@ -198,11 +230,26 @@ def visible_user_ids(user):
 def assignable_roles(user):
     if can_manage_site(user):
         return [
+            ROLE_SITE_OWNER,
             ROLE_WEBSITE_CONTROLLER,
+            ROLE_ASSISTANT_OPERATIONS_OFFICER,
             ROLE_WATCH_COMMANDER,
             ROLE_DESK_SGT,
             ROLE_FIELD_TRAINING,
             ROLE_PATROL_OFFICER,
+            ROLE_CVI_LIEUTENANT,
+            ROLE_CVI_OFFICER,
+            ROLE_AID_LIEUTENANT,
+            ROLE_AID_OFFICER,
+            ROLE_SRT_COMMANDER,
+            ROLE_SRT_OFFICER,
+            ROLE_KENNEL_MASTER,
+            ROLE_K9_SERGEANT,
+            ROLE_K9_OFFICER,
+            ROLE_TRAINING_MANAGER,
+            ROLE_FORMS_MANAGER,
+            ROLE_REPORT_REVIEWER,
+            ROLE_ACCIDENT_INVESTIGATOR,
         ]
     if is_watch_commander(user):
         return [

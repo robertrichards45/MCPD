@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 {% block body %}
-<div class="app-shell">
+<div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
   <div class="page-wrap">
-    <div class="card p-3 mb-3 page-head">
+    <div class="ops-head-card mb-3">
       <h2 class="mb-1">PDF Render Diagnostics</h2>
       <p class="text-muted mb-0">Recent form PDF render events for mapping quality checks.</p>
       <div class="d-flex gap-2 mt-2">
@@ -13,7 +13,7 @@
       </div>
     </div>
 
-    <form class="card p-3 mb-3" method="get" action="{{ url_for('forms.forms_pdf_renders_view') }}">
+    <form class="ops-panel mb-3" method="get" action="{{ url_for('forms.forms_pdf_renders_view') }}">
       <div class="row g-2 align-items-end">
         <div class="col-md-4">
           <label class="form-label text-dark">Form ID</label>
@@ -32,7 +32,7 @@
       </div>
     </form>
 
-    <div class="card p-3 mb-3">
+    <div class="ops-panel mb-3">
       <h5 class="mb-2">Per-Form Summary</h5>
       <div class="table-responsive">
         <table class="table table-striped">
@@ -70,7 +70,7 @@
       </div>
     </div>
 
-    <div class="card p-3 mb-3">
+    <div class="ops-panel mb-3">
       <h5 class="mb-2">Highest-Risk Forms (By Truncation Rate)</h5>
       <div class="table-responsive">
         <table class="table table-striped">
@@ -110,7 +110,7 @@
       </div>
     </div>
 
-    <div class="card p-3">
+    <div class="ops-panel">
       <div class="table-responsive">
         <table class="table table-striped">
           <thead>

@@ -122,6 +122,9 @@ class Config:
     CAC_AUTH_ENABLED = os.environ.get('CAC_AUTH_ENABLED', '0').lower() in {'1', 'true', 'yes', 'on'}
     CAC_AUTO_REGISTER = os.environ.get('CAC_AUTO_REGISTER', '0').lower() in {'1', 'true', 'yes', 'on'}
     CAC_DEBUG_ENABLED = os.environ.get('CAC_DEBUG_ENABLED', '0').lower() in {'1', 'true', 'yes', 'on'}
+    DEMO_ENABLED = os.environ.get('DEMO_ENABLED', '0').lower() in {'1', 'true', 'yes', 'on'}
+    DEMO_USERNAME = os.environ.get('DEMO_USERNAME', '')
+    DEMO_PASSWORD = os.environ.get('DEMO_PASSWORD', '')
     PUBLIC_SELF_REGISTER_ENABLED = os.environ.get(
         'PUBLIC_SELF_REGISTER_ENABLED',
         '1',

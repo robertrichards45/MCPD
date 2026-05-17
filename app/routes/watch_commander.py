@@ -1,6 +1,7 @@
+import json
 from datetime import date
 
-from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
+from flask import Blueprint, abort, flash, jsonify, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_required
 
 from ..extensions import db
@@ -28,11 +29,107 @@ from ..models import (
     WatchShift,
     utcnow_naive,
 )
+from ..models import ROLE_ASSISTANT_OPERATIONS_OFFICER
 from ..permissions import can_manage_site, effective_role
 
 bp = Blueprint('watch_commander', __name__, url_prefix='/watch-commander')
 
 OFFICER_STATUSES = ['On Duty', 'Patrol', 'Gate', 'Report Writing', 'Training', 'Meal', 'Off Duty', 'Leave']
+
+# Known MCLB Albany locations mapped to coordinates for demo/location-name fallback
+_MCLB_LOCATIONS = {
+    'main gate': (31.5709, -84.0765),
+    'gate 1': (31.5709, -84.0765),
+    'gate 2': (31.5760, -84.0700),
+    'industrial': (31.5760, -84.0700),
+    'gate 3': (31.5800, -84.0690),
+    'north gate': (31.5800, -84.0690),
+    'pmo': (31.5748, -84.0730),
+    'provost': (31.5748, -84.0730),
+    'police': (31.5748, -84.0730),
+    'hq': (31.5770, -84.0640),
+    'headquarters': (31.5770, -84.0640),
+    'mcx': (31.5730, -84.0590),
+    'exchange': (31.5730, -84.0590),
+    'chapel': (31.5720, -84.0650),
+    'logistics': (31.5795, -84.0580),
+    'patrol zone a': (31.5735, -84.0670),
+    'zone a': (31.5735, -84.0670),
+    'patrol zone b': (31.5768, -84.0615),
+    'zone b': (31.5768, -84.0615),
+    'patrol zone c': (31.5752, -84.0740),
+    'zone c': (31.5752, -84.0740),
+    'desk': (31.5748, -84.0730),
+    'dispatch': (31.5748, -84.0730),
+}
+
+# Demo scatter positions (lat, lng jitter) for units without a mapped location
+_DEMO_SCATTER = [
+    (31.5722, -84.0720), (31.5741, -84.0658), (31.5779, -84.0702),
+    (31.5762, -84.0645), (31.5715, -84.0600), (31.5793, -84.0648),
+    (31.5731, -84.0637), (31.5755, -84.0718),
+]
+
+# Roles that appear as units on the operational map
+_MAP_ROLES = {ROLE_PATROL_OFFICER, ROLE_DESK_SGT, ROLE_WATCH_COMMANDER}
+_OFF_DUTY_STATUSES = {'Off Duty', 'Leave'}
+
+# Roles that can VIEW the unit map (broadened from watch tools)
+_MAP_VIEWER_ROLES = {
+    ROLE_WATCH_COMMANDER,
+    ROLE_DESK_SGT,
+    ROLE_ASSISTANT_OPERATIONS_OFFICER,
+    'WEBSITE_CONTROLLER',
+}
+
+
+def _can_access_unit_map(user) -> bool:
+    """Unit map is visible to command-level roles and site controllers."""
+    if not user or not getattr(user, 'is_authenticated', False):
+        return False
+    return (
+        effective_role(user) in _MAP_VIEWER_ROLES
+        or can_manage_site(user)
+        or bool(getattr(user, 'builder_mode_access', False))
+    )
+
+
+def _unit_map_supervisor_filter(viewer):
+    """
+    Returns the supervisor_id to scope unit queries, or None meaning 'see all'.
+
+    WEBSITE_CONTROLLER + ASSISTANT_OPERATIONS_OFFICER → None (see everyone)
+    WATCH_COMMANDER + DESK_SGT → viewer.id (see their direct reports only)
+    """
+    role = effective_role(viewer)
+    if role in {ROLE_WEBSITE_CONTROLLER, ROLE_ASSISTANT_OPERATIONS_OFFICER} or can_manage_site(viewer):
+        return None
+    return viewer.id
+
+
+def _resolve_location(assignment, idx: int):
+    """Return (lat, lng) for a WatchAssignment; prefers stored coords, falls back to location name."""
+    if assignment.unit_lat and assignment.unit_lng:
+        return (assignment.unit_lat, assignment.unit_lng)
+    loc = (assignment.assignment_location or '').lower().strip()
+    for key, coords in _MCLB_LOCATIONS.items():
+        if key in loc:
+            return coords
+    return _DEMO_SCATTER[idx % len(_DEMO_SCATTER)]
+
+
+def _status_color(status: str) -> str:
+    mapping = {
+        'Patrol': '#22c55e',
+        'On Duty': '#22c55e',
+        'Gate': '#06b6d4',
+        'Report Writing': '#3b82f6',
+        'Training': '#a855f7',
+        'Meal': '#f59e0b',
+        'Off Duty': '#6b7280',
+        'Leave': '#6b7280',
+    }
+    return mapping.get(status, '#94a3b8')
 ASSIGNMENT_TYPES = ['Patrol Zone', 'Gate Post', 'Desk Duty', 'Training Duty', 'Report Follow-Up', 'Special Task', 'RAM / Security Check']
 
 
@@ -428,3 +525,226 @@ def notifications():
         return redirect(url_for('watch_commander.notifications'))
     notes = WatchNote.query.order_by(WatchNote.created_at.desc()).limit(60).all()
     return render_template('watch_commander/notifications.html', title='Notifications', user=current_user, notes=notes, officers=_officers())
+
+
+# ── Unit Operational Map ───────────────────────────────────────────────────
+
+@bp.route('/unit-map')
+@login_required
+def unit_map():
+    if not _can_access_unit_map(current_user):
+        abort(403)
+    scope_id = _unit_map_supervisor_filter(current_user)
+    can_see_all = scope_id is None
+    return render_template(
+        'watch_commander/unit_map.html',
+        title='Unit Map',
+        user=current_user,
+        statuses=OFFICER_STATUSES,
+        can_see_all=can_see_all,
+    )
+
+
+_DEMO_STATUSES = ['Patrol', 'On Duty', 'Gate', 'Report Writing', 'On Duty', 'Patrol', 'Training', 'Meal']
+
+
+@bp.route('/api/units')
+@login_required
+def api_units():
+    if not _can_access_unit_map(current_user):
+        abort(403)
+    scope_id = _unit_map_supervisor_filter(current_user)
+    is_demo = bool(session.get('demo_mode'))
+
+    # Build filtered user list based on viewer scope
+    q = User.query.filter(User.active.is_(True), User.role.in_(_MAP_ROLES))
+    if scope_id is not None:
+        q = q.filter(User.supervisor_id == scope_id)
+    active_users = q.order_by(User.last_name.asc(), User.first_name.asc()).all()
+
+    # In demo mode, show all active officers even without assignments
+    units = []
+    for idx, officer in enumerate(active_users):
+        assignment = (
+            WatchAssignment.query
+            .filter_by(officer_id=officer.id)
+            .order_by(WatchAssignment.updated_at.desc(), WatchAssignment.id.desc())
+            .first()
+        )
+        if assignment:
+            status = assignment.status
+        elif is_demo:
+            status = _DEMO_STATUSES[idx % len(_DEMO_STATUSES)]
+        else:
+            status = 'Off Duty'
+        if status in _OFF_DUTY_STATUSES:
+            continue
+        lat, lng = _resolve_location(assignment, idx) if assignment else _DEMO_SCATTER[idx % len(_DEMO_SCATTER)]
+        units.append({
+            'id': officer.id,
+            'name': officer.display_name,
+            'badge': officer.badge_employee_id or officer.officer_number or '',
+            'role': getattr(officer, 'role_label', officer.role),
+            'status': status,
+            'color': _status_color(status),
+            'location': (assignment.assignment_location or 'Unassigned') if assignment else 'MCLB Albany',
+            'assignment_type': assignment.assignment_type if assignment else '',
+            'lat': lat,
+            'lng': lng,
+            'location_fresh': bool(assignment and assignment.unit_lat),
+        })
+    return jsonify({'units': units, 'scope': 'all' if scope_id is None else 'supervised'})
+
+
+@bp.route('/api/units/<int:officer_id>/status', methods=['POST'])
+@login_required
+def api_update_unit_status(officer_id):
+    if not _can_access_unit_map(current_user):
+        abort(403)
+    new_status = (request.json or {}).get('status', '').strip()
+    if new_status not in OFFICER_STATUSES:
+        return jsonify({'error': 'Invalid status'}), 400
+    officer = User.query.get_or_404(officer_id)
+    # Scoped commanders can only update their own officers
+    scope_id = _unit_map_supervisor_filter(current_user)
+    if scope_id is not None and officer.supervisor_id != scope_id:
+        return jsonify({'error': 'Not in your scope'}), 403
+    assignment = (
+        WatchAssignment.query
+        .filter_by(officer_id=officer.id)
+        .order_by(WatchAssignment.updated_at.desc(), WatchAssignment.id.desc())
+        .first()
+    )
+    if not assignment:
+        assignment = WatchAssignment(officer_id=officer.id, assignment_type='Patrol')
+        db.session.add(assignment)
+    assignment.status = new_status
+    _audit('unit_status_changed', f'officer_id={officer.id}|status={new_status}')
+    db.session.commit()
+    return jsonify({'ok': True, 'status': new_status, 'color': _status_color(new_status)})
+
+
+@bp.route('/api/unit-location', methods=['POST'])
+@login_required
+def api_update_unit_location():
+    """Officer self-reports their GPS location from their device."""
+    data = request.json or {}
+    lat = data.get('lat')
+    lng = data.get('lng')
+    if not lat or not lng:
+        return jsonify({'error': 'lat/lng required'}), 400
+    try:
+        lat, lng = float(lat), float(lng)
+    except (TypeError, ValueError):
+        return jsonify({'error': 'Invalid coordinates'}), 400
+    assignment = (
+        WatchAssignment.query
+        .filter_by(officer_id=current_user.id)
+        .order_by(WatchAssignment.updated_at.desc(), WatchAssignment.id.desc())
+        .first()
+    )
+    if not assignment:
+        assignment = WatchAssignment(officer_id=current_user.id, assignment_type='Patrol')
+        db.session.add(assignment)
+    assignment.unit_lat = lat
+    assignment.unit_lng = lng
+    assignment.location_updated_at = utcnow_naive()
+    db.session.commit()
+    return jsonify({'ok': True})
+
+
+# ── Shift Sign-On / Sign-Off ───────────────────────────────────────────────
+
+@bp.route('/sign-on', methods=['GET', 'POST'])
+@login_required
+def sign_on():
+    """Any authenticated officer can check in to start their shift."""
+    existing = (
+        WatchAssignment.query
+        .filter_by(officer_id=current_user.id)
+        .order_by(WatchAssignment.updated_at.desc())
+        .first()
+    )
+    is_on_duty = bool(existing and existing.status not in _OFF_DUTY_STATUSES)
+
+    if request.method == 'POST':
+        action = request.form.get('action', 'sign_on')
+
+        if action == 'sign_off':
+            if existing:
+                existing.status = 'Off Duty'
+                existing.updated_at = utcnow_naive()
+                db.session.commit()
+                _audit('shift_sign_off', 'self')
+            flash('Shift ended. Stay safe out there.', 'success')
+            return redirect(url_for('dashboard.dashboard'))
+
+        location = (request.form.get('location') or '').strip()
+        atype = (request.form.get('assignment_type') or ASSIGNMENT_TYPES[0]).strip()
+        if atype not in ASSIGNMENT_TYPES:
+            atype = ASSIGNMENT_TYPES[0]
+
+        if existing:
+            existing.status = 'On Duty'
+            if location:
+                existing.assignment_location = location
+            existing.assignment_type = atype
+            existing.updated_at = utcnow_naive()
+        else:
+            existing = WatchAssignment(
+                officer_id=current_user.id,
+                assignment_type=atype,
+                assignment_location=location,
+                status='On Duty',
+            )
+            db.session.add(existing)
+        db.session.commit()
+        _audit('shift_sign_on', f'type={atype}|location={location}')
+        flash('Shift started. You are now visible on the unit map.', 'success')
+        return redirect(url_for('dashboard.dashboard'))
+
+    wcs = [u for u in User.query.filter(User.active.is_(True)).all()
+           if getattr(u, 'has_role', lambda r: False)(ROLE_WATCH_COMMANDER)]
+
+    return render_template(
+        'watch_commander/sign_on.html',
+        title='Shift Check-In',
+        user=current_user,
+        assignment=existing,
+        is_on_duty=is_on_duty,
+        assignment_types=ASSIGNMENT_TYPES,
+        locations=sorted(_MCLB_LOCATIONS.keys()),
+    )
+
+
+# ── Close Shift (WC / Desk Sgt) ───────────────────────────────────────────
+
+@bp.route('/api/close-shift', methods=['POST'])
+@login_required
+def api_close_shift():
+    """Mark all on-duty units (in scope) as Off Duty for shift handoff."""
+    if not _can_access_unit_map(current_user):
+        abort(403)
+    scope_id = _unit_map_supervisor_filter(current_user)
+
+    q = (
+        WatchAssignment.query
+        .join(User, WatchAssignment.officer_id == User.id)
+        .filter(
+            User.active.is_(True),
+            User.role.in_(_MAP_ROLES),
+            WatchAssignment.status.notin_(list(_OFF_DUTY_STATUSES)),
+        )
+    )
+    if scope_id is not None:
+        q = q.filter(User.supervisor_id == scope_id)
+
+    count = 0
+    for a in q.all():
+        a.status = 'Off Duty'
+        a.updated_at = utcnow_naive()
+        count += 1
+    db.session.commit()
+    _audit('close_shift', f'count={count}|scope={scope_id}')
+    return jsonify({'ok': True, 'closed': count})
+

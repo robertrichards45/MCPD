@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block body %}
-<div class="app-shell">
+<div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
   <div class="page-wrap">
 
@@ -23,7 +23,7 @@
     </section>
 
     {% if warnings %}
-    <div class="card p-3 mb-3 qual-alert-panel">
+    <div class="ops-panel mb-3 qual-alert-panel">
       <div class="eyebrow mb-1">Action Required</div>
       {% for row in warnings %}
       <div class="qual-alert-item qual-status-{{ row.status }}">
@@ -50,7 +50,7 @@
     </div>
     {% endif %}
 
-    <div class="card p-3">
+    <div class="ops-panel">
       <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
         <h5 class="mb-0">All Requirements</h5>
         <div class="d-flex gap-2 flex-wrap">

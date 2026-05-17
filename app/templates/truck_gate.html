@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
 {% block body %}
-<div class="app-shell">
+<div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
-  <div class="page-wrap">
+  <main class="mcpd-command-main" id="main-content">
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         {% for category, message in messages %}
@@ -10,27 +10,49 @@
         {% endfor %}
       {% endif %}
     {% endwith %}
-    <div class="card p-3 mb-3 page-head">
-      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-        <div>
-          <h2 class="mb-1">{{ module_title }}</h2>
-          <p class="text-muted mb-0">Scanner, log, and daily file tools.</p>
+
+    <section class="ops-head-card">
+      <div>
+        <h2>{{ module_title }}</h2>
+        <p class="ops-head-sub">Scanner, log, and daily file tools.</p>
+        <p class="ops-head-meta">Updated: <span data-live-refresh-label>{{ last_updated }}</span></p>
+        <div class="ops-head-actions">
+          <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('ops_modules.truck_gate_today') }}">Today</a>
+          <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('ops_modules.truck_gate_daily_workbook', log_date=current_log_date) }}" target="_blank" rel="noopener">Day File</a>
+          <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('ops_modules.truck_gate_daily_csv', log_date=current_log_date) }}">CSV</a>
+          <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('ops_modules.truck_gate_workbook') }}" target="_blank" rel="noopener">Workbook</a>
+          <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('ops_modules.truck_gate_database') }}">Database</a>
+          <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('ops_modules.truck_gate_qr_labels') }}" target="_blank" rel="noopener">QR Labels</a>
         </div>
-        <div class="text-muted small">Updated: <span data-live-refresh-label>{{ last_updated }}</span></div>
       </div>
-      <div class="d-flex flex-wrap gap-2 mt-3">
-        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('ops_modules.truck_gate_today') }}">Today</a>
-        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('ops_modules.truck_gate_daily_workbook', log_date=current_log_date) }}" target="_blank" rel="noopener">Day File</a>
-        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('ops_modules.truck_gate_daily_csv', log_date=current_log_date) }}">CSV</a>
-        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('ops_modules.truck_gate_workbook') }}" target="_blank" rel="noopener">Workbook</a>
-        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('ops_modules.truck_gate_database') }}">Database</a>
-        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('ops_modules.truck_gate_qr_labels') }}" target="_blank" rel="noopener">QR Labels</a>
+    </section>
+
+    <div class="ops-kpi-strip">
+      <div class="ops-kpi-card">
+        <p class="kpi-label">Drivers</p>
+        <p class="kpi-value">{{ driver_total }}</p>
+      </div>
+      <div class="ops-kpi-card">
+        <p class="kpi-label">Companies</p>
+        <p class="kpi-value">{{ company_total }}</p>
+      </div>
+      <div class="ops-kpi-card">
+        <p class="kpi-label">Vehicles</p>
+        <p class="kpi-value">{{ vehicle_total }}</p>
+      </div>
+      <div class="ops-kpi-card">
+        <p class="kpi-label">Today's Logs</p>
+        <p class="kpi-value">{{ today_log_total }}</p>
+      </div>
+      <div class="ops-kpi-card">
+        <p class="kpi-label">Import Runs</p>
+        <p class="kpi-value">{{ import_run_total }}</p>
       </div>
     </div>
 
     <div class="row g-3">
       <div class="col-md-6">
-        <details class="card p-3 collapse-card" open>
+        <details class="ops-panel collapse-card" open>
           <summary>Scanner</summary>
           <h5>Scanner</h5>
           <p class="text-muted">Use the browser camera directly.</p>
@@ -50,7 +72,7 @@
       </div>
 
       <div class="col-md-6">
-        <details class="card p-3 mb-3 collapse-card">
+        <details class="ops-panel collapse-card">
           <summary>Create Log Entry</summary>
           <h5>Create Log Entry</h5>
           <p class="text-muted">Manual entry for the current day.</p>
@@ -86,7 +108,7 @@
             <button class="btn btn-primary" type="submit">Save Gate Entry</button>
           </form>
         </details>
-        <details class="card p-3 collapse-card" open>
+        <details class="ops-panel collapse-card mt-3" open>
           <summary>Live Activity Feed</summary>
           <h5>Live Activity Feed</h5>
           <p class="text-muted">This panel refreshes every 15 seconds without a full page reload.</p>
@@ -97,10 +119,10 @@
       </div>
     </div>
 
-    <details class="mt-4 card p-3 collapse-card" open>
-      <summary>Overview</summary>
+    <details class="ops-panel mt-3 collapse-card" open>
+      <summary>Overview &amp; File Info</summary>
       <h5>Overview</h5>
-      <div class="row">
+      <div class="row g-3">
         <div class="col-md-6">
           <div class="summary-box">
             <strong>Database Import / Update</strong><br />
@@ -115,43 +137,10 @@
           </div>
         </div>
       </div>
-        <div class="row mt-3">
-          <div class="col-md-3">
-            <div class="summary-box">
-              <strong>Drivers</strong><br />
-              {{ driver_total }}
-            </div>
-          </div>
-          <div class="col-md-3">
-            <div class="summary-box">
-              <strong>Companies</strong><br />
-              {{ company_total }}
-            </div>
-          </div>
-          <div class="col-md-3">
-            <div class="summary-box">
-              <strong>Vehicles</strong><br />
-              {{ vehicle_total }}
-            </div>
-          </div>
-          <div class="col-md-3">
-            <div class="summary-box">
-              <strong>Today's Logs</strong><br />
-              {{ today_log_total }}
-            </div>
-          </div>
-        </div>
-        <div class="row mt-3">
-          <div class="col-md-3">
-            <div class="summary-box">
-              <strong>Recent Imports</strong><br />
-              {{ import_run_total }}
-            </div>
-          </div>
-        </div>
+
       {% if can_manage_module %}
         <div class="alert alert-success mt-3">You have module manager visibility for {{ module_title }}.</div>
-        <details class="card p-3 mt-3 collapse-card" {% if import_preview %}open{% endif %}>
+        <details class="ops-panel mt-3 collapse-card" {% if import_preview %}open{% endif %}>
           <summary>Truck Gate Data Import</summary>
           <h5>Truck Gate Data Import</h5>
           <p class="text-muted">Default source is the desktop workbook on this PC.</p>
@@ -211,7 +200,7 @@
           {% endif %}
         </details>
         {% if import_runs %}
-          <details class="card p-3 mt-3 collapse-card">
+          <details class="ops-panel mt-3 collapse-card">
             <summary>Recent Import History</summary>
             <h5>Recent Import History</h5>
             <div class="table-responsive">
@@ -243,15 +232,15 @@
       {% endif %}
 
       {% if recent_logs %}
-        <details class="card p-3 mt-3 collapse-card" open>
-        <summary>Today's Truck Gate Logs</summary>
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <h5 class="mb-0">Today's Truck Gate Logs</h5>
-          <div class="d-flex gap-2">
-            <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('ops_modules.truck_gate_daily_csv', log_date=current_log_date) }}">CSV</a>
-            <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('ops_modules.truck_gate_daily_log', log_date=current_log_date) }}">Open Full Day Sheet</a>
+        <details class="ops-panel mt-3 collapse-card" open>
+          <summary>Today's Truck Gate Logs</summary>
+          <div class="ops-panel-head">
+            <h5>Today's Truck Gate Logs</h5>
+            <div class="d-flex gap-2">
+              <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('ops_modules.truck_gate_daily_csv', log_date=current_log_date) }}">CSV</a>
+              <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('ops_modules.truck_gate_daily_log', log_date=current_log_date) }}">Open Full Day Sheet</a>
+            </div>
           </div>
-        </div>
           <div class="table-responsive">
             <table class="table table-striped">
                 <thead>
@@ -281,6 +270,6 @@
         </details>
       {% endif %}
     </details>
-  </div>
+  </main>
 </div>
 {% endblock %}

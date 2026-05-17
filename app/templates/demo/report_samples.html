@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell mcpd-command-app demo-mode-app">
+  {% include 'partials/nav.html' %}
+  <main class="mcpd-command-main demo-main">
+    <section class="demo-hero">
+      <div>
+        <p class="eyebrow">Demo Mode — Sample Data Only</p>
+        <h1>Completed Report Samples</h1>
+        <p>These are fully completed, supervisor-approved example reports showing what a finished incident report looks like in the system. All names, dates, and identifiers are fictional.</p>
+      </div>
+      <div class="demo-actions">
+        <a class="btn btn-outline-secondary" href="{{ url_for('demo.dashboard') }}">← Demo Dashboard</a>
+      </div>
+    </section>
+
+    <section class="demo-layout-grid" style="--demo-cols: 1; max-width: 780px; margin: 0 auto;">
+      {% for report in reports %}
+      <article class="demo-panel">
+        <div class="demo-panel-head">
+          <div>
+            <p class="eyebrow">{{ report.call_type }}</p>
+            <h2>{{ report.incident_number }}</h2>
+            <p class="text-muted" style="margin-top:4px;">{{ report.occurred_date }} · {{ report.location }}</p>
+          </div>
+          <span class="badge bg-success">{{ report.status }}</span>
+        </div>
+        <p style="margin:8px 0 16px;">{{ report.narrative[:200] }}…</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <a class="btn btn-primary btn-sm" href="{{ url_for('demo.report_sample_detail', report_id=report.id) }}">View Full Report</a>
+          <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('demo.report_sample_detail', report_id=report.id) }}?print=1" target="_blank">Print Preview</a>
+        </div>
+      </article>
+      {% endfor %}
+    </section>
+  </main>
+</div>
+{% endblock %}

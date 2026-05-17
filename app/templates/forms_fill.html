@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 {% block body %}
-<div class="app-shell">
+<div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
   <div class="page-wrap forms-fill-page">
-    <section class="card p-3 mb-3 page-head ops-head-card">
+    <section class="ops-head-card mb-3">
       <div class="ops-head-grid">
         <div class="ops-head-copy">
           <div class="eyebrow forms-library-eyebrow">Paperwork Workflow</div>
@@ -28,7 +28,7 @@
     </section>
 
     {% if policy.is_no_retention %}
-    <div class="card p-3 mb-3">
+    <div class="ops-panel mb-3">
       <strong>No-Retention PII Mode</strong>
       <div class="small text-muted mt-1">
         Completed form data is not saved on this website. Use Preview, Print, Email, or Download before leaving this session.
@@ -69,7 +69,7 @@
     </div>
     {% endif %}
 
-    <form method="post" class="card p-3 form-workflow-shell forms-fill-shell" id="form-fill-shell">
+    <form method="post" class="ops-panel form-workflow-shell forms-fill-shell" id="form-fill-shell">
       <input type="hidden" name="saved_title" value="{{ (saved_record.title if saved_record else form.title) or form.title }}" />
 
       <div class="forms-fill-layout">
@@ -143,7 +143,11 @@
           {% endif %}
 
           {% if not fill_state.is_ready %}
+<<<<<<< HEAD
           <div class="card p-3 mb-3 form-not-ready-notice">
+=======
+          <div class="ops-panel mb-3 form-not-ready-notice">
+>>>>>>> 73c725b38f1e058b3b8f8f481446ade5f6f049b4
             <strong>Online Completion Not Available Yet</strong>
             <div class="small text-muted mt-1">{{ fill_state.fallback_message }}</div>
           </div>
@@ -176,13 +180,13 @@
                 {% endif %}
                 {% else %}
                 <div class="form-field-block form-field-type-{{ field.type }}">
-                  <label class="form-label text-dark">
+                  <label class="form-label text-dark"{% if field.type != 'checkbox' %} for="fld_{{ field.name }}"{% endif %}>
                     {{ field.label }}{% if field.required %} <span class="field-required-star">*</span>{% endif %}
                     {% if field.type == 'signature' %}<span class="field-type-badge">Signature</span>{% endif %}
                     {% if field.type == 'initial' %}<span class="field-type-badge">Initials</span>{% endif %}
                   </label>
                   {% if field.type == 'textarea' %}
-                  <textarea class="form-control" name="field_{{ field.name }}" rows="3" placeholder="{{ field.placeholder }}" {% if not can_edit %}readonly{% endif %}>{{ payload['values'].get(field.name, '') }}</textarea>
+                  <textarea class="form-control" id="fld_{{ field.name }}" name="field_{{ field.name }}" rows="3" placeholder="{{ field.placeholder }}" {% if not can_edit %}readonly{% endif %}>{{ payload['values'].get(field.name, '') }}</textarea>
                   {% elif field.type == 'checkbox' %}
                   {% set checked = payload['values'].get(field.name, '')|lower in ['yes', 'true', '1', 'on', 'x'] %}
                   <div class="form-check">
@@ -190,12 +194,12 @@
                       class="form-check-input"
                       type="checkbox"
                       name="field_{{ field.name }}"
-                      id="field_{{ field.name }}"
+                      id="fld_{{ field.name }}"
                       value="1"
                       {% if checked %}checked{% endif %}
                       {% if not can_edit %}disabled{% endif %}
                     />
-                    <label class="form-check-label" for="field_{{ field.name }}">Selected</label>
+                    <label class="form-check-label" for="fld_{{ field.name }}">{{ field.label }}</label>
                   </div>
                   {% elif field.type in ('signature', 'initial') %}
                   {% set sig_val = payload['values'].get(field.name, '') %}
@@ -218,6 +222,10 @@
                   {% else %}
                   <input
                     class="form-control"
+<<<<<<< HEAD
+=======
+                    id="fld_{{ field.name }}"
+>>>>>>> 73c725b38f1e058b3b8f8f481446ade5f6f049b4
                     type="{{ 'text' if field.type in ('select',) else field.type }}"
                     name="field_{{ field.name }}"
                     value="{{ payload['values'].get(field.name, '') }}"

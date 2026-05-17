@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
 {% block body %}
-<div class="app-shell">
+<div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
   <div class="page-wrap report-center-shell">
     <div class="mobile-back-bar">
       <a class="mobile-back-btn" href="{{ url_for('reports.list_reports') }}">&#8592; Reports Center</a>
     </div>
 
-    <section class="card p-3 mb-3 page-head ops-head-card">
+    <section class="ops-head-card mb-3">
       <div class="ops-head-grid">
         <div class="ops-head-copy">
           <div class="eyebrow forms-library-eyebrow">Training / Mock Reports</div>
@@ -33,7 +33,7 @@
       </div>
     </section>
 
-    <section class="card p-3 mb-3 report-center-panel">
+    <section class="ops-panel mb-3 report-center-panel">
       <div class="report-panel-head">
         <div>
           <h3 class="mb-1">Mock Packet Pages</h3>
@@ -70,7 +70,7 @@
     </section>
 
     <div class="report-center-grid">
-      <section class="card p-3 report-center-panel">
+      <section class="ops-panel report-center-panel">
         <div class="report-panel-head mb-2">
           <h3 class="mb-0">My Mock Reports</h3>
           <span class="badge bg-dark">{{ mock_report_count|default(0) }}</span>
@@ -96,7 +96,7 @@
         </div>
       </section>
 
-      <section class="card p-3 report-center-panel">
+      <section class="ops-panel report-center-panel">
         <div class="report-panel-head mb-2">
           <h3 class="mb-0">Review Queue</h3>
           <span class="badge bg-dark">{{ mock_review_count|default(0) }}</span>

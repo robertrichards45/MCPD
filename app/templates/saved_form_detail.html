@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 {% block body %}
-<div class="app-shell">
+<div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
   <div class="page-wrap saved-form-detail-shell">
-    <section class="card p-3 mb-3 page-head ops-head-card">
+    <section class="ops-head-card mb-3">
       <div class="ops-head-grid">
         <div class="ops-head-copy">
           <div class="eyebrow forms-library-eyebrow">Saved Paperwork</div>
@@ -41,7 +41,7 @@
     </section>
 
     {% if policy.allow_email %}
-    <details class="card p-3 mb-3 collapse-card" {% if email_requested %}open{% endif %}>
+    <details class="ops-panel mb-3 collapse-card" {% if email_requested %}open{% endif %}>
       <summary>Email Form</summary>
       <form method="post" action="{{ url_for('forms.email_saved_form', saved_form_id=record.id) }}" class="row g-2 mt-2">
         <div class="col-md-6">
@@ -61,7 +61,7 @@
     {% endif %}
 
     {% for section in sections %}
-    <details class="card p-3 mb-3 collapse-card saved-form-section-card" {% if loop.first %}open{% endif %}>
+    <details class="ops-panel mb-3 collapse-card saved-form-section-card" {% if loop.first %}open{% endif %}>
       <summary>{{ section.title }}</summary>
       <div class="saved-form-field-grid mt-2">
         {% for row in section.rows %}
@@ -75,7 +75,7 @@
     {% endfor %}
 
     {% if schema.show_role_entry %}
-    <details class="card p-3 mb-3 collapse-card" open>
+    <details class="ops-panel mb-3 collapse-card" open>
       <summary>People by Role</summary>
       <div class="saved-form-role-grid mt-2">
         {% if role_rows %}
@@ -109,7 +109,7 @@
     </details>
     {% endif %}
 
-    <details class="card p-3 mb-3 collapse-card">
+    <details class="ops-panel mb-3 collapse-card">
       <summary>Audit History</summary>
       <div class="saved-form-audit-list mt-2">
         {% for item in audits %}

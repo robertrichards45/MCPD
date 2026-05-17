@@ -1,21 +1,20 @@
 {% extends 'base.html' %}
 {% block body %}
-<div class="app-shell">
+<div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
-  <div class="page-wrap">
+  <main class="mcpd-command-main" id="main-content">
 
-    <div class="mobile-back-bar">
-      <a class="mobile-back-btn" href="{{ url_for('bolo.bolo_board') }}">&#8592; BOLO Board</a>
-    </div>
+    <section class="ops-head-card">
+      <div>
+        <h2>{{ 'Update BOLO Entry' if entry else 'Issue Be On the Lookout' }}</h2>
+        <p class="ops-head-sub">{{ 'Edit' if entry else 'New' }} BOLO — active lookout for all on-duty personnel.</p>
+      </div>
+      <div class="ops-head-actions">
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('bolo.bolo_board') }}">← Board</a>
+      </div>
+    </section>
 
-    <div class="d-flex align-items-center gap-2 mb-3">
-      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('bolo.bolo_board') }}">&#8592; Board</a>
-    </div>
-
-    <div class="card p-3" style="max-width:760px">
-      <div class="eyebrow mb-1">{{ 'Edit' if entry else 'New' }} BOLO</div>
-      <h3 class="mb-3">{{ 'Update BOLO Entry' if entry else 'Issue Be On the Lookout' }}</h3>
-
+    <div class="ops-panel" style="max-width:760px">
       <form method="post" enctype="multipart/form-data">
         <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}" />
 
@@ -116,6 +115,6 @@
       </form>
     </div>
 
-  </div>
+  </main>
 </div>
 {% endblock %}

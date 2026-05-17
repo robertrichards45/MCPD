@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 {% block body %}
-<div class="app-shell">
+<div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
   <div class="page-wrap reports-center-shell">
-    <section class="card p-3 mb-3 page-head ops-head-card">
+    <section class="ops-head-card">
       <div class="ops-head-grid">
         <div class="ops-head-copy">
           <div class="eyebrow forms-library-eyebrow">Reporting Hub</div>
@@ -40,7 +40,7 @@
       </div>
     </section>
 
-    <section class="card p-3 report-center-panel report-intake-panel">
+    <section class="ops-panel report-center-panel report-intake-panel">
       <div class="report-panel-head">
         <div>
           <h3 class="mb-1">Start Report</h3>
@@ -68,7 +68,7 @@
     </section>
 
     {% if active_incident_draft %}
-    <section class="card p-3 report-center-panel mb-3">
+    <section class="ops-panel report-center-panel mb-3">
       <div class="report-panel-head">
         <div>
           <h3 class="mb-1">Active Field Draft</h3>
@@ -90,13 +90,17 @@
         {% endif %}
         <div class="report-hub-actions">
           <a class="btn btn-sm btn-primary" href="{{ url_for('mobile.incident_start') }}">Open Synced Draft</a>
+          <form method="post" action="{{ url_for('reports.discard_draft') }}" style="display:inline;" onsubmit="return confirm('Discard this draft? This cannot be undone.');">
+            <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}" />
+            <button type="submit" class="btn btn-sm btn-outline-danger">Discard Draft</button>
+          </form>
         </div>
       </article>
     </section>
     {% endif %}
 
     <div class="report-center-grid">
-      <section class="card p-3 report-center-panel">
+      <section class="ops-panel report-center-panel">
         <div class="report-panel-head">
           <div>
             <h3 class="mb-1">Standard Reports</h3>
@@ -122,7 +126,7 @@
         </div>
       </section>
 
-      <section class="card p-3 report-center-panel">
+      <section class="ops-panel report-center-panel">
         <div class="report-panel-head">
           <div>
             <h3 class="mb-1">Mock Report Writing</h3>

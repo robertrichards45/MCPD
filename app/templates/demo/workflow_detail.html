@@ -1,0 +1,250 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell mcpd-command-app demo-mode-app">
+  {% include 'partials/nav.html' %}
+  <main class="mcpd-command-main demo-main" id="main-content">
+    <section class="demo-hero">
+      <div>
+        <p class="eyebrow">Demo Workflow</p>
+        <h1>{{ record_type.replace('-', ' ')|title }}</h1>
+        <p>Sample records are fake, command-safe, and clearly marked as demonstration data.</p>
+      </div>
+      <a class="btn btn-outline-secondary" href="{{ url_for('demo.workflows') }}">All Workflows</a>
+    </section>
+
+    {# ── Workflow-specific context panels ─────────────────────────── #}
+
+    {% if record_type == 'desk-sgt' %}
+    <div class="demo-workflow-stats">
+      <div class="demo-workflow-stat">
+        <div class="dwstat-value">3</div>
+        <div class="dwstat-label">Reports in Queue</div>
+      </div>
+      <div class="demo-workflow-stat">
+        <div class="dwstat-value">1</div>
+        <div class="dwstat-label">Correction Pending</div>
+      </div>
+      <div class="demo-workflow-stat">
+        <div class="dwstat-value">7</div>
+        <div class="dwstat-label">Approved Today</div>
+      </div>
+      <div class="demo-workflow-stat">
+        <div class="dwstat-value">2</div>
+        <div class="dwstat-label">Blotter Entries</div>
+      </div>
+    </div>
+    <div class="demo-panel mb-3">
+      <div class="demo-panel-head">
+        <div>
+          <p class="eyebrow">How It Works</p>
+          <h2>Desk Sergeant Review Flow</h2>
+        </div>
+        <span class="demo-badge">Live Feature</span>
+      </div>
+      <p>Officers submit incident reports through the portal. The Desk Sergeant reviews each packet for completeness — checking for the 5 Ws, required attachments, and proper paperwork. Corrections are logged with notes and the report is returned to the officer for revision. Approved reports are locked and forwarded to command.</p>
+      <div class="demo-panel-actions">
+        <a class="btn btn-secondary btn-sm" href="{{ url_for('reports.list_reports') }}">Open Report Module</a>
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('demo.report_samples') }}">View Sample Reports</a>
+      </div>
+    </div>
+
+    {% elif record_type == 'cvi' %}
+    <div class="demo-workflow-stats">
+      <div class="demo-workflow-stat">
+        <div class="dwstat-value">24</div>
+        <div class="dwstat-label">Inspections Today</div>
+      </div>
+      <div class="demo-workflow-stat">
+        <div class="dwstat-value">6</div>
+        <div class="dwstat-label">Officers Assigned</div>
+      </div>
+      <div class="demo-workflow-stat">
+        <div class="dwstat-value">3</div>
+        <div class="dwstat-label">Follow-up Notes</div>
+      </div>
+      <div class="demo-workflow-stat">
+        <div class="dwstat-value">1</div>
+        <div class="dwstat-label">Escalated</div>
+      </div>
+    </div>
+    <div class="demo-panel mb-3">
+      <div class="demo-panel-head">
+        <div>
+          <p class="eyebrow">How It Works</p>
+          <h2>Commercial Vehicle Inspection</h2>
+        </div>
+        <span class="demo-badge">Live Feature</span>
+      </div>
+      <p>CVI officers log each commercial vehicle inspection at the gate — recording driver credentials, inspection type (100%, random, normal ops), and any denial of entry. The daily log is available as a CSV or printable day-file for shift review. Escalated events link to incident report workflow automatically.</p>
+      <div class="demo-panel-actions">
+        <a class="btn btn-secondary btn-sm" href="{{ url_for('ops_modules.truck_gate') }}">Open Truck Gate Module</a>
+      </div>
+    </div>
+
+    {% elif record_type == 'aid' %}
+    <div class="demo-workflow-stats">
+      <div class="demo-workflow-stat">
+        <div class="dwstat-value">3</div>
+        <div class="dwstat-label">Open Cases</div>
+      </div>
+      <div class="demo-workflow-stat">
+        <div class="dwstat-value">1</div>
+        <div class="dwstat-label">Awaiting Review</div>
+      </div>
+      <div class="demo-workflow-stat">
+        <div class="dwstat-value">2</div>
+        <div class="dwstat-label">Follow-up Tasks</div>
+      </div>
+      <div class="demo-workflow-stat">
+        <div class="dwstat-value">3</div>
+        <div class="dwstat-label">AID Personnel</div>
+      </div>
+    </div>
+    <div class="demo-panel mb-3">
+      <div class="demo-panel-head">
+        <div>
+          <p class="eyebrow">How It Works</p>
+          <h2>Administrative Investigation Division</h2>
+        </div>
+        <span class="demo-badge">Live Feature</span>
+      </div>
+      <p>AID cases are tracked from initial complaint through investigation, interview, document review, and final disposition. Each case is assigned to an investigator with follow-up task management. Command-level users can view all open cases; AID officers see their own assignments. Case packets can be exported for JAG or Inspector General review.</p>
+      <div class="demo-panel-actions">
+        <a class="btn btn-secondary btn-sm" href="{{ url_for('demo.workflows') }}">Demo Overview</a>
+      </div>
+    </div>
+
+    {% elif record_type == 'srt' %}
+    <div class="demo-workflow-stats">
+      <div class="demo-workflow-stat">
+        <div class="dwstat-value">6</div>
+        <div class="dwstat-label">SRT Officers</div>
+      </div>
+      <div class="demo-workflow-stat">
+        <div class="dwstat-value">83%</div>
+        <div class="dwstat-label">Training Complete</div>
+      </div>
+      <div class="demo-workflow-stat">
+        <div class="dwstat-value">1</div>
+        <div class="dwstat-label">AAR Pending</div>
+      </div>
+      <div class="demo-workflow-stat">
+        <div class="dwstat-value">All</div>
+        <div class="dwstat-label">Equipment Serviceable</div>
+      </div>
+    </div>
+    <div class="demo-panel mb-3">
+      <div class="demo-panel-head">
+        <div>
+          <p class="eyebrow">How It Works</p>
+          <h2>Special Reaction Team</h2>
+        </div>
+        <span class="demo-badge">Live Feature</span>
+      </div>
+      <p>SRT readiness tracking covers training completion percentages, equipment serviceability checks (ballistic shields, breaching kits, protective gear), and after-action report management. Command can view team-wide readiness at a glance. Activation logs are linked to incident records and can be printed for command review.</p>
+      <div class="demo-panel-actions">
+        <a class="btn btn-secondary btn-sm" href="{{ url_for('demo.workflows') }}">Demo Overview</a>
+      </div>
+    </div>
+
+    {% elif record_type == 'k9' %}
+    <div class="demo-workflow-stats">
+      <div class="demo-workflow-stat">
+        <div class="dwstat-value">8</div>
+        <div class="dwstat-label">K-9 Teams</div>
+      </div>
+      <div class="demo-workflow-stat">
+        <div class="dwstat-value">2</div>
+        <div class="dwstat-label">Deployments Today</div>
+      </div>
+      <div class="demo-workflow-stat">
+        <div class="dwstat-value">1</div>
+        <div class="dwstat-label">Kennel Log Entry</div>
+      </div>
+      <div class="demo-workflow-stat">
+        <div class="dwstat-value">All</div>
+        <div class="dwstat-label">Teams Available</div>
+      </div>
+    </div>
+    <div class="demo-panel mb-3">
+      <div class="demo-panel-head">
+        <div>
+          <p class="eyebrow">How It Works</p>
+          <h2>K-9 Unit Operations</h2>
+        </div>
+        <span class="demo-badge">Live Feature</span>
+      </div>
+      <p>K-9 deployment logs track each team's daily activity — narcotics sweeps, vehicle searches, gate support, and kennel maintenance. Handler and dog certifications are tracked for compliance. Deployments link to parent incident reports where applicable. Climate control and sanitation checks are logged daily.</p>
+      <div class="demo-panel-actions">
+        <a class="btn btn-secondary btn-sm" href="{{ url_for('demo.workflows') }}">Demo Overview</a>
+      </div>
+    </div>
+
+    {% elif record_type == 'admin' %}
+    <div class="demo-workflow-stats">
+      <div class="demo-workflow-stat">
+        <div class="dwstat-value">43</div>
+        <div class="dwstat-label">Demo Users</div>
+      </div>
+      <div class="demo-workflow-stat">
+        <div class="dwstat-value">12</div>
+        <div class="dwstat-label">Role Types</div>
+      </div>
+      <div class="demo-workflow-stat">
+        <div class="dwstat-value">6</div>
+        <div class="dwstat-label">Sections</div>
+      </div>
+      <div class="demo-workflow-stat">
+        <div class="dwstat-value">Live</div>
+        <div class="dwstat-label">System Status</div>
+      </div>
+    </div>
+    <div class="demo-panel mb-3">
+      <div class="demo-panel-head">
+        <div>
+          <p class="eyebrow">How It Works</p>
+          <h2>Admin &amp; System Management</h2>
+        </div>
+        <span class="demo-badge">Live Feature</span>
+      </div>
+      <p>The admin workflow covers user provisioning, role assignment, section and shift configuration, reference data management (forms, law sources, general orders), and builder change-request tracking. Site Owner operations — password resets, installation settings, and system flags — are isolated from standard admin access. All changes are logged with timestamps.</p>
+      <div class="demo-panel-actions">
+        <a class="btn btn-secondary btn-sm" href="{{ url_for('demo.users') }}">View Demo Users</a>
+        <a class="btn btn-secondary btn-sm" href="{{ url_for('demo.dashboard') }}">Demo Dashboard</a>
+      </div>
+    </div>
+    {% endif %}
+
+    {# ── Sample records from the database ─────────────────────────── #}
+    <section class="demo-record-list">
+      {% for row in rows %}
+      <article class="demo-panel">
+        <div class="demo-panel-head">
+          <div>
+            <p class="eyebrow">{{ row.record_type.replace('_', ' ')|title }}</p>
+            <h2>{{ row.title }}</h2>
+          </div>
+          {% set st = (row.status or 'Active').lower() %}
+          {% if st == 'active' %}
+            <span class="demo-status-badge demo-status-active">Active</span>
+          {% elif 'pend' in st %}
+            <span class="demo-status-badge demo-status-pending">Pending</span>
+          {% elif 'review' in st %}
+            <span class="demo-status-badge demo-status-review">In Review</span>
+          {% else %}
+            <span class="demo-status-badge demo-status-closed">{{ row.status }}</span>
+          {% endif %}
+        </div>
+        <p>{{ row.summary }}</p>
+        <div class="demo-panel-meta">
+          <span>Sample record</span>
+          {% if row.created_at %}
+            <span>{{ row.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+          {% endif %}
+        </div>
+      </article>
+      {% endfor %}
+    </section>
+  </main>
+</div>
+{% endblock %}

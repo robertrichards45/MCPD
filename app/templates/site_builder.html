@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 {% block body %}
-<div class="app-shell">
+<div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
   <main class="page-wrap site-builder-page">
-    <section class="card p-3 mb-3 page-head">
+    <section class="ops-head-card mb-3">
       <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
         <div>
           <h2 class="mb-1">Site Builder</h2>
@@ -14,7 +14,7 @@
     </section>
 
     <section class="builder-grid">
-      <article class="card p-3 builder-request-card">
+      <article class="ops-panel builder-request-card">
         <div class="builder-section-head">
           <div>
             <h3>Create Builder Request</h3>
@@ -55,7 +55,7 @@
       </article>
 
       <aside class="builder-side-stack">
-        <article class="card p-3">
+        <article class="ops-panel">
           <h3>Request Status</h3>
           <div class="builder-stat-list">
             <div><span>Total</span><strong>{{ builder_stats.total }}</strong></div>
@@ -64,14 +64,14 @@
             <div><span>Completed</span><strong>{{ builder_stats.completed }}</strong></div>
           </div>
         </article>
-        <article class="card p-3 builder-warning-card">
+        <article class="ops-panel builder-warning-card">
           <h3>Controls</h3>
           <p class="text-muted mb-0">Builder Mode is visible only to the Site Owner or users explicitly granted access. Requests are audit logged.</p>
         </article>
       </aside>
     </section>
 
-    <section class="card p-3 mt-3">
+    <section class="ops-panel mt-3">
       <div class="builder-section-head">
         <div>
           <h3>Builder Requests</h3>

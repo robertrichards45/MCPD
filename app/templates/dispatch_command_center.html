@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/command_center.css', v='2026-05-16-dispatch') }}" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV/XN/WPeE=" crossorigin=""></script>
+<style>
+#mcpd-dashboard-map { height: 340px; width: 100%; border-radius: 8px; background: #0d1f35; }
+</style>
+{% endblock %}
+{% block body %}
+<div class="app-shell mcpd-command-app">
+  {% include 'partials/nav.html' %}
+  <main class="command-center" id="main-content">
+    <section class="command-hero">
+      <div>
+        <h1>Dispatch / Command Center</h1>
+        <p>Live operational view for Watch Commanders, Desk Sergeants, dispatcher-style monitoring, active incidents, unit status, and command-level workflow visibility.</p>
+        <div class="command-badge-row">
+          <span class="command-badge">DEMO READY</span>
+          <span class="command-badge">RADIO MODE</span>
+          <span class="command-badge">SHIFT OVERVIEW</span>
+          <span class="command-badge">MAP / UNIT STATUS</span>
+        </div>
+      </div>
+      <div class="command-clock-card">
+        <strong>{{ dispatch_summary.current_time }}</strong>
+        <span>{{ dispatch_summary.shift_name }}</span>
+        <small>{{ dispatch_summary.shift_status }}</small>
+      </div>
+    </section>
+
+    <section class="command-metrics-grid" aria-label="Command center metrics">
+      {% for metric in dispatch_metrics %}
+      <article class="command-metric">
+        <span>{{ metric.label }}</span>
+        <strong>{{ metric.value }}</strong>
+        <small>{{ metric.detail }}</small>
+      </article>
+      {% endfor %}
+    </section>
+
+    <section class="command-grid">
+      <article class="command-panel">
+        <div class="command-panel-head">
+          <h2>Unit Status</h2>
+          <span>{{ unit_status|length }} Units</span>
+        </div>
+        <div class="command-list">
+          {% for unit in unit_status %}
+          <div class="command-row">
+            <span class="command-status-dot {{ unit.state_class }}" aria-hidden="true"></span>
+            <div>
+              <strong>{{ unit.name }}</strong>
+              <small>{{ unit.assignment }}</small>
+            </div>
+            <span class="command-pill">{{ unit.status }}</span>
+          </div>
+          {% endfor %}
+        </div>
+      </article>
+
+      <article class="command-panel command-map-panel">
+        <div class="command-panel-head">
+          <h2>Installation Operational Map</h2>
+          <span>Command View</span>
+        </div>
+        <div id="mcpd-dashboard-map" aria-label="Installation operational map"></div>
+        <div class="command-radio-box">
+          <strong>Dispatch / Radio AI Mode</strong>
+          <p>{{ radio_summary }}</p>
+        </div>
+      </article>
+
+      <article class="command-panel">
+        <div class="command-panel-head">
+          <h2>Active Incidents</h2>
+          <span>{{ active_incidents|length }} Open</span>
+        </div>
+        <div class="command-list">
+          {% for incident in active_incidents %}
+          <div class="command-row">
+            <span class="command-status-dot {{ incident.state_class }}" aria-hidden="true"></span>
+            <div>
+              <strong>{{ incident.title }}</strong>
+              <small>{{ incident.detail }}</small>
+            </div>
+            <span class="command-pill">{{ incident.priority }}</span>
+          </div>
+          {% endfor %}
+        </div>
+      </article>
+    </section>
+
+    <section class="command-actions" aria-label="Command center actions">
+      <a class="command-action-btn" href="{{ url_for('watch_commander.dashboard') }}">Watch Commander Hub</a>
+      <a class="command-action-btn" href="{{ url_for('watch_commander.shift') }}">Shift Management</a>
+      <a class="command-action-btn" href="{{ url_for('watch_commander.reports') }}">Report Review</a>
+      <a class="command-action-btn" href="{{ url_for('bolo.bolo_board') }}">BOLO Board</a>
+      <a class="command-action-btn" href="{{ url_for('mobile.supervisor_dashboard') }}">Supervisor Dashboard</a>
+    </section>
+  </main>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+(function () {
+  var BASE_BOUNDS = [[31.560, -84.085], [31.595, -84.048]];
+  var CENTER = [31.577, -84.065];
+
+  var _svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 950">'
+    + '<rect width="1000" height="950" fill="#0d1f35"/>'
+    + '<polygon points="80,200 920,200 920,820 80,820" fill="none" stroke="#1e3a5c" stroke-width="3" stroke-dasharray="12,6"/>'
+    + '<line x1="80" y1="510" x2="920" y2="510" stroke="#233d5e" stroke-width="6" stroke-linecap="round"/>'
+    + '<line x1="80" y1="510" x2="920" y2="510" stroke="#2a4f78" stroke-width="2"/>'
+    + '<line x1="500" y1="200" x2="500" y2="820" stroke="#233d5e" stroke-width="6" stroke-linecap="round"/>'
+    + '<line x1="500" y1="200" x2="500" y2="820" stroke="#2a4f78" stroke-width="2"/>'
+    + '<line x1="80" y1="340" x2="500" y2="340" stroke="#1d3450" stroke-width="4"/>'
+    + '<line x1="500" y1="650" x2="920" y2="650" stroke="#1d3450" stroke-width="4"/>'
+    + '<rect x="140" y="460" width="90" height="55" rx="4" fill="#102035" stroke="#2563a8" stroke-width="2"/>'
+    + '<text x="185" y="493" font-family="Arial" font-size="14" fill="#5b9bd5" text-anchor="middle">PMO</text>'
+    + '<rect x="630" y="255" width="90" height="55" rx="4" fill="#102035" stroke="#2563a8" stroke-width="2"/>'
+    + '<text x="675" y="288" font-family="Arial" font-size="14" fill="#5b9bd5" text-anchor="middle">HQ</text>'
+    + '<rect x="630" y="675" width="90" height="55" rx="4" fill="#102035" stroke="#2563a8" stroke-width="2"/>'
+    + '<text x="675" y="708" font-family="Arial" font-size="14" fill="#5b9bd5" text-anchor="middle">CVI</text>'
+    + '<circle cx="90" cy="340" r="18" fill="#102035" stroke="#2563a8" stroke-width="2"/>'
+    + '<text x="90" y="368" font-family="Arial" font-size="10" fill="#5b9bd5" text-anchor="middle">Main Gate</text>'
+    + '<text x="90" y="184" font-family="Arial" font-size="10" fill="#5b9bd5" text-anchor="middle">N Gate</text>'
+    + '</svg>';
+
+  var blob = new Blob([_svg], { type: 'image/svg+xml' });
+  var svgUrl = URL.createObjectURL(blob);
+
+  var map = L.map('mcpd-dashboard-map', {
+    center: CENTER,
+    zoom: 13,
+    zoomControl: true,
+    scrollWheelZoom: false,
+    dragging: true,
+    touchZoom: true,
+    doubleClickZoom: false,
+    attributionControl: false,
+    maxBounds: BASE_BOUNDS,
+    maxBoundsViscosity: 0.2,
+  });
+
+  L.imageOverlay(svgUrl, BASE_BOUNDS, { interactive: false, zIndex: 1 }).addTo(map);
+
+  var _STATUS_COLOR = { '': '#22c55e', busy: '#f59e0b', alert: '#ef4444', standby: '#64748b' };
+  var _UNIT_COORDS = {
+    'Patrol 1':    [31.5625, -84.082],
+    'Patrol 2':    [31.565,  -84.070],
+    'Desk Sgt':    [31.575,  -84.066],
+    'K-9 1':       [31.573,  -84.063],
+    'CVI 1':       [31.568,  -84.061],
+    'SRT Element': [31.582,  -84.057],
+  };
+
+  var units = {{ unit_status | tojson }};
+  units.forEach(function (u) {
+    var coords = _UNIT_COORDS[u.name];
+    if (!coords) return;
+    var color = _STATUS_COLOR[u.state_class] || '#22c55e';
+    var icon = L.divIcon({
+      className: '',
+      html: '<div style="width:14px;height:14px;border-radius:50%;background:' + color + ';border:2px solid rgba(255,255,255,0.6);box-shadow:0 0 6px ' + color + ';"></div>',
+      iconSize: [14, 14],
+      iconAnchor: [7, 7],
+    });
+    L.marker(coords, { icon: icon })
+      .bindTooltip('<strong>' + u.name + '</strong><br>' + u.status + ' — ' + u.assignment, { direction: 'top', offset: [0, -8] })
+      .addTo(map);
+  });
+
+  setTimeout(function () { map.invalidateSize(); }, 150);
+}());
+</script>
+{% endblock %}

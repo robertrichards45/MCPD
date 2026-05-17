@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 {% block body %}
-<div class="app-shell">
+<div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
 
   <div class="page-wrap">
-    <div class="card p-3 mb-3 page-head d-flex justify-content-between align-items-center">
+    <div class="ops-head-card mb-3">
       <div>
         <h2 class="mb-0">Case #{{ case.id }}: {{ case.title }}</h2>
         <div class="small text-muted">{{ case.incident_date or '' }}{% if case.location %} | {{ case.location }}{% endif %}</div>
@@ -12,7 +12,7 @@
       <a class="btn btn-secondary" href="{{ url_for('reconstruction.packet_pdf', case_id=case.id) }}">Download Packet (PDF)</a>
     </div>
 
-    <div class="card p-3 mb-3">
+    <div class="ops-panel mb-3">
       <h3 class="mb-2">Report / Courtroom Diagram Workspace</h3>
       <div class="small text-muted mb-2">
         Build a clean report-ready scene diagram. Show editing grid and Snap objects to grid while drafting; export only the professional diagram.
@@ -86,7 +86,7 @@
 
     <div class="row g-3">
       <div class="col-lg-5">
-        <details class="card p-3 collapse-card mb-3" open>
+        <details class="ops-panel collapse-card mb-3" open>
           <summary>Case Info</summary>
           <form method="post" action="{{ url_for('reconstruction.case_update', case_id=case.id) }}">
             <div class="mb-3">
@@ -105,7 +105,7 @@
           </form>
         </details>
 
-        <details class="card p-3 collapse-card mb-3">
+        <details class="ops-panel collapse-card mb-3">
           <summary>Add Vehicle</summary>
           <form method="post" action="{{ url_for('reconstruction.add_vehicle', case_id=case.id) }}">
             <div class="mb-3">
@@ -128,7 +128,7 @@
           </form>
         </details>
 
-        <details class="card p-3 collapse-card">
+        <details class="ops-panel collapse-card">
           <summary>Add Measurement</summary>
           <form method="post" action="{{ url_for('reconstruction.add_measurement', case_id=case.id) }}">
             <div class="mb-3">
@@ -155,7 +155,7 @@
       </div>
 
       <div class="col-lg-7">
-        <details class="card p-3 collapse-card mb-3" open>
+        <details class="ops-panel collapse-card mb-3" open>
           <summary>Uploads</summary>
           <form method="post" action="{{ url_for('reconstruction.upload', case_id=case.id) }}" enctype="multipart/form-data" class="row">
             <div class="col-md-6 mb-3">
@@ -194,7 +194,7 @@
           {% endif %}
         </details>
 
-        <details class="card p-3 collapse-card mb-3" open>
+        <details class="ops-panel collapse-card mb-3" open>
           <summary>Vehicles</summary>
           {% if vehicles %}
             <table class="table table-striped">
@@ -217,7 +217,7 @@
           {% endif %}
         </details>
 
-        <details class="card p-3 collapse-card" open>
+        <details class="ops-panel collapse-card" open>
           <summary>Measurements</summary>
           {% if measurements %}
             <table class="table table-striped">

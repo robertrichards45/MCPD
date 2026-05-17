@@ -1,51 +1,71 @@
 {% extends 'base.html' %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='vendor/leaflet.min.css', v='1.9.4') }}" />
+{% endblock %}
 {% block body %}
 <div class="mcpd-mobile-app">
   <header class="mcpd-mobile-topbar">
-    <a class="mcpd-mobile-menu-link" href="{{ url_for('mobile.more') }}" aria-label="Open menu">Menu</a>
+    <a class="mcpd-mobile-menu-link" href="{{ url_for('mobile.more') }}" aria-label="Open menu">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      Menu
+    </a>
     <strong>MCPD</strong>
     <button class="mcpd-theme-toggle" type="button" data-theme-toggle>Dark</button>
   </header>
 
   <main class="mcpd-mobile-home">
     <section class="mcpd-mobile-greeting">
-      <p>Good afternoon,</p>
-      <h1>{{ user.display_name }}</h1>
-      <span>{{ user.section_unit or portal_effective_role_label }}</span>
+      <div class="mcpd-mobile-greeting-inner">
+        <p class="mcpd-mobile-greeting-sub">Welcome back</p>
+        <h1>{{ user.display_name }}</h1>
+        <span class="mcpd-mobile-greeting-role">{{ user.section_unit or portal_effective_role_label }}</span>
+      </div>
+      {% if active_incident_draft %}
+      <div class="mcpd-mobile-draft-row">
+        <a class="mcpd-mobile-draft-badge" href="{{ url_for('mobile.incident_start') }}">
+          <span class="mcpd-mobile-draft-dot"></span>
+          Draft in progress
+        </a>
+        <form method="post" action="{{ url_for('reports.discard_draft') }}" style="display:inline;" onsubmit="return confirm('Discard this draft?');">
+          <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}" />
+          <button type="submit" class="mcpd-mobile-draft-discard">✕</button>
+        </form>
+      </div>
+      {% endif %}
     </section>
 
-    <section class="mcpd-mobile-grid" aria-label="Mobile actions">
-      <a href="{{ url_for('legal.legal_home') }}">
+    <section class="mcpd-mobile-grid" aria-label="Quick actions">
+      <a href="{{ url_for('legal.legal_home') }}" class="tile-law">
         <span class="mcpd-mobile-tile-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24"><path d="M12 3v18M5 7h14M7 7l-3 7h6L7 7Zm10 0-3 7h6l-3-7ZM9 21h6"/></svg>
         </span>
         Law Lookup
       </a>
-      <a href="{{ url_for('mobile.incident_start') }}">
+      <a href="{{ url_for('mobile.incident_start') }}" class="tile-report{% if active_incident_draft %} tile-active{% endif %}">
         <span class="mcpd-mobile-tile-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z"/><path d="M14 3v5h5M8 13h8M8 17h6"/></svg>
         </span>
         {% if active_incident_draft %}Continue Report{% else %}Start Report{% endif %}
       </a>
-      <a href="{{ url_for('forms.list_forms') }}">
+      <a href="{{ url_for('forms.list_forms') }}" class="tile-forms">
         <span class="mcpd-mobile-tile-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
         </span>
         Forms
       </a>
-      <a href="{{ url_for('orders.reference_search') }}">
+      <a href="{{ url_for('orders.reference_search') }}" class="tile-orders">
         <span class="mcpd-mobile-tile-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24"><path d="M6 4h11a2 2 0 0 1 2 2v14H8a2 2 0 0 1-2-2V4Z"/><path d="M9 8h7M9 12h7M9 16h5"/></svg>
         </span>
         Orders
       </a>
-      <a href="{{ url_for('training.training_menu') }}">
+      <a href="{{ url_for('training.training_menu') }}" class="tile-training">
         <span class="mcpd-mobile-tile-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24"><path d="m3 8 9-4 9 4-9 4-9-4Z"/><path d="M7 10v5c0 1.7 2.2 3 5 3s5-1.3 5-3v-5"/></svg>
         </span>
         Training
       </a>
-      <a href="{{ url_for('forms.saved_forms') }}">
+      <a href="{{ url_for('forms.saved_forms') }}" class="tile-saved">
         <span class="mcpd-mobile-tile-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24"><path d="M6 4h12v17l-6-3-6 3V4Z"/></svg>
         </span>
@@ -53,35 +73,550 @@
       </a>
     </section>
 
-    {% if active_incident_draft %}
-    <section class="mcpd-mobile-officer-panel">
-      <div>
-        <strong>Synced Draft</strong>
-        <span>{{ active_incident_draft.location or active_incident_draft.call_type or 'Active report in progress' }}</span>
+    <section class="mcpd-mobile-stats-row" aria-label="Officer summary">
+      <div class="mcpd-mobile-stat-chip">
+        <strong>{{ dashboard_saved_forms_count|default(0) }}</strong>
+        <span>Forms</span>
       </div>
-      <a href="{{ url_for('mobile.incident_start') }}">Open</a>
+      <div class="mcpd-mobile-stat-chip">
+        <strong>{{ dashboard_report_count|default(0) }}</strong>
+        <span>Reports</span>
+      </div>
+      <a class="mcpd-mobile-stat-chip mcpd-mobile-stat-link" href="{{ url_for('mobile.officer_stats') }}">
+        <strong>View</strong>
+        <span>Stats</span>
+      </a>
+      <a class="mcpd-mobile-stat-chip mcpd-mobile-stat-link" href="{{ url_for('mobile.officer_contact') }}">
+        <strong>Edit</strong>
+        <span>Profile</span>
+      </a>
+    </section>
+
+    {% if active_incident_draft %}
+    <section class="mcpd-mobile-officer-panel mcpd-mobile-panel-highlight">
+      <div>
+        <strong>Active Draft</strong>
+        <span>{{ active_incident_draft.location or active_incident_draft.call_type or 'Report in progress' }}</span>
+      </div>
+      <a href="{{ url_for('mobile.incident_start') }}">Open &rsaquo;</a>
     </section>
     {% endif %}
 
-    <section class="mcpd-mobile-officer-panel">
-      <div>
-        <strong>Officer Stats</strong>
-        <span>Forms: {{ dashboard_saved_forms_count|default(0) }} / Reports: {{ dashboard_report_count|default(0) }}</span>
+    <section class="mcpd-mobile-map-panel" aria-label="MCLB Albany installation map">
+      <div class="mcpd-mobile-map-head">
+        <span class="mcpd-mobile-map-pin-badge">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+        </span>
+        <div class="mcpd-mobile-map-title">
+          <strong>MCLB Albany</strong>
+          <span>Installation Map &mdash; Satellite View</span>
+        </div>
+        <div class="mcpd-mobile-map-layer-row" id="mcpd-mobile-layer-toggle"></div>
       </div>
-      <a href="{{ url_for('mobile.officer_stats') }}">View Stats</a>
+      <div class="mcpd-mobile-map-canvas" id="mcpd-mobile-map" role="img" aria-label="Satellite installation map of MCLB Albany, Georgia"></div>
+      <div class="mcpd-mobile-map-footer">
+        814 Radford Blvd &bull; Albany, GA 31704 &bull; DSN 460-1110
+      </div>
     </section>
 
-    <section class="mcpd-mobile-officer-panel">
-      <div>
-        <strong>Contact Info</strong>
-        <span>{{ user.phone_number or 'Phone not set' }}{% if user.email %} / {{ user.email }}{% endif %}</span>
+    <!-- GPS Navigation panel -->
+    <div class="mcpd-mobile-nav-panel" id="mcpd-nav-panel">
+      <p class="mcpd-mobile-nav-title">Navigate to Location</p>
+      <div class="mcpd-mobile-nav-dest-list" id="mcpd-nav-dest-list"></div>
+      <div class="mcpd-mobile-nav-info" id="mcpd-nav-info">
+        <div class="mcpd-mobile-nav-dest-name" id="mcpd-nav-dest-name"></div>
+        <div class="mcpd-mobile-nav-info-row">
+          <div class="mcpd-mobile-nav-stat">
+            <strong id="mcpd-nav-dist">--</strong>
+            <span id="mcpd-nav-dist-unit">ft</span>
+          </div>
+          <div class="mcpd-mobile-nav-stat">
+            <strong id="mcpd-nav-bearing">--</strong>
+            <span>direction</span>
+          </div>
+          <div class="mcpd-mobile-nav-stat">
+            <strong id="mcpd-nav-eta">--</strong>
+            <span>min walk</span>
+          </div>
+        </div>
+        <div class="mcpd-mobile-nav-status" id="mcpd-nav-status">Locating your position&hellip;</div>
       </div>
-      <a href="{{ url_for('mobile.officer_contact') }}">Edit</a>
-    </section>
+      <div class="mcpd-mobile-nav-gps-error" id="mcpd-nav-gps-error"></div>
+      <div class="mcpd-mobile-nav-actions">
+        <button class="mcpd-mobile-nav-go-btn" id="mcpd-nav-go-btn" type="button">Find My Location &amp; Navigate</button>
+        <button class="mcpd-mobile-nav-stop-btn" id="mcpd-nav-stop-btn" type="button">Stop</button>
+      </div>
+    </div>
 
   </main>
 
   {% set mobile_active_tab = 'home' %}
   {% include 'partials/mobile_tab_bar.html' %}
+
+<!-- Mobile fullscreen map modal -->
+<div class="mcpd-map-fullscreen-overlay" id="mcpd-mobile-fs-overlay" role="dialog" aria-modal="true" aria-label="Expanded installation map">
+  <div class="mcpd-map-fullscreen-inner">
+    <div class="mcpd-map-fullscreen-header">
+      <span class="mcpd-map-fullscreen-title">MCLB Albany — Installation Map</span>
+      <div id="mcpd-mobile-fs-layer-btn" class="mcpd-map-fullscreen-layer-btn"></div>
+      <button class="mcpd-map-fullscreen-close" id="mcpd-mobile-fs-close" aria-label="Close map">&times;</button>
+    </div>
+    <div class="mcpd-map-fullscreen-canvas" id="mcpd-mobile-fs-map"></div>
+  </div>
 </div>
+</div>
+{% endblock %}
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='vendor/leaflet.min.js', v='1.9.4') }}"></script>
+<script>
+(function () {
+  var el = document.getElementById('mcpd-mobile-map');
+  var toggleEl = document.getElementById('mcpd-mobile-layer-toggle');
+  if (!el || typeof L === 'undefined') return;
+
+  var BASE_CENTER = [31.5752, -84.0630];
+  var BASE_BOUNDS = L.latLngBounds([31.558, -84.098], [31.598, -84.035]);
+  var isDark = function () { return document.body.getAttribute('data-theme') === 'dark'; };
+  var activeMode = 'satellite';
+
+  var map = L.map(el, {
+    center: BASE_CENTER,
+    zoom: 16,
+    minZoom: 13,
+    maxBounds: BASE_BOUNDS,
+    maxBoundsViscosity: 1.0,
+    scrollWheelZoom: true,
+    zoomControl: false,
+    attributionControl: true,
+  });
+  L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+  var esriAttrib = 'Tiles &copy; <a href="https://www.esri.com" target="_blank" rel="noopener">Esri</a>';
+  var osmAttrib  = '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OSM</a> &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>';
+
+  var satelliteLayer = L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    { attribution: esriAttrib, maxZoom: 20 }
+  );
+  // Transparent labels overlay: street names, building numbers, place labels
+  map.createPane('labelsPane');
+  map.getPane('labelsPane').style.zIndex = 450;
+  map.getPane('labelsPane').style.pointerEvents = 'none';
+  var labelsLayer = L.tileLayer(
+    'https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png',
+    { attribution: osmAttrib, subdomains: 'abcd', maxZoom: 20, pane: 'labelsPane' }
+  );
+  var streetLayer     = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: osmAttrib, subdomains: 'abcd', maxZoom: 20 });
+  var streetDarkLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',  { attribution: osmAttrib, subdomains: 'abcd', maxZoom: 20 });
+
+  satelliteLayer.addTo(map);
+  labelsLayer.addTo(map);
+
+  // ── Handbook building-number overlays ────────────────────────────
+  var OVERLAY_BOUNDS_OV = [[31.558, -84.098], [31.598, -84.035]];
+  var OVERLAY_BOUNDS_DT = [[31.560, -84.082], [31.584, -84.049]];
+  var mbHbOv = L.imageOverlay('{{ url_for("static", filename="images/base_map_overview.jpg") }}', OVERLAY_BOUNDS_OV, { opacity: 0.55, interactive: false });
+  var mbHbDt = L.imageOverlay('{{ url_for("static", filename="images/base_map_detail.jpg") }}',   OVERLAY_BOUNDS_DT, { opacity: 0.65, interactive: false });
+  var mbHbOn = false;
+
+  var markers = [];
+  var LOCATIONS = [
+    { lat: 31.5709, lng: -84.0765, color: '#1667c7', name: 'Main Gate (Gate 1)', detail: 'Radford Blvd primary entry — visitor control & DBIDS' },
+    { lat: 31.5748, lng: -84.0730, color: '#c53030', name: 'PMO / Police', detail: 'Provost Marshal Office — dispatch & police ops' },
+    { lat: 31.5770, lng: -84.0640, color: '#0f766e', name: 'Headquarters', detail: 'CO, XO, and command staff sections' },
+    { lat: 31.5760, lng: -84.0700, color: '#d97706', name: 'Gate 2', detail: 'Industrial / commercial vehicle access' },
+  ];
+
+  function pinIcon(color) {
+    return L.divIcon({
+      html: '<div style="width:24px;height:30px;color:' + color + ';filter:drop-shadow(0 2px 3px rgba(0,0,0,0.45))">' +
+            '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>' +
+            '</div>',
+      className: '',
+      iconSize: [24, 30],
+      iconAnchor: [12, 30],
+      popupAnchor: [0, -34],
+    });
+  }
+
+  function addMarkers() {
+    markers.forEach(function (m) { map.removeLayer(m); });
+    markers = [];
+    LOCATIONS.forEach(function (loc) {
+      var m = L.marker([loc.lat, loc.lng], { icon: pinIcon(loc.color) })
+        .addTo(map)
+        .bindPopup('<div class="mcpd-map-popup"><strong>' + loc.name + '</strong><br>' + loc.detail + '</div>', { maxWidth: 200 })
+        .bindTooltip(loc.name, { permanent: true, direction: 'top', offset: [0, -28], className: 'mcpd-map-label' });
+      markers.push(m);
+    });
+  }
+
+  // Fullscreen expand control
+  var ExpandControl = L.Control.extend({
+    onAdd: function () {
+      var btn = L.DomUtil.create('button', 'mcpd-map-expand-btn');
+      btn.title = 'Expand map';
+      btn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>';
+      L.DomEvent.on(btn, 'click', function (e) {
+        L.DomEvent.stopPropagation(e);
+        openMobileFs();
+      });
+      return btn;
+    }
+  });
+  new ExpandControl({ position: 'topleft' }).addTo(map);
+
+  function btnStyle(active) {
+    return 'border:none;font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;cursor:pointer;background:' +
+      (active ? '#1667c7' : 'transparent') + ';color:' + (active ? '#fff' : '#334155');
+  }
+
+  function renderToggle() {
+    if (!toggleEl) return;
+    toggleEl.innerHTML =
+      '<button style="' + btnStyle(activeMode === 'satellite') + '">SAT</button>' +
+      '<button style="' + btnStyle(activeMode === 'street') + '">STR</button>' +
+      '<button style="' + btnStyle(mbHbOn) + '" title="Handbook building numbers">BLDG</button>';
+    toggleEl.children[0].onclick = function () { setLayer('satellite'); };
+    toggleEl.children[1].onclick = function () { setLayer('street'); };
+    toggleEl.children[2].onclick = function () { toggleMbHb(); };
+  }
+
+  function toggleMbHb() {
+    mbHbOn = !mbHbOn;
+    if (mbHbOn) { mbHbOv.addTo(map); mbHbDt.addTo(map); }
+    else { if (map.hasLayer(mbHbOv)) map.removeLayer(mbHbOv); if (map.hasLayer(mbHbDt)) map.removeLayer(mbHbDt); }
+    addMarkers();
+    renderToggle();
+  }
+
+  function setLayer(mode) {
+    map.eachLayer(function (l) { if (l.options && l.options.attribution !== undefined) map.removeLayer(l); });
+    activeMode = mode;
+    if (mode === 'satellite') { satelliteLayer.addTo(map); labelsLayer.addTo(map); }
+    else (isDark() ? streetDarkLayer : streetLayer).addTo(map);
+    if (mbHbOn) { mbHbOv.addTo(map); mbHbDt.addTo(map); }
+    addMarkers();
+    renderToggle();
+  }
+
+  addMarkers();
+  renderToggle();
+
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('[data-theme-toggle]')) return;
+    setTimeout(function () {
+      if (activeMode === 'street') setLayer('street');
+      if (fsMobileActiveMode === 'street') setFsMobileLayer('street');
+    }, 80);
+  });
+
+  // ── Mobile fullscreen map ────────────────────────────────────────
+  var mobileFs        = document.getElementById('mcpd-mobile-fs-overlay');
+  var mobileFsMapEl   = document.getElementById('mcpd-mobile-fs-map');
+  var mobileFsClose   = document.getElementById('mcpd-mobile-fs-close');
+  var mobileFsToggle  = document.getElementById('mcpd-mobile-fs-layer-btn');
+  var fsMobileMap     = null;
+  var fsMobileInited  = false;
+  var fsMobileActiveMode = 'satellite';
+  var fsMobileMarkers = [];
+
+  function initFsMobileMap() {
+    if (fsMobileInited) return;
+    fsMobileInited = true;
+    var fsSat = L.tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      { attribution: esriAttrib, maxZoom: 20 }
+    );
+    fsMobileMap = L.map(mobileFsMapEl, {
+      center: BASE_CENTER,
+      zoom: 16,
+      minZoom: 13,
+      maxBounds: BASE_BOUNDS,
+      maxBoundsViscosity: 1.0,
+      scrollWheelZoom: true,
+      zoomControl: true,
+      attributionControl: true,
+    });
+    fsMobileMap.createPane('labelsPane');
+    fsMobileMap.getPane('labelsPane').style.zIndex = 450;
+    fsMobileMap.getPane('labelsPane').style.pointerEvents = 'none';
+    var fsLbl = L.tileLayer(
+      'https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png',
+      { attribution: osmAttrib, subdomains: 'abcd', maxZoom: 20, pane: 'labelsPane' }
+    );
+    var fsStr  = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: osmAttrib, subdomains: 'abcd', maxZoom: 20 });
+    var fsDark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',  { attribution: osmAttrib, subdomains: 'abcd', maxZoom: 20 });
+
+    fsSat.addTo(fsMobileMap);
+    fsLbl.addTo(fsMobileMap);
+
+    var fsHbOv = L.imageOverlay('{{ url_for("static", filename="images/base_map_overview.jpg") }}', OVERLAY_BOUNDS_OV, { opacity: 0.55, interactive: false });
+    var fsHbDt = L.imageOverlay('{{ url_for("static", filename="images/base_map_detail.jpg") }}',   OVERLAY_BOUNDS_DT, { opacity: 0.65, interactive: false });
+    var fsHbOn = mbHbOn;
+    if (fsHbOn) { fsHbOv.addTo(fsMobileMap); fsHbDt.addTo(fsMobileMap); }
+
+    addFsMobileMarkers();
+    renderFsMobileToggle();
+
+    function addFsMobileMarkers() {
+      fsMobileMarkers.forEach(function (m) { fsMobileMap.removeLayer(m); });
+      fsMobileMarkers = [];
+      LOCATIONS.forEach(function (loc) {
+        var m = L.marker([loc.lat, loc.lng], { icon: pinIcon(loc.color) })
+          .addTo(fsMobileMap)
+          .bindPopup('<div class="mcpd-map-popup"><strong>' + loc.name + '</strong><br>' + loc.detail + '</div>', { maxWidth: 240 })
+          .bindTooltip(loc.name, { permanent: true, direction: 'top', offset: [0, -28], className: 'mcpd-map-label' });
+        fsMobileMarkers.push(m);
+      });
+    }
+
+    function toggleFsHb() {
+      fsHbOn = !fsHbOn;
+      if (fsHbOn) { fsHbOv.addTo(fsMobileMap); fsHbDt.addTo(fsMobileMap); }
+      else { if (fsMobileMap.hasLayer(fsHbOv)) fsMobileMap.removeLayer(fsHbOv); if (fsMobileMap.hasLayer(fsHbDt)) fsMobileMap.removeLayer(fsHbDt); }
+      addFsMobileMarkers();
+      renderFsMobileToggle();
+    }
+
+    function setFsMobileLayer(mode) {
+      fsMobileMap.eachLayer(function (l) { if (l.options && l.options.attribution !== undefined) fsMobileMap.removeLayer(l); });
+      fsMobileActiveMode = mode;
+      if (mode === 'satellite') { fsSat.addTo(fsMobileMap); fsLbl.addTo(fsMobileMap); }
+      else (isDark() ? fsDark : fsStr).addTo(fsMobileMap);
+      if (fsHbOn) { fsHbOv.addTo(fsMobileMap); fsHbDt.addTo(fsMobileMap); }
+      addFsMobileMarkers();
+      renderFsMobileToggle();
+    }
+    window._setFsMobileLayer = setFsMobileLayer;
+
+    function renderFsMobileToggle() {
+      if (!mobileFsToggle) return;
+      mobileFsToggle.innerHTML =
+        '<button id="mfs-sat" class="' + (fsMobileActiveMode === 'satellite' ? 'is-active' : '') + '">Satellite</button>' +
+        '<button id="mfs-str" class="' + (fsMobileActiveMode === 'street'    ? 'is-active' : '') + '">Street</button>' +
+        '<button id="mfs-bldg" class="' + (fsHbOn ? 'is-active' : '') + '" title="Handbook building numbers">Bldg #s</button>';
+      document.getElementById('mfs-sat').onclick  = function () { setFsMobileLayer('satellite'); };
+      document.getElementById('mfs-str').onclick  = function () { setFsMobileLayer('street'); };
+      document.getElementById('mfs-bldg').onclick = function () { toggleFsHb(); };
+    }
+    window._renderFsMobileToggle = renderFsMobileToggle;
+  }
+
+  function setFsMobileLayer(mode) { if (window._setFsMobileLayer) window._setFsMobileLayer(mode); }
+
+  function openMobileFs() {
+    mobileFs.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+    setTimeout(function () {
+      initFsMobileMap();
+      if (fsMobileMap) {
+        fsMobileMap.invalidateSize();
+        var bounds = LOCATIONS.map(function (l) { return [l.lat, l.lng]; });
+        fsMobileMap.fitBounds(bounds, { padding: [50, 50], maxZoom: 17 });
+      }
+    }, 80);
+  }
+
+  function closeMobileFs() {
+    mobileFs.classList.remove('is-open');
+    document.body.style.overflow = '';
+  }
+
+  if (mobileFsClose) mobileFsClose.addEventListener('click', closeMobileFs);
+  if (mobileFs) mobileFs.addEventListener('click', function (e) {
+    if (e.target === mobileFs) closeMobileFs();
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeMobileFs(); });
+}());
+</script>
+<script>
+// GPS Navigation panel
+(function () {
+  var NAV_LOCATIONS = [
+    { lat: 31.5709, lng: -84.0765, name: 'Main Gate', detail: 'Gate 1 — Radford Blvd' },
+    { lat: 31.5748, lng: -84.0730, name: 'PMO / Police', detail: 'Provost Marshal Office' },
+    { lat: 31.5770, lng: -84.0640, name: 'Headquarters', detail: 'CO & Command Staff' },
+    { lat: 31.5760, lng: -84.0700, name: 'Gate 2', detail: 'Industrial / Commercial Access' },
+  ];
+
+  var destList   = document.getElementById('mcpd-nav-dest-list');
+  var navInfo    = document.getElementById('mcpd-nav-info');
+  var destName   = document.getElementById('mcpd-nav-dest-name');
+  var distEl     = document.getElementById('mcpd-nav-dist');
+  var distUnit   = document.getElementById('mcpd-nav-dist-unit');
+  var bearingEl  = document.getElementById('mcpd-nav-bearing');
+  var etaEl      = document.getElementById('mcpd-nav-eta');
+  var statusEl   = document.getElementById('mcpd-nav-status');
+  var goBtn      = document.getElementById('mcpd-nav-go-btn');
+  var stopBtn    = document.getElementById('mcpd-nav-stop-btn');
+  var gpsError   = document.getElementById('mcpd-nav-gps-error');
+  var mapEl      = document.getElementById('mcpd-mobile-map');
+
+  var selectedDest = null;
+  var watchId      = null;
+  var posMarker    = null;
+  var routeLine    = null;
+  var navMap       = null;
+
+  // Build destination chips
+  NAV_LOCATIONS.forEach(function (loc, idx) {
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'mcpd-mobile-nav-dest-btn';
+    btn.textContent = loc.name;
+    btn.dataset.idx = idx;
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.mcpd-mobile-nav-dest-btn').forEach(function (b) { b.classList.remove('is-selected'); });
+      btn.classList.add('is-selected');
+      selectedDest = loc;
+      destName.textContent = loc.name + ' — ' + loc.detail;
+    });
+    destList.appendChild(btn);
+  });
+
+  // Select first by default
+  if (destList.children.length > 0) {
+    destList.children[0].click();
+  }
+
+  function toRad(deg) { return deg * Math.PI / 180; }
+  function toDeg(rad) { return rad * 180 / Math.PI; }
+
+  function haversineM(lat1, lng1, lat2, lng2) {
+    var R = 6371000;
+    var dLat = toRad(lat2 - lat1);
+    var dLng = toRad(lng2 - lng1);
+    var a = Math.sin(dLat/2)*Math.sin(dLat/2) +
+            Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLng/2)*Math.sin(dLng/2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  }
+
+  function bearing(lat1, lng1, lat2, lng2) {
+    var dLng = toRad(lng2 - lng1);
+    var y = Math.sin(dLng) * Math.cos(toRad(lat2));
+    var x = Math.cos(toRad(lat1))*Math.sin(toRad(lat2)) - Math.sin(toRad(lat1))*Math.cos(toRad(lat2))*Math.cos(dLng);
+    var brng = (toDeg(Math.atan2(y, x)) + 360) % 360;
+    var dirs = ['N','NE','E','SE','S','SW','W','NW'];
+    return dirs[Math.round(brng / 45) % 8];
+  }
+
+  function formatDist(meters) {
+    var feet = meters * 3.28084;
+    if (feet < 1000) return { val: Math.round(feet), unit: 'ft' };
+    var miles = (feet / 5280).toFixed(2);
+    return { val: miles, unit: 'mi' };
+  }
+
+  function getMap() {
+    // Access the already-initialized Leaflet map on the mobile map canvas
+    // We look for the Leaflet map instance via the _leaflet_id property
+    if (navMap) return navMap;
+    if (mapEl && mapEl._leaflet_id) {
+      // Leaflet stores map instances by element id
+      for (var id in L.Map._instances || {}) {
+        if (L.Map._instances[id].getContainer() === mapEl) {
+          navMap = L.Map._instances[id];
+          return navMap;
+        }
+      }
+    }
+    return null;
+  }
+
+  function updateNav(pos) {
+    if (!selectedDest) return;
+    var lat = pos.coords.latitude;
+    var lng = pos.coords.longitude;
+    var distM = haversineM(lat, lng, selectedDest.lat, selectedDest.lng);
+    var d = formatDist(distM);
+    var brng = bearing(lat, lng, selectedDest.lat, selectedDest.lng);
+    var etaMins = Math.ceil(distM / 83); // ~83 m/min walking pace
+
+    distEl.textContent = d.val;
+    distUnit.textContent = d.unit;
+    bearingEl.textContent = brng;
+    etaEl.textContent = etaMins < 1 ? '<1' : etaMins;
+    statusEl.textContent = 'Live position active — accuracy ±' + Math.round(pos.coords.accuracy) + ' m';
+    navInfo.classList.add('is-active');
+    gpsError.classList.remove('is-visible');
+
+    var m = getMap();
+    if (m) {
+      var latlng = [lat, lng];
+      if (posMarker) {
+        posMarker.setLatLng(latlng);
+      } else {
+        posMarker = L.circleMarker(latlng, {
+          radius: 8,
+          fillColor: '#1667c7',
+          color: '#fff',
+          weight: 2.5,
+          fillOpacity: 1,
+        }).addTo(m).bindPopup('Your location');
+      }
+      if (routeLine) m.removeLayer(routeLine);
+      routeLine = L.polyline([[lat, lng], [selectedDest.lat, selectedDest.lng]], {
+        color: '#1667c7',
+        weight: 3,
+        dashArray: '6 8',
+        opacity: 0.85,
+      }).addTo(m);
+      m.fitBounds([[lat, lng], [selectedDest.lat, selectedDest.lng]], { padding: [30, 30] });
+    }
+  }
+
+  function stopNav() {
+    if (watchId !== null) {
+      navigator.geolocation.clearWatch(watchId);
+      watchId = null;
+    }
+    var m = getMap();
+    if (m) {
+      if (posMarker) { m.removeLayer(posMarker); posMarker = null; }
+      if (routeLine)  { m.removeLayer(routeLine);  routeLine = null; }
+    }
+    navInfo.classList.remove('is-active');
+    stopBtn.classList.remove('is-visible');
+    goBtn.textContent = 'Find My Location & Navigate';
+    statusEl.textContent = 'Locating your position…';
+  }
+
+  function startNav() {
+    if (!selectedDest) {
+      gpsError.textContent = 'Please select a destination first.';
+      gpsError.classList.add('is-visible');
+      return;
+    }
+    if (!navigator.geolocation) {
+      gpsError.textContent = 'Geolocation is not supported on this device.';
+      gpsError.classList.add('is-visible');
+      return;
+    }
+    gpsError.classList.remove('is-visible');
+    goBtn.textContent = 'Navigating…';
+    stopBtn.classList.add('is-visible');
+    navInfo.classList.add('is-active');
+    statusEl.textContent = 'Acquiring GPS signal…';
+
+    watchId = navigator.geolocation.watchPosition(
+      updateNav,
+      function (err) {
+        var msg = 'GPS error';
+        if (err.code === 1) msg = 'Location access denied. Enable location permissions for this site.';
+        else if (err.code === 2) msg = 'Position unavailable. Check device GPS.';
+        else if (err.code === 3) msg = 'GPS timed out. Try again.';
+        gpsError.textContent = msg;
+        gpsError.classList.add('is-visible');
+        statusEl.textContent = 'GPS unavailable.';
+      },
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
+    );
+  }
+
+  if (goBtn) goBtn.addEventListener('click', startNav);
+  if (stopBtn) stopBtn.addEventListener('click', stopNav);
+}());
+</script>
 {% endblock %}

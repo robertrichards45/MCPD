@@ -672,6 +672,28 @@ def login():
     return redirect(_resolve_post_login_redirect())
 
 
+@bp.route('/login/demo', methods=['GET'])
+def demo_login():
+    from flask import current_app, redirect, url_for
+    from flask_login import login_user
+    if not current_app.config.get('DEMO_ENABLED'):
+        return redirect(url_for('auth.login'))
+    demo_username = current_app.config.get('DEMO_USERNAME', '')
+    demo_password = current_app.config.get('DEMO_PASSWORD', '')
+    if not demo_username or not demo_password:
+        return redirect(url_for('auth.login'))
+    user = _user_by_login_identifier(demo_username)
+    if not user or not user.check_password(demo_password):
+        return redirect(url_for('auth.login'))
+    if not user.active or user.pending_approval:
+        return redirect(url_for('auth.login'))
+    login_user(user)
+    session.pop('acting_role', None)
+    session.pop('acting_watch_commander_id', None)
+    _safe_audit(actor_id=user.id, action='demo_login', details='Demo login')
+    return redirect(url_for('dashboard.dashboard'))
+
+
 @bp.route('/login/reset-device', methods=['GET'])
 def reset_login_device():
     response = current_app.response_class(

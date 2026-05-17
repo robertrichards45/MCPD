@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block body %}
-<div class="app-shell">
+<div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
   <div class="page-wrap">
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -11,7 +11,7 @@
       {% endif %}
     {% endwith %}
 
-    <div class="card p-3 mb-3 page-head d-flex justify-content-between align-items-center">
+    <div class="ops-head-card mb-3">
       <div>
         <h2 class="mb-1">{{ module_title }}</h2>
         <p class="text-muted mb-0">Phone-friendly inspection entry with staged signatures and daily organization.</p>
@@ -19,7 +19,7 @@
       <div class="text-muted small">Last updated: {{ last_updated }}</div>
     </div>
 
-    <details class="card p-3 mb-3 collapse-card" open>
+    <details class="ops-panel mb-3 collapse-card" open>
       <summary>Day Controls</summary>
       <form class="row g-2" method="get" action="{{ url_for('ops_modules.vehicle_inspections') }}">
         <div class="col-md-4">
@@ -41,7 +41,7 @@
       </form>
     </details>
 
-    <details class="card p-3 mb-3 collapse-card">
+    <details class="ops-panel mb-3 collapse-card">
       <summary>Source Inspection Sheets</summary>
       <div class="d-flex justify-content-between align-items-center mb-2">
         <div>
@@ -66,7 +66,7 @@
 
     <div class="row">
       <div class="col-lg-6">
-        <details class="card p-3 collapse-card" {% if editing_inspection %}open{% else %}open{% endif %}>
+        <details class="ops-panel collapse-card" {% if editing_inspection %}open{% else %}open{% endif %}>
           <summary>{{ 'Edit Inspection' if editing_inspection else 'New Inspection' }}</summary>
           <h5>{{ 'Edit Inspection' if editing_inspection else 'New Inspection' }}</h5>
           <form method="post" action="{{ url_for('ops_modules.vehicle_inspection_save') }}">
@@ -149,7 +149,7 @@
         </details>
 
         {% if editing_inspection %}
-          <details class="card p-3 mt-3 collapse-card" open>
+          <details class="ops-panel mt-3 collapse-card" open>
             <summary>Signature Pad</summary>
             <h5>Signature Pad</h5>
             <p class="text-muted">Use finger or mouse to sign the selected inspection.</p>
@@ -191,7 +191,7 @@
       </div>
 
       <div class="col-lg-6">
-        <details class="card p-3 collapse-card" open>
+        <details class="ops-panel collapse-card" open>
           <summary>Daily Inspection Log</summary>
           <div class="d-flex justify-content-between align-items-center mb-2">
             <h5 class="mb-0">Daily Inspection Log</h5>

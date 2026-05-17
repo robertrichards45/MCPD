@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block body %}
-<div class="app-shell">
+<div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
   <div class="page-wrap">
 
@@ -26,7 +26,7 @@
       </div>
     </section>
 
-    <div class="card p-3 mb-3 ops-search-shell">
+    <div class="ops-panel mb-3 ops-search-shell">
       <form method="get" action="{{ url_for('bolo.bolo_board') }}">
         <div class="row g-2 align-items-end">
           <div class="col-lg-6">
@@ -88,7 +88,7 @@
       {% endfor %}
     </div>
     {% else %}
-    <div class="card p-4 text-center text-muted">
+    <div class="ops-panel text-center text-muted">
       {% if q %}No BOLOs matching "{{ q }}".{% elif status_filter == 'ACTIVE' %}No active BOLOs at this time.{% else %}No {{ status_filter | lower }} BOLOs found.{% endif %}
     </div>
     {% endif %}

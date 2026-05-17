@@ -1,14 +1,14 @@
 {% extends 'base.html' %}
 {% block body %}
-<div class="app-shell">
+<div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
   <div class="page-wrap">
-    <div class="card p-3 mb-3 page-head">
+    <div class="ops-head-card mb-3">
       <h2 class="mb-1">Upload Form</h2>
       <p class="text-muted mb-0">Upload one or more forms and review detected metadata before save.</p>
     </div>
     {% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
-    <div class="card p-3">
+    <div class="ops-panel">
     <form method="post" enctype="multipart/form-data" class="search-panel">
       <div class="mb-3"><label class="form-label text-dark">Notes</label><textarea class="form-control" name="notes"></textarea></div>
       <div class="mb-3">
@@ -18,7 +18,7 @@
       </div>
       <div class="mb-3" id="forms-upload-preview" style="display:none;">
         <label class="form-label text-dark">Upload Preview</label>
-        <div class="card p-2">
+        <div class="ops-panel">
           <div id="forms-upload-preview-list" class="small text-muted"></div>
         </div>
       </div>
@@ -70,7 +70,7 @@
           return '<option value="' + escapeHtml(option) + '"' + selected + '>' + escapeHtml(option) + '</option>';
         }).join('');
         return (
-          '<div class="card mb-2">' +
+          '<div class="ops-panel mb-2">' +
             '<div><strong>' + safeName + '</strong></div>' +
             '<div class="mt-2"><label class="small">Title</label><input class="form-control" name="file_title" value="' + title + '" /></div>' +
             '<div class="mt-2"><label class="small">Category</label><select class="form-control" name="file_category">' + options + '</select></div>' +

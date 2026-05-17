@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block body %}
-<div class="app-shell">
+<div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
   <div class="page-wrap manager-page-wrap call-types-page">
     <section class="mission-hero manager-hero call-types-hero mb-3">
@@ -16,7 +16,7 @@
     </section>
 
     <div class="call-types-layout">
-      <aside class="card call-types-sidebar">
+      <aside class="ops-panel call-types-sidebar">
         <div class="call-types-sidebar-head">
           <div>
             <div class="eyebrow">Mobile Flow</div>
@@ -43,7 +43,7 @@
         </div>
       </aside>
 
-      <section class="card call-types-editor">
+      <section class="ops-panel call-types-editor">
         <form method="post">
           <input type="hidden" name="old_slug" value="{{ edit_rule.slug if edit_rule else '' }}">
           <div class="call-types-editor-head">

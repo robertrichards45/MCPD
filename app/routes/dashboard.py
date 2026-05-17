@@ -1,5 +1,6 @@
 import json
 import logging
+from datetime import datetime
 
 from flask import Blueprint, flash, render_template, redirect, url_for, make_response, request
 from flask_login import login_required, current_user
@@ -14,7 +15,7 @@ from ..models import (
     SavedForm,
     TrainingRoster,
 )
-from ..permissions import can_access_builder_mode
+from ..permissions import can_access_assistant_operations, can_access_builder_mode
 
 bp = Blueprint('dashboard', __name__)
 _log = logging.getLogger(__name__)
@@ -22,6 +23,7 @@ _log = logging.getLogger(__name__)
 DEFAULT_DASHBOARD_CARD_IDS = [
     'law_lookup',
     'start_report',
+    'dispatch_command_center',
     'forms_library',
     'orders_memos',
     'training',
@@ -157,6 +159,13 @@ def _dashboard_card_catalog():
             'endpoint': 'reports.new_report',
         },
         {
+            'id': 'dispatch_command_center',
+            'label': 'Dispatch / Command Center',
+            'description': 'Live shift, unit status, active incidents, and radio-style command view',
+            'icon': 'orders',
+            'endpoint': 'dashboard.dispatch_command_center',
+        },
+        {
             'id': 'forms_library',
             'label': 'Forms Library',
             'description': 'Fill out, save, and manage forms',
@@ -238,6 +247,13 @@ def _dashboard_card_catalog():
     if current_user.can_manage_team():
         cards.extend([
             {
+                'id': 'assistant_operations_tracker',
+                'label': 'Assistant Ops Tracker',
+                'description': 'Due-outs, training, inspections, and projects',
+                'icon': 'orders',
+                'endpoint': 'assistant_operations.dashboard',
+            },
+            {
                 'id': 'watch_commander_hub',
                 'label': 'Watch Commander Hub',
                 'description': 'Shift, reports, approvals, officers, and briefing',
@@ -266,6 +282,14 @@ def _dashboard_card_catalog():
                 'endpoint': 'qual_tracker.tracker_readiness',
             },
         ])
+    elif can_access_assistant_operations(current_user):
+        cards.append({
+            'id': 'assistant_operations_tracker',
+            'label': 'Assistant Ops Tracker',
+            'description': 'Due-outs, training, inspections, and projects',
+            'icon': 'orders',
+            'endpoint': 'assistant_operations.dashboard',
+        })
     return cards
 
 
@@ -309,12 +333,52 @@ def _dashboard_panel_catalog(snapshot):
             'view_all_endpoint': 'watch_commander.dashboard',
             'supervisor_only': True,
             'items': [
+                {'label': 'Dispatch / Command Center', 'detail': 'Live units, active incidents, and radio-style operational view', 'endpoint': 'dashboard.dispatch_command_center'},
                 {'label': 'Watch Commander Hub', 'detail': 'Shift supervision dashboard', 'endpoint': 'watch_commander.dashboard'},
+                {'label': 'Assistant Ops Tracker', 'detail': 'Due-outs, training, inspections, and projects', 'endpoint': 'assistant_operations.dashboard'},
                 {'label': 'Approvals Center', 'detail': 'Review pending supervisor actions', 'endpoint': 'watch_commander.approvals'},
                 {'label': 'Shift Management', 'detail': 'Create shifts and assign officers', 'endpoint': 'watch_commander.shift'},
             ],
         },
     ]
+
+
+def _dispatch_demo_context():
+    now = datetime.now().strftime('%H%M')
+    dispatch_summary = {
+        'current_time': now,
+        'shift_name': 'Alpha Shift Command Net',
+        'shift_status': 'Demo operational picture — sample data only',
+    }
+    dispatch_metrics = [
+        {'label': 'Units Available', 'value': '7', 'detail': 'Patrol / K-9 / CVI sample availability'},
+        {'label': 'Active Incidents', 'value': '3', 'detail': 'Open calls visible to command'},
+        {'label': 'Pending Reports', 'value': '5', 'detail': 'Awaiting supervisor review'},
+        {'label': 'Training Alerts', 'value': '4', 'detail': 'Due or overdue acknowledgements'},
+        {'label': 'BOLOs', 'value': '2', 'detail': 'Active command notices'},
+        {'label': 'Approvals', 'value': '6', 'detail': 'Reports, stats, and tasking'},
+    ]
+    unit_status = [
+        {'name': 'Patrol 1', 'assignment': 'Main Gate / Radford Blvd', 'status': 'Available', 'state_class': ''},
+        {'name': 'Patrol 2', 'assignment': 'Barracks parking lot larceny follow-up', 'status': 'On Call', 'state_class': 'busy'},
+        {'name': 'Desk Sgt', 'assignment': 'Report review queue', 'status': 'Monitoring', 'state_class': ''},
+        {'name': 'K-9 1', 'assignment': 'Available for sweep request', 'status': 'Ready', 'state_class': ''},
+        {'name': 'CVI 1', 'assignment': 'Commercial vehicle inspection lane', 'status': 'Busy', 'state_class': 'busy'},
+        {'name': 'SRT Element', 'assignment': 'Training readiness status', 'status': 'Standby', 'state_class': ''},
+    ]
+    active_incidents = [
+        {'title': 'Larceny Report', 'detail': 'Barracks parking lot / report packet pending', 'priority': 'Routine', 'state_class': 'busy'},
+        {'title': 'Gate Access Issue', 'detail': 'Main Gate DBIDS verification request', 'priority': 'Monitor', 'state_class': ''},
+        {'title': 'BOLO Acknowledgement', 'detail': 'Two officers pending review acknowledgement', 'priority': 'Action', 'state_class': 'alert'},
+    ]
+    radio_summary = 'Alpha Net: Patrol 2 handling larceny follow-up. Desk Sgt monitoring packet queue. K-9 and SRT remain available. Command Center view is sample data only; verify all operational facts before action.'
+    return {
+        'dispatch_summary': dispatch_summary,
+        'dispatch_metrics': dispatch_metrics,
+        'unit_status': unit_status,
+        'active_incidents': active_incidents,
+        'radio_summary': radio_summary,
+    }
 
 
 def _load_dashboard_preferences():
@@ -380,6 +444,19 @@ def dashboard():
     )
 
 
+@bp.route('/dispatch')
+@bp.route('/command-center')
+@login_required
+def dispatch_command_center():
+    return _no_store_response(
+        render_template(
+            'dispatch_command_center.html',
+            user=current_user,
+            **_dispatch_demo_context(),
+        )
+    )
+
+
 @bp.route('/dashboard/customize', methods=['GET', 'POST'])
 @login_required
 def customize_dashboard():
@@ -410,6 +487,7 @@ def customize_dashboard():
         return redirect(url_for('dashboard.dashboard'))
 
     return _no_store_response(render_template('dashboard_customize.html', user=current_user, **context))
+
 
 @bp.route('/cleo')
 @login_required

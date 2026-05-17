@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 {% block body %}
-<div class="app-shell">
+<div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
   <div class="page-wrap">
-    <div class="card p-3 mb-3 page-head">
+    <div class="ops-head-card mb-3">
       <h2 class="mb-1">Personnel Management</h2>
       <p class="text-muted mb-0">Website Controllers manage all personnel. Watch Commanders manage only their installation's officers.</p>
     </div>
@@ -15,7 +15,7 @@
 
     {# ── Pending Approvals ──────────────────────────────────────────── #}
     {% if pending_accounts %}
-    <div class="card p-3 mb-4 pending-approvals-card">
+    <div class="ops-panel mb-4 pending-approvals-card">
       <div class="d-flex align-items-center gap-2 mb-3">
         <span class="pending-badge-dot"></span>
         <h5 class="mb-0">Pending Account Requests</h5>
@@ -87,7 +87,7 @@
     {# ── Create / Update ────────────────────────────────────────────── #}
     <div class="row">
       <div class="col-md-6">
-        <details class="card p-3 mb-3 collapse-card" open>
+        <details class="ops-panel mb-3 collapse-card" open>
           <summary>Create User</summary>
           <div class="mt-2">
         <form method="post">
@@ -133,7 +133,7 @@
         </details>
       </div>
       <div class="col-md-6">
-        <details class="card p-3 mb-3 collapse-card" open>
+        <details class="ops-panel mb-3 collapse-card" open>
           <summary>Update / Reassign / Reset / Disable / Delete</summary>
           <div class="mt-2">
 
@@ -242,7 +242,7 @@
     </div>
 
     {# ── Current Personnel ──────────────────────────────────────────── #}
-    <details class="card p-3 collapse-card" open>
+    <details class="ops-panel collapse-card" open>
       <summary>Current Personnel</summary>
       <div class="table-responsive mt-2">
         <table class="table table-striped">

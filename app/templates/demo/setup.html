@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell mcpd-command-app demo-mode-app">
+  {% include 'partials/nav.html' %}
+  <main class="mcpd-command-main demo-main">
+    <section class="demo-hero">
+      <p class="eyebrow">Website Demonstration Mode</p>
+      <h1>Load MCPD Demo Data</h1>
+      <p>This loads fake demonstration data only. Do not use real PII. Demo reset removes only records marked as demo.</p>
+      <div class="demo-warning">DEMO MODE WARNING: sample users, reports, forms, law lookup examples, and workflow data are fake and for command demonstration/testing only.</div>
+      <form method="post" class="demo-actions">
+        <input type="hidden" name="csrf_token" value="{{ g.csrf_token }}">
+        <button class="btn btn-primary" type="submit">Load MCPD Demo Data</button>
+        <a class="btn btn-outline-secondary" href="{{ url_for('demo.dashboard') }}">Open Demo Dashboard</a>
+      </form>
+    </section>
+
+    <section class="demo-card-grid">
+      {% for label, value in counts.items() %}
+      <article class="demo-stat-card">
+        <span>{{ label.replace('_', ' ')|title }}</span>
+        <strong>{{ value }}</strong>
+      </article>
+      {% endfor %}
+    </section>
+  </main>
+</div>
+{% endblock %}

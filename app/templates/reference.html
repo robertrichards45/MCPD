@@ -1,16 +1,16 @@
 {% extends 'base.html' %}
 {% block body %}
-<div class="app-shell">
+<div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
   <div class="page-wrap">
-    <div class="card p-3 mb-3 page-head">
+    <div class="ops-head-card mb-3">
       <h2 class="mb-1">Reference</h2>
       <p class="text-muted mb-0">Fast operational checklists for common field tasks.</p>
     </div>
 
     <div class="results-list">
       {% for section in sections %}
-      <details class="card p-3 collapse-card" {% if loop.first %}open{% endif %}>
+      <details class="ops-panel collapse-card" {% if loop.first %}open{% endif %}>
         <summary>{{ section.title }}</summary>
         <ul class="mb-0">
           {% for item in section.items %}
