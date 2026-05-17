@@ -475,35 +475,112 @@
     zoomControl: true,
   });
 
+  // ── Schematic base map (100% offline — no tile server needed) ──
+  // Built-in SVG of MCLB Albany. Always renders regardless of network.
+  var BASE_BOUNDS = [[31.560, -84.085], [31.590, -84.048]];
+  var _svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 950">'
+    + '<defs><radialGradient id="vig" cx="50%" cy="50%" r="70%" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1000" y2="950"><stop offset="0%" stop-color="transparent"/><stop offset="100%" stop-color="#020c1b" stop-opacity="0.7"/></radialGradient></defs>'
+    // Base terrain
+    + '<rect width="1000" height="950" fill="#07111f"/>'
+    // Installation perimeter
+    + '<polygon points="140,720 230,650 270,610 310,490 390,360 445,270 545,225 695,250 800,305 825,445 790,580 730,690 615,760 410,790 275,770 195,735" fill="#0d1f38" stroke="#1a3a6a" stroke-width="2.5"/>'
+    // Green space / fields
+    + '<ellipse cx="490" cy="500" rx="120" ry="90" fill="#0a1e10" opacity="0.6"/>'
+    + '<ellipse cx="690" cy="390" rx="70" ry="55" fill="#0a1e10" opacity="0.5"/>'
+    // ── Roads ──
+    // Main entrance road: Main Gate → PMO
+    + '<line x1="230" y1="605" x2="324" y2="481" stroke="#1e3a6a" stroke-width="14" stroke-linecap="round"/>'
+    + '<line x1="230" y1="605" x2="324" y2="481" stroke="#2a5080" stroke-width="8" stroke-linecap="round"/>'
+    // PMO → Gate 2 (main east–west artery)
+    + '<line x1="324" y1="481" x2="405" y2="443" stroke="#1e3a6a" stroke-width="14" stroke-linecap="round"/>'
+    + '<line x1="324" y1="481" x2="405" y2="443" stroke="#2a5080" stroke-width="8" stroke-linecap="round"/>'
+    // Gate 2 → HQ
+    + '<line x1="405" y1="443" x2="568" y2="411" stroke="#1e3a6a" stroke-width="14" stroke-linecap="round"/>'
+    + '<line x1="405" y1="443" x2="568" y2="411" stroke="#2a5080" stroke-width="8" stroke-linecap="round"/>'
+    // HQ → MCX
+    + '<line x1="568" y1="411" x2="703" y2="538" stroke="#1a3460" stroke-width="10" stroke-linecap="round"/>'
+    + '<line x1="568" y1="411" x2="703" y2="538" stroke="#223d72" stroke-width="6" stroke-linecap="round"/>'
+    // PMO → North Gate (north perimeter)
+    + '<line x1="324" y1="481" x2="432" y2="317" stroke="#1a3460" stroke-width="10" stroke-linecap="round"/>'
+    + '<line x1="324" y1="481" x2="432" y2="317" stroke="#223d72" stroke-width="6" stroke-linecap="round"/>'
+    // North Gate → HQ
+    + '<line x1="432" y1="317" x2="568" y2="411" stroke="#1a3460" stroke-width="10" stroke-linecap="round"/>'
+    + '<line x1="432" y1="317" x2="568" y2="411" stroke="#223d72" stroke-width="6" stroke-linecap="round"/>'
+    // North Gate → Logistics
+    + '<line x1="432" y1="317" x2="730" y2="333" stroke="#192f55" stroke-width="8" stroke-linecap="round"/>'
+    + '<line x1="432" y1="317" x2="730" y2="333" stroke="#1e3a63" stroke-width="5" stroke-linecap="round"/>'
+    // HQ → Logistics
+    + '<line x1="568" y1="411" x2="730" y2="333" stroke="#192f55" stroke-width="7" stroke-linecap="round"/>'
+    // Chapel spur
+    + '<line x1="541" y1="570" x2="568" y2="411" stroke="#162840" stroke-width="5" stroke-linecap="round"/>'
+    // Zone A cross-road
+    + '<line x1="324" y1="481" x2="486" y2="523" stroke="#162840" stroke-width="5" stroke-linecap="round"/>'
+    + '<line x1="486" y1="523" x2="568" y2="411" stroke="#162840" stroke-width="5" stroke-linecap="round"/>'
+    // ── Buildings ──
+    // Main Gate guardhouse
+    + '<rect x="212" y="589" width="38" height="33" rx="3" fill="#162d52"/>'
+    + '<rect x="210" y="587" width="42" height="37" rx="4" fill="none" stroke="#2a5a9a" stroke-width="1.5"/>'
+    + '<text x="231" y="641" text-anchor="middle" fill="#60a0d0" font-family="Arial,sans-serif" font-size="10.5" font-weight="bold" letter-spacing="0.5">MAIN GATE</text>'
+    // PMO / Dispatch
+    + '<rect x="303" y="460" width="48" height="42" rx="3" fill="#1a3060"/>'
+    + '<rect x="301" y="458" width="52" height="46" rx="4" fill="none" stroke="#3a7acc" stroke-width="2"/>'
+    + '<text x="327" y="478" text-anchor="middle" fill="#93c5fd" font-family="Arial,sans-serif" font-size="11" font-weight="bold">PMO</text>'
+    + '<text x="327" y="492" text-anchor="middle" fill="#6090b8" font-family="Arial,sans-serif" font-size="8.5">DISPATCH</text>'
+    // Gate 2
+    + '<rect x="387" y="428" width="36" height="30" rx="3" fill="#162d52"/>'
+    + '<rect x="385" y="426" width="40" height="34" rx="3" fill="none" stroke="#2a5a9a" stroke-width="1.5"/>'
+    + '<text x="405" y="476" text-anchor="middle" fill="#60a0d0" font-family="Arial,sans-serif" font-size="10" font-weight="bold">GATE 2</text>'
+    // North Gate
+    + '<rect x="414" y="300" width="37" height="30" rx="3" fill="#162d52"/>'
+    + '<rect x="412" y="298" width="41" height="34" rx="3" fill="none" stroke="#2a5a9a" stroke-width="1.5"/>'
+    + '<text x="432" y="349" text-anchor="middle" fill="#60a0d0" font-family="Arial,sans-serif" font-size="10" font-weight="bold">N. GATE</text>'
+    // HQ
+    + '<rect x="543" y="389" width="52" height="46" rx="3" fill="#162240"/>'
+    + '<rect x="541" y="387" width="56" height="50" rx="4" fill="none" stroke="#2a4a80" stroke-width="1.5"/>'
+    + '<text x="569" y="418" text-anchor="middle" fill="#a0c4e8" font-family="Arial,sans-serif" font-size="12" font-weight="bold">HQ</text>'
+    // MCX
+    + '<rect x="682" y="520" width="44" height="38" rx="3" fill="#121e34"/>'
+    + '<text x="704" y="548" text-anchor="middle" fill="#7090b0" font-family="Arial,sans-serif" font-size="10">MCX</text>'
+    // Logistics
+    + '<rect x="710" y="314" width="50" height="38" rx="3" fill="#121e34"/>'
+    + '<text x="735" y="338" text-anchor="middle" fill="#7090b0" font-family="Arial,sans-serif" font-size="9.5">LOGISTICS</text>'
+    // Chapel
+    + '<rect x="524" y="554" width="36" height="30" rx="3" fill="#121e34"/>'
+    + '<text x="542" y="604" text-anchor="middle" fill="#7090b0" font-family="Arial,sans-serif" font-size="9.5">CHAPEL</text>'
+    // ── Patrol Zones (dashed circles) ──
+    + '<circle cx="486" cy="523" r="22" fill="rgba(22,103,199,0.08)" stroke="#1667c7" stroke-width="1" stroke-dasharray="5,4"/>'
+    + '<text x="486" y="552" text-anchor="middle" fill="#4a80b8" font-family="Arial,sans-serif" font-size="9.5" font-weight="bold">ZONE A</text>'
+    + '<circle cx="635" cy="418" r="22" fill="rgba(22,103,199,0.08)" stroke="#1667c7" stroke-width="1" stroke-dasharray="5,4"/>'
+    + '<text x="635" y="447" text-anchor="middle" fill="#4a80b8" font-family="Arial,sans-serif" font-size="9.5" font-weight="bold">ZONE B</text>'
+    + '<circle cx="297" cy="469" r="22" fill="rgba(22,103,199,0.08)" stroke="#1667c7" stroke-width="1" stroke-dasharray="5,4"/>'
+    + '<text x="297" y="498" text-anchor="middle" fill="#4a80b8" font-family="Arial,sans-serif" font-size="9.5" font-weight="bold">ZONE C</text>'
+    // Vignette
+    + '<rect width="1000" height="950" fill="url(#vig)"/>'
+    + '</svg>';
+  var _svgBlob = new Blob([_svg], { type: 'image/svg+xml' });
+  var _svgUrl = URL.createObjectURL(_svgBlob);
+  var schematicLayer = L.imageOverlay(_svgUrl, BASE_BOUNDS, { interactive: false, zIndex: 1 });
+  schematicLayer.addTo(map);
+
+  // ── Optional external tile layers ──────────────────────────────
   var osmLayer = L.tileLayer(
     'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-    { attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>', subdomains: 'abc', maxZoom: 19 }
+    { attribution: '&copy; OpenStreetMap', subdomains: 'abc', maxZoom: 19, zIndex: 2 }
   );
   var satLayer = L.tileLayer(
     'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-    { attribution: 'Tiles &copy; Esri, Maxar', maxZoom: 20 }
+    { attribution: '&copy; Esri, Maxar', maxZoom: 20, zIndex: 2 }
   );
   var labelsLayer = L.tileLayer(
     'https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png',
-    { attribution: '&copy; CARTO', subdomains: 'abcd', maxZoom: 20 }
+    { attribution: '&copy; CARTO', subdomains: 'abcd', maxZoom: 20, zIndex: 3 }
   );
 
-  // Start with OSM (universally accessible); offer satellite as an option
-  osmLayer.addTo(map);
   L.control.layers(
-    { 'Street Map': osmLayer, 'Satellite': satLayer },
-    { 'Labels': labelsLayer },
+    { 'Schematic (Offline)': schematicLayer, 'Street Map': osmLayer, 'Satellite': satLayer },
+    { 'Labels Overlay': labelsLayer },
     { position: 'topright', collapsed: true }
   ).addTo(map);
-
-  // If OSM tiles fail, switch to satellite automatically
-  osmLayer.on('tileerror', function () {
-    if (!map.hasLayer(satLayer)) {
-      map.removeLayer(osmLayer);
-      satLayer.addTo(map);
-      labelsLayer.addTo(map);
-    }
-  });
 
   // ── Unit marker icon ───────────────────────────────────────────
   function unitIcon(color, size) {
@@ -824,20 +901,7 @@
     });
   }
 
-  // ── Tile load watchdog — show message if tiles never arrive ────
-  var _tilesLoaded = false;
-  osmLayer.on('tileload', function () { _tilesLoaded = true; });
-  setTimeout(function () {
-    if (!_tilesLoaded) {
-      var badge = document.querySelector('.unit-map-badge');
-      if (badge) {
-        badge.textContent = 'Tile server unreachable — markers still active';
-        badge.style.background = 'rgba(239,68,68,.25)';
-        badge.style.borderColor = 'rgba(239,68,68,.4)';
-        badge.style.color = '#fca5a5';
-      }
-    }
-  }, 8000);
+  // Schematic always renders — no tile watchdog needed.
 
   loadUnits();
   setInterval(loadUnits, 20000); // auto-refresh every 20s
