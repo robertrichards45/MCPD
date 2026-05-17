@@ -737,8 +737,8 @@ h1, h2, h3, h4, h5, h6 {
 /* --- Card improvements ------------------------------------------- */
 .card {
   border-color: var(--border-color, #d9e2ee) !important;
-  box-shadow: 0 1px 3px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04) !important;
-  border-radius: 12px !important;
+  box-shadow: 0 1px 3px rgba(15,23,42,0.06) !important;
+  border-radius: 8px !important;
 }
 body[data-theme="dark"] .card {
   box-shadow: 0 1px 3px rgba(0,0,0,0.25), 0 1px 2px rgba(0,0,0,0.18) !important;
@@ -1400,182 +1400,8 @@ body[data-theme="dark"] .leaflet-control-attribution a {
   border-color: rgba(252,165,165,0.35) !important;
 }
 
-/* ── Dashboard welcome head ───────────────────────────────────────── */
-.mcpd-dashboard-head {
-  align-items: flex-end !important;
-  padding: 0 0 6px !important;
-  border-bottom: 2px solid var(--border-color, #e2e8f0) !important;
-  margin-bottom: 4px !important;
-}
-body[data-theme="dark"] .mcpd-dashboard-head { border-bottom-color: rgba(148,163,184,0.15) !important; }
-.mcpd-dashboard-head h1 {
-  font-size: clamp(1.5rem, 2.2vw, 2rem) !important;
-  font-weight: 900 !important;
-  letter-spacing: -0.03em !important;
-  margin-bottom: 4px !important;
-}
-.mcpd-dashboard-head p {
-  font-size: 0.88rem !important;
-  font-weight: 600 !important;
-  letter-spacing: 0.02em !important;
-  text-transform: uppercase !important;
-  color: var(--muted, #64748b) !important;
-}
-.mcpd-date-tile {
-  border-radius: 12px !important;
-  box-shadow: 0 1px 4px rgba(15,23,42,0.08) !important;
-  text-align: center !important;
-  padding: 10px 16px !important;
-}
-.mcpd-date-tile strong {
-  font-size: 0.95rem !important;
-  font-weight: 900 !important;
-  letter-spacing: 0.04em !important;
-  color: var(--primary, #1667c7) !important;
-}
-
-/* ── Action cards ─────────────────────────────────────────────────── */
-.mcpd-action-grid {
-  gap: 14px !important;
-}
-.mcpd-action-card {
-  border-radius: 14px !important;
-  padding: 24px 16px 20px !important;
-  min-height: 160px !important;
-  border: 1.5px solid var(--border-color, #e2e8f0) !important;
-  box-shadow: 0 2px 8px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04) !important;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease !important;
-  position: relative !important;
-  overflow: hidden !important;
-}
-.mcpd-action-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #1667c7, #3b82f6);
-  opacity: 0;
-  transition: opacity 0.15s ease;
-}
-.mcpd-action-card:hover {
-  transform: translateY(-2px) !important;
-  box-shadow: 0 8px 24px rgba(15,23,42,0.12), 0 2px 6px rgba(15,23,42,0.06) !important;
-  border-color: rgba(22,103,199,0.28) !important;
-}
-.mcpd-action-card:hover::before { opacity: 1; }
-body[data-theme="dark"] .mcpd-action-card {
-  border-color: rgba(148,163,184,0.14) !important;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.22) !important;
-}
-body[data-theme="dark"] .mcpd-action-card:hover {
-  box-shadow: 0 8px 24px rgba(0,0,0,0.36) !important;
-  border-color: rgba(96,165,250,0.28) !important;
-}
-.mcpd-action-icon {
-  width: 48px !important;
-  height: 48px !important;
-  border-radius: 12px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  background: rgba(22,103,199,0.10) !important;
-  color: #1667c7 !important;
-  font-size: 1rem !important;
-  flex-shrink: 0 !important;
-}
-body[data-theme="dark"] .mcpd-action-icon {
-  background: rgba(96,165,250,0.12) !important;
-  color: #60a5fa !important;
-}
-.mcpd-action-icon svg {
-  width: 24px !important;
-  height: 24px !important;
-  fill: none !important;
-  stroke: currentColor !important;
-  stroke-width: 1.8 !important;
-  stroke-linecap: round !important;
-  stroke-linejoin: round !important;
-}
-.mcpd-action-card strong {
-  font-size: 0.95rem !important;
-  font-weight: 800 !important;
-  letter-spacing: -0.01em !important;
-}
-.mcpd-action-card small {
-  font-size: 0.78rem !important;
-  font-weight: 500 !important;
-  line-height: 1.45 !important;
-  color: var(--muted, #64748b) !important;
-}
-
-/* ── Dashboard panels ─────────────────────────────────────────────── */
-.mcpd-dashboard-panels {
-  gap: 14px !important;
-}
-.mcpd-panel {
-  border-radius: 14px !important;
-  border: 1.5px solid var(--border-color, #e2e8f0) !important;
-  box-shadow: 0 2px 8px rgba(15,23,42,0.05) !important;
-  padding: 0 !important;
-  overflow: hidden !important;
-}
-body[data-theme="dark"] .mcpd-panel {
-  border-color: rgba(148,163,184,0.13) !important;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
-}
-.mcpd-panel-head {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  padding: 13px 16px !important;
-  border-bottom: 1px solid var(--border-color, #e2e8f0) !important;
-  margin-bottom: 0 !important;
-  background: rgba(248,250,252,0.7) !important;
-}
-body[data-theme="dark"] .mcpd-panel-head {
-  border-bottom-color: rgba(148,163,184,0.12) !important;
-  background: rgba(15,23,42,0.35) !important;
-}
-.mcpd-panel-head h2 {
-  font-size: 0.88rem !important;
-  font-weight: 800 !important;
-  letter-spacing: 0.04em !important;
-  text-transform: uppercase !important;
-  color: var(--muted, #64748b) !important;
-}
-body[data-theme="dark"] .mcpd-panel-head h2 { color: #94a3b8 !important; }
-.mcpd-panel-head a {
-  font-size: 0.78rem !important;
-  font-weight: 700 !important;
-  padding: 4px 10px !important;
-  border-radius: 6px !important;
-  background: rgba(22,103,199,0.07) !important;
-  color: var(--primary, #1667c7) !important;
-  text-decoration: none !important;
-  transition: background 0.13s ease !important;
-}
-.mcpd-panel-head a:hover { background: rgba(22,103,199,0.14) !important; }
-body[data-theme="dark"] .mcpd-panel-head a {
-  background: rgba(96,165,250,0.10) !important;
-  color: #60a5fa !important;
-}
-.mcpd-list a {
-  padding: 11px 16px !important;
-  border-top: 1px solid var(--border-color, #e2e8f0) !important;
-  transition: background 0.12s ease !important;
-}
-.mcpd-list a:first-child { border-top: none !important; }
-.mcpd-list a:hover { background: rgba(22,103,199,0.04) !important; }
-body[data-theme="dark"] .mcpd-list a { border-top-color: rgba(148,163,184,0.10) !important; }
-body[data-theme="dark"] .mcpd-list a:hover { background: rgba(96,165,250,0.06) !important; }
-.mcpd-list a strong {
-  font-size: 0.88rem !important;
-  font-weight: 700 !important;
-}
-.mcpd-list a span {
-  font-size: 0.78rem !important;
-  color: var(--muted, #64748b) !important;
-}
+/* ── Dashboard head + action cards → see command-level block at end ── */
+/* dashboard action cards and panels → overridden in command-level block at end of file */
 
 /* ── General card / content polish ───────────────────────────────── */
 body:not(.mobile-foundation) .page-wrap {
@@ -1592,15 +1418,7 @@ body:not(.mobile-foundation) .page-wrap {
   margin-bottom: 24px !important;
 }
 body[data-theme="dark"] .page-head { border-bottom-color: rgba(148,163,184,0.15) !important; }
-.card {
-  border-radius: 14px !important;
-  border: 1.5px solid var(--border-color, #e2e8f0) !important;
-  box-shadow: 0 2px 8px rgba(15,23,42,0.05), 0 1px 2px rgba(15,23,42,0.03) !important;
-}
-body[data-theme="dark"] .card {
-  border-color: rgba(148,163,184,0.12) !important;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.22) !important;
-}
+/* .card → ops-panel handles content panels; Bootstrap .card for modals etc. */
 .btn {
   border-radius: 8px !important;
   font-weight: 700 !important;
@@ -2713,4 +2531,261 @@ body[data-theme="dark"] .demo-status-closed  { background: rgba(100,116,139,.18)
   .ops-kpi-strip { grid-template-columns: repeat(2, 1fr); }
   .ops-panel { padding: 1rem 1.1rem; }
   .demo-workflow-stats { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ================================================================
+   COMMAND-LEVEL DESIGN SYSTEM — v2026-05-17
+   Converts consumer-app aesthetics to tactical operations style
+   ================================================================ */
+
+/* ── Dashboard hero: apply ops-head-card gradient to dashboard head ─ */
+.mcpd-dashboard-head {
+  background: linear-gradient(135deg, #071b33 0%, #0d2744 55%, #112d4e 100%) !important;
+  color: #fff !important;
+  border-radius: 12px !important;
+  padding: 1.5rem 2rem !important;
+  margin-bottom: 0 !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,.28) !important;
+}
+.mcpd-dashboard-head h1 {
+  color: #fff !important;
+  font-size: 1.75rem !important;
+  font-weight: 800 !important;
+  letter-spacing: -.02em !important;
+  margin: 0 0 .2rem !important;
+}
+.mcpd-dashboard-head p {
+  color: rgba(255,255,255,.65) !important;
+  font-size: .85rem !important;
+  font-weight: 600 !important;
+  letter-spacing: .06em !important;
+  text-transform: uppercase !important;
+  margin: 0 !important;
+}
+.mcpd-dashboard-head-actions .btn {
+  border-color: rgba(255,255,255,.35) !important;
+  color: rgba(255,255,255,.85) !important;
+  font-size: .8rem !important;
+}
+.mcpd-dashboard-head-actions .btn:hover {
+  background: rgba(255,255,255,.14) !important;
+  border-color: rgba(255,255,255,.6) !important;
+}
+
+/* ── Date tile: command badge style ─────────────────────────────── */
+.mcpd-date-tile {
+  background: rgba(255,255,255,.1) !important;
+  border: 1px solid rgba(255,255,255,.22) !important;
+  border-radius: 8px !important;
+  color: #fff !important;
+  min-width: 100px !important;
+}
+.mcpd-date-tile strong {
+  color: #fff !important;
+  font-size: .95rem !important;
+  letter-spacing: .06em !important;
+}
+.mcpd-date-tile span {
+  color: rgba(255,255,255,.6) !important;
+  font-size: .7rem !important;
+  letter-spacing: .08em !important;
+  text-transform: uppercase !important;
+}
+
+/* ── Action grid: command module tiles ──────────────────────────── */
+.mcpd-action-grid {
+  gap: 10px !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+}
+.mcpd-action-card {
+  align-items: flex-start !important;
+  background: #f4f8ff !important;
+  border: 1px solid #d1dff5 !important;
+  border-left: 3px solid #1667c7 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 1px 3px rgba(15,23,42,.06) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+  justify-items: flex-start !important;
+  min-height: 0 !important;
+  padding: 14px 14px 12px !important;
+  text-align: left !important;
+  text-decoration: none !important;
+  transition: border-left-color .12s ease, background .12s ease, box-shadow .12s ease !important;
+}
+.mcpd-action-card::before { display: none !important; }
+.mcpd-action-card:hover {
+  background: #eaf0ff !important;
+  border-left-color: #0f4fa4 !important;
+  box-shadow: 0 3px 10px rgba(22,103,199,.14) !important;
+  transform: none !important;
+}
+body[data-theme="dark"] .mcpd-action-card {
+  background: #0d1e35 !important;
+  border-color: #1e3555 !important;
+  border-left-color: #3b74d8 !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,.22) !important;
+}
+body[data-theme="dark"] .mcpd-action-card:hover {
+  background: #0f2444 !important;
+  border-left-color: #5f9cf5 !important;
+  box-shadow: 0 3px 10px rgba(0,0,0,.3) !important;
+}
+.mcpd-action-icon {
+  align-items: center !important;
+  background: rgba(22,103,199,.12) !important;
+  border-radius: 6px !important;
+  color: #1667c7 !important;
+  display: flex !important;
+  flex-shrink: 0 !important;
+  font-size: 1rem !important;
+  height: 34px !important;
+  justify-content: center !important;
+  width: 34px !important;
+}
+body[data-theme="dark"] .mcpd-action-icon {
+  background: rgba(91,147,238,.15) !important;
+  color: #5b93ee !important;
+}
+.mcpd-action-icon svg {
+  height: 17px !important;
+  width: 17px !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 2 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+}
+.mcpd-action-card strong {
+  color: #0c1f40 !important;
+  font-size: .84rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+  line-height: 1.2 !important;
+}
+body[data-theme="dark"] .mcpd-action-card strong {
+  color: #e0eaf8 !important;
+}
+.mcpd-action-card small {
+  color: #5a6e8a !important;
+  font-size: .71rem !important;
+  font-weight: 500 !important;
+  line-height: 1.35 !important;
+  max-width: 100% !important;
+}
+body[data-theme="dark"] .mcpd-action-card small {
+  color: #7a95b4 !important;
+}
+
+/* ── Dashboard bottom panels ─────────────────────────────────────── */
+.mcpd-panel {
+  background: var(--card-bg, #fff) !important;
+  border: 1px solid var(--border-color, #d9e2ee) !important;
+  border-radius: 10px !important;
+  border-top: 3px solid #1667c7 !important;
+  padding: 1.1rem 1.25rem !important;
+}
+body[data-theme="dark"] .mcpd-panel {
+  background: var(--card-bg, #132235) !important;
+  border-color: #1e3555 !important;
+  border-top-color: #3b74d8 !important;
+}
+.mcpd-panel-head h2 {
+  font-size: .88rem !important;
+  font-weight: 800 !important;
+  letter-spacing: .04em !important;
+  text-transform: uppercase !important;
+  color: #0c1f40 !important;
+}
+body[data-theme="dark"] .mcpd-panel-head h2 {
+  color: #c8d9ef !important;
+}
+.mcpd-panel-head a {
+  font-size: .72rem !important;
+  font-weight: 700 !important;
+  letter-spacing: .04em !important;
+  text-transform: uppercase !important;
+}
+.mcpd-list a {
+  font-size: .82rem !important;
+}
+.mcpd-list a strong {
+  font-size: .84rem !important;
+  color: var(--text-primary, #111827) !important;
+}
+body[data-theme="dark"] .mcpd-list a strong {
+  color: #e0eaf8 !important;
+}
+
+/* ── ops-panel: add subtle left accent on hover ──────────────────── */
+.ops-panel {
+  border-left: 3px solid transparent !important;
+  transition: border-left-color .12s ease !important;
+}
+.ops-panel:hover {
+  border-left-color: rgba(22,103,199,.25) !important;
+}
+body[data-theme="dark"] .ops-panel:hover {
+  border-left-color: rgba(91,147,238,.25) !important;
+}
+
+/* ── ops-panel: details/summary — no hover accent on collapse cards ─ */
+details.ops-panel:hover,
+details.ops-panel[open]:hover {
+  border-left-color: transparent !important;
+}
+
+/* ── Page background: slightly deeper for command feel ───────────── */
+body:not([data-theme="dark"]) .mcpd-command-app,
+body:not([data-theme="dark"]) .app-shell {
+  background: #e8eef8 !important;
+}
+
+/* ── ops-panel in light mode: clear white on the deeper bg ──────── */
+body:not([data-theme="dark"]) .ops-panel,
+body:not([data-theme="dark"]) .ops-kpi-card {
+  background: #ffffff !important;
+  box-shadow: 0 1px 4px rgba(15,23,42,.06) !important;
+}
+
+/* ── Table headers: command style ────────────────────────────────── */
+.ops-panel .table thead th {
+  background: #071b33 !important;
+  color: rgba(255,255,255,.88) !important;
+  font-size: .72rem !important;
+  font-weight: 700 !important;
+  letter-spacing: .06em !important;
+  text-transform: uppercase !important;
+  border: none !important;
+}
+body[data-theme="dark"] .ops-panel .table thead th {
+  background: #0d2040 !important;
+  color: rgba(255,255,255,.75) !important;
+}
+
+/* ── Buttons in ops-head-card: sharper ───────────────────────────── */
+.ops-head-actions .btn,
+.mcpd-dashboard-head-actions .btn {
+  border-radius: 6px !important;
+  font-size: .78rem !important;
+  font-weight: 600 !important;
+  letter-spacing: .03em !important;
+  padding: .3rem .8rem !important;
+  text-transform: uppercase !important;
+}
+
+/* ── Mobile responsive: action grid 2 cols ───────────────────────── */
+@media (max-width: 900px) {
+  .mcpd-action-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+@media (max-width: 640px) {
+  .mcpd-action-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+  .mcpd-dashboard-head {
+    padding: 1.1rem 1.25rem !important;
+  }
 }
