@@ -396,7 +396,33 @@
     + '</svg>';
 
   var _blob = new Blob([_svg], { type: 'image/svg+xml' });
-  L.imageOverlay(URL.createObjectURL(_blob), BASE_BOUNDS, { interactive: false, zIndex: 1 }).addTo(map);
+  var schematicLayer = L.imageOverlay(URL.createObjectURL(_blob), BASE_BOUNDS, { interactive: false, zIndex: 1 });
+
+  // Real street map (default) — falls back to schematic if tiles are blocked
+  var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors',
+    subdomains: 'abc', maxZoom: 19, zIndex: 2,
+  });
+  var satLayer = L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    { attribution: '&copy; Esri', maxZoom: 20, zIndex: 2 }
+  );
+
+  // Try OSM first; if tiles fail load after 4s, switch to offline schematic
+  osmLayer.addTo(map);
+  var _tilesLoaded = false;
+  osmLayer.on('tileload', function () { _tilesLoaded = true; });
+  setTimeout(function () {
+    if (!_tilesLoaded) {
+      map.removeLayer(osmLayer);
+      schematicLayer.addTo(map);
+    }
+  }, 4000);
+
+  L.control.layers(
+    { 'Street Map': osmLayer, 'Satellite': satLayer, 'Schematic (Offline)': schematicLayer },
+    {}, { position: 'topright', collapsed: true }
+  ).addTo(map);
 
   // ── State ───────────────────────────────────────────────────────
   var markers  = {};

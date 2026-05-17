@@ -821,7 +821,7 @@ def create_app():
         "default-src 'self'",
         "script-src 'self' 'unsafe-inline'",
         "style-src 'self' 'unsafe-inline'",
-        "img-src 'self' data: blob:",
+        "img-src 'self' data: blob: https://*.tile.openstreetmap.org https://server.arcgisonline.com https://*.basemaps.cartocdn.com",
         "font-src 'self'",
         "object-src 'self'",
         "media-src 'self' blob:",
