@@ -819,8 +819,8 @@ def create_app():
     # run before first render. blob:/data: required for camera scanning and signature canvas.
     _csp_policy = '; '.join([
         "default-src 'self'",
-        "script-src 'self' 'unsafe-inline' https://unpkg.com",
-        "style-src 'self' 'unsafe-inline' https://unpkg.com",
+        "script-src 'self' 'unsafe-inline'",
+        "style-src 'self' 'unsafe-inline'",
         "img-src 'self' data: blob:",
         "font-src 'self'",
         "object-src 'self'",
