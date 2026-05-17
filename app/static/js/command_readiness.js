@@ -20,6 +20,8 @@
       ));
       var patchedOptions = Object.assign({}, options || {});
       if (isMcpdMap) {
+        // Command demo maps must be easy to pan/scroll during briefings. Use a wider
+        // safe boundary and keep all touch/drag gestures enabled.
         patchedOptions.maxBounds = BASE_SAFE_BOUNDS;
         patchedOptions.maxBoundsViscosity = 0.15;
         patchedOptions.dragging = true;
@@ -69,21 +71,36 @@
           }
         }
       });
-    } catch (err) {}
+    } catch (err) {
+      // Some browsers/extensions may block the setter. Fallback below catches late load.
+    }
   }
 
   function stabilizeLayout() {
     document.documentElement.style.setProperty('--mobile-dock-height', '92px');
+
     document.querySelectorAll('.mcpd-dashboard, .mcpd-command-main, .mobile-shell, .mcpd-mobile-app, .demo-main, .command-center').forEach(function (node) {
       node.classList.add('mcpd-command-ready-surface');
     });
+
     document.querySelectorAll('main, .mcpd-dashboard, .mobile-shell, .mcpd-command-main, .command-center').forEach(function (node) {
       if (!node.getAttribute('id')) node.setAttribute('id', 'main-content');
     });
+
     document.querySelectorAll('.mcpd-map-canvas-wrap, .mcpd-mobile-map-canvas, .mcpd-map-fullscreen-canvas').forEach(function (node) {
       node.classList.add('mcpd-map-command-ready');
       if (!node.getAttribute('tabindex')) node.setAttribute('tabindex', '0');
+      if (!node.getAttribute('aria-describedby')) node.setAttribute('aria-describedby', 'mcpd-map-usage-note');
     });
+
+    if (!document.getElementById('mcpd-map-usage-note')) {
+      var note = document.createElement('div');
+      note.id = 'mcpd-map-usage-note';
+      note.className = 'sr-only';
+      note.textContent = 'Map supports panning, touch dragging, and fullscreen viewing. Use the fullscreen button for detailed movement.';
+      document.body.appendChild(note);
+    }
+
     document.querySelectorAll('.mcpd-action-card, .mcpd-panel, .demo-panel, .demo-stat-card, .demo-launch-card, .command-panel, .command-metric').forEach(function (card) {
       card.classList.add('mcpd-command-ready-card');
     });
