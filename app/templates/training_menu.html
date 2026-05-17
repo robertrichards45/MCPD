@@ -1,21 +1,29 @@
 {% extends 'base.html' %}
 {% block body %}
-<div class="app-shell">
+<div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
-  <div class="page-wrap">
-    <div class="card p-3 mb-3 page-head">
-      <h2 class="mb-1">Training</h2>
-      <p class="text-muted mb-0">Browse, search, and sign rosters.</p>
-    </div>
-    <div class="card p-3">
-      <div class="quick-actions-grid">
-        <a class="quick-action-btn subtle" href="{{ url_for('training.training_list') }}">Training Rosters</a>
-        <a class="quick-action-btn subtle" href="{{ url_for('training.training_search') }}">Search Rosters</a>
+  <main class="mcpd-command-main" id="main-content">
+    <section class="ops-head-card">
+      <div>
+        <h2>Training</h2>
+        <p class="ops-head-sub">Browse, search, and sign training rosters.</p>
+      </div>
+      <div class="ops-head-actions">
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('training.training_list') }}">Training Rosters</a>
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('training.training_search') }}">Search Rosters</a>
         {% if portal_effective_role == 'WEBSITE_CONTROLLER' %}
-          <a class="quick-action-btn" href="{{ url_for('training.training_upload') }}">Upload Roster</a>
+          <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('training.training_upload') }}">Upload Roster</a>
         {% endif %}
       </div>
+    </section>
+    <div class="ops-panel">
+      <h5>Training Resources</h5>
+      <p class="text-muted">Access current training rosters, search past records, and sign off on training completion. Rosters are uploaded by supervisors and track unit-wide completion status.</p>
+      <div class="d-flex gap-2 flex-wrap mt-2">
+        <a class="btn btn-primary" href="{{ url_for('training.training_list') }}">Training Rosters</a>
+        <a class="btn btn-outline-secondary" href="{{ url_for('training.training_search') }}">Search Rosters</a>
+      </div>
     </div>
-  </div>
+  </main>
 </div>
 {% endblock %}

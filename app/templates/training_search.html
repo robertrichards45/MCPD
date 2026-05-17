@@ -1,28 +1,38 @@
 {% extends 'base.html' %}
 {% block body %}
-<div class="app-shell">
+<div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
-  <div class="page-wrap">
-    <div class="card p-3 mb-3 page-head">
-      <h2 class="mb-1">Search Training Rosters</h2>
-      {% if error %}
-        <div class="alert alert-danger">{{ error }}</div>
-      {% endif %}
-      <form method="get" class="search-panel">
+  <main class="mcpd-command-main" id="main-content">
+    <section class="ops-head-card">
+      <div>
+        <h2>Search Training Rosters</h2>
+        <p class="ops-head-sub">Search by title, description, or date range.</p>
+      </div>
+      <div class="ops-head-actions">
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('training.training_list') }}">All Rosters</a>
+      </div>
+    </section>
+
+    {% if error %}
+      <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+
+    <div class="ops-panel mb-3 search-panel">
+      <form method="get">
         <div class="row g-3">
-          <div>
+          <div class="col-md-6">
             <label class="form-label text-dark">Title</label>
             <input class="form-control" name="title" value="{{ title }}" />
           </div>
-          <div>
+          <div class="col-md-6">
             <label class="form-label text-dark">Description</label>
             <input class="form-control" name="description" value="{{ description }}" />
           </div>
-          <div>
+          <div class="col-md-6">
             <label class="form-label text-dark">Uploaded After (YYYYMMDD)</label>
             <input class="form-control" name="date_from" value="{{ date_from }}" />
           </div>
-          <div>
+          <div class="col-md-6">
             <label class="form-label text-dark">Uploaded Before (YYYYMMDD)</label>
             <input class="form-control" name="date_to" value="{{ date_to }}" />
           </div>
@@ -50,6 +60,6 @@
         {% endfor %}
       </div>
     {% endif %}
-  </div>
+  </main>
 </div>
 {% endblock %}

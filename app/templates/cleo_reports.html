@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
 {% block body %}
-<div class="app-shell">
+<div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
   <div class="page-wrap report-center-shell">
     <div class="mobile-back-bar">
       <a class="mobile-back-btn" href="{{ url_for('reports.list_reports') }}">&#8592; Reports Center</a>
     </div>
 
-    <section class="card p-3 mb-3 page-head ops-head-card">
+    <section class="ops-head-card mb-3">
       <div class="ops-head-grid">
         <div class="ops-head-copy">
           <div class="eyebrow forms-library-eyebrow">Training / Mock Reports</div>

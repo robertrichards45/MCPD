@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block body %}
-<div class="app-shell">
+<div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
   <div class="page-wrap">
 
@@ -22,7 +22,7 @@
       </div>
     </section>
 
-    <div class="card p-3 mb-3 d-flex flex-wrap gap-2 align-items-center justify-content-between">
+    <div class="ops-panel mb-3 d-flex flex-wrap gap-2 align-items-center justify-content-between">
       <div class="d-flex gap-2 flex-wrap">
         <a class="btn btn-primary btn-sm" href="{{ url_for('qual_tracker.tracker_log') }}">Log Completion</a>
         <a class="btn btn-outline-dark btn-sm" href="{{ url_for('qual_tracker.tracker_personal') }}">My Record</a>
@@ -38,7 +38,7 @@
     </div>
 
     {% if grid %}
-    <div class="card p-0 overflow-auto">
+    <div class="ops-panel p-0 overflow-auto">
       <table class="qual-readiness-table">
         <thead>
           <tr>

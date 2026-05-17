@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block body %}
-<div class="app-shell">
+<div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
   <div class="page-wrap authority-page-wrap">
     {% set lead_doc = lead_document if lead_document is defined else (documents[0] if documents else None) %}
@@ -28,7 +28,7 @@
     </section>
 
     {% if can_manage_orders %}
-    <details class="card p-3 mb-3 collapse-card">
+    <details class="ops-panel mb-3 collapse-card">
       <summary>Admin Order Tools</summary>
       <div class="d-flex flex-wrap gap-2 mt-2">
         <a class="btn btn-outline-secondary" href="{{ url_for('orders.library') }}">Manage Library</a>

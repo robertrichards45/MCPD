@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 {% block body %}
-<div class="app-shell">
+<div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
   <div class="page-wrap">
-    <div class="card p-3 mb-3 page-head">
+    <div class="ops-head-card mb-3">
       <h2 class="mb-1">PDF Template Editor</h2>
       <p class="text-muted mb-0">{{ form.title }} | Schema: {{ schema_id }}</p>
     </div>
@@ -13,7 +13,7 @@
       <div class="small text-muted">Detected PDF fields: {{ source_fields.field_count }}</div>
     </div>
 
-    <details class="card p-3 mb-3 collapse-card">
+    <details class="ops-panel mb-3 collapse-card">
       <summary>Auto Mapping Suggestions</summary>
       <div class="mt-2">
         {% if suggestions %}

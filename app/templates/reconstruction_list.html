@@ -1,21 +1,25 @@
 {% extends 'base.html' %}
 {% block body %}
-<div class="app-shell">
+<div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
+  <main class="mcpd-command-main" id="main-content">
+    <section class="ops-head-card">
+      <div>
+        <h2>Accident Reconstruction</h2>
+        <p class="ops-head-sub">Create and manage crash reconstruction cases.</p>
+      </div>
+      <div class="ops-head-actions">
+        <form method="get" action="{{ url_for('reconstruction.case_list') }}" class="d-flex gap-2">
+          <input class="form-control form-control-sm" name="q" placeholder="Search cases..." value="{{ q }}" style="width:200px;" />
+          <button class="btn btn-outline-secondary btn-sm" type="submit">Search</button>
+        </form>
+      </div>
+    </section>
 
-  <div class="page-wrap">
-    <div class="card p-3 mb-3 page-head d-flex justify-content-between align-items-center">
-      <h2 class="mb-0">Accident Reconstruction</h2>
-      <form method="get" action="{{ url_for('reconstruction.case_list') }}" class="d-flex gap-2">
-        <input class="form-control" name="q" placeholder="Search cases..." value="{{ q }}" />
-        <button class="btn btn-primary">Search</button>
-      </form>
-    </div>
-
-    <div class="row">
+    <div class="row g-3">
       <div class="col-md-5">
-        <div class="card p-3">
-          <h3 class="mb-3">New Case</h3>
+        <div class="ops-panel">
+          <h5 class="mb-3">New Case</h5>
           <form method="post" action="{{ url_for('reconstruction.case_list') }}">
             <div class="mb-3">
               <label class="form-label text-dark">Title</label>
@@ -34,9 +38,9 @@
         </div>
       </div>
 
-      <div class="col-md-6">
-        <div class="card p-3">
-          <h3 class="mb-3">Cases</h3>
+      <div class="col-md-7">
+        <div class="ops-panel">
+          <h5 class="mb-3">Cases</h5>
           {% if cases %}
             <div class="list-group">
               {% for c in cases %}
@@ -57,6 +61,6 @@
         </div>
       </div>
     </div>
-  </div>
+  </main>
 </div>
 {% endblock %}

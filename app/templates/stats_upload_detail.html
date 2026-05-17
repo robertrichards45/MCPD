@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 {% block body %}
-<div class="app-shell">
+<div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
   <div class="page-wrap">
-    <div class="card p-3 mb-3 page-head">
+    <div class="ops-head-card mb-3">
       <h2 class="mb-1">Stats Upload Detail</h2>
       <p class="text-muted mb-0">Review parsed upload data and any unmatched officers.</p>
     </div>
@@ -12,7 +12,7 @@
       <div><strong>Uploaded:</strong> {{ upload.uploaded_at.strftime('%Y-%m-%d %H:%M') }}</div>
     </div>
 
-    <details class="card p-3 mt-3 collapse-card" open>
+    <details class="ops-panel mt-3 collapse-card" open>
       <summary>Summary</summary>
       <div class="mt-2">
         <div><strong>Rows:</strong> {{ summary.get('rows', 'N/A') }}</div>
@@ -21,7 +21,7 @@
       </div>
     </details>
 
-    <details class="card p-3 mt-3 collapse-card">
+    <details class="ops-panel mt-3 collapse-card">
       <summary>Categories</summary>
       <div class="mt-2">
         {% for c in summary.get('categories', []) %}
@@ -30,7 +30,7 @@
       </div>
     </details>
 
-    <details class="card p-3 mt-3 collapse-card" open>
+    <details class="ops-panel mt-3 collapse-card" open>
       <summary>Unmatched Officers</summary>
       <div class="mt-2">
         {% if summary.get('unmatched_officers') %}

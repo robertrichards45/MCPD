@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 {% block body %}
-<div class="app-shell">
+<div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
   <div class="page-wrap saved-forms-shell">
-    <section class="card p-3 mb-3 page-head ops-head-card">
+    <section class="ops-head-card mb-3">
       <div class="ops-head-grid">
         <div class="ops-head-copy">
           <div class="eyebrow forms-library-eyebrow">Paperwork Queue</div>
@@ -88,7 +88,7 @@
     </div>
 
     {% if show_admin_retention_events %}
-    <details class="card p-3 mt-3 collapse-card">
+    <details class="ops-panel mt-3 collapse-card">
       <summary>No-Retention Form Events</summary>
       <div class="table-responsive mt-2">
         <table class="table table-striped">

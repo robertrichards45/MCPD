@@ -1,23 +1,26 @@
 {% extends 'base.html' %}
 {% block body %}
-<div class="app-shell">
+<div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
-  <div class="page-wrap">
-    <div class="card p-3 mb-3 page-head">
-      <h2 class="mb-2">Law Lookup</h2>
-      <p class="text-muted mb-3">Describe what happened and search Georgia law, federal law, UCMJ, and approved base-order references in one place.</p>
+  <main class="mcpd-command-main" id="main-content">
+    <section class="ops-head-card">
+      <div>
+        <h2>Law Lookup</h2>
+        <p class="ops-head-sub">Describe what happened and search Georgia law, federal law, UCMJ, and approved base-order references in one place.</p>
+      </div>
+      <div class="ops-head-actions">
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('legal.legal_lookup') }}">Open Law Lookup</a>
+        {% if current_user.can_manage_site() %}
+          <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.legal_corpus_admin') }}">Corpus Admin</a>
+          <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.legal_analytics') }}">Analytics</a>
+        {% endif %}
+      </div>
+    </section>
+    <div class="ops-panel">
+      <h5>What Law Lookup Does</h5>
+      <p class="text-muted">Enter a plain-language incident description — what happened, who was involved, where, any orders given, weapons, property, or vehicle info. The system ranks state, federal, UCMJ, and local order references against your facts and returns the strongest applicable legal paths first.</p>
       <a class="btn btn-primary" href="{{ url_for('legal.legal_lookup') }}">Open Law Lookup</a>
     </div>
-    {% if current_user.can_manage_site() %}
-      <div class="card p-3">
-        <h3 class="mb-2">Admin Legal Tools</h3>
-        <p class="text-muted mb-3">Corpus imports, QA checks, and analytics are restricted to Website Controller.</p>
-        <div class="d-flex flex-wrap gap-2">
-          <a class="btn btn-outline-secondary" href="{{ url_for('admin.legal_corpus_admin') }}">Corpus Admin</a>
-          <a class="btn btn-outline-secondary" href="{{ url_for('admin.legal_analytics') }}">Analytics</a>
-        </div>
-      </div>
-    {% endif %}
-  </div>
+  </main>
 </div>
 {% endblock %}

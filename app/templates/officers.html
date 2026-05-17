@@ -1,19 +1,21 @@
 {% extends 'base.html' %}
 {% block body %}
-<div class="app-shell">
+<div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
-  <div class="page-wrap">
-    <div class="card p-3 mb-3">
-      <h2 class="mb-1">My Profile</h2>
-      <p class="text-muted mb-0">Update your personal information and emergency contacts.</p>
-    </div>
+  <main class="mcpd-command-main" id="main-content">
+    <section class="ops-head-card">
+      <div>
+        <h2>My Profile</h2>
+        <p class="ops-head-sub">Update your personal information and emergency contacts.</p>
+      </div>
+    </section>
+
     {% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
     {% if success %}<div class="alert alert-success">{{ success }}</div>{% endif %}
 
     <div class="row g-4">
-      {# ── Left: Profile form ─────────────────────────────────────────── #}
       <div class="col-lg-7">
-        <div class="card p-3 mb-4">
+        <div class="ops-panel mb-4">
           <h5 class="mb-3">Personal Information</h5>
           <form method="post">
             <div class="row g-2 mb-3">
@@ -52,7 +54,7 @@
               <input class="form-control" value="{{ user.role_label }}" readonly />
             </div>
 
-            <details class="collapse-card mt-3">
+            <details class="ops-panel mt-3 collapse-card">
               <summary>Additional Officer Details</summary>
               <div class="mt-2">
                 <div class="mb-3">
@@ -95,10 +97,9 @@
           </form>
         </div>
 
-        {# ── Emergency Contacts ──────────────────────────────────────── #}
-        <div class="card p-3" id="emergency-contacts">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="mb-0">Emergency Contacts</h5>
+        <div class="ops-panel" id="emergency-contacts">
+          <div class="ops-panel-head">
+            <h5>Emergency Contacts</h5>
             <span class="badge bg-secondary">{{ emergency_contacts|length }}</span>
           </div>
 
@@ -126,102 +127,99 @@
           </div>
           {% endif %}
 
-          <details class="collapse-card">
+          <details class="ops-panel collapse-card">
             <summary>Add Emergency Contact</summary>
             <div class="mt-2">
-            <form method="post" action="{{ url_for('officers.add_emergency_contact') }}">
-              <div class="row g-2 mb-3">
-                <div class="col-sm-6">
-                  <label class="form-label text-dark">Name <span class="text-danger">*</span></label>
-                  <input class="form-control" name="name" required />
+              <form method="post" action="{{ url_for('officers.add_emergency_contact') }}">
+                <div class="row g-2 mb-3">
+                  <div class="col-sm-6">
+                    <label class="form-label text-dark">Name <span class="text-danger">*</span></label>
+                    <input class="form-control" name="name" required />
+                  </div>
+                  <div class="col-sm-6">
+                    <label class="form-label text-dark">Relationship</label>
+                    <input class="form-control" name="relationship" placeholder="e.g. Spouse, Parent" />
+                  </div>
                 </div>
-                <div class="col-sm-6">
-                  <label class="form-label text-dark">Relationship</label>
-                  <input class="form-control" name="relationship" placeholder="e.g. Spouse, Parent" />
+                <div class="row g-2 mb-3">
+                  <div class="col-sm-6">
+                    <label class="form-label text-dark">Primary Phone</label>
+                    <input class="form-control" name="phone" />
+                  </div>
+                  <div class="col-sm-6">
+                    <label class="form-label text-dark">Secondary Phone</label>
+                    <input class="form-control" name="secondary_phone" />
+                  </div>
                 </div>
-              </div>
-              <div class="row g-2 mb-3">
-                <div class="col-sm-6">
-                  <label class="form-label text-dark">Primary Phone</label>
-                  <input class="form-control" name="phone" />
+                <div class="mb-3">
+                  <label class="form-label text-dark">Email</label>
+                  <input class="form-control" name="email" type="email" />
                 </div>
-                <div class="col-sm-6">
-                  <label class="form-label text-dark">Secondary Phone</label>
-                  <input class="form-control" name="secondary_phone" />
+                <div class="mb-3">
+                  <label class="form-label text-dark">Notes</label>
+                  <input class="form-control" name="notes" placeholder="Optional additional info" />
                 </div>
-              </div>
-              <div class="mb-3">
-                <label class="form-label text-dark">Email</label>
-                <input class="form-control" name="email" type="email" />
-              </div>
-              <div class="mb-3">
-                <label class="form-label text-dark">Notes</label>
-                <input class="form-control" name="notes" placeholder="Optional additional info" />
-              </div>
-              <button class="btn btn-primary btn-sm">Add Contact</button>
-            </form>
+                <button class="btn btn-primary btn-sm">Add Contact</button>
+              </form>
             </div>
           </details>
         </div>
       </div>
 
-      {# ── Right: Roster Directory (managers only) ─────────────────── #}
       {% if user.can_manage_team() %}
       <div class="col-lg-5">
-        <details class="card p-3 collapse-card">
+        <details class="ops-panel collapse-card">
           <summary>Roster Directory</summary>
           <div class="mt-2">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="mb-0">Watch Commander View</h5>
-            <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('officers.officer_directory_export_csv', q=search_term) }}">CSV</a>
-          </div>
-          <form class="row g-2 mb-3" method="get" action="{{ url_for('officers.officer_directory') }}">
-            <div class="col-md-8">
-              <input class="form-control" type="text" name="q" value="{{ search_term or '' }}" placeholder="Search name, officer #, unit, or emergency contact" />
+            <div class="ops-panel-head">
+              <h5>Watch Commander View</h5>
+              <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('officers.officer_directory_export_csv', q=search_term) }}">CSV</a>
             </div>
-            <div class="col-md-4 d-flex gap-2">
-              <button class="btn btn-secondary flex-fill" type="submit">Search</button>
-              {% if search_term %}
-                <a class="btn btn-outline-secondary flex-fill" href="{{ url_for('officers.officer_directory') }}">Clear</a>
-              {% endif %}
+            <form class="row g-2 mb-3" method="get" action="{{ url_for('officers.officer_directory') }}">
+              <div class="col-md-8">
+                <input class="form-control" type="text" name="q" value="{{ search_term or '' }}" placeholder="Search name, officer #, unit, or emergency contact" />
+              </div>
+              <div class="col-md-4 d-flex gap-2">
+                <button class="btn btn-secondary flex-fill" type="submit">Search</button>
+                {% if search_term %}
+                  <a class="btn btn-outline-secondary flex-fill" href="{{ url_for('officers.officer_directory') }}">Clear</a>
+                {% endif %}
+              </div>
+            </form>
+            <div class="table-responsive">
+              <table class="table table-sm align-middle">
+                <thead>
+                  <tr><th>Name</th><th>EDIPI</th><th>Unit</th><th>Emergency Contact</th><th></th></tr>
+                </thead>
+                <tbody>
+                  {% for profile_row, user_row in profiles %}
+                  <tr>
+                    <td>
+                      {% if user_row.id in editable_user_ids %}
+                        <a class="personnel-name-link" href="{{ url_for('auth.edit_user', user_id=user_row.id) }}">{{ user_row.display_name }}</a>
+                      {% else %}
+                        {{ user_row.display_name }}
+                      {% endif %}
+                    </td>
+                    <td>{{ user_row.edipi or '' }}</td>
+                    <td>{{ profile_row.unit or '' }}</td>
+                    <td>{{ profile_row.emergency_contact_name or '' }}</td>
+                    <td class="d-flex gap-1">
+                      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('officers.officer_profile_export_csv', user_id=user_row.id) }}">CSV</a>
+                      {% if user_row.id in editable_user_ids %}
+                        <a class="btn btn-primary btn-sm" href="{{ url_for('auth.edit_user', user_id=user_row.id) }}">Edit</a>
+                      {% endif %}
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
             </div>
-          </form>
-          <div class="table-responsive">
-            <table class="table table-sm align-middle">
-              <thead>
-                <tr>
-                  <th>Name</th><th>EDIPI</th><th>Unit</th><th>Emergency Contact</th><th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for profile_row, user_row in profiles %}
-                <tr>
-                  <td>
-                    {% if user_row.id in editable_user_ids %}
-                      <a class="personnel-name-link" href="{{ url_for('auth.edit_user', user_id=user_row.id) }}">{{ user_row.display_name }}</a>
-                    {% else %}
-                      {{ user_row.display_name }}
-                    {% endif %}
-                  </td>
-                  <td>{{ user_row.edipi or '' }}</td>
-                  <td>{{ profile_row.unit or '' }}</td>
-                  <td>{{ profile_row.emergency_contact_name or '' }}</td>
-                  <td class="d-flex gap-1">
-                    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('officers.officer_profile_export_csv', user_id=user_row.id) }}">CSV</a>
-                    {% if user_row.id in editable_user_ids %}
-                      <a class="btn btn-primary btn-sm" href="{{ url_for('auth.edit_user', user_id=user_row.id) }}">Edit</a>
-                    {% endif %}
-                  </td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
           </div>
         </details>
       </div>
       {% endif %}
     </div>
-  </div>
+  </main>
 </div>
 {% endblock %}
