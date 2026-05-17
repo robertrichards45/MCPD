@@ -20,7 +20,10 @@
         <a href="{{ url_for('watch_commander.reports') }}" {% if _ep in ('watch_commander.reports', 'watch_commander.saved_work') %}aria-current="page"{% endif %}>Reports</a>
         <a href="{{ url_for('watch_commander.approvals') }}" {% if _ep == 'watch_commander.approvals' %}aria-current="page"{% endif %}>Approvals</a>
         <a href="{{ url_for('watch_commander.briefing') }}" {% if _ep in ('watch_commander.briefing', 'watch_commander.notifications', 'watch_commander.blotter') %}aria-current="page"{% endif %}>Briefing</a>
+<<<<<<< HEAD
+=======
         <a href="{{ url_for('watch_commander.unit_map') }}" {% if _ep == 'watch_commander.unit_map' %}aria-current="page"{% endif %}>Unit Map</a>
+>>>>>>> 73c725b38f1e058b3b8f8f481446ade5f6f049b4
       </nav>
     </header>
     {% block wc_body %}{% endblock %}

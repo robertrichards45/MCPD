@@ -143,7 +143,11 @@
           {% endif %}
 
           {% if not fill_state.is_ready %}
+<<<<<<< HEAD
+          <div class="card p-3 mb-3 form-not-ready-notice">
+=======
           <div class="ops-panel mb-3 form-not-ready-notice">
+>>>>>>> 73c725b38f1e058b3b8f8f481446ade5f6f049b4
             <strong>Online Completion Not Available Yet</strong>
             <div class="small text-muted mt-1">{{ fill_state.fallback_message }}</div>
           </div>
@@ -218,7 +222,10 @@
                   {% else %}
                   <input
                     class="form-control"
+<<<<<<< HEAD
+=======
                     id="fld_{{ field.name }}"
+>>>>>>> 73c725b38f1e058b3b8f8f481446ade5f6f049b4
                     type="{{ 'text' if field.type in ('select',) else field.type }}"
                     name="field_{{ field.name }}"
                     value="{{ payload['values'].get(field.name, '') }}"
