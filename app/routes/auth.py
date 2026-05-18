@@ -1104,6 +1104,20 @@ def logout():
 
     for key in ('demo_mode', 'demo_batch_id', 'demo_viewing_as', 'demo_controller_id'):
         session.pop(key, None)
+
+    # Mark officer as Off Duty on logout so they're removed from the dispatch map
+    try:
+        assignment = (
+            WatchAssignment.query
+            .filter_by(officer_id=current_user.id)
+            .order_by(WatchAssignment.updated_at.desc())
+            .first()
+        )
+        if assignment and assignment.status not in ('Off Duty', 'Leave'):
+            assignment.status = 'Off Duty'
+            db.session.commit()
+    except Exception:
+        db.session.rollback()
     logout_user()
     return redirect(url_for('auth.landing'))
 

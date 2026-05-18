@@ -1019,6 +1019,19 @@ class WatchNote(db.Model):
     creator = db.relationship('User', foreign_keys=[created_by], backref='watch_notes')
 
 
+class BaseBuilding(db.Model):
+    __tablename__ = 'base_building'
+    id = db.Column(db.Integer, primary_key=True)
+    number = db.Column(db.String(20), nullable=False, index=True)
+    name = db.Column(db.String(120), nullable=True)
+    lat = db.Column(db.Float, nullable=False)
+    lng = db.Column(db.Float, nullable=False)
+    category = db.Column(db.String(60), nullable=True)
+    notes = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=utcnow_naive, nullable=False)
+    updated_at = db.Column(db.DateTime, default=utcnow_naive, onupdate=utcnow_naive, nullable=False)
+
+
 class WatchApproval(db.Model):
     __tablename__ = 'watch_approval'
     id = db.Column(db.Integer, primary_key=True)

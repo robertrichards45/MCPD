@@ -7,8 +7,10 @@ from flask_login import current_user, login_required
 from ..extensions import db
 from ..models import (
     AuditLog,
+    BaseBuilding,
     BOLOEntry,
     Form,
+    INSTALLATION_LABELS,
     IncidentDraft,
     IncidentPacket,
     PACKET_APPROVAL_APPROVED,
@@ -1003,7 +1005,7 @@ def api_units():
             'role': getattr(officer, 'role_label', officer.role),
             'status': status,
             'color': _status_color(status),
-            'location': (assignment.assignment_location or 'Unassigned') if assignment else 'MCLB Albany',
+            'location': (assignment.assignment_location or INSTALLATION_LABELS.get(officer.installation, 'MCLB Albany')) if assignment else 'MCLB Albany',
             'assignment_type': assignment.assignment_type if assignment else '',
             'lat': lat,
             'lng': lng,
@@ -1170,4 +1172,93 @@ def api_close_shift():
     db.session.commit()
     _audit('close_shift', f'count={count}|scope={scope_id}')
     return jsonify({'ok': True, 'closed': count})
+
+
+# ── Building Pin Management API ───────────────────────────────────────────────
+
+@bp.route('/api/buildings', methods=['GET'])
+@login_required
+def api_buildings_list():
+    if not _can_access_unit_map(current_user):
+        abort(403)
+    buildings = BaseBuilding.query.order_by(BaseBuilding.number).all()
+    return jsonify([{
+        'id': b.id,
+        'number': b.number,
+        'name': b.name or '',
+        'lat': b.lat,
+        'lng': b.lng,
+        'category': b.category or '',
+        'notes': b.notes or '',
+    } for b in buildings])
+
+
+@bp.route('/api/buildings', methods=['POST'])
+@login_required
+def api_buildings_create():
+    if not _can_access_unit_map(current_user):
+        abort(403)
+    data = request.get_json(silent=True) or {}
+    number = (data.get('number') or '').strip()
+    lat = data.get('lat')
+    lng = data.get('lng')
+    if not number or lat is None or lng is None:
+        return jsonify({'error': 'number, lat, and lng are required'}), 400
+    try:
+        lat = float(lat)
+        lng = float(lng)
+    except (TypeError, ValueError):
+        return jsonify({'error': 'lat and lng must be numbers'}), 400
+    b = BaseBuilding(
+        number=number,
+        name=(data.get('name') or '').strip() or None,
+        lat=lat,
+        lng=lng,
+        category=(data.get('category') or '').strip() or None,
+        notes=(data.get('notes') or '').strip() or None,
+    )
+    db.session.add(b)
+    db.session.commit()
+    return jsonify({'id': b.id, 'number': b.number, 'lat': b.lat, 'lng': b.lng}), 201
+
+
+@bp.route('/api/buildings/<int:building_id>', methods=['PUT'])
+@login_required
+def api_buildings_update(building_id):
+    if not _can_access_unit_map(current_user):
+        abort(403)
+    b = BaseBuilding.query.get_or_404(building_id)
+    data = request.get_json(silent=True) or {}
+    if 'number' in data:
+        b.number = (data['number'] or '').strip() or b.number
+    if 'name' in data:
+        b.name = (data['name'] or '').strip() or None
+    if 'lat' in data:
+        try:
+            b.lat = float(data['lat'])
+        except (TypeError, ValueError):
+            return jsonify({'error': 'lat must be a number'}), 400
+    if 'lng' in data:
+        try:
+            b.lng = float(data['lng'])
+        except (TypeError, ValueError):
+            return jsonify({'error': 'lng must be a number'}), 400
+    if 'category' in data:
+        b.category = (data['category'] or '').strip() or None
+    if 'notes' in data:
+        b.notes = (data['notes'] or '').strip() or None
+    b.updated_at = utcnow_naive()
+    db.session.commit()
+    return jsonify({'ok': True, 'id': b.id})
+
+
+@bp.route('/api/buildings/<int:building_id>', methods=['DELETE'])
+@login_required
+def api_buildings_delete(building_id):
+    if not _can_access_unit_map(current_user):
+        abort(403)
+    b = BaseBuilding.query.get_or_404(building_id)
+    db.session.delete(b)
+    db.session.commit()
+    return jsonify({'ok': True})
 

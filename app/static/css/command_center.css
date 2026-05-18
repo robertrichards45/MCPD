@@ -1,7 +1,7 @@
 /* MCPD Dispatch / Command Center Mode */
 .command-center {
   margin-left: var(--sidebar-width, 260px);
-  padding: 92px 28px 36px;
+  padding: 92px 28px 24px;
   min-height: 100vh;
   background: radial-gradient(circle at top left, rgba(22,103,199,0.16), transparent 34%), #07111f;
   color: #e5edf7;

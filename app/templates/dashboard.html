@@ -10,6 +10,77 @@
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='vendor/leaflet.min.css', v='1.9.4') }}" />
 <style>
+  /* ── Dashboard compact override (beats command-hybrid.css !important) ── */
+  .mcpd-dashboard {
+    gap: 12px !important;
+    padding-top: 18px !important;
+    padding-bottom: 32px !important;
+  }
+  .mcpd-dashboard-head {
+    padding: 18px 22px !important;
+  }
+  .mcpd-dashboard-head h1 {
+    font-size: clamp(1.25rem, 1.8vw, 1.75rem) !important;
+    margin-bottom: 4px !important;
+  }
+  /* Action grid: 4-col compact horizontal chips */
+  .mcpd-action-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    margin: 0 !important;
+  }
+  .mcpd-action-card {
+    min-height: unset !important;
+    padding: 10px 14px !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    text-align: left !important;
+    justify-items: unset !important;
+    gap: 11px !important;
+    border-radius: 14px !important;
+  }
+  .mcpd-action-card small {
+    display: none !important;
+  }
+  .mcpd-action-icon {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 10px !important;
+    flex-shrink: 0 !important;
+    align-items: center !important;
+    justify-content: center !important;
+    display: inline-flex !important;
+  }
+  .mcpd-action-icon svg {
+    width: 20px !important;
+    height: 20px !important;
+  }
+  .mcpd-action-card strong {
+    font-size: 0.87rem !important;
+    line-height: 1.25 !important;
+    white-space: normal !important;
+  }
+  /* Panels tighter */
+  .mcpd-dashboard-panels {
+    gap: 10px !important;
+  }
+  /* Mobile: revert to stacked 2-col */
+  @media (max-width: 767px) {
+    .mcpd-action-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+    .mcpd-action-card {
+      padding: 12px !important;
+      gap: 10px !important;
+    }
+  }
+  @media (min-width: 768px) and (max-width: 1199px) {
+    .mcpd-action-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    }
+  }
+  /* ── Map layer button ─────────────────────────────────────────── */
   .mcpd-map-layer-btn {
     position: absolute;
     top: 10px;
@@ -73,11 +144,11 @@
   <main class="dashboard mcpd-dashboard">
     <section class="mcpd-dashboard-head">
       <div>
-        <h1>Welcome back, {{ user.display_name }}</h1>
-        <p>{{ portal_effective_role_label }}{% if user.section_unit %} / {{ user.section_unit }}{% endif %}</p>
+        <h1>{{ user.display_name }}</h1>
+        <p>{{ portal_effective_role_label }}{% if user.section_unit %} &bull; {{ user.section_unit }}{% endif %}</p>
       </div>
       <div class="mcpd-dashboard-head-actions">
-        <a class="btn btn-outline-secondary" href="{{ url_for('dashboard.customize_dashboard') }}">Customize Dashboard</a>
+        <a class="btn btn-outline-secondary" href="{{ url_for('dashboard.customize_dashboard') }}">Customize</a>
         <div class="mcpd-date-tile">
           <strong>MCPD</strong>
           <span>Command Portal</span>
@@ -205,10 +276,9 @@
 
     <section class="mcpd-action-grid" aria-label="Quick actions">
       {% for card in dashboard_cards %}
-      <a class="mcpd-action-card" href="{{ url_for(card.endpoint) }}">
+      <a class="mcpd-action-card" href="{{ url_for(card.endpoint) }}" title="{{ card.description }}">
         <span class="mcpd-action-icon" aria-hidden="true">{{ dash_icon(card.icon) }}</span>
         <strong>{{ card.label }}</strong>
-        <small>{{ card.description }}</small>
       </a>
       {% endfor %}
     </section>

@@ -184,11 +184,43 @@ body[data-theme="dark"] .table-hover tbody tr:hover {
   }
 }
 
-/* --- Desktop: constrain main when sidebar present --------------- */
-@media (min-width: 1024px) {
-  .mcpd-command-main {
-    max-width: calc(100vw - 260px);
+/* --- mcpd-command-main: sidebar offset and header clearance ----
+   The sidebar collapses off-screen at max-width: 1020px (app.css).
+   Only apply the 250px left offset when the sidebar is actually
+   visible (> 1020px). At 768-1020px the sidebar is hidden, so
+   no margin-left — content stays full-width.                         */
+body:not(.force-mobile-view) .mcpd-command-main {
+  margin-top: 72px !important;
+}
+
+@media (min-width: 1021px) {
+  body:not(.force-mobile-view) .mcpd-command-main {
+    margin-left: 250px !important;
+    margin-right: 0 !important;
+    max-width: calc(100vw - 250px) !important;
   }
+}
+
+@media (max-width: 1020px) {
+  body:not(.force-mobile-view):not(.view-desktop) .mcpd-command-main {
+    margin-top: 64px !important;
+    margin-left: 0 !important;
+    max-width: 100vw !important;
+  }
+}
+
+/* force-mobile-view hides sidebar → content full-width */
+body.force-mobile-view .mcpd-command-main {
+  margin-left: 0 !important;
+  max-width: 100vw !important;
+}
+
+/* view-desktop forces sidebar visible even on small screens → keep offset */
+body.view-desktop .mcpd-command-main {
+  margin-left: 250px !important;
+  margin-right: 0 !important;
+  max-width: calc(100vw - 250px) !important;
+  margin-top: 72px !important;
 }
 
 /* --- Signature canvas: always light so ink is visible ----------- */
@@ -2290,15 +2322,51 @@ body[data-theme="dark"] .n5w-quality-inner {
 /* ── Dark mode ────────────────────────────────────────────────── */
 body[data-theme="dark"] .assistant-ops-hero { background: linear-gradient(135deg, #030d1a 0%, #071b33 100%); }
 body[data-theme="dark"] .assistant-ops-kpis article { background: #0d1828; border-color: #26374d; }
-body[data-theme="dark"] .assistant-ops-panel { background: #0d1828; border-color: #26374d; }
+body[data-theme="dark"] .assistant-ops-kpis article span { color: #8ba5c0; }
+body[data-theme="dark"] .assistant-ops-kpis article strong { color: #e5edf6; }
+body[data-theme="dark"] .assistant-ops-kpis article small { color: #8ba5c0; }
+body[data-theme="dark"] .assistant-ops-panel { background: #0d1828; border-color: #26374d; color: #e5edf6; }
+body[data-theme="dark"] .assistant-ops-panel-head h2 { color: #e5edf6; }
 body[data-theme="dark"] .assistant-ops-task-card { border-color: #26374d; }
-body[data-theme="dark"] .assistant-ops-task-card > summary { background: #0d1828; }
+body[data-theme="dark"] .assistant-ops-task-card > summary {
+  background: #0d1828;
+  color: #e5edf6;
+}
+body[data-theme="dark"] .assistant-ops-task-card > summary strong { color: #e5edf6; }
+body[data-theme="dark"] .assistant-ops-task-card > summary small { color: #8ba5c0; }
 body[data-theme="dark"] .assistant-ops-task-card[open] > summary { border-color: #26374d; }
+/* Status pills: replace light pastels with dark-mode variants */
+body[data-theme="dark"] .assistant-ops-status { background: rgba(148,163,184,.14); color: #cbd5e1; }
+body[data-theme="dark"] .assistant-ops-status.status-in-progress   { background: rgba(59,130,246,.18); color: #93c5fd; }
+body[data-theme="dark"] .assistant-ops-status.status-complete,
+body[data-theme="dark"] .assistant-ops-status.status-completed     { background: rgba(52,211,153,.15); color: #6ee7b7; }
+body[data-theme="dark"] .assistant-ops-status.status-overdue,
+body[data-theme="dark"] .assistant-ops-status.status-past-due      { background: rgba(248,113,113,.18); color: #fca5a5; }
+body[data-theme="dark"] .assistant-ops-status.status-command-critical { background: rgba(251,191,36,.16); color: #fde68a; }
+body[data-theme="dark"] .assistant-ops-status.status-cancelled     { background: rgba(100,116,139,.15); color: #94a3b8; }
+body[data-theme="dark"] .assistant-ops-due { color: #8ba5c0; }
+body[data-theme="dark"] .assistant-ops-due.is-danger { color: #fca5a5; }
+body[data-theme="dark"] .assistant-ops-percent { color: #7eb5f5; }
 body[data-theme="dark"] .assistant-ops-update-form { background: #060f1c; border-color: #26374d; }
 body[data-theme="dark"] .assistant-ops-comment-list > div { border-color: #26374d; }
+/* Form inputs inside assistant-ops panels need a visible border against the dark panel bg */
+body[data-theme="dark"] .assistant-ops-form input,
+body[data-theme="dark"] .assistant-ops-form select,
+body[data-theme="dark"] .assistant-ops-form textarea {
+  background: #060f1c !important;
+  border-color: rgba(148, 163, 184, 0.40) !important;
+  color: #e5edf6 !important;
+}
 body[data-theme="dark"] .assistant-ops-filters select { background: #0d1828; border-color: #26374d; color: #e8edf4; }
 body[data-theme="dark"] .assistant-ops-task-copy dl div { border-color: #1a2635; }
+body[data-theme="dark"] .assistant-ops-task-copy dt { color: #8ba5c0; }
+body[data-theme="dark"] .assistant-ops-task-copy dd { color: #e5edf6; }
+body[data-theme="dark"] .assistant-ops-task-copy p { color: #cbd5e1; }
 body[data-theme="dark"] .assistant-ops-ring span { background: #0d1828; }
+body[data-theme="dark"] .assistant-ops-empty { color: #8ba5c0; }
+body[data-theme="dark"] .assistant-ops-readiness-row strong { color: #e5edf6; }
+body[data-theme="dark"] .assistant-ops-readiness-row small { color: #8ba5c0; }
+body[data-theme="dark"] .assistant-ops-readiness-row b { color: #e5edf6; }
 
 /* ── Mobile responsive ────────────────────────────────────────── */
 @media (max-width: 600px) {
@@ -5679,4 +5747,241 @@ body[data-theme="dark"] .incident-command-action-grid strong {
   .incident-log-row {
     grid-template-columns: 1fr;
   }
+}
+
+/* ── Dark mode panel / card background overrides ─────────────────────
+   Root sets --ops-panel: rgba(255,255,255,0.92) and --card-bg: #fff.
+   Dark mode forces text to near-white via var(--text) but never
+   overrides these backgrounds, making content invisible. Fix here.   */
+body[data-theme="dark"] {
+  --ops-panel: #0f1c2e;
+  --ops-panel-strong: #132235;
+  --ops-bg: #08111f;
+  --ops-ink: #e5edf6;
+  --ops-muted: #8ba5c0;
+  --ops-line: rgba(148, 163, 184, 0.18);
+}
+
+body[data-theme="dark"] .ops-panel,
+body[data-theme="dark"] .ops-kpi-card {
+  background: #0f1c2e !important;
+  border-color: rgba(148, 163, 184, 0.14) !important;
+  color: #e5edf6 !important;
+}
+
+body[data-theme="dark"] .ops-panel > summary {
+  color: #e5edf6 !important;
+}
+
+body[data-theme="dark"] .ops-head-card {
+  background: #0f1c2e !important;
+  border-color: rgba(148, 163, 184, 0.14) !important;
+}
+
+body[data-theme="dark"] .portal-card,
+body[data-theme="dark"] .mcpd-panel,
+body[data-theme="dark"] .ai-box {
+  background: #0f1c2e !important;
+  border-color: rgba(148, 163, 184, 0.14) !important;
+  color: #e5edf6 !important;
+}
+
+body[data-theme="dark"] .card {
+  background: #0f1c2e !important;
+  border-color: rgba(148, 163, 184, 0.14) !important;
+  color: #e5edf6 !important;
+}
+
+body[data-theme="dark"] .card-header {
+  background: #0d1a2a !important;
+  border-color: rgba(148, 163, 184, 0.14) !important;
+  color: #e5edf6 !important;
+}
+
+body[data-theme="dark"] .card-body {
+  background: transparent !important;
+  color: #e5edf6 !important;
+}
+
+body[data-theme="dark"] .mcpd-panel-head {
+  background: #0d1a2a !important;
+  color: #e5edf6 !important;
+  border-color: rgba(148, 163, 184, 0.14) !important;
+}
+
+body[data-theme="dark"] .list-group-item {
+  background: #0f1c2e !important;
+  border-color: rgba(148, 163, 184, 0.14) !important;
+  color: #e5edf6 !important;
+}
+
+/* Ensure form controls are visible in dark mode */
+body[data-theme="dark"] .form-control,
+body[data-theme="dark"] .form-select {
+  background: #0d1a2a !important;
+  border-color: rgba(148, 163, 184, 0.28) !important;
+  color: #e5edf6 !important;
+}
+
+body[data-theme="dark"] .form-control::placeholder {
+  color: #8ba5c0 !important;
+}
+
+body[data-theme="dark"] .form-control:focus,
+body[data-theme="dark"] .form-select:focus {
+  background: #0d1a2a !important;
+  border-color: #4f8ee8 !important;
+  color: #e5edf6 !important;
+  box-shadow: 0 0 0 3px rgba(79, 142, 232, 0.18) !important;
+}
+
+/* ── Mobile supervisor dashboard: force fully-dark background ─────────
+   mobile-refresh.css applies a split gradient to body.mobile-foundation:
+   dark navy for the top 42% of the page, then light gray from 42%→100%.
+   On the supervisor dashboard, content extends well below 42%, so lower
+   .cmd-link-btn buttons land on the light section and become invisible
+   (they use rgba(255,255,255,0.08) which is near-transparent on white).
+   :has(.cmd-shell) raises specificity to beat the !important in
+   mobile-refresh.css without touching that file.                       */
+body.mobile-foundation:has(.cmd-shell) {
+  background:
+    radial-gradient(circle at 18% 0%, rgba(201,168,106,.18), transparent 18rem),
+    linear-gradient(180deg, #071827 0%, #0d2438 100%) !important;
+  color: #f5f2ea !important;
+}
+
+/* ================================================================
+   DASHBOARD PREMIUM REDESIGN  2026-05
+   Compact metrics strip + horizontal action shortcuts
+   ================================================================ */
+
+/* Live metrics bar ------------------------------------------------ */
+.mcpd-metrics-bar {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.mcpd-metric-chip {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  background: var(--card, #fff);
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(15,23,42,.05);
+}
+
+.mcpd-metric-chip-val {
+  font-size: 1.75rem;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--text, #0f172a);
+  letter-spacing: -0.03em;
+}
+
+.mcpd-metric-chip-label {
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted, #64748b);
+  line-height: 1.3;
+}
+
+body[data-theme="dark"] .mcpd-metric-chip {
+  background: rgba(15,27,44,.96);
+  border-color: rgba(148,163,184,.16);
+}
+
+body[data-theme="dark"] .mcpd-metric-chip-val {
+  color: #f8fafc;
+}
+
+/* Metric accent left borders ------------------------------------- */
+.mcpd-metric-chip:nth-child(1) { border-left: 3px solid #1667c7; }
+.mcpd-metric-chip:nth-child(2) { border-left: 3px solid #0f766e; }
+.mcpd-metric-chip:nth-child(3) { border-left: 3px solid #7c3aed; }
+.mcpd-metric-chip:nth-child(4) { border-left: 3px solid #d97706; }
+
+@media (max-width: 767px) {
+  .mcpd-metrics-bar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .mcpd-metric-chip-val {
+    font-size: 1.35rem;
+  }
+}
+
+/* ================================================================
+   GLOBAL LAYOUT TIGHTENING  2026-05
+   Every selector uses body:not(.mobile-foundation) prefix, which:
+     (a) limits changes to desktop—mobile layouts untouched
+     (b) raises specificity to (0,2,0), beating command-hybrid.css
+         !important rules that sit at specificity (0,1,0)
+   app-patch.css loads after app.css and before command-hybrid.css,
+   so same-specificity !important rules here beat app.css and beat
+   any non-!important command-hybrid rules regardless of load order.
+   ================================================================ */
+
+/* Page wrappers: top 28px→14px, bottom 40-42px→24px ------------ */
+body:not(.mobile-foundation) .page-wrap,
+body:not(.mobile-foundation) .dashboard {
+  padding-top: 14px !important;
+  padding-bottom: 24px !important;
+}
+
+body:not(.mobile-foundation) .mcpd-command-main,
+body:not(.mobile-foundation) .demo-main {
+  padding-top: 14px !important;
+  padding-bottom: 24px !important;
+}
+
+/* Page / section headers: 22px→13px padding, 18px→10px margin -- */
+.page-head,
+.mcpd-page-head {
+  padding: 13px 18px !important;
+  margin-bottom: 10px !important;
+}
+
+/* Card / panel vertical padding: 18px→13px (keep 18px side pads) */
+body:not(.mobile-foundation) .card-body,
+body:not(.mobile-foundation) .card-footer,
+body:not(.mobile-foundation) .mcpd-panel,
+body:not(.mobile-foundation) .ai-box {
+  padding-top: 13px !important;
+  padding-bottom: 13px !important;
+}
+
+/* Card / panel header rows */
+body:not(.mobile-foundation) .card-header,
+body:not(.mobile-foundation) .mcpd-panel-head {
+  padding-top: 10px !important;
+  padding-bottom: 10px !important;
+}
+
+/* Grid gaps: 16px→10px ------------------------------------------ */
+body:not(.mobile-foundation) .stats-grid,
+body:not(.mobile-foundation) .card-grid,
+body:not(.mobile-foundation) .demo-card-grid {
+  gap: 10px !important;
+}
+
+/* Legal / authority page inner gap */
+body:not(.mobile-foundation) .authority-page-wrap {
+  gap: 10px !important;
+}
+
+/* ops-panel stacking: mb-3 (16px) → 10px on desktop */
+body:not(.mobile-foundation) .ops-panel.mb-3,
+body:not(.mobile-foundation) .ops-head-card.mb-3,
+body:not(.mobile-foundation) .search-panel.mb-3 {
+  margin-bottom: 10px !important;
+}
+
+body:not(.mobile-foundation) .ops-panel.mb-4,
+body:not(.mobile-foundation) .ops-head-card.mb-4 {
+  margin-bottom: 14px !important;
 }

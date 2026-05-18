@@ -50,6 +50,7 @@
 <aside class="mcpd-command-sidebar" data-nav-menu aria-label="Site navigation">
   <nav aria-label="Main navigation">
     <a class="{% if endpoint == 'dashboard.dashboard' %}is-active{% endif %}" href="{{ url_for('dashboard.dashboard') }}"><svg class="nav-icon" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>Dashboard</a>
+    {% if portal_can_access_assistant_operations %}
     <a class="{% if dispatch_active %}is-active{% endif %}" href="{{ url_for('dashboard.dispatch_command_center') }}"><svg class="nav-icon" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 8h3l2-5 3 10 2-5h2"/><circle cx="8" cy="8" r="6"/></svg>Dispatch / Command Center</a>
     {% if incident_command_role_allowed or portal_can_access_assistant_operations|default(false) or portal_can_access_builder_mode|default(false) %}
       <a class="{% if endpoint.startswith('incident_command.') %}is-active{% endif %}" href="{{ url_for('incident_command.dashboard') }}"><svg class="nav-icon" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M8 1.5l6 3v4.25c0 3.15-2.3 5.25-6 6.75-3.7-1.5-6-3.6-6-6.75V4.5l6-3z"/><path d="M8 5v3.5l2.5 1.5"/></svg>Incident Command</a>

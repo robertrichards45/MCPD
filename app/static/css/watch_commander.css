@@ -1,6 +1,6 @@
 .wc-page-shell {
   margin-left: var(--sidebar-width, 260px);
-  padding: 96px 24px 40px;
+  padding: 96px 24px 24px;
   width: min(100%, calc(100vw - var(--sidebar-width, 260px)));
   overflow-x: hidden;
 }
@@ -22,9 +22,9 @@
 
 .wc-page-header {
   display: grid;
-  gap: 18px;
-  margin-bottom: 18px;
-  padding: 22px;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 14px 18px;
 }
 
 .wc-page-header h1 {
@@ -103,9 +103,9 @@
   color: var(--text);
   display: grid;
   font-weight: 900;
-  gap: 8px;
-  min-height: 116px;
-  padding: 16px;
+  gap: 6px;
+  min-height: 80px;
+  padding: 12px 16px;
   text-decoration: none;
 }
 
