@@ -1414,15 +1414,7 @@ def supervisor_officer_update(user_id):
     db.session.commit()
     if target.supervisor_id:
         try:
-            existing = (WatchAssignment.query
-                        .filter_by(officer_id=target.id)
-                        .order_by(WatchAssignment.updated_at.desc(), WatchAssignment.id.desc())
-                        .first())
-            if existing:
-                if existing.status in ('Off Duty', 'Leave'):
-                    existing.status = 'On Duty'
-                    db.session.commit()
-            else:
+            if WatchAssignment.query.filter_by(officer_id=target.id).count() == 0:
                 db.session.add(WatchAssignment(officer_id=target.id, assignment_type='Patrol', status='On Duty'))
                 db.session.commit()
         except Exception:

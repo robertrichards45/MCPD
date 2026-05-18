@@ -138,7 +138,8 @@
   <script>
   /* ── Location reporter ──────────────────────────────────────────────────
      Uses watchPosition so tracking persists across page navigations.
-     Throttled to one push per 60 seconds to balance bandwidth and freshness. */
+     Throttled to one push per 60 seconds. enableHighAccuracy forces GPS
+     hardware instead of WiFi/IP fallback (which can be miles off). */
   (function () {
     if (!navigator.geolocation) return;
     var KEY      = 'mcpd-loc-ts';
@@ -153,10 +154,22 @@
       }).catch(function () {});
     }
 
+    function showLocationWarning() {
+      if (document.getElementById('mcpd-loc-warn')) return;
+      var bar = document.createElement('div');
+      bar.id = 'mcpd-loc-warn';
+      bar.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#b45309;color:#fff;padding:10px 16px;font-size:.85rem;font-weight:600;display:flex;align-items:center;justify-content:space-between;gap:8px;';
+      bar.innerHTML = '<span>⚠ Location sharing is OFF — your position cannot be tracked. Enable location in your browser settings and reload.</span>'
+        + '<button onclick="this.parentNode.remove()" style="background:none;border:1px solid rgba(255,255,255,.5);color:#fff;padding:2px 10px;border-radius:4px;cursor:pointer;font-size:.8rem;">Dismiss</button>';
+      document.body.appendChild(bar);
+    }
+
     var _lastPush = parseInt(localStorage.getItem(KEY) || '0', 10);
 
     navigator.geolocation.watchPosition(
       function (pos) {
+        var warn = document.getElementById('mcpd-loc-warn');
+        if (warn) warn.remove();
         var now = Date.now();
         if (now - _lastPush >= INTERVAL) {
           push(pos.coords.latitude, pos.coords.longitude);
@@ -164,8 +177,10 @@
           localStorage.setItem(KEY, now);
         }
       },
-      function () { /* permission denied or unavailable — silent */ },
-      { timeout: 10000, maximumAge: 120000, enableHighAccuracy: false }
+      function (err) {
+        if (err.code === 1) { showLocationWarning(); } /* PERMISSION_DENIED */
+      },
+      { timeout: 15000, maximumAge: 0, enableHighAccuracy: true }
     );
 
     /* Always push on first page load to register position immediately */
@@ -175,8 +190,10 @@
         _lastPush = Date.now();
         localStorage.setItem(KEY, _lastPush);
       },
-      function () {},
-      { timeout: 8000, maximumAge: 30000, enableHighAccuracy: false }
+      function (err) {
+        if (err.code === 1) { showLocationWarning(); }
+      },
+      { timeout: 15000, maximumAge: 0, enableHighAccuracy: true }
     );
   }());
   </script>
@@ -250,7 +267,7 @@
     }
     connectSSE();
 
-    /* ── Poll unread count every 30 s ── */
+    /* ── Poll unread count every 8 s ── */
     function pollUnread() {
       fetch('/notifications/unread')
         .then(function (r) { return r.json(); })
@@ -258,7 +275,7 @@
         .catch(function () {});
     }
     pollUnread();
-    setInterval(pollUnread, 30000);
+    setInterval(pollUnread, 8000);
   }());
   </script>
   {% endif %}

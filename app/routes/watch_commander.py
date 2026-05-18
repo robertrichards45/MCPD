@@ -589,7 +589,14 @@ def api_units():
     # In demo mode, show all active officers even without assignments
     units = []
     for idx, officer in enumerate(active_users):
+        # Prefer shift-linked assignments (formal WC assignments) over bare auto-created ones
         assignment = (
+            WatchAssignment.query
+            .filter_by(officer_id=officer.id)
+            .filter(WatchAssignment.shift_id.isnot(None))
+            .order_by(WatchAssignment.updated_at.desc(), WatchAssignment.id.desc())
+            .first()
+        ) or (
             WatchAssignment.query
             .filter_by(officer_id=officer.id)
             .order_by(WatchAssignment.updated_at.desc(), WatchAssignment.id.desc())
@@ -661,7 +668,14 @@ def api_update_unit_location():
         lat, lng = float(lat), float(lng)
     except (TypeError, ValueError):
         return jsonify({'error': 'Invalid coordinates'}), 400
+    # Prefer shift-linked assignment so GPS lands on the formal assignment
     assignment = (
+        WatchAssignment.query
+        .filter_by(officer_id=current_user.id)
+        .filter(WatchAssignment.shift_id.isnot(None))
+        .order_by(WatchAssignment.updated_at.desc(), WatchAssignment.id.desc())
+        .first()
+    ) or (
         WatchAssignment.query
         .filter_by(officer_id=current_user.id)
         .order_by(WatchAssignment.updated_at.desc(), WatchAssignment.id.desc())

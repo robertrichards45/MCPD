@@ -70,27 +70,94 @@
           </div>
           {% set user_read = m.reads | selectattr('user_id', 'equalto', current_user.id) | list %}
           {% if m.is_broadcast and not user_read %}
-          <form method="post" action="{{ url_for('notifications.mark_read', msg_id=m.id) }}">
-            <input type="hidden" name="csrf_token" value="{{ g.csrf_token }}">
-            <button class="btn btn-sm btn-outline-secondary">Mark Read</button>
-          </form>
+          <button class="btn btn-sm btn-outline-secondary mark-read-btn" data-msg-id="{{ m.id }}" data-article="msg-{{ m.id }}">Mark Read</button>
           {% elif m.is_broadcast and user_read %}
           <span class="small text-muted">Read {{ user_read[0].read_at.strftime('%H:%M') }}</span>
           {% elif not m.is_broadcast and not m.read_at and m.recipient_id == current_user.id %}
-          <form method="post" action="{{ url_for('notifications.mark_read', msg_id=m.id) }}">
-            <input type="hidden" name="csrf_token" value="{{ g.csrf_token }}">
-            <button class="btn btn-sm btn-outline-secondary">Mark Read</button>
-          </form>
+          <button class="btn btn-sm btn-outline-secondary mark-read-btn" data-msg-id="{{ m.id }}" data-article="msg-{{ m.id }}">Mark Read</button>
           {% elif not m.is_broadcast and m.read_at %}
           <span class="small text-muted">Read {{ m.read_at.strftime('%H:%M') }}</span>
           {% endif %}
         </div>
         <p class="mb-0">{{ m.body }}</p>
+        {% if not can_compose and not m.is_broadcast and m.recipient_id == current_user.id %}
+        <div class="mt-3 pt-3" style="border-top:1px solid rgba(255,255,255,.08)">
+          <form class="reply-form d-flex gap-2 align-items-end" data-msg-id="{{ m.id }}">
+            <input type="hidden" name="csrf_token" value="{{ g.csrf_token }}">
+            <textarea class="form-control form-control-sm" name="body" rows="2"
+              placeholder="Reply to {{ m.sender.display_name }}…" style="flex:1;min-width:0;resize:none;"></textarea>
+            <button type="submit" class="btn btn-sm btn-primary" style="white-space:nowrap">Reply</button>
+          </form>
+          <div class="reply-status small mt-1" style="color:#22c55e;display:none"></div>
+        </div>
+        {% elif m.sender_id == current_user.id %}
+        <div class="mt-1" style="font-size:.72rem;color:#64748b;">Sent by you → {{ m.recipient.display_name if m.recipient else 'Broadcast' }}</div>
+        {% endif %}
       </article>
       {% else %}
       <div class="ops-panel text-center text-muted">No messages yet.</div>
       {% endfor %}
     </div>
+
+    <script>
+    document.querySelectorAll('.reply-form').forEach(function (form) {
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var msgId  = form.dataset.msgId;
+        var body   = form.querySelector('[name="body"]').value.trim();
+        var status = form.nextElementSibling;
+        if (!body) return;
+        var csrf = (document.querySelector('meta[name="csrf-token"]') || {}).getAttribute('content') || '';
+        var fd = new FormData(form);
+        fetch('/notifications/reply/' + msgId, {
+          method: 'POST',
+          headers: { 'X-Requested-With': 'fetch', 'X-CSRFToken': csrf },
+          body: fd,
+        })
+          .then(function (r) { return r.json(); })
+          .then(function (d) {
+            if (d.ok) {
+              form.querySelector('[name="body"]').value = '';
+              status.textContent = 'Reply sent.';
+              status.style.display = '';
+              setTimeout(function () { status.style.display = 'none'; }, 3000);
+            } else {
+              status.style.color = '#ef4444';
+              status.textContent = d.error || 'Failed.';
+              status.style.display = '';
+            }
+          })
+          .catch(function () {
+            status.style.color = '#ef4444';
+            status.textContent = 'Network error.';
+            status.style.display = '';
+          });
+      });
+    });
+
+    var csrf = (document.querySelector('meta[name="csrf-token"]') || {}).getAttribute('content') || '';
+    document.querySelectorAll('.mark-read-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var msgId   = btn.dataset.msgId;
+        var article = document.getElementById(btn.dataset.article);
+        btn.disabled = true;
+        fetch('/notifications/read/' + msgId, {
+          method: 'POST',
+          headers: { 'X-Requested-With': 'fetch', 'X-CSRFToken': csrf },
+        })
+          .then(function (r) { return r.json(); })
+          .then(function (d) {
+            if (d.ok && article) {
+              btn.replaceWith(Object.assign(document.createElement('span'), {
+                className: 'small text-muted',
+                textContent: 'Read',
+              }));
+            }
+          })
+          .catch(function () { btn.disabled = false; });
+      });
+    });
+    </script>
   </main>
 </div>
 {% endblock %}

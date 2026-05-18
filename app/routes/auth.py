@@ -48,24 +48,18 @@ def _utcnow_naive():
 
 
 def _ensure_watch_assignment(user):
-    """Auto-create or reactivate a WatchAssignment for an officer assigned to a supervisor."""
+    """Create a bare WatchAssignment only when an officer has none at all.
+    Never creates a duplicate — existing shift assignments are never touched."""
     if not getattr(user, 'supervisor_id', None):
         return
     try:
-        existing = (WatchAssignment.query
-                    .filter_by(officer_id=user.id)
-                    .order_by(WatchAssignment.updated_at.desc(), WatchAssignment.id.desc())
-                    .first())
-        if existing:
-            if existing.status not in ('Off Duty', 'Leave'):
-                return
-            existing.status = 'On Duty'
-        else:
-            db.session.add(WatchAssignment(
-                officer_id=user.id,
-                assignment_type='Patrol',
-                status='On Duty',
-            ))
+        if WatchAssignment.query.filter_by(officer_id=user.id).count() > 0:
+            return
+        db.session.add(WatchAssignment(
+            officer_id=user.id,
+            assignment_type='Patrol',
+            status='On Duty',
+        ))
         db.session.commit()
     except Exception:
         db.session.rollback()

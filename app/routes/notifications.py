@@ -255,7 +255,40 @@ def mark_read(msg_id):
         if not msg.read_at:
             msg.read_at = utcnow_naive()
             db.session.commit()
-    return jsonify({'ok': True})
+    if request.headers.get('X-Requested-With') == 'fetch':
+        return jsonify({'ok': True})
+    return redirect(url_for('notifications.inbox'))
+
+
+# ── Reply to a message ─────────────────────────────────────────────────────
+
+@bp.route('/reply/<int:msg_id>', methods=['POST'])
+@login_required
+def reply(msg_id):
+    orig = CommandMessage.query.get_or_404(msg_id)
+    uid = current_user.id
+    # Officer must be the recipient (or a broadcast receiver) to reply
+    if not orig.is_broadcast and orig.recipient_id != uid:
+        abort(403)
+    body = (request.form.get('body') or '').strip()
+    if not body:
+        return jsonify({'error': 'Message body required'}), 400
+    msg = CommandMessage(
+        sender_id=uid,
+        recipient_id=orig.sender_id,
+        subject=f'Re: {orig.subject or orig.body[:40]}',
+        body=body,
+        priority='Normal',
+        is_broadcast=False,
+    )
+    db.session.add(msg)
+    db.session.commit()
+    recipient = db.session.get(User, orig.sender_id)
+    if recipient:
+        _deliver(msg, [recipient])
+    if request.headers.get('X-Requested-With') == 'fetch':
+        return jsonify({'ok': True})
+    return redirect(url_for('notifications.inbox'))
 
 
 # ── Inbox page ─────────────────────────────────────────────────────────────
@@ -268,6 +301,7 @@ def inbox():
         CommandMessage.query.filter(
             db.or_(
                 CommandMessage.recipient_id == uid,
+                CommandMessage.sender_id == uid,
                 CommandMessage.is_broadcast.is_(True),
             )
         )

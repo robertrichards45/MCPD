@@ -484,7 +484,7 @@
         + ' onchange="updateToDisplay()" onclick="event.stopPropagation()">'
         + '<span class="dispatch-roster-dot" style="background:' + u.color + ';cursor:pointer" onclick="selectDispatchUnit(' + u.id + ')"></span>'
         + '<span class="dispatch-roster-name" onclick="selectDispatchUnit(' + u.id + ')">' + u.name + '</span>'
-        + '<span class="dispatch-roster-status">' + u.status + '</span>'
+        + '<span class="dispatch-roster-status">' + u.status + (u.location_fresh ? '' : ' ⚠') + '</span>'
         + '</div>';
     }).join('');
     updateToDisplay();
@@ -524,7 +524,7 @@
       + '<div class="unit-popup-detail">' + u.role + (u.badge ? ' · #' + u.badge : '') + '</div>'
       + '<div class="unit-popup-status-row">'
         + '<span class="unit-popup-status-badge" style="background:' + u.color + '22;color:' + u.color + ';border-color:' + u.color + '44">' + u.status + '</span>'
-        + '<span style="font-size:.7rem;color:#8ba5c0;">' + u.location + '</span>'
+        + '<span style="font-size:.7rem;color:#8ba5c0;">' + u.location + (u.location_fresh ? '' : ' <span title="GPS not active — approximate position" style="color:#f59e0b;">⚠ approx</span>') + '</span>'
       + '</div>'
       + '<div class="unit-popup-label">Status</div>'
       + '<select class="unit-popup-select" id="popup-sel-' + u.id + '">' + opts + '</select>'
@@ -589,7 +589,9 @@
           if (ex) {
             ex.setLatLng([u.lat, u.lng]);
             ex.setIcon(unitIcon(u.color));
-            ex.setPopupContent(buildPopup(u));
+            if (!ex.isPopupOpen()) {
+              ex.setPopupContent(buildPopup(u));
+            }
             ex.setTooltipContent(u.name + ' — ' + u.status);
           } else {
             var m = L.marker([u.lat, u.lng], { icon: unitIcon(u.color) })
