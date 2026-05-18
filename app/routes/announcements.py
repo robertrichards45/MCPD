@@ -1,4 +1,6 @@
-from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
+import hmac
+
+from flask import Blueprint, abort, flash, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_required
 
 from ..extensions import db
@@ -6,6 +8,12 @@ from ..models import Announcement, ROLE_WATCH_COMMANDER
 
 
 bp = Blueprint('announcements', __name__)
+
+
+def _csrf_ok() -> bool:
+    token = request.form.get('_csrf_token') or request.headers.get('X-CSRFToken') or ''
+    expected = session.get('_csrf_token', '')
+    return bool(expected and hmac.compare_digest(str(token), str(expected)))
 
 
 def _visible_announcements():
@@ -25,6 +33,8 @@ def _visible_announcements():
 @login_required
 def board():
     if request.method == 'POST':
+        if not _csrf_ok():
+            abort(403)
         if not current_user.can_manage_team():
             abort(403)
 
@@ -66,6 +76,8 @@ def board():
 @bp.route('/announcements/<int:announcement_id>/toggle', methods=['POST'])
 @login_required
 def toggle(announcement_id):
+    if not _csrf_ok():
+        abort(403)
     if not current_user.can_manage_team():
         abort(403)
 

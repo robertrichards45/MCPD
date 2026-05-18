@@ -1,4 +1,5 @@
 ﻿import os
+import secrets
 from datetime import timedelta
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -91,7 +92,7 @@ def _normalize_database_uri(value):
     return f"sqlite:///{absolute_path.replace(os.sep, '/')}"
 
 class Config:
-    SECRET_KEY = os.environ.get('SECRET_KEY', 'change-me')
+    SECRET_KEY = os.environ.get('SECRET_KEY') or secrets.token_hex(32)
     SQLALCHEMY_DATABASE_URI = _normalize_database_uri(_database_url_from_env())
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     REMEMBER_COOKIE_DURATION = timedelta(days=7)

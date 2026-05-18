@@ -15,6 +15,7 @@
       <summary>Post Notice</summary>
       <div class="mt-2">
         <form method="post" class="row g-3">
+          <input type="hidden" name="_csrf_token" value="{{ session.get('_csrf_token', '') }}" />
           <div class="col-md-5">
             <label class="form-label text-dark">Title</label>
             <input class="form-control" name="title" required />
@@ -71,6 +72,7 @@
           </div>
           {% if can_post_announcements %}
           <form method="post" action="{{ url_for('announcements.toggle', announcement_id=item.id) }}">
+            <input type="hidden" name="_csrf_token" value="{{ session.get('_csrf_token', '') }}" />
             <button class="btn btn-sm btn-outline-secondary">{{ 'Archive' if item.is_active else 'Activate' }}</button>
           </form>
           {% endif %}

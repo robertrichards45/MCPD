@@ -145,7 +145,7 @@ class User(UserMixin, db.Model):
     cac_identifier = db.Column(db.String(255), unique=True, nullable=True)
     cac_enabled = db.Column(db.Boolean, default=False)
     cac_linked_at = db.Column(db.DateTime, nullable=True)
-    supervisor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    supervisor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
     role = db.Column(db.String(30), default=ROLE_PATROL_OFFICER, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     pin_hash = db.Column(db.String(255), nullable=True)
@@ -244,7 +244,7 @@ class Form(db.Model):
     official_source_last_checked_at = db.Column(db.DateTime, nullable=True)
     official_source_last_status = db.Column(db.Text, nullable=True)
     source_auto_update_enabled = db.Column(db.Boolean, default=False, nullable=False)
-    uploaded_by = db.Column(db.Integer, db.ForeignKey('user.id'))
+    uploaded_by = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
     uploaded_at = db.Column(db.DateTime, default=utcnow_naive)
     is_active = db.Column(db.Boolean, default=True, index=True)
     is_demo = db.Column(db.Boolean, default=False, nullable=False, index=True)
@@ -317,7 +317,7 @@ class Announcement(db.Model):
     message = db.Column(db.Text, nullable=False)
     scope = db.Column(db.String(40), nullable=False, default='ALL', index=True)
     is_active = db.Column(db.Boolean, default=True, index=True)
-    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
     created_at = db.Column(db.DateTime, default=utcnow_naive, index=True)
 
     creator = db.relationship('User', foreign_keys=[created_by], backref='announcements_created')
@@ -328,21 +328,26 @@ class TrainingRoster(db.Model):
     description = db.Column(db.Text, nullable=True)
     file_path_original = db.Column(db.String(255), nullable=False)
     file_path_compiled = db.Column(db.String(255), nullable=True)
-    uploaded_by = db.Column(db.Integer, db.ForeignKey('user.id'))
+    uploaded_by = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
     uploaded_at = db.Column(db.DateTime, default=utcnow_naive)
     status = db.Column(db.String(20), default='ACTIVE')
     is_demo = db.Column(db.Boolean, default=False, nullable=False, index=True)
     demo_batch_id = db.Column(db.String(80), nullable=True, index=True)
 
+    uploader = db.relationship('User', foreign_keys=[uploaded_by], backref='training_rosters')
+
 class TrainingSignature(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    roster_id = db.Column(db.Integer, db.ForeignKey('training_roster.id'))
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    roster_id = db.Column(db.Integer, db.ForeignKey('training_roster.id'), index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
     signature_path = db.Column(db.String(255), nullable=False)
     signed_at = db.Column(db.DateTime, default=utcnow_naive)
     comment = db.Column(db.String(255), nullable=True)
     is_demo = db.Column(db.Boolean, default=False, nullable=False, index=True)
     demo_batch_id = db.Column(db.String(80), nullable=True, index=True)
+
+    roster = db.relationship('TrainingRoster', foreign_keys=[roster_id], backref='signatures')
+    officer = db.relationship('User', foreign_keys=[user_id], backref='training_signatures')
 
 class StatCategory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -352,25 +357,32 @@ class StatCategory(db.Model):
 
 class OfficerStat(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    category_id = db.Column(db.Integer, db.ForeignKey('stat_category.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
+    category_id = db.Column(db.Integer, db.ForeignKey('stat_category.id'), index=True)
     year_key = db.Column(db.String(9), nullable=False)
     value = db.Column(db.Integer, default=0)
 
+    officer = db.relationship('User', foreign_keys=[user_id], backref='officer_stats')
+    category = db.relationship('StatCategory', foreign_keys=[category_id], backref='stats')
+
 class StatsUpload(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    uploaded_by = db.Column(db.Integer, db.ForeignKey('user.id'))
+    uploaded_by = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
     uploaded_at = db.Column(db.DateTime, default=utcnow_naive)
     filename = db.Column(db.String(255), nullable=False)
     file_path = db.Column(db.String(255), nullable=False)
     parse_summary_json = db.Column(db.Text, nullable=True)
 
+    uploader = db.relationship('User', foreign_keys=[uploaded_by], backref='stats_uploads')
+
 class AuditLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    actor_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    actor_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
     action = db.Column(db.String(100), nullable=False)
     details = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=utcnow_naive)
+
+    actor = db.relationship('User', foreign_keys=[actor_id], backref='audit_logs')
 
 
 class DemoRecord(db.Model):
@@ -396,7 +408,7 @@ class EnrollmentCode(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
     expires_at = db.Column(db.DateTime, nullable=False, index=True)
     used_at = db.Column(db.DateTime, nullable=True, index=True)
-    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
     created_at = db.Column(db.DateTime, default=utcnow_naive)
 
     user = db.relationship('User', foreign_keys=[user_id], backref='enrollment_codes')
@@ -434,10 +446,12 @@ class EmergencyContact(db.Model):
 
 class CleoFormData(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
     page_key = db.Column(db.String(100), nullable=False)
     data_json = db.Column(db.Text, nullable=False)
     updated_at = db.Column(db.DateTime, default=utcnow_naive)
+
+    user = db.relationship('User', foreign_keys=[user_id], backref='cleo_form_data')
 
 class CleoFormLayout(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -447,12 +461,14 @@ class CleoFormLayout(db.Model):
 
 class CleoFormFile(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
     page_key = db.Column(db.String(100), nullable=False)
     file_path = db.Column(db.String(255), nullable=False)
     enclosure_no = db.Column(db.String(50), nullable=True)
     description = db.Column(db.String(255), nullable=True)
     uploaded_at = db.Column(db.DateTime, default=utcnow_naive)
+
+    user = db.relationship('User', foreign_keys=[user_id], backref='cleo_form_files')
 
 class CleoReport(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -475,10 +491,12 @@ class CleoReport(db.Model):
 
 class CleoReportPage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    report_id = db.Column(db.Integer, db.ForeignKey('cleo_report.id'))
+    report_id = db.Column(db.Integer, db.ForeignKey('cleo_report.id'), index=True)
     page_key = db.Column(db.String(100), nullable=False)
     data_json = db.Column(db.Text, nullable=False)
     updated_at = db.Column(db.DateTime, default=utcnow_naive)
+
+    report = db.relationship('CleoReport', foreign_keys=[report_id], backref='pages')
 
 
 class CleoReportGrade(db.Model):
@@ -515,20 +533,25 @@ class CleoReportAnnotation(db.Model):
 class Report(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
-    owner_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    status = db.Column(db.String(20), default='DRAFT')
+    owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
+    status = db.Column(db.String(20), default='DRAFT', index=True)
     is_demo = db.Column(db.Boolean, default=False, nullable=False, index=True)
     demo_batch_id = db.Column(db.String(80), nullable=True, index=True)
     created_at = db.Column(db.DateTime, default=utcnow_naive)
     updated_at = db.Column(db.DateTime, default=utcnow_naive)
 
+    owner = db.relationship('User', foreign_keys=[owner_id], backref='reports')
+
 class ReportAttachment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    report_id = db.Column(db.Integer, db.ForeignKey('report.id'))
+    report_id = db.Column(db.Integer, db.ForeignKey('report.id'), index=True)
     file_path = db.Column(db.String(255), nullable=False)
     page_key = db.Column(db.String(100), nullable=False)
-    uploaded_by = db.Column(db.Integer, db.ForeignKey('user.id'))
+    uploaded_by = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
     uploaded_at = db.Column(db.DateTime, default=utcnow_naive)
+
+    report = db.relationship('Report', foreign_keys=[report_id], backref='attachments')
+    uploader = db.relationship('User', foreign_keys=[uploaded_by], backref='report_attachments')
 
 
 class BodycamFootage(db.Model):
@@ -555,23 +578,31 @@ class BodycamFootage(db.Model):
 
 class ReportPerson(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    report_id = db.Column(db.Integer, db.ForeignKey('report.id'))
+    report_id = db.Column(db.Integer, db.ForeignKey('report.id'), index=True)
     name = db.Column(db.String(120), nullable=False)
     role = db.Column(db.String(50), nullable=True)
 
+    report = db.relationship('Report', foreign_keys=[report_id], backref='persons')
+
 class ReportCoAuthor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    report_id = db.Column(db.Integer, db.ForeignKey('report.id'))
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    report_id = db.Column(db.Integer, db.ForeignKey('report.id'), index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
+
+    report = db.relationship('Report', foreign_keys=[report_id], backref='co_authors')
+    user = db.relationship('User', foreign_keys=[user_id], backref='co_authored_reports')
 
 class ReportGrade(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    report_id = db.Column(db.Integer, db.ForeignKey('report.id'))
-    grader_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    report_id = db.Column(db.Integer, db.ForeignKey('report.id'), index=True)
+    grader_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
     score = db.Column(db.Integer, nullable=False)
     comments = db.Column(db.Text, nullable=True)
     required_fixes = db.Column(db.Text, nullable=True)
     graded_at = db.Column(db.DateTime, default=utcnow_naive)
+
+    report = db.relationship('Report', foreign_keys=[report_id], backref='grades')
+    grader = db.relationship('User', foreign_keys=[grader_id], backref='graded_reports')
 
 
 class AccidentReconstruction(db.Model):
@@ -602,14 +633,16 @@ class ReconstructionCase(db.Model):
     title = db.Column(db.String(200), nullable=False)
     incident_date = db.Column(db.String(10), nullable=True)  # YYYY-MM-DD (string keeps UI simple)
     location = db.Column(db.String(255), nullable=True)
-    created_by = db.Column(db.Integer, db.ForeignKey('user.id'))
+    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
     created_at = db.Column(db.DateTime, default=utcnow_naive)
     updated_at = db.Column(db.DateTime, default=utcnow_naive)
+
+    creator = db.relationship('User', foreign_keys=[created_by], backref='reconstruction_cases')
 
 
 class ReconstructionVehicle(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    case_id = db.Column(db.Integer, db.ForeignKey('reconstruction_case.id'))
+    case_id = db.Column(db.Integer, db.ForeignKey('reconstruction_case.id'), index=True)
     reconstruction_id = db.Column(db.Integer, db.ForeignKey('accident_reconstruction.id'), nullable=True, index=True)
     label = db.Column(db.String(40), nullable=True)
     type = db.Column(db.String(80), nullable=True)
@@ -627,6 +660,7 @@ class ReconstructionVehicle(db.Model):
     notes = db.Column(db.Text, nullable=True)
 
     reconstruction = db.relationship('AccidentReconstruction', foreign_keys=[reconstruction_id], backref='vehicles')
+    case = db.relationship('ReconstructionCase', foreign_keys=[case_id], backref='vehicles')
 
 
 class ReconstructionObject(db.Model):
@@ -645,7 +679,7 @@ class ReconstructionObject(db.Model):
 
 class ReconstructionMeasurement(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    case_id = db.Column(db.Integer, db.ForeignKey('reconstruction_case.id'))
+    case_id = db.Column(db.Integer, db.ForeignKey('reconstruction_case.id'), index=True)
     reconstruction_id = db.Column(db.Integer, db.ForeignKey('accident_reconstruction.id'), nullable=True, index=True)
     measurement_type = db.Column(db.String(60), nullable=True)
     label = db.Column(db.String(120), nullable=False)
@@ -659,6 +693,7 @@ class ReconstructionMeasurement(db.Model):
     created_at = db.Column(db.DateTime, default=utcnow_naive)
 
     reconstruction = db.relationship('AccidentReconstruction', foreign_keys=[reconstruction_id], backref='measurements')
+    case = db.relationship('ReconstructionCase', foreign_keys=[case_id], backref='measurements')
 
 
 class ReconstructionMedia(db.Model):
@@ -696,11 +731,14 @@ class ReconstructionTimelineItem(db.Model):
 
 class ReconstructionAttachment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    case_id = db.Column(db.Integer, db.ForeignKey('reconstruction_case.id'))
+    case_id = db.Column(db.Integer, db.ForeignKey('reconstruction_case.id'), index=True)
     file_path = db.Column(db.String(255), nullable=False)
     kind = db.Column(db.String(30), nullable=True)  # photo, pdf, video, diagram
-    uploaded_by = db.Column(db.Integer, db.ForeignKey('user.id'))
+    uploaded_by = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
     uploaded_at = db.Column(db.DateTime, default=utcnow_naive)
+
+    case = db.relationship('ReconstructionCase', foreign_keys=[case_id], backref='attachments')
+    uploader = db.relationship('User', foreign_keys=[uploaded_by], backref='reconstruction_attachments')
 
 
 class TruckGateCompany(db.Model):
@@ -762,7 +800,9 @@ class TruckGateImportRun(db.Model):
     inserted_count = db.Column(db.Integer, default=0)
     updated_count = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=utcnow_naive)
-    uploaded_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    uploaded_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
+
+    uploader = db.relationship('User', foreign_keys=[uploaded_by], backref='truck_gate_import_runs')
 
 
 class TruckGateLog(db.Model):
@@ -775,7 +815,7 @@ class TruckGateLog(db.Model):
     inspection_type = db.Column(db.String(50), nullable=True)
     scan_token = db.Column(db.String(120), nullable=True)
     notes = db.Column(db.Text, nullable=True)
-    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
     created_at = db.Column(db.DateTime, default=utcnow_naive, index=True)
 
     driver = db.relationship('TruckGateDriver', backref='gate_logs')
@@ -802,8 +842,8 @@ class RfiWeaponProfile(db.Model):
     radio_identifier = db.Column(db.String(30), nullable=True, index=True)
     is_command_level = db.Column(db.Boolean, default=False)
     active = db.Column(db.Boolean, default=True)
-    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
-    updated_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
+    updated_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
     created_at = db.Column(db.DateTime, default=utcnow_naive)
     updated_at = db.Column(db.DateTime, default=utcnow_naive, onupdate=utcnow_naive)
 
@@ -825,7 +865,7 @@ class RfiAppointmentUpload(db.Model):
     extracted_weapon_serial_number = db.Column(db.String(80), nullable=True)
     extracted_rack_number = db.Column(db.String(30), nullable=True)
     committed_profile_id = db.Column(db.Integer, db.ForeignKey('rfi_weapon_profile.id'), nullable=True, index=True)
-    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
     created_at = db.Column(db.DateTime, default=utcnow_naive)
 
     committed_profile = db.relationship('RfiWeaponProfile', foreign_keys=[committed_profile_id], backref='source_appointment_uploads')
@@ -846,8 +886,8 @@ class ArmoryAsset(db.Model):
     is_active = db.Column(db.Boolean, default=True)
     status = db.Column(db.String(20), default='AVAILABLE', nullable=False, index=True)
     current_holder_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
-    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
-    updated_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
+    updated_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
     created_at = db.Column(db.DateTime, default=utcnow_naive)
     updated_at = db.Column(db.DateTime, default=utcnow_naive, onupdate=utcnow_naive)
 
@@ -859,8 +899,8 @@ class ArmoryOfficerCard(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
     token_id = db.Column(db.String(64), unique=True, nullable=False, index=True)
     status = db.Column(db.String(20), default='ACTIVE', nullable=False, index=True)
-    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
-    revoked_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
+    revoked_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
     created_at = db.Column(db.DateTime, default=utcnow_naive)
     revoked_at = db.Column(db.DateTime, nullable=True)
 
@@ -876,7 +916,7 @@ class ArmoryTransaction(db.Model):
     status = db.Column(db.String(20), default='ACTIVE', nullable=False, index=True)
     rounds_count = db.Column(db.Integer, nullable=True)
     notes = db.Column(db.Text, nullable=True)
-    performed_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    performed_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
     created_at = db.Column(db.DateTime, default=utcnow_naive, index=True)
     voided_at = db.Column(db.DateTime, nullable=True)
     void_reason = db.Column(db.String(255), nullable=True)
@@ -895,19 +935,19 @@ class VehicleInspection(db.Model):
     condition_json = db.Column(db.Text, nullable=True)
     remarks = db.Column(db.Text, nullable=True)
     officer_signature = db.Column(db.Text, nullable=True)
-    officer_signed_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    officer_signed_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
     officer_signed_at = db.Column(db.DateTime, nullable=True)
     sgt_signature = db.Column(db.Text, nullable=True)
-    sgt_signed_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    sgt_signed_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
     sgt_signed_at = db.Column(db.DateTime, nullable=True)
     watch_commander_signature = db.Column(db.Text, nullable=True)
-    watch_commander_signed_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    watch_commander_signed_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
     watch_commander_signed_at = db.Column(db.DateTime, nullable=True)
     correction_reason = db.Column(db.String(255), nullable=True)
     returned_at = db.Column(db.DateTime, nullable=True)
     status = db.Column(db.String(20), default='DRAFT', nullable=False, index=True)
-    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
-    updated_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
+    updated_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
     created_at = db.Column(db.DateTime, default=utcnow_naive)
     updated_at = db.Column(db.DateTime, default=utcnow_naive, onupdate=utcnow_naive)
 
@@ -1178,10 +1218,10 @@ class BOLOEntry(db.Model):
     expiration_date = db.Column(db.String(20), nullable=True)
 
     resolved_at = db.Column(db.DateTime, nullable=True)
-    resolved_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    resolved_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
     resolution_notes = db.Column(db.Text, nullable=True)
 
-    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
     created_at = db.Column(db.DateTime, default=utcnow_naive)
     updated_at = db.Column(db.DateTime, default=utcnow_naive, onupdate=utcnow_naive)
 
@@ -1199,7 +1239,7 @@ class QualificationCategory(db.Model):
     warn_days_before = db.Column(db.Integer, default=30, nullable=False)
     required_roles = db.Column(db.Text, nullable=True)  # JSON list of role keys, null = all roles
     active = db.Column(db.Boolean, default=True, nullable=False)
-    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
     created_at = db.Column(db.DateTime, default=utcnow_naive)
 
     records = db.relationship('OfficerQualification', backref='category', lazy='dynamic')
@@ -1239,7 +1279,7 @@ class YearCycle(db.Model):
     is_active   = db.Column(db.Boolean, default=True, nullable=False, index=True)
     started_at  = db.Column(db.DateTime, default=utcnow_naive)
     archived_at = db.Column(db.DateTime, nullable=True)
-    archived_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    archived_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
 
 
 class YearElement(db.Model):
@@ -1252,7 +1292,7 @@ class YearElement(db.Model):
     description = db.Column(db.Text,        nullable=True)
     year        = db.Column(db.Integer,     nullable=False, index=True)
     active      = db.Column(db.Boolean,     default=True, nullable=False)
-    created_by  = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    created_by  = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
     created_at  = db.Column(db.DateTime, default=utcnow_naive)
 
     creator     = db.relationship('User', foreign_keys=[created_by])

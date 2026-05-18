@@ -3,6 +3,7 @@ from collections import Counter
 from datetime import datetime, timezone
 import io
 import json
+import logging
 from pathlib import Path
 import re
 import subprocess
@@ -12,6 +13,8 @@ from uuid import uuid4
 from flask import Blueprint, Response, abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 import os
+
+_log = logging.getLogger(__name__)
 
 from ..extensions import db
 from ..models import AuditLog, StatCategory, StatsUpload
@@ -67,6 +70,7 @@ def _load_builder_requests() -> list[dict]:
     try:
         payload = json.loads(path.read_text(encoding='utf-8'))
     except Exception:
+        _log.exception('Failed to load builder requests from %s', path)
         return []
     if not isinstance(payload, list):
         return []
@@ -100,6 +104,7 @@ def _load_legal_qa_status() -> dict | None:
         payload = json.loads(LEGAL_QA_STATUS_PATH.read_text(encoding='utf-8'))
         return payload if isinstance(payload, dict) else None
     except Exception:
+        _log.exception('Failed to load legal QA status from %s', LEGAL_QA_STATUS_PATH)
         return None
 
 
@@ -108,6 +113,7 @@ def _write_legal_qa_status(payload: dict) -> None:
         LEGAL_QA_STATUS_PATH.parent.mkdir(parents=True, exist_ok=True)
         LEGAL_QA_STATUS_PATH.write_text(json.dumps(payload, indent=2), encoding='utf-8')
     except Exception:
+        _log.exception('Failed to write legal QA status to %s', LEGAL_QA_STATUS_PATH)
         return
 
 

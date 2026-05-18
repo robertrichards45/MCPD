@@ -1,9 +1,13 @@
+import logging
+
 from flask import Blueprint, current_app, render_template, request
 from flask_login import current_user, login_required
 
 from ..extensions import db
 from ..models import AuditLog
 from ..services.ai_client import ask_openai_with_system, is_ai_unavailable_message
+
+_log = logging.getLogger(__name__)
 
 
 bp = Blueprint('annual_ai', __name__)
@@ -49,6 +53,7 @@ def ask():
         )
         db.session.commit()
     except Exception:
+        _log.exception('Failed to write annual_ai audit log for user %s', current_user.id)
         db.session.rollback()
 
     return render_template(
