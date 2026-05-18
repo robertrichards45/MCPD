@@ -567,6 +567,7 @@ def srt_dashboard():
 
 
 
+@bp.route('/dashboard/customize', methods=['GET', 'POST'])
 @login_required
 def customize_dashboard():
     snapshot = _dashboard_snapshot()
