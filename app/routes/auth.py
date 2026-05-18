@@ -23,6 +23,7 @@ from ..models import (
     ROLE_WATCH_COMMANDER,
     USMC_INSTALLATIONS,
     User,
+    WatchAssignment,
 )
 from ..permissions import (
     assignable_roles,
@@ -1079,6 +1080,20 @@ def register():
 @login_required
 def logout():
     from flask_login import logout_user
+
+    # Mark officer as Off Duty on logout so they're removed from the dispatch map
+    try:
+        assignment = (
+            WatchAssignment.query
+            .filter_by(officer_id=current_user.id)
+            .order_by(WatchAssignment.updated_at.desc())
+            .first()
+        )
+        if assignment and assignment.status not in ('Off Duty', 'Leave'):
+            assignment.status = 'Off Duty'
+            db.session.commit()
+    except Exception:
+        db.session.rollback()
 
     logout_user()
     return redirect(url_for('auth.landing'))
