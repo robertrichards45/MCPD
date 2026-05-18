@@ -119,9 +119,9 @@ def _dashboard_snapshot():
             'detail': 'Case writeups and report shells tied to your account.',
         },
         {
-            'label': 'Mock Report Drafts',
+            'label': 'Report Drafts',
             'value': cleo_report_count,
-            'detail': 'Mock report packets and review work still in motion.',
+            'detail': 'Draft packets and review work still in motion.',
         },
         {
             'label': 'Live Notices',
@@ -139,6 +139,18 @@ def _dashboard_snapshot():
         'training_count': training_count,
         'notice_count': notice_count,
         'announcements': _safe_recent_announcements(visible_announcements),
+        'readiness_items': _dashboard_readiness_items(
+            saved_forms_count=saved_forms_count,
+            report_count=report_count,
+            cleo_report_count=cleo_report_count,
+            notice_count=notice_count,
+        ),
+        'queue_items': _dashboard_queue_items(
+            saved_forms_count=saved_forms_count,
+            report_count=report_count,
+            cleo_report_count=cleo_report_count,
+            notice_count=notice_count,
+        ),
     }
 
 
@@ -343,6 +355,115 @@ def _dashboard_panel_catalog(snapshot):
     ]
 
 
+def _dashboard_readiness_items(saved_forms_count, report_count, cleo_report_count, notice_count):
+    items = [
+        {
+            'label': 'Field Reporting',
+            'status': 'Operational',
+            'value': report_count,
+            'unit': 'active reports',
+            'detail': 'Officer reports, packets, accident tools, and narrative support are online.',
+            'tone': 'success',
+            'endpoint': 'reports.list_reports',
+        },
+        {
+            'label': 'Forms & Packets',
+            'status': 'Ready',
+            'value': saved_forms_count,
+            'unit': 'saved items',
+            'detail': 'PDF-backed forms, saved work, preview, download, and packet workflows.',
+            'tone': 'primary',
+            'endpoint': 'forms.list_forms',
+        },
+        {
+            'label': 'Law / Orders Reference',
+            'status': 'AI Assisted',
+            'value': 'Live',
+            'unit': 'reference search',
+            'detail': 'Plain-language law lookup, orders, memorandums, and source review.',
+            'tone': 'success',
+            'endpoint': 'legal.legal_home',
+        },
+        {
+            'label': 'Training & Readiness',
+            'status': 'Monitor',
+            'value': 'Roster',
+            'unit': 'tracking',
+            'detail': 'Training rosters, qualification tracking, signatures, and reminders.',
+            'tone': 'warning',
+            'endpoint': 'training.training_menu',
+        },
+    ]
+    if current_user.can_manage_team():
+        items.extend([
+            {
+                'label': 'Watch Command',
+                'status': 'Supervisor',
+                'value': notice_count,
+                'unit': 'live notices',
+                'detail': 'Shift supervision, assignments, approvals, briefing, and officer status.',
+                'tone': 'primary',
+                'endpoint': 'watch_commander.dashboard',
+            },
+            {
+                'label': 'Command Tasking',
+                'status': 'Tracked',
+                'value': cleo_report_count,
+                'unit': 'draft/review items',
+                'detail': 'Assistant Ops due-outs, inspections, projects, and completion tracking.',
+                'tone': 'success',
+                'endpoint': 'assistant_operations.dashboard',
+            },
+        ])
+    return items
+
+
+def _dashboard_queue_items(saved_forms_count, report_count, cleo_report_count, notice_count):
+    queues = [
+        {
+            'label': 'My Reports',
+            'value': report_count,
+            'detail': 'Open report center',
+            'endpoint': 'reports.list_reports',
+        },
+        {
+            'label': 'Saved Work',
+            'value': saved_forms_count,
+            'detail': 'Resume forms and packets',
+            'endpoint': 'forms.saved_forms',
+        },
+        {
+            'label': 'Notices',
+            'value': notice_count,
+            'detail': 'Command updates',
+            'endpoint': 'announcements.board',
+        },
+    ]
+    if current_user.can_manage_team():
+        queues.extend([
+            {
+                'label': 'WC Reviews',
+                'value': 'Open',
+                'detail': 'Reports, forms, approvals',
+                'endpoint': 'watch_commander.approvals',
+            },
+            {
+                'label': 'Task Tracker',
+                'value': 'Ops',
+                'detail': 'Due-outs and projects',
+                'endpoint': 'assistant_operations.dashboard',
+            },
+        ])
+    else:
+        queues.append({
+            'label': 'Draft Packets',
+            'value': cleo_report_count,
+            'detail': 'Narrative and report drafts',
+            'endpoint': 'reports.list_reports',
+        })
+    return queues
+
+
 def _dispatch_demo_context():
     now = datetime.now().strftime('%H%M')
     dispatch_summary = {
@@ -439,6 +560,8 @@ def dashboard():
             dashboard_training_count=snapshot['training_count'],
             dashboard_notice_count=snapshot['notice_count'],
             dashboard_announcements=snapshot['announcements'],
+            dashboard_readiness_items=snapshot['readiness_items'],
+            dashboard_queue_items=snapshot['queue_items'],
             **preferences_context,
         )
     )

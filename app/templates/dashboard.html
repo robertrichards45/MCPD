@@ -85,6 +85,16 @@
       </div>
     </section>
 
+    <section class="mcpd-ops-snapshot" aria-label="Operations snapshot">
+      {% for metric in dashboard_metrics %}
+      <article class="mcpd-ops-snapshot-card">
+        <span>{{ metric.label }}</span>
+        <strong>{{ metric.value }}</strong>
+        <small>{{ metric.detail }}</small>
+      </article>
+      {% endfor %}
+    </section>
+
     <section class="mcpd-action-grid" aria-label="Quick actions">
       {% for card in dashboard_cards %}
       <a class="mcpd-action-card" href="{{ url_for(card.endpoint) }}">
@@ -93,6 +103,44 @@
         <small>{{ card.description }}</small>
       </a>
       {% endfor %}
+    </section>
+
+    <section class="mcpd-readiness-board" aria-label="Command readiness">
+      <div class="mcpd-readiness-main">
+        <div class="mcpd-board-head">
+          <span>Operational Readiness</span>
+          <h2>Command operating picture</h2>
+          <p>First Due-style overview for reports, forms, reference search, training, and supervisor queues.</p>
+        </div>
+        <div class="mcpd-readiness-grid">
+          {% for item in dashboard_readiness_items %}
+          <a class="mcpd-readiness-card is-{{ item.tone }}" href="{{ url_for(item.endpoint) }}">
+            <div>
+              <span>{{ item.label }}</span>
+              <strong>{{ item.status }}</strong>
+            </div>
+            <b>{{ item.value }}</b>
+            <small>{{ item.unit }}</small>
+            <p>{{ item.detail }}</p>
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+      <aside class="mcpd-command-queue">
+        <div class="mcpd-board-head compact">
+          <span>Action Queue</span>
+          <h2>Needs attention</h2>
+        </div>
+        <div class="mcpd-command-queue-list">
+          {% for item in dashboard_queue_items %}
+          <a href="{{ url_for(item.endpoint) }}">
+            <span>{{ item.label }}</span>
+            <strong>{{ item.value }}</strong>
+            <small>{{ item.detail }}</small>
+          </a>
+          {% endfor %}
+        </div>
+      </aside>
     </section>
 
     <section class="mcpd-dashboard-panels">
