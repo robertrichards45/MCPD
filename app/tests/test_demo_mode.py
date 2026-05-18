@@ -128,3 +128,19 @@ def test_demo_toggle_is_site_owner_only(monkeypatch):
 
     assert other_client.get("/demo/setup").status_code == 403
     assert other_client.post("/demo/toggle").status_code == 403
+
+
+def test_demo_records_are_hidden_from_normal_pages_when_demo_is_off(monkeypatch):
+    client, _admin_id = _demo_client(monkeypatch)
+    client.post("/demo/setup", follow_redirects=True)
+    client.post("/demo/toggle", follow_redirects=False)
+
+    forms_page = client.get("/forms")
+    assert forms_page.status_code == 200
+    assert "DEMO Statement form" not in forms_page.get_data(as_text=True)
+
+    users_page = client.get("/admin/users")
+    assert users_page.status_code == 200
+    html = users_page.get_data(as_text=True)
+    assert "demo.alpha.carter" not in html
+    assert "Ofc. Carter" not in html
