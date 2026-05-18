@@ -38,6 +38,7 @@ from ..models import (
     ROLE_PATROL_OFFICER,
     USMC_INSTALLATIONS,
     utcnow_naive,
+    WatchAssignment,
 )
 from ..permissions import assignable_roles, can_manage_team, can_manage_user, can_supervisor_review, is_site_controller, is_watch_commander, watch_commander_scope_id
 from ..services.ai_client import ask_openai, is_ai_unavailable_message
@@ -1411,6 +1412,21 @@ def supervisor_officer_update(user_id):
     )
     db.session.add(target)
     db.session.commit()
+    if target.supervisor_id:
+        try:
+            existing = (WatchAssignment.query
+                        .filter_by(officer_id=target.id)
+                        .order_by(WatchAssignment.updated_at.desc(), WatchAssignment.id.desc())
+                        .first())
+            if existing:
+                if existing.status in ('Off Duty', 'Leave'):
+                    existing.status = 'On Duty'
+                    db.session.commit()
+            else:
+                db.session.add(WatchAssignment(officer_id=target.id, assignment_type='Patrol', status='On Duty'))
+                db.session.commit()
+        except Exception:
+            db.session.rollback()
     flash(f'{target.display_name} updated for mobile assignment.', 'success')
     return redirect(url_for('mobile.supervisor_officers'))
 
