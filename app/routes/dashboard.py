@@ -9,11 +9,9 @@ from ..extensions import db
 from ..models import (
     Announcement,
     CleoReport,
-    OrderDocument,
     Report,
     ROLE_WATCH_COMMANDER,
     SavedForm,
-    TrainingRoster,
 )
 from ..permissions import can_access_assistant_operations, can_access_builder_mode
 
@@ -103,8 +101,10 @@ def _dashboard_snapshot():
     saved_forms_count = _safe_count('saved_forms', SavedForm.query.filter_by(officer_user_id=current_user.id))
     report_count = _safe_count('reports', _production_report_query().filter_by(owner_id=current_user.id))
     cleo_report_count = _safe_count('cleo_reports', CleoReport.query.filter_by(user_id=current_user.id))
-    orders_count = _safe_count('orders', OrderDocument.query.filter(OrderDocument.is_active.is_(True)))
-    training_count = _safe_count('training', TrainingRoster.query.filter_by(status='ACTIVE'))
+    # Kept in the snapshot for template compatibility, but no longer counted on
+    # every dashboard load because these values are not displayed by the page.
+    orders_count = 0
+    training_count = 0
     notice_count = _safe_count('announcements', visible_announcements)
 
     metrics = [
