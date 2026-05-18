@@ -105,7 +105,7 @@ _MAP_VIEWER_ROLES = {
     ROLE_WATCH_COMMANDER,
     ROLE_DESK_SGT,
     ROLE_ASSISTANT_OPERATIONS_OFFICER,
-    'WEBSITE_CONTROLLER',
+    ROLE_WEBSITE_CONTROLLER,
 }
 
 
@@ -163,7 +163,7 @@ def _can_access_watch_tools(user) -> bool:
     if not user or not getattr(user, 'is_authenticated', False):
         return False
     return (
-        effective_role(user) in {ROLE_WATCH_COMMANDER, 'WEBSITE_CONTROLLER'}
+        effective_role(user) in {ROLE_WATCH_COMMANDER, ROLE_WEBSITE_CONTROLLER}
         or can_manage_site(user)
         or bool(getattr(user, 'builder_mode_access', False))
     )
@@ -1219,6 +1219,7 @@ def api_buildings_create():
     )
     db.session.add(b)
     db.session.commit()
+    _audit('building_created', f'building_id={b.id}|number={b.number}|lat={b.lat}|lng={b.lng}')
     return jsonify({'id': b.id, 'number': b.number, 'lat': b.lat, 'lng': b.lng}), 201
 
 
@@ -1249,6 +1250,7 @@ def api_buildings_update(building_id):
         b.notes = (data['notes'] or '').strip() or None
     b.updated_at = utcnow_naive()
     db.session.commit()
+    _audit('building_updated', f'building_id={b.id}|number={b.number}')
     return jsonify({'ok': True, 'id': b.id})
 
 
@@ -1258,7 +1260,9 @@ def api_buildings_delete(building_id):
     if not _can_access_unit_map(current_user):
         abort(403)
     b = BaseBuilding.query.get_or_404(building_id)
+    bldg_label = f'{b.number} (id={b.id})'
     db.session.delete(b)
     db.session.commit()
+    _audit('building_deleted', f'building={bldg_label}')
     return jsonify({'ok': True})
 

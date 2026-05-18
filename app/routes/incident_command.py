@@ -1,6 +1,7 @@
+import hmac
 from datetime import timedelta
 
-from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
+from flask import Blueprint, abort, flash, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_required
 
 from ..extensions import db
@@ -543,10 +544,18 @@ def dashboard():
     )
 
 
+def _csrf_ok() -> bool:
+    token = request.form.get('_csrf_token') or request.headers.get('X-CSRFToken') or ''
+    expected = session.get('_csrf_token', '')
+    return bool(expected and hmac.compare_digest(str(token), str(expected)))
+
+
 @bp.post('/log')
 @login_required
 def add_log():
     _require_incident_command()
+    if not _csrf_ok():
+        abort(403)
     title = (request.form.get('title') or '').strip()[:180]
     body = (request.form.get('body') or '').strip()
     note_type = (request.form.get('note_type') or 'incident_command').strip()[:60]

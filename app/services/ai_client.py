@@ -271,7 +271,7 @@ def ask_openai(prompt, api_key, max_output_tokens=None, timeout=None):
                 payload = exc.response.json() if exc.response is not None else {}
             except ValueError:
                 payload = {}
-            message = _friendly_error_message(status_code, payload)
+            message = _redact_secret_fragments(_friendly_error_message(status_code, payload))
             error_type, error_code, _ = _extract_error_details(payload)
             if status_code in {401, 403, 404} or error_code in {'invalid_api_key', 'model_not_found', 'insufficient_quota'} or error_type in {'invalid_request_error'}:
                 return _disable_ai_temporarily(message)
@@ -284,7 +284,7 @@ def ask_openai(prompt, api_key, max_output_tokens=None, timeout=None):
         return 'AI returned an invalid response.'
 
     if response.status_code >= 400:
-        message = _friendly_error_message(response.status_code, data)
+        message = _redact_secret_fragments(_friendly_error_message(response.status_code, data))
         error_type, error_code, _ = _extract_error_details(data)
         if response.status_code in {401, 403, 404} or error_code in {'invalid_api_key', 'model_not_found', 'insufficient_quota'} or error_type in {'invalid_request_error'}:
             return _disable_ai_temporarily(message)
@@ -350,7 +350,7 @@ def ask_openai_with_system(prompt, system_prompt, api_key, history=None):
                 resp_payload = exc.response.json() if exc.response is not None else {}
             except ValueError:
                 pass
-            message = _friendly_error_message(status_code, resp_payload)
+            message = _redact_secret_fragments(_friendly_error_message(status_code, resp_payload))
             error_type, error_code, _ = _extract_error_details(resp_payload)
             if status_code in {401, 403, 404} or error_code in {'invalid_api_key', 'model_not_found', 'insufficient_quota'} or error_type in {'invalid_request_error'}:
                 return _disable_ai_temporarily(message)
@@ -363,7 +363,7 @@ def ask_openai_with_system(prompt, system_prompt, api_key, history=None):
         return 'AI returned an invalid response.'
 
     if response.status_code >= 400:
-        message = _friendly_error_message(response.status_code, data)
+        message = _redact_secret_fragments(_friendly_error_message(response.status_code, data))
         error_type, error_code, _ = _extract_error_details(data)
         if response.status_code in {401, 403, 404} or error_code in {'invalid_api_key', 'model_not_found', 'insufficient_quota'} or error_type in {'invalid_request_error'}:
             return _disable_ai_temporarily(message)
