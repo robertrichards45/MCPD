@@ -334,8 +334,6 @@ class TrainingRoster(db.Model):
     is_demo = db.Column(db.Boolean, default=False, nullable=False, index=True)
     demo_batch_id = db.Column(db.String(80), nullable=True, index=True)
 
-    uploader = db.relationship('User', foreign_keys=[uploaded_by], backref='training_rosters')
-
 class TrainingSignature(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     roster_id = db.Column(db.Integer, db.ForeignKey('training_roster.id'), index=True)
@@ -345,9 +343,6 @@ class TrainingSignature(db.Model):
     comment = db.Column(db.String(255), nullable=True)
     is_demo = db.Column(db.Boolean, default=False, nullable=False, index=True)
     demo_batch_id = db.Column(db.String(80), nullable=True, index=True)
-
-    roster = db.relationship('TrainingRoster', foreign_keys=[roster_id], backref='signatures')
-    officer = db.relationship('User', foreign_keys=[user_id], backref='training_signatures')
 
 class StatCategory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -362,9 +357,6 @@ class OfficerStat(db.Model):
     year_key = db.Column(db.String(9), nullable=False)
     value = db.Column(db.Integer, default=0)
 
-    officer = db.relationship('User', foreign_keys=[user_id], backref='officer_stats')
-    category = db.relationship('StatCategory', foreign_keys=[category_id], backref='stats')
-
 class StatsUpload(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     uploaded_by = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
@@ -373,8 +365,6 @@ class StatsUpload(db.Model):
     file_path = db.Column(db.String(255), nullable=False)
     parse_summary_json = db.Column(db.Text, nullable=True)
 
-    uploader = db.relationship('User', foreign_keys=[uploaded_by], backref='stats_uploads')
-
 class AuditLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     actor_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
@@ -382,7 +372,6 @@ class AuditLog(db.Model):
     details = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=utcnow_naive)
 
-    actor = db.relationship('User', foreign_keys=[actor_id], backref='audit_logs')
 
 
 class DemoRecord(db.Model):
@@ -451,8 +440,6 @@ class CleoFormData(db.Model):
     data_json = db.Column(db.Text, nullable=False)
     updated_at = db.Column(db.DateTime, default=utcnow_naive)
 
-    user = db.relationship('User', foreign_keys=[user_id], backref='cleo_form_data')
-
 class CleoFormLayout(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     page_key = db.Column(db.String(100), nullable=False, unique=True)
@@ -467,8 +454,6 @@ class CleoFormFile(db.Model):
     enclosure_no = db.Column(db.String(50), nullable=True)
     description = db.Column(db.String(255), nullable=True)
     uploaded_at = db.Column(db.DateTime, default=utcnow_naive)
-
-    user = db.relationship('User', foreign_keys=[user_id], backref='cleo_form_files')
 
 class CleoReport(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -496,7 +481,6 @@ class CleoReportPage(db.Model):
     data_json = db.Column(db.Text, nullable=False)
     updated_at = db.Column(db.DateTime, default=utcnow_naive)
 
-    report = db.relationship('CleoReport', foreign_keys=[report_id], backref='pages')
 
 
 class CleoReportGrade(db.Model):
@@ -540,8 +524,6 @@ class Report(db.Model):
     created_at = db.Column(db.DateTime, default=utcnow_naive)
     updated_at = db.Column(db.DateTime, default=utcnow_naive)
 
-    owner = db.relationship('User', foreign_keys=[owner_id], backref='reports')
-
 class ReportAttachment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     report_id = db.Column(db.Integer, db.ForeignKey('report.id'), index=True)
@@ -550,8 +532,6 @@ class ReportAttachment(db.Model):
     uploaded_by = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
     uploaded_at = db.Column(db.DateTime, default=utcnow_naive)
 
-    report = db.relationship('Report', foreign_keys=[report_id], backref='attachments')
-    uploader = db.relationship('User', foreign_keys=[uploaded_by], backref='report_attachments')
 
 
 class BodycamFootage(db.Model):
@@ -582,15 +562,10 @@ class ReportPerson(db.Model):
     name = db.Column(db.String(120), nullable=False)
     role = db.Column(db.String(50), nullable=True)
 
-    report = db.relationship('Report', foreign_keys=[report_id], backref='persons')
-
 class ReportCoAuthor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     report_id = db.Column(db.Integer, db.ForeignKey('report.id'), index=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
-
-    report = db.relationship('Report', foreign_keys=[report_id], backref='co_authors')
-    user = db.relationship('User', foreign_keys=[user_id], backref='co_authored_reports')
 
 class ReportGrade(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -601,8 +576,6 @@ class ReportGrade(db.Model):
     required_fixes = db.Column(db.Text, nullable=True)
     graded_at = db.Column(db.DateTime, default=utcnow_naive)
 
-    report = db.relationship('Report', foreign_keys=[report_id], backref='grades')
-    grader = db.relationship('User', foreign_keys=[grader_id], backref='graded_reports')
 
 
 class AccidentReconstruction(db.Model):
@@ -637,7 +610,6 @@ class ReconstructionCase(db.Model):
     created_at = db.Column(db.DateTime, default=utcnow_naive)
     updated_at = db.Column(db.DateTime, default=utcnow_naive)
 
-    creator = db.relationship('User', foreign_keys=[created_by], backref='reconstruction_cases')
 
 
 class ReconstructionVehicle(db.Model):
@@ -660,7 +632,6 @@ class ReconstructionVehicle(db.Model):
     notes = db.Column(db.Text, nullable=True)
 
     reconstruction = db.relationship('AccidentReconstruction', foreign_keys=[reconstruction_id], backref='vehicles')
-    case = db.relationship('ReconstructionCase', foreign_keys=[case_id], backref='vehicles')
 
 
 class ReconstructionObject(db.Model):
@@ -693,7 +664,6 @@ class ReconstructionMeasurement(db.Model):
     created_at = db.Column(db.DateTime, default=utcnow_naive)
 
     reconstruction = db.relationship('AccidentReconstruction', foreign_keys=[reconstruction_id], backref='measurements')
-    case = db.relationship('ReconstructionCase', foreign_keys=[case_id], backref='measurements')
 
 
 class ReconstructionMedia(db.Model):
@@ -737,8 +707,6 @@ class ReconstructionAttachment(db.Model):
     uploaded_by = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
     uploaded_at = db.Column(db.DateTime, default=utcnow_naive)
 
-    case = db.relationship('ReconstructionCase', foreign_keys=[case_id], backref='attachments')
-    uploader = db.relationship('User', foreign_keys=[uploaded_by], backref='reconstruction_attachments')
 
 
 class TruckGateCompany(db.Model):
@@ -802,7 +770,6 @@ class TruckGateImportRun(db.Model):
     created_at = db.Column(db.DateTime, default=utcnow_naive)
     uploaded_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
 
-    uploader = db.relationship('User', foreign_keys=[uploaded_by], backref='truck_gate_import_runs')
 
 
 class TruckGateLog(db.Model):
