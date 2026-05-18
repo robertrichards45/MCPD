@@ -32,6 +32,7 @@
     {% if portal_is_site_controller or portal_is_watch_commander_view %}
       {{ tool_card('Approve / Assign Officers', 'Activate accounts and assign officers to watch or installation.', url_for('mobile.supervisor_officers'), 'officers', True) }}
       {{ tool_card('Command Dashboard', 'Review packets, corrections, and supervisor workflow.', url_for('mobile.supervisor_dashboard'), 'command') }}
+      {{ tool_card('Incident Command', 'IC board, PAR checks, resource status, command log, and AAR snapshot.', url_for('incident_command.dashboard'), 'command', True) }}
       {{ tool_card('Watch Commander Hub', 'Shift, reports, approvals, officers, and briefing tools.', url_for('watch_commander.dashboard'), 'command') }}
       {{ tool_card('Officer Files', 'Upload and review smart-filed officer documents.', url_for('assistant.officer_files_console'), 'library') }}
       {{ tool_card('Stats Approvals', 'Approve officer stats and performance submissions.', url_for('performance.pending'), 'reports') }}

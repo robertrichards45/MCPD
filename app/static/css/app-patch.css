@@ -5038,6 +5038,13 @@ body[data-theme="dark"] :where(.table tbody tr:hover) {
   gap: 18px;
 }
 
+.incident-command-workbench {
+  align-items: stretch;
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(320px, .55fr);
+  gap: 18px;
+}
+
 .incident-command-left,
 .incident-command-right,
 .incident-command-bottom {
@@ -5160,10 +5167,204 @@ body[data-theme="dark"] :where(.table tbody tr:hover) {
 .incident-objective-list,
 .incident-check-list,
 .incident-status-list,
-.incident-aar-grid {
+.incident-aar-grid,
+.incident-benchmark-grid,
+.incident-risk-grid,
+.incident-division-grid,
+.incident-worksheet-grid,
+.incident-command-action-grid {
   display: grid;
   gap: 10px;
   padding: 16px;
+}
+
+.incident-benchmark-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+}
+
+.incident-benchmark-card,
+.incident-risk-card,
+.incident-division-card,
+.incident-worksheet-grid section,
+.incident-command-action-grid a {
+  border: 1px solid var(--premium-line, rgba(15, 23, 42, .11));
+  border-radius: 18px;
+  background: var(--premium-soft, #f7f9fc);
+}
+
+.incident-benchmark-card {
+  display: grid;
+  gap: 7px;
+  min-height: 128px;
+  padding: 15px;
+  border-left: 5px solid #64748b;
+}
+
+.incident-benchmark-card.is-complete { border-left-color: #16a34a; }
+.incident-benchmark-card.is-due { border-left-color: #f59e0b; }
+.incident-benchmark-card.is-overdue { border-left-color: #dc2626; }
+.incident-benchmark-card.is-pending { border-left-color: #155fc7; }
+
+.incident-benchmark-card span,
+.incident-risk-card span,
+.incident-division-head span,
+.incident-division-units span {
+  color: var(--text-secondary, #667085);
+  display: block;
+  font-size: .76rem;
+  font-weight: 950;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+.incident-benchmark-card strong {
+  color: var(--text-primary, #0f172a);
+  font-size: 1.22rem;
+  letter-spacing: -.035em;
+  line-height: 1.05;
+}
+
+.incident-benchmark-card small,
+.incident-risk-card small,
+.incident-division-card p,
+.incident-division-units small,
+.incident-command-action-grid small {
+  color: var(--text-secondary, #667085);
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.incident-risk-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.incident-risk-card {
+  display: grid;
+  gap: 5px;
+  min-height: 128px;
+  padding: 15px;
+  border-top: 5px solid #155fc7;
+}
+
+.incident-risk-card.is-success { border-top-color: #16a34a; }
+.incident-risk-card.is-warning { border-top-color: #f59e0b; }
+.incident-risk-card.is-danger { border-top-color: #dc2626; }
+
+.incident-risk-card strong {
+  color: var(--text-primary, #0f172a);
+  font-size: 2rem;
+  letter-spacing: -.06em;
+  line-height: .95;
+}
+
+.incident-division-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+}
+
+.incident-division-card {
+  display: grid;
+  gap: 11px;
+  padding: 15px;
+  border-left: 5px solid #155fc7;
+}
+
+.incident-division-card.is-empty { border-left-color: #94a3b8; }
+.incident-division-card.is-warning { border-left-color: #f59e0b; }
+
+.incident-division-head {
+  align-items: flex-start;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.incident-division-head strong {
+  color: var(--text-primary, #0f172a);
+  display: block;
+  font-size: 1.08rem;
+}
+
+.incident-division-head b {
+  align-items: center;
+  display: inline-flex;
+  height: 34px;
+  justify-content: center;
+  min-width: 34px;
+  border-radius: 999px;
+  background: rgba(21, 95, 199, .10);
+  color: #155fc7;
+  font-weight: 1000;
+}
+
+.incident-division-units {
+  display: grid;
+  gap: 7px;
+}
+
+.incident-division-units div {
+  padding: 9px 10px;
+  border: 1px solid rgba(148, 163, 184, .22);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, .55);
+}
+
+.incident-division-units strong {
+  color: var(--text-primary, #0f172a);
+  display: block;
+  font-size: .9rem;
+}
+
+.incident-worksheet-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.incident-worksheet-grid section {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: 14px;
+}
+
+.incident-worksheet-grid h3 {
+  color: var(--text-primary, #0f172a);
+  font-size: .9rem;
+  margin: 0 0 2px;
+}
+
+.incident-worksheet-grid p {
+  margin: 0;
+  padding: 8px 0 0;
+  border-top: 1px solid rgba(148, 163, 184, .22);
+  color: var(--text-secondary, #667085);
+  font-size: .85rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.incident-command-action-grid {
+  grid-template-columns: 1fr;
+}
+
+.incident-command-action-grid a {
+  display: grid;
+  gap: 4px;
+  padding: 13px 14px;
+  color: inherit;
+  text-decoration: none;
+  transition: transform var(--premium-transition, 160ms ease), border-color var(--premium-transition, 160ms ease), box-shadow var(--premium-transition, 160ms ease);
+}
+
+.incident-command-action-grid a:hover,
+.incident-command-action-grid a:focus {
+  border-color: rgba(21, 95, 199, .36);
+  box-shadow: var(--premium-shadow-sm, 0 10px 28px rgba(15, 23, 42, .08));
+  transform: translateY(-1px);
+  text-decoration: none;
+}
+
+.incident-command-action-grid strong {
+  color: var(--text-primary, #0f172a);
+  font-size: .94rem;
 }
 
 .incident-stack {
@@ -5408,6 +5609,12 @@ body[data-theme="dark"] .incident-task-list strong {
 body[data-theme="dark"] .incident-card,
 body[data-theme="dark"] .incident-resource-card,
 body[data-theme="dark"] .incident-check-item,
+body[data-theme="dark"] .incident-benchmark-card,
+body[data-theme="dark"] .incident-risk-card,
+body[data-theme="dark"] .incident-division-card,
+body[data-theme="dark"] .incident-division-units div,
+body[data-theme="dark"] .incident-worksheet-grid section,
+body[data-theme="dark"] .incident-command-action-grid a,
 body[data-theme="dark"] .incident-objective-list div,
 body[data-theme="dark"] .incident-status-list div,
 body[data-theme="dark"] .incident-aar-grid div,
@@ -5416,10 +5623,20 @@ body[data-theme="dark"] .incident-task-list a {
   border-color: rgba(148, 163, 184, .18);
 }
 
+body[data-theme="dark"] .incident-benchmark-card strong,
+body[data-theme="dark"] .incident-risk-card strong,
+body[data-theme="dark"] .incident-division-head strong,
+body[data-theme="dark"] .incident-division-units strong,
+body[data-theme="dark"] .incident-worksheet-grid h3,
+body[data-theme="dark"] .incident-command-action-grid strong {
+  color: #f8fafc;
+}
+
 @media (max-width: 1180px) {
   .incident-command-hero,
   .incident-command-layout,
-  .incident-command-bottom {
+  .incident-command-bottom,
+  .incident-command-workbench {
     grid-template-columns: 1fr;
   }
 
@@ -5449,7 +5666,9 @@ body[data-theme="dark"] .incident-task-list a {
 
   .incident-command-metrics,
   .incident-stack,
-  .incident-resource-grid {
+  .incident-resource-grid,
+  .incident-risk-grid,
+  .incident-worksheet-grid {
     grid-template-columns: 1fr;
   }
 

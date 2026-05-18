@@ -10,8 +10,10 @@
         <p>Run active incidents with accountability, resource assignment, command log, PAR timers, operational objectives, and after-action capture from one MCPD workspace.</p>
         <div class="incident-command-tabs" aria-label="Incident command sections">
           <a href="#overview">Overview</a>
+          <a href="#benchmarks">Benchmarks</a>
           <a href="#incidents">Incidents</a>
           <a href="#resources">Resources</a>
+          <a href="#groups">Groups</a>
           <a href="#log">Command Log</a>
           <a href="#aar">AAR</a>
         </div>
@@ -31,6 +33,45 @@
         <small>{{ metric.detail }}</small>
       </article>
       {% endfor %}
+    </section>
+
+    <section class="incident-command-workbench" id="benchmarks" aria-label="Incident command workbench">
+      <article class="incident-command-panel incident-benchmark-panel">
+        <div class="incident-command-panel-head">
+          <div>
+            <p class="eyebrow">Benchmarks</p>
+            <h2>Command / PAR Timers</h2>
+          </div>
+          <span>Live Timers</span>
+        </div>
+        <div class="incident-benchmark-grid">
+          {% for timer in benchmark_timers %}
+          <div class="incident-benchmark-card is-{{ timer.state }}">
+            <span>{{ timer.label }}</span>
+            <strong>{{ timer.timer }}</strong>
+            <small>{{ timer.detail }}</small>
+          </div>
+          {% endfor %}
+        </div>
+      </article>
+
+      <article class="incident-command-panel">
+        <div class="incident-command-panel-head">
+          <div>
+            <p class="eyebrow">Risk Layers</p>
+            <h2>Command Threat Picture</h2>
+          </div>
+        </div>
+        <div class="incident-risk-grid">
+          {% for layer in risk_layers %}
+          <div class="incident-risk-card is-{{ layer.tone }}">
+            <strong>{{ layer.value }}</strong>
+            <span>{{ layer.label }}</span>
+            <small>{{ layer.detail }}</small>
+          </div>
+          {% endfor %}
+        </div>
+      </article>
     </section>
 
     <section class="incident-command-layout">
@@ -80,6 +121,37 @@
           </div>
         </article>
 
+        <article class="incident-command-panel" id="groups">
+          <div class="incident-command-panel-head">
+            <div>
+              <p class="eyebrow">Assignments</p>
+              <h2>Divisions / Groups</h2>
+            </div>
+            <span>ICS-style Board</span>
+          </div>
+          <div class="incident-division-grid">
+            {% for division in divisions %}
+            <div class="incident-division-card is-{{ division.state }}">
+              <div class="incident-division-head">
+                <div>
+                  <span>{{ division.lead }}</span>
+                  <strong>{{ division.label }}</strong>
+                </div>
+                <b>{{ division.count }}</b>
+              </div>
+              <p>{{ division.objective }}</p>
+              <div class="incident-division-units">
+                {% for unit in division.units %}
+                <div><strong>{{ unit.name }}</strong><span>{{ unit.status }} / {{ unit.location }}</span></div>
+                {% else %}
+                <small>No units assigned to this group yet.</small>
+                {% endfor %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </article>
+
         <article class="incident-command-panel" id="resources">
           <div class="incident-command-panel-head">
             <div>
@@ -104,9 +176,54 @@
             {% endfor %}
           </div>
         </article>
+
+        <article class="incident-command-panel">
+          <div class="incident-command-panel-head">
+            <div>
+              <p class="eyebrow">Tactical Worksheet</p>
+              <h2>Priorities / Hazards / Notifications</h2>
+            </div>
+            <span>{{ worksheet.active_incident_count }} Active</span>
+          </div>
+          <div class="incident-worksheet-grid">
+            <section>
+              <h3>Operational Priorities</h3>
+              {% for item in worksheet.priorities %}<p>{{ item }}</p>{% endfor %}
+            </section>
+            <section>
+              <h3>Hazards / Intel</h3>
+              {% for item in worksheet.hazards %}<p>{{ item }}</p>{% endfor %}
+            </section>
+            <section>
+              <h3>Resource Gaps</h3>
+              {% for item in worksheet.resource_gaps %}<p>{{ item }}</p>{% endfor %}
+            </section>
+            <section>
+              <h3>Notifications</h3>
+              {% for item in worksheet.notifications %}<p>{{ item }}</p>{% endfor %}
+            </section>
+          </div>
+        </article>
       </div>
 
       <aside class="incident-command-right">
+        <article class="incident-command-panel">
+          <div class="incident-command-panel-head">
+            <div>
+              <p class="eyebrow">Command Actions</p>
+              <h2>One-Tap Tools</h2>
+            </div>
+          </div>
+          <div class="incident-command-action-grid">
+            {% for action in command_actions %}
+            <a href="{{ url_for(action.endpoint) }}">
+              <strong>{{ action.label }}</strong>
+              <small>{{ action.detail }}</small>
+            </a>
+            {% endfor %}
+          </div>
+        </article>
+
         <article class="incident-command-panel">
           <div class="incident-command-panel-head">
             <div>

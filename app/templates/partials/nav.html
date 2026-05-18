@@ -8,7 +8,7 @@
 {% set personnel_active = endpoint.startswith('officers.') or endpoint == 'auth.manage_users' or endpoint == 'auth.edit_user' %}
 {% set dispatch_active = endpoint == 'dashboard.dispatch_command_center' %}
 {% set command_active = dispatch_active or endpoint.startswith('incident_command.') or endpoint.startswith('watch_commander.') or endpoint.startswith('assistant_operations.') or endpoint.startswith('assistant.') or endpoint.startswith('performance.') or endpoint.startswith('announcements.') or endpoint.startswith('bolo.') or endpoint.startswith('ops_modules.') or endpoint.startswith('mobile.supervisor') %}
-{% set incident_command_role_allowed = portal_effective_role in ['WEBSITE_CONTROLLER', 'ASSISTANT_OPERATIONS_OFFICER', 'WATCH_COMMANDER', 'DESK_SGT', 'CVI_LIEUTENANT', 'AID_LIEUTENANT', 'SRT_COMMANDER', 'KENNEL_MASTER', 'K9_SERGEANT', 'REPORT_REVIEWER', 'ACCIDENT_INVESTIGATOR'] %}
+{% set incident_command_role_allowed = portal_effective_role|default('') in ['WEBSITE_CONTROLLER', 'ASSISTANT_OPERATIONS_OFFICER', 'WATCH_COMMANDER', 'DESK_SGT', 'CVI_LIEUTENANT', 'AID_LIEUTENANT', 'SRT_COMMANDER', 'KENNEL_MASTER', 'K9_SERGEANT', 'REPORT_REVIEWER', 'ACCIDENT_INVESTIGATOR'] %}
 
 <header class="mcpd-command-header">
   <div class="mcpd-header-brand">

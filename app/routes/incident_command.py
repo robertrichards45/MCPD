@@ -23,7 +23,6 @@ from ..models import (
     ROLE_SRT_COMMANDER,
     ROLE_WEBSITE_CONTROLLER,
     ROLE_WATCH_COMMANDER,
-    User,
     WatchAssignment,
     WatchNote,
     WatchShift,
@@ -259,6 +258,236 @@ def _command_log(notes, packets, tasks, bolos):
     return rows[:18]
 
 
+def _incident_start_time(open_shift, drafts, packets, notes):
+    candidates = []
+    if open_shift and open_shift.created_at:
+        candidates.append(open_shift.created_at)
+    candidates.extend([draft.created_at for draft in drafts if draft.created_at])
+    candidates.extend([packet.submitted_at for packet in packets if packet.submitted_at])
+    candidates.extend([note.created_at for note in notes if note.created_at])
+    return min(candidates) if candidates else utcnow_naive()
+
+
+def _note_exists(notes, *types):
+    wanted = set(types)
+    return any((note.note_type or '') in wanted for note in notes)
+
+
+def _benchmark_timers(open_shift, assignments, packets, notes, incident_started_at):
+    elapsed = _age_minutes(incident_started_at)
+    accountability = _accountability(assignments)
+    benchmark_defs = [
+        {
+            'label': 'IC Established',
+            'due': 5,
+            'done': bool(open_shift and open_shift.watch_commander_id),
+            'detail': 'Confirm incident command / watch command ownership.',
+        },
+        {
+            'label': 'Size-Up / Objective',
+            'due': 10,
+            'done': _note_exists(notes, 'incident_objective'),
+            'detail': 'Post current objective, priorities, and known hazards.',
+        },
+        {
+            'label': 'Perimeter / Staging',
+            'due': 15,
+            'done': any('perimeter' in (a.assignment_type or '').lower() or 'staging' in (a.assignment_location or '').lower() for a in assignments),
+            'detail': 'Confirm traffic control, staging, and inner/outer perimeter.',
+        },
+        {
+            'label': 'PAR Check',
+            'due': 30,
+            'done': accountability['due'] == 0 and accountability['stale'] == 0 and bool(assignments),
+            'detail': 'Account for all assigned units and stale location updates.',
+        },
+        {
+            'label': 'Supervisor Review',
+            'due': 45,
+            'done': any(packet.approval_status == PACKET_APPROVAL_PENDING for packet in packets) or _note_exists(notes, 'supervisor_notification'),
+            'detail': 'Verify pending packets, supervisor notifications, and approvals.',
+        },
+        {
+            'label': 'AAR Capture',
+            'due': 60,
+            'done': _note_exists(notes, 'after_action'),
+            'detail': 'Begin after-action notes before details are lost.',
+        },
+    ]
+    rows = []
+    for item in benchmark_defs:
+        remaining = item['due'] - elapsed
+        if item['done']:
+            state = 'complete'
+            timer = 'Complete'
+        elif remaining <= 0:
+            state = 'overdue'
+            timer = f'{abs(remaining)}m overdue'
+        elif remaining <= 10:
+            state = 'due'
+            timer = f'{remaining}m left'
+        else:
+            state = 'pending'
+            timer = f'{remaining}m left'
+        rows.append({**item, 'state': state, 'timer': timer, 'elapsed': elapsed})
+    return rows
+
+
+def _division_board(assignments):
+    divisions = [
+        {
+            'label': 'Command',
+            'match': lambda a: (a.assignment_type or '').lower() in {'desk duty', 'watch command'} or 'command' in (a.notes or '').lower(),
+            'lead': 'IC / Watch',
+            'objective': 'Command, communications, notifications, and documentation.',
+        },
+        {
+            'label': 'Operations',
+            'match': lambda a: any(term in f"{a.assignment_type} {a.assignment_location}".lower() for term in ('patrol', 'response', 'special task')),
+            'lead': 'Field Lead',
+            'objective': 'Primary response, scene control, and officer safety.',
+        },
+        {
+            'label': 'Perimeter / Traffic',
+            'match': lambda a: any(term in f"{a.assignment_type} {a.assignment_location}".lower() for term in ('gate', 'traffic', 'perimeter', 'road', 'checkpoint')),
+            'lead': 'Traffic / Gate',
+            'objective': 'Access control, road closures, and traffic flow.',
+        },
+        {
+            'label': 'Investigation',
+            'match': lambda a: any(term in f"{a.assignment_type} {a.assignment_location} {a.notes}".lower() for term in ('investigation', 'follow-up', 'report', 'evidence')),
+            'lead': 'Investigator',
+            'objective': 'Facts, evidence, reports, photos, and witness tracking.',
+        },
+        {
+            'label': 'Specialty / Support',
+            'match': lambda a: any(term in f"{a.assignment_type} {a.assignment_location} {a.notes}".lower() for term in ('k9', 'k-9', 'srt', 'cvi', 'training', 'medical', 'staging')),
+            'lead': 'Specialty Lead',
+            'objective': 'Special capability, staging, medical, and mutual aid support.',
+        },
+    ]
+    rows = []
+    assigned_ids = set()
+    for division in divisions:
+        units = []
+        for assignment in assignments:
+            if assignment.id in assigned_ids:
+                continue
+            if division['match'](assignment):
+                assigned_ids.add(assignment.id)
+                units.append(assignment)
+        rows.append({
+            'label': division['label'],
+            'lead': division['lead'],
+            'objective': division['objective'],
+            'count': len(units),
+            'units': [
+                {
+                    'name': unit.officer.display_name if unit.officer else 'Unassigned',
+                    'status': unit.status or 'On Duty',
+                    'location': unit.assignment_location or unit.assignment_type or 'Location pending',
+                }
+                for unit in units[:5]
+            ],
+            'state': 'active' if units else 'empty',
+        })
+    unassigned = [assignment for assignment in assignments if assignment.id not in assigned_ids]
+    if unassigned:
+        rows.append({
+            'label': 'Unassigned / Other',
+            'lead': 'Needs Sorting',
+            'objective': 'Review these units and place them into a command group.',
+            'count': len(unassigned),
+            'units': [
+                {
+                    'name': unit.officer.display_name if unit.officer else 'Unassigned',
+                    'status': unit.status or 'On Duty',
+                    'location': unit.assignment_location or unit.assignment_type or 'Location pending',
+                }
+                for unit in unassigned[:5]
+            ],
+            'state': 'warning',
+        })
+    return rows
+
+
+def _risk_layers(bolos, packets, tasks, accountability):
+    correction_packets = [packet for packet in packets if packet.approval_status == PACKET_APPROVAL_NEEDS_CORRECTION]
+    critical_tasks = [task for task in tasks if task.is_overdue or task.priority == 'Command Critical']
+    armed_or_high = [bolo for bolo in bolos if bolo.threat_level in {'HIGH', 'ARMED'}]
+    return [
+        {
+            'label': 'Officer Safety / BOLO',
+            'value': len(armed_or_high),
+            'tone': 'danger' if armed_or_high else 'success',
+            'detail': 'High-risk BOLOs and command safety alerts.',
+        },
+        {
+            'label': 'Accountability Risk',
+            'value': accountability['due'] + accountability['stale'],
+            'tone': 'danger' if accountability['stale'] else ('warning' if accountability['due'] else 'success'),
+            'detail': 'Units needing PAR or stale location review.',
+        },
+        {
+            'label': 'Report / Packet Risk',
+            'value': len(correction_packets),
+            'tone': 'warning' if correction_packets else 'success',
+            'detail': 'Packets returned or requiring immediate command review.',
+        },
+        {
+            'label': 'Tasking Risk',
+            'value': len(critical_tasks),
+            'tone': 'danger' if critical_tasks else 'success',
+            'detail': 'Overdue or command-critical due-outs tied to readiness.',
+        },
+    ]
+
+
+def _tactical_worksheet(assignments, incidents, bolos, packets, tasks):
+    resource_gaps = []
+    if not assignments:
+        resource_gaps.append('No assigned response resources are visible.')
+    if not any('staging' in (a.assignment_location or '').lower() for a in assignments):
+        resource_gaps.append('Staging location is not documented.')
+    if not any('traffic' in f"{a.assignment_type} {a.assignment_location}".lower() for a in assignments):
+        resource_gaps.append('Traffic/perimeter control is not specifically assigned.')
+    hazards = []
+    hazards.extend([bolo.offense or bolo.description or bolo.subject_name for bolo in bolos[:3]])
+    if any(packet.approval_status == PACKET_APPROVAL_NEEDS_CORRECTION for packet in packets):
+        hazards.append('One or more packets need correction before final review.')
+    notifications = [
+        'Watch Commander / Desk Sgt',
+        'Dispatch / PMO Desk',
+        'CID/AID or Accident Investigator if case facts require',
+        'Fire/EMS or installation emergency services if safety conditions change',
+    ]
+    return {
+        'priorities': [
+            'Life safety and officer accountability',
+            'Scene stabilization and perimeter control',
+            'Evidence preservation and report/documentation capture',
+        ],
+        'hazards': hazards or ['No high-risk BOLO or packet hazard is currently visible.'],
+        'resource_gaps': resource_gaps or ['No immediate resource gap detected from visible assignments.'],
+        'notifications': notifications,
+        'active_task_count': len(tasks),
+        'active_incident_count': len(incidents),
+    }
+
+
+def _command_actions():
+    return [
+        {'label': 'Live Unit Map', 'detail': 'Open GPS/status map', 'endpoint': 'watch_commander.unit_map'},
+        {'label': 'Assign Units', 'detail': 'Update shift resources', 'endpoint': 'watch_commander.officers'},
+        {'label': 'Review Reports', 'detail': 'Open pending packets', 'endpoint': 'watch_commander.reports'},
+        {'label': 'BOLO / Intel', 'detail': 'Review active alerts', 'endpoint': 'bolo.bolo_board'},
+        {'label': 'Bodycam Library', 'detail': 'Review video/transcripts', 'endpoint': 'bodycam.library'},
+        {'label': 'Assistant Ops', 'detail': 'Create follow-up tasking', 'endpoint': 'assistant_operations.dashboard'},
+        {'label': 'Accident Tools', 'detail': 'Open crash diagram/reconstruction', 'endpoint': 'reports.accidents'},
+        {'label': 'Shift Brief', 'detail': 'Publish command brief', 'endpoint': 'watch_commander.briefing'},
+    ]
+
+
 @bp.route('/')
 @bp.route('/dashboard')
 @login_required
@@ -279,6 +508,7 @@ def dashboard():
     units = _unit_rows(assignments)
     accountability = _accountability(assignments)
     checklist = _checklist(open_shift, assignments, incidents, packets, notes)
+    incident_started_at = _incident_start_time(open_shift, drafts, packets, notes)
     overdue_tasks = [task for task in tasks if task.is_overdue or task.priority == 'Command Critical']
     metrics = [
         {'label': 'Active Incidents', 'value': len(incidents), 'detail': 'Drafts, pending packets, and BOLOs', 'tone': 'primary'},
@@ -298,6 +528,11 @@ def dashboard():
         accountability=accountability,
         checklist=checklist,
         command_log=_command_log(notes, packets, tasks, bolos),
+        benchmark_timers=_benchmark_timers(open_shift, assignments, packets, notes, incident_started_at),
+        divisions=_division_board(assignments),
+        risk_layers=_risk_layers(bolos, packets, tasks, accountability),
+        worksheet=_tactical_worksheet(assignments, incidents, bolos, packets, tasks),
+        command_actions=_command_actions(),
         tasks=tasks[:10],
         suggested_objectives=[
             'Stabilize scene, account for all personnel, and establish perimeter.',

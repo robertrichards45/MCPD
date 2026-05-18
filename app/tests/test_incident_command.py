@@ -46,6 +46,10 @@ def test_incident_command_dashboard_loads_and_officer_blocked():
         html = response.get_data(as_text=True)
         assert 'Incident Command' in html
         assert 'Command-grade incident control board' in html
+        assert 'Command / PAR Timers' in html
+        assert 'Divisions / Groups' in html
+        assert 'Tactical Worksheet' in html
+        assert 'Command Threat Picture' in html
 
         _app, officer_client = _client_for(officer)
         response = officer_client.get('/incident-command/dashboard')
