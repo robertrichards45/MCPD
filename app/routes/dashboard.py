@@ -9,9 +9,20 @@ from ..extensions import db
 from ..models import (
     Announcement,
     CleoReport,
+    BOLOEntry,
+    IncidentDraft,
+    IncidentPacket,
+    PACKET_APPROVAL_APPROVED,
+    PACKET_APPROVAL_NEEDS_CORRECTION,
+    PACKET_APPROVAL_PENDING,
     Report,
     ROLE_WATCH_COMMANDER,
     SavedForm,
+    TrainingRoster,
+    WatchAssignment,
+    WatchApproval,
+    WatchNote,
+    WatchShift,
 )
 from ..permissions import can_access_assistant_operations, can_access_builder_mode
 
@@ -151,6 +162,221 @@ def _dashboard_snapshot():
             cleo_report_count=cleo_report_count,
             notice_count=notice_count,
         ),
+        'live_ops': _dashboard_live_ops(
+            saved_forms_count=saved_forms_count,
+            report_count=report_count,
+            notice_count=notice_count,
+        ),
+    }
+
+
+def _safe_all(label, query, limit=None):
+    try:
+        if limit:
+            query = query.limit(limit)
+        return query.all()
+    except Exception as exc:
+        db.session.rollback()
+        _log.warning('Dashboard query failed for %s: %s', label, exc.__class__.__name__)
+        return []
+
+
+def _safe_first(label, query):
+    try:
+        return query.first()
+    except Exception as exc:
+        db.session.rollback()
+        _log.warning('Dashboard first failed for %s: %s', label, exc.__class__.__name__)
+        return None
+
+
+def _dashboard_live_ops(saved_forms_count, report_count, notice_count):
+    """Build a First Due-style operating picture while respecting officer scope."""
+    is_command = bool(current_user.can_manage_team())
+    if is_command:
+        drafts_query = IncidentDraft.query.filter_by(status='ACTIVE').order_by(IncidentDraft.updated_at.desc())
+        packets_query = IncidentPacket.query.order_by(IncidentPacket.submitted_at.desc())
+        assignments_query = WatchAssignment.query.order_by(WatchAssignment.updated_at.desc(), WatchAssignment.id.desc())
+    else:
+        drafts_query = IncidentDraft.query.filter_by(officer_user_id=current_user.id, status='ACTIVE').order_by(IncidentDraft.updated_at.desc())
+        packets_query = IncidentPacket.query.filter_by(officer_user_id=current_user.id).order_by(IncidentPacket.submitted_at.desc())
+        assignments_query = WatchAssignment.query.filter_by(officer_id=current_user.id).order_by(WatchAssignment.updated_at.desc(), WatchAssignment.id.desc())
+
+    drafts = _safe_all('live_ops_drafts', drafts_query, 8)
+    packets = _safe_all('live_ops_packets', packets_query, 12)
+    assignments = _safe_all('live_ops_assignments', assignments_query, 12)
+    open_shift = _safe_first(
+        'live_ops_shift',
+        WatchShift.query.filter(WatchShift.status != 'CLOSED').order_by(WatchShift.created_at.desc()),
+    ) if is_command else None
+    active_bolos = _safe_all(
+        'live_ops_bolos',
+        BOLOEntry.query.filter_by(status='ACTIVE').order_by(BOLOEntry.created_at.desc()),
+        4,
+    ) if is_command else []
+    active_rosters = _safe_count(
+        'live_ops_training',
+        TrainingRoster.query.filter(TrainingRoster.status.ilike('ACTIVE')),
+    ) if is_command else 0
+    pending_approvals = _safe_count('live_ops_approvals', WatchApproval.query.filter_by(status='PENDING')) if is_command else 0
+    shift_notes = _safe_all('live_ops_shift_notes', WatchNote.query.order_by(WatchNote.created_at.desc()), 4) if is_command else []
+
+    pending_packets = [packet for packet in packets if packet.approval_status == PACKET_APPROVAL_PENDING]
+    correction_packets = [packet for packet in packets if packet.approval_status == PACKET_APPROVAL_NEEDS_CORRECTION]
+    approved_packets = [packet for packet in packets if packet.approval_status == PACKET_APPROVAL_APPROVED]
+
+    feed = []
+    for draft in drafts[:4]:
+        feed.append({
+            'type': 'Active Incident Draft',
+            'label': draft.call_type or 'Incident draft',
+            'location': draft.location or draft.summary or 'No location entered',
+            'status': draft.status,
+            'tone': 'primary',
+            'endpoint': 'reports.list_reports',
+        })
+    for packet in pending_packets[:4]:
+        feed.append({
+            'type': 'Report Packet',
+            'label': packet.call_type or 'Submitted packet',
+            'location': packet.location or packet.summary or 'Supervisor review required',
+            'status': 'Pending Review',
+            'tone': 'warning',
+            'endpoint': 'watch_commander.reports' if is_command else 'reports.list_reports',
+        })
+    for packet in correction_packets[:3]:
+        feed.append({
+            'type': 'Correction Needed',
+            'label': packet.call_type or 'Returned packet',
+            'location': packet.location or packet.supervisor_notes or 'Corrections requested',
+            'status': 'Needs Correction',
+            'tone': 'danger',
+            'endpoint': 'reports.list_reports',
+        })
+    for bolo in active_bolos[:3]:
+        feed.append({
+            'type': 'BOLO / Alert',
+            'label': bolo.subject_name or 'Active BOLO',
+            'location': bolo.offense or bolo.description or 'Command alert',
+            'status': bolo.threat_level or bolo.status,
+            'tone': 'danger',
+            'endpoint': 'bolo.bolo_board',
+        })
+    for note in shift_notes[:2]:
+        feed.append({
+            'type': note.note_type.replace('_', ' ').title(),
+            'label': note.title,
+            'location': note.body[:120],
+            'status': note.priority,
+            'tone': 'primary',
+            'endpoint': 'watch_commander.blotter',
+        })
+
+    unit_rows = []
+    for assignment in assignments[:8]:
+        officer = getattr(assignment, 'officer', None)
+        unit_rows.append({
+            'name': officer.display_name if officer else current_user.display_name,
+            'assignment': assignment.assignment_location or assignment.assignment_type or 'Assignment pending',
+            'status': assignment.status or 'On Duty',
+            'detail': assignment.notes or assignment.assignment_type or 'No notes',
+            'tone': 'success' if (assignment.status or '').lower() in {'patrol', 'on duty', 'gate'} else 'primary',
+        })
+    if not unit_rows:
+        unit_rows.append({
+            'name': current_user.display_name,
+            'assignment': current_user.section_unit or 'No current assignment entered',
+            'status': 'Available' if not is_command else 'No visible units',
+            'detail': 'Use Watch Commander shift tools to assign units.',
+            'tone': 'primary',
+        })
+
+    total_packets = len(packets)
+    alert_tiles = [
+        {
+            'label': 'Active Incidents',
+            'value': len(drafts),
+            'detail': 'Open drafts / active field work',
+            'tone': 'primary',
+            'endpoint': 'reports.list_reports',
+        },
+        {
+            'label': 'Pending Review',
+            'value': len(pending_packets),
+            'detail': 'Packets waiting on supervisor action',
+            'tone': 'warning' if pending_packets else 'success',
+            'endpoint': 'watch_commander.reports' if is_command else 'reports.list_reports',
+        },
+        {
+            'label': 'Corrections',
+            'value': len(correction_packets),
+            'detail': 'Returned report packets',
+            'tone': 'danger' if correction_packets else 'success',
+            'endpoint': 'reports.list_reports',
+        },
+        {
+            'label': 'Command Alerts',
+            'value': len(active_bolos) if is_command else notice_count,
+            'detail': 'BOLOs / notices needing awareness',
+            'tone': 'danger' if active_bolos else 'primary',
+            'endpoint': 'bolo.bolo_board' if is_command else 'announcements.board',
+        },
+    ]
+
+    analytics = [
+        {
+            'label': 'Report Clearance',
+            'value': f'{round((len(approved_packets) / total_packets) * 100) if total_packets else 100}%',
+            'detail': f'{len(approved_packets)} approved / {total_packets} recent packets',
+        },
+        {
+            'label': 'Unit Visibility',
+            'value': len(assignments),
+            'detail': 'Assignments visible in current operating picture',
+        },
+        {
+            'label': 'Saved Work Backlog',
+            'value': saved_forms_count,
+            'detail': 'Saved forms, drafts, and unfinished packets',
+        },
+        {
+            'label': 'Training / Approvals',
+            'value': active_rosters + pending_approvals if is_command else report_count,
+            'detail': 'Command oversight items' if is_command else 'Your report workload',
+        },
+    ]
+
+    preplan_layers = [
+        {
+            'label': 'Installation Map',
+            'detail': 'MCLB Albany map, base points, and full-screen view.',
+            'endpoint': 'dashboard.dashboard',
+        },
+        {
+            'label': 'Unit / Assignment Layer',
+            'detail': 'Officer status, patrol zones, gates, posts, and GPS-capable unit map.',
+            'endpoint': 'watch_commander.unit_map' if is_command else 'mobile.home',
+        },
+        {
+            'label': 'Incident / BOLO Layer',
+            'detail': 'Active drafts, submitted packets, alerts, and command notes.',
+            'endpoint': 'watch_commander.dashboard' if is_command else 'announcements.board',
+        },
+        {
+            'label': 'Reports / Media Layer',
+            'detail': 'Reports, bodycam footage, accident diagrams, and saved evidence photos.',
+            'endpoint': 'reports.list_reports',
+        },
+    ]
+
+    return {
+        'is_command': is_command,
+        'open_shift_label': f'{open_shift.shift_type} / {open_shift.status}' if open_shift else ('No open shift' if is_command else current_user.section_unit or 'Field view'),
+        'alert_tiles': alert_tiles,
+        'feed': feed[:10],
+        'unit_rows': unit_rows,
+        'analytics': analytics,
+        'preplan_layers': preplan_layers,
     }
 
 
@@ -562,6 +788,7 @@ def dashboard():
             dashboard_announcements=snapshot['announcements'],
             dashboard_readiness_items=snapshot['readiness_items'],
             dashboard_queue_items=snapshot['queue_items'],
+            dashboard_live_ops=snapshot['live_ops'],
             **preferences_context,
         )
     )

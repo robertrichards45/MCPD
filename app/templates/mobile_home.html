@@ -82,13 +82,13 @@
         <strong>{{ dashboard_report_count|default(0) }}</strong>
         <span>Reports</span>
       </div>
-      <a class="mcpd-mobile-stat-chip mcpd-mobile-stat-link" href="{{ url_for('mobile.officer_stats') }}">
-        <strong>View</strong>
+      <a class="mcpd-mobile-stat-chip mcpd-mobile-stat-link" href="{{ url_for('mobile.officer_stats') }}" aria-label="Officer Stats">
+        <strong>Officer</strong>
         <span>Stats</span>
       </a>
-      <a class="mcpd-mobile-stat-chip mcpd-mobile-stat-link" href="{{ url_for('mobile.officer_contact') }}">
+      <a class="mcpd-mobile-stat-chip mcpd-mobile-stat-link" href="{{ url_for('mobile.officer_contact') }}" aria-label="Edit Contact Info">
         <strong>Edit</strong>
-        <span>Profile</span>
+        <span>Contact Info</span>
       </a>
     </section>
 

@@ -95,6 +95,114 @@
       {% endfor %}
     </section>
 
+    <section class="mcpd-response-board" aria-label="Live response operating picture">
+      <div class="mcpd-response-head">
+        <div>
+          <span>Live Response Board</span>
+          <h2>Operational picture</h2>
+          <p>Incident status, unit posture, map layers, and readiness analytics in one command-grade view.</p>
+        </div>
+        <a class="btn btn-outline-secondary" href="{{ url_for('dashboard.dispatch_command_center') }}">Open Command Center</a>
+      </div>
+
+      <div class="mcpd-response-alerts">
+        {% for item in dashboard_live_ops.alert_tiles %}
+        <a class="mcpd-response-alert is-{{ item.tone }}" href="{{ url_for(item.endpoint) }}">
+          <span>{{ item.label }}</span>
+          <strong>{{ item.value }}</strong>
+          <small>{{ item.detail }}</small>
+        </a>
+        {% endfor %}
+      </div>
+
+      <div class="mcpd-response-grid">
+        <article class="mcpd-response-panel mcpd-response-panel-large">
+          <div class="mcpd-response-panel-head">
+            <div>
+              <span>Incident Status</span>
+              <h3>{{ dashboard_live_ops.open_shift_label }}</h3>
+            </div>
+            {% if dashboard_live_ops.is_command %}
+            <a href="{{ url_for('watch_commander.dashboard') }}">Watch Dashboard</a>
+            {% else %}
+            <a href="{{ url_for('reports.list_reports') }}">My Reports</a>
+            {% endif %}
+          </div>
+          <div class="mcpd-live-feed">
+            {% for item in dashboard_live_ops.feed %}
+            <a class="mcpd-live-feed-row is-{{ item.tone }}" href="{{ url_for(item.endpoint) }}">
+              <div>
+                <span>{{ item.type }}</span>
+                <strong>{{ item.label }}</strong>
+                <small>{{ item.location }}</small>
+              </div>
+              <b>{{ item.status }}</b>
+            </a>
+            {% else %}
+            <div class="mcpd-empty-state">No active incident feed items yet. Draft reports, submitted packets, BOLOs, and watch notes will appear here.</div>
+            {% endfor %}
+          </div>
+        </article>
+
+        <article class="mcpd-response-panel">
+          <div class="mcpd-response-panel-head">
+            <div>
+              <span>Unit Posture</span>
+              <h3>Personnel / assignments</h3>
+            </div>
+          </div>
+          <div class="mcpd-unit-list">
+            {% for unit in dashboard_live_ops.unit_rows %}
+            <div class="mcpd-unit-row is-{{ unit.tone }}">
+              <div>
+                <strong>{{ unit.name }}</strong>
+                <small>{{ unit.assignment }}</small>
+              </div>
+              <span>{{ unit.status }}</span>
+            </div>
+            {% endfor %}
+          </div>
+        </article>
+
+        <article class="mcpd-response-panel">
+          <div class="mcpd-response-panel-head">
+            <div>
+              <span>Pre-plan / GIS</span>
+              <h3>Operational layers</h3>
+            </div>
+          </div>
+          <div class="mcpd-layer-list">
+            {% for layer in dashboard_live_ops.preplan_layers %}
+            <a href="{{ url_for(layer.endpoint) }}">
+              <strong>{{ layer.label }}</strong>
+              <small>{{ layer.detail }}</small>
+            </a>
+            {% endfor %}
+          </div>
+        </article>
+
+        <article class="mcpd-response-panel">
+          <div class="mcpd-response-panel-head">
+            <div>
+              <span>Analytics</span>
+              <h3>Readiness trend</h3>
+            </div>
+          </div>
+          <div class="mcpd-analytics-list">
+            {% for item in dashboard_live_ops.analytics %}
+            <div class="mcpd-analytics-row">
+              <div>
+                <strong>{{ item.label }}</strong>
+                <small>{{ item.detail }}</small>
+              </div>
+              <b>{{ item.value }}</b>
+            </div>
+            {% endfor %}
+          </div>
+        </article>
+      </div>
+    </section>
+
     <section class="mcpd-action-grid" aria-label="Quick actions">
       {% for card in dashboard_cards %}
       <a class="mcpd-action-card" href="{{ url_for(card.endpoint) }}">
