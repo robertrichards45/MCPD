@@ -561,12 +561,53 @@ def _ai_candidate_relevance(query: str, jurisdiction: str, code: str, title: str
     return True, 'Related / Review If Needed', 'Review only if the missing jurisdictional facts are confirmed.'
 
 
+_AI_CANDIDATES_CACHE_PATH = Path(__file__).resolve().parents[1] / 'data' / 'legal' / 'ai_candidates_cache.json'
+
+
+def _get_cached_ai_candidates(query: str, source: str, state_code: str) -> list[dict] | None:
+    key = f"cand|{_normalize_query_key(query)}|{(source or 'ALL').upper()}|{(state_code or 'GA').upper()}"
+    try:
+        if not _AI_CANDIDATES_CACHE_PATH.exists():
+            return None
+        data = json.loads(_AI_CANDIDATES_CACHE_PATH.read_text(encoding='utf-8'))
+        hit = data.get(key)
+        return hit if isinstance(hit, list) else None
+    except Exception:
+        return None
+
+
+def _store_cached_ai_candidates(query: str, source: str, state_code: str, candidates: list[dict]) -> None:
+    key = f"cand|{_normalize_query_key(query)}|{(source or 'ALL').upper()}|{(state_code or 'GA').upper()}"
+    try:
+        _AI_CANDIDATES_CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
+        existing: dict = {}
+        if _AI_CANDIDATES_CACHE_PATH.exists():
+            try:
+                existing = json.loads(_AI_CANDIDATES_CACHE_PATH.read_text(encoding='utf-8'))
+            except Exception:
+                pass
+        if not isinstance(existing, dict):
+            existing = {}
+        existing[key] = candidates
+        # Keep cache bounded
+        if len(existing) > 500:
+            keys = list(existing.keys())
+            for old_key in keys[:50]:
+                existing.pop(old_key, None)
+        _AI_CANDIDATES_CACHE_PATH.write_text(json.dumps(existing, indent=2), encoding='utf-8')
+    except Exception:
+        pass
+
+
 def _ai_multijurisdiction_candidates(query: str, source: str, state_code: str, results: list[LegalMatch]) -> list[dict]:
     if not (query or '').strip():
         return []
     state_name = STATE_LABELS.get(state_code, state_code)
     if source == 'BASE_ORDER':
         return []
+    cached = _get_cached_ai_candidates(query, source, state_code)
+    if cached is not None:
+        return cached
     focus = {
         'ALL': f'{state_name} state law, federal United States Code, and UCMJ',
         'STATE': f'{state_name} state law',
@@ -647,6 +688,8 @@ def _ai_multijurisdiction_candidates(query: str, source: str, state_code: str, r
         )
         if len(clean) >= 8:
             break
+    if clean:
+        _store_cached_ai_candidates(query, source, state_code, clean)
     return clean
 
 
@@ -780,16 +823,20 @@ def _ai_interpret_narrative_query(query: str, source: str) -> dict:
     except Exception:
         pass
     prompt = (
-        "You are a law enforcement legal reference assistant. "
-        "An officer described an incident in plain language. "
-        "Read the ENTIRE statement and identify the legal concepts it describes. "
-        "Do NOT invent statute numbers or cite specific codes. "
+        "You are a law enforcement legal reference assistant helping officers find the right law. "
+        "An officer described an incident in plain language — it may be a single phrase, a short sentence, "
+        "or a full narrative. Read the ENTIRE description and identify the primary legal concept it describes. "
+        "Do NOT invent statute numbers or cite specific codes — only identify what legal concept to search for. "
         "Return STRICT JSON only, no other text:\n"
         "{\n"
-        '  "primary_search": "<3-7 word legal search phrase capturing the core offense>",\n'
-        '  "additional_terms": ["<secondary offense or element>", "<another term if applicable>"],\n'
-        '  "interpretation_note": "<one sentence describing the legal scenario you understood>"\n'
+        '  "primary_search": "<3-7 word legal search phrase that best captures the core offense or violation>",\n'
+        '  "additional_terms": ["<a secondary offense or element if applicable>", "<another term if applicable>"],\n'
+        '  "interpretation_note": "<one sentence describing the legal scenario you understood from the description>"\n'
         "}\n\n"
+        "Examples:\n"
+        '- "car one backed into car two" → {"primary_search": "unsafe backing vehicle collision", "additional_terms": ["failure to yield backing", "traffic collision reverse"], "interpretation_note": "Vehicle 1 collided with vehicle 2 while moving in reverse — a backing violation."}\n'
+        '- "driver ran red light hit pedestrian" → {"primary_search": "traffic signal violation pedestrian strike", "additional_terms": ["failure to obey traffic control device", "pedestrian right of way"], "interpretation_note": "Driver failed to obey a red traffic light and struck a pedestrian."}\n'
+        '- "DUI breath test refused" → {"primary_search": "DUI implied consent refusal", "additional_terms": ["driving under influence blood alcohol", "implied consent violation"], "interpretation_note": "Driver suspected of DUI refused the breath test under implied consent law."}\n\n'
         f"Incident description: {clean_key}\n"
         f"Jurisdiction focus: {source}"
     )
@@ -1143,7 +1190,6 @@ def _render_legal_lookup(default_source='ALL'):
     normalized_query = query.lower()
     speed_phrase = bool(re.search(r'\b\d{1,3}\s*(?:in|/)\s*(?:a\s*)?\d{1,3}\b', normalized_query))
     deterministic_lookup = speed_phrase
-    ai_expansion_enabled = bool(current_app.config.get('LEGAL_AI_EXPANSION_ENABLED', False))
     code_lookup_like = bool(re.search(r'\b(?:ocga\s*)?\d{1,2}-\d{1,2}(?:-\d{1,3}(?:\.\d+)?)?\b', query.lower()))
     ai_hints = {'terms': [], 'query_variants': [], 'related_policy_terms': [], 'source_hint': source, 'officer_brief': ''}
     ai_interpretation_note = ''
@@ -1159,22 +1205,18 @@ def _render_legal_lookup(default_source='ALL'):
     raw_results = _search_entries_for_scope(search_query, source, state)
     local_top_confidence = int(raw_results[0].confidence) if raw_results else 0
     local_results_strong = bool(raw_results and local_top_confidence >= 88)
-    force_ai_interpretation = str(current_app.config.get('LEGAL_AI_ALWAYS_INTERPRET', '')).strip().lower() in {
-        '1', 'true', 'yes', 'on'
-    }
 
     # --- AI narrative interpretation ---
-    # For full natural-language sentences, read the ENTIRE statement semantically
-    # and use AI-interpreted legal terms as the PRIMARY result set.  The AI results
-    # REPLACE (not augment) the keyword results for narrative queries so that
-    # location words in the original query never re-introduce mismatched law hits.
+    # For any multi-word plain-language query, read the ENTIRE statement with AI and
+    # use the AI-interpreted legal search phrase as the PRIMARY retrieval path.
+    # Falls back silently to keyword results when no API key is configured.
+    # AI results REPLACE (not augment) the keyword results so that setting words in
+    # the query (e.g. "road", "vehicle") never drive the final ranking.
     allow_narrative_interp = bool(
-        ai_expansion_enabled
-        and query
-        and (force_ai_interpretation or not local_results_strong or len(query.split()) >= 5)
+        query
+        and len(query.split()) >= 2
         and not deterministic_lookup
         and not code_lookup_like
-        and _is_narrative_query(query)
     )
     if allow_narrative_interp:
         interp = _ai_interpret_narrative_query(query, source)
@@ -1208,14 +1250,16 @@ def _render_legal_lookup(default_source='ALL'):
             'officer_brief': ai_interpretation_note,
         }
 
+    # AI hint expansion: run whenever results aren't already excellent, even if
+    # narrative interp already ran, because the hint pass uses a different prompt
+    # that may surface additional retrieval angles for the same scenario.
     allow_ai_expansion = bool(
-        ai_expansion_enabled
-        and query
-        and not narrative_interp_used
+        query
         and not effective_results_strong
         and not deterministic_lookup
         and not code_lookup_like
         and len(query.split()) >= 2
+        and (not narrative_interp_used or effective_top_confidence < 75)
     )
     if allow_ai_expansion:
         ai_hints = _ai_search_hints(query, source, raw_results)
@@ -1294,21 +1338,15 @@ def _render_legal_lookup(default_source='ALL'):
     lead_result = results[0] if results else None
     grouped_results = _group_results(results[1:] if len(results) > 1 else [])
     order_reference_matches = _order_reference_matches(query, ai_hints.get('related_policy_terms', ()))
-    deep_ai_candidates_enabled = str(os.environ.get('LEGAL_AI_CANDIDATES_ENABLED', '0')).strip().lower() in {
-        '1', 'true', 'yes', 'on'
-    }
+    # Always request AI candidates when the corpus result is absent or below
+    # threshold — regardless of state or config flags.  Falls back silently
+    # when no API key is configured.
     needs_ai_candidates = bool(
         query
         and (
             not results
-            or not (state == 'GA')
-            or (
-                deep_ai_candidates_enabled
-                and (
-                    not lead_result
-                    or lead_result.confidence < 75
-                )
-            )
+            or not lead_result
+            or lead_result.confidence < 75
         )
     )
     ai_candidates = _ai_multijurisdiction_candidates(query, source, state, results) if needs_ai_candidates else []
