@@ -3045,3 +3045,406 @@ body[data-theme="dark"] .mcpd-command-queue-list small { color: #9eb3ce; }
     padding: 14px;
   }
 }
+
+/* ==========================================================================
+   Site-wide layout stabilization pass
+   Keeps existing MCPD design, but prevents broken spacing/overflow patterns.
+   ========================================================================== */
+:root {
+  --layout-sidebar-width: 326px;
+  --layout-header-height: 92px;
+  --layout-content-max: 1440px;
+  --layout-gap: 16px;
+  --layout-radius: 16px;
+  --layout-shadow: 0 18px 42px rgba(15, 23, 42, .08);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+body {
+  color: var(--text, var(--text-primary, #071827));
+  background: var(--bg, var(--bg-primary, #e8eef8));
+}
+
+img,
+svg,
+video,
+canvas,
+iframe {
+  max-width: 100%;
+}
+
+a,
+button,
+input,
+select,
+textarea,
+label,
+summary,
+p,
+li,
+td,
+th,
+span,
+small,
+strong {
+  overflow-wrap: anywhere;
+}
+
+body:not(.mobile-foundation):not(.force-mobile-view) .mcpd-command-app > main,
+body:not(.mobile-foundation):not(.force-mobile-view) .app-shell > main,
+body:not(.mobile-foundation):not(.force-mobile-view) main.dashboard,
+body:not(.mobile-foundation):not(.force-mobile-view) .wc-page-shell {
+  min-width: 0 !important;
+  max-width: calc(100vw - var(--layout-sidebar-width)) !important;
+}
+
+body:not(.mobile-foundation):not(.force-mobile-view) .dashboard,
+body:not(.mobile-foundation):not(.force-mobile-view) .wc-page-shell,
+body:not(.mobile-foundation):not(.force-mobile-view) .forms-manager-page,
+body:not(.mobile-foundation):not(.force-mobile-view) .forms-library-shell,
+body:not(.mobile-foundation):not(.force-mobile-view) .reports-center-shell,
+body:not(.mobile-foundation):not(.force-mobile-view) .legal-lookup-page,
+body:not(.mobile-foundation):not(.force-mobile-view) .ops-page-shell,
+body:not(.mobile-foundation):not(.force-mobile-view) .dashboard-home,
+body:not(.mobile-foundation):not(.force-mobile-view) .command-deck {
+  width: min(100%, var(--layout-content-max)) !important;
+  min-width: 0 !important;
+}
+
+.mcpd-command-header,
+.mcpd-command-sidebar,
+.mcpd-mobile-topbar,
+.mobile-bottom-tabbar,
+.mobile-tab-bar {
+  contain: layout paint;
+}
+
+.mcpd-command-header {
+  min-width: 0 !important;
+}
+
+.mcpd-header-search {
+  min-width: 180px !important;
+}
+
+.mcpd-header-user,
+.mcpd-header-brand {
+  min-width: 0 !important;
+}
+
+.mcpd-header-user strong,
+.mcpd-header-user small,
+.mcpd-header-brand strong {
+  min-width: 0 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.card,
+.panel,
+.ops-panel,
+.mcpd-panel,
+.wc-panel,
+.wc-row-card,
+.wc-live-panel,
+.forms-manager-sidebar,
+.forms-manager-editor,
+.forms-result-card,
+.reports-card,
+.command-card,
+.mobile-tool-card,
+.mcpd-action-card,
+.mcpd-readiness-card,
+.mcpd-ops-snapshot-card,
+.officer-selected-panel,
+.form-side-card,
+.form-right-panel,
+.assistant-ops-panel,
+.assistant-ops-task-card {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+.row,
+.grid,
+.form-row,
+.wc-form-row,
+.wc-dashboard-grid,
+.wc-two-column,
+.wc-live-grid,
+.wc-analytics-grid,
+.forms-manager-layout,
+.forms-manager-field-grid,
+.forms-results-grid,
+.reports-grid,
+.recon-form-grid,
+.form-section-grid,
+.assistant-ops-layout,
+.assistant-ops-metrics,
+.assistant-ops-task-body,
+.mcpd-dashboard-panels,
+.mcpd-action-grid,
+.mcpd-readiness-board,
+.mcpd-readiness-grid,
+.mcpd-ops-snapshot {
+  min-width: 0 !important;
+}
+
+.row > *,
+.grid > *,
+.form-row > *,
+.wc-form-row > *,
+.wc-dashboard-grid > *,
+.wc-two-column > *,
+.wc-live-grid > *,
+.wc-analytics-grid > *,
+.forms-manager-layout > *,
+.forms-manager-field-grid > *,
+.forms-results-grid > *,
+.reports-grid > *,
+.recon-form-grid > *,
+.form-section-grid > *,
+.assistant-ops-layout > *,
+.assistant-ops-metrics > *,
+.assistant-ops-task-body > *,
+.mcpd-dashboard-panels > *,
+.mcpd-action-grid > *,
+.mcpd-readiness-board > *,
+.mcpd-readiness-grid > *,
+.mcpd-ops-snapshot > * {
+  min-width: 0 !important;
+}
+
+input,
+select,
+textarea,
+.form-control,
+.form-select {
+  max-width: 100% !important;
+  min-width: 0 !important;
+  color: var(--input-text, var(--text, #071827)) !important;
+  background: var(--input-bg, #fff) !important;
+  border-color: var(--border-color, var(--border, #cbd5e1)) !important;
+}
+
+textarea,
+.form-control[type="textarea"] {
+  resize: vertical;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: color-mix(in srgb, var(--input-text, #071827) 52%, transparent) !important;
+  opacity: 1 !important;
+}
+
+body[data-theme="dark"] input,
+body[data-theme="dark"] select,
+body[data-theme="dark"] textarea,
+body[data-theme="dark"] .form-control,
+body[data-theme="dark"] .form-select {
+  color: var(--input-text, #f8fafc) !important;
+  background: var(--input-bg, #0d1828) !important;
+  border-color: var(--border-color, #334155) !important;
+}
+
+body[data-theme="dark"] .text-muted,
+body[data-theme="dark"] .form-text,
+body[data-theme="dark"] small,
+body[data-theme="dark"] .muted {
+  color: var(--muted, #a7b7cc) !important;
+}
+
+.btn,
+button,
+input[type="submit"],
+input[type="button"] {
+  max-width: 100%;
+  min-height: 42px;
+  white-space: normal;
+}
+
+.btn-group,
+.button-row,
+.actions,
+.form-actions,
+.form-action-bar,
+.form-action-footer,
+.forms-toolbar,
+.forms-card-actions,
+.reports-actions,
+.wc-row-actions,
+.wc-inline-form,
+.assistant-ops-actions,
+.dashboard-customize-actions {
+  align-items: center !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+  min-width: 0 !important;
+}
+
+.form-action-footer,
+.form-action-bar,
+.mobile-form-actions,
+.sticky-actions,
+.bottom-actions {
+  max-width: 100% !important;
+}
+
+table {
+  max-width: 100%;
+}
+
+.table-responsive,
+.table-scroll,
+.data-table-wrap,
+.wc-card-table,
+.forms-manager-list,
+.reports-table-wrap {
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-responsive table,
+.table-scroll table,
+.data-table-wrap table,
+.reports-table-wrap table {
+  min-width: max-content;
+}
+
+.mcpd-command-sidebar nav,
+.forms-manager-list,
+.mobile-more-grid,
+.wc-live-feed,
+.wc-card-table,
+.mcpd-list {
+  scrollbar-width: thin;
+}
+
+body.view-mobile,
+body.force-mobile-view,
+body.mobile-foundation {
+  overflow-x: hidden !important;
+}
+
+body.view-mobile main,
+body.force-mobile-view main,
+body.mobile-foundation main,
+body.view-mobile .dashboard,
+body.force-mobile-view .dashboard,
+body.mobile-foundation .dashboard,
+body.view-mobile .wc-page-shell,
+body.force-mobile-view .wc-page-shell,
+body.mobile-foundation .wc-page-shell,
+body.view-mobile .forms-library-shell,
+body.force-mobile-view .forms-library-shell,
+body.mobile-foundation .forms-library-shell,
+body.view-mobile .reports-center-shell,
+body.force-mobile-view .reports-center-shell,
+body.mobile-foundation .reports-center-shell {
+  max-width: 100vw !important;
+  min-width: 0 !important;
+  overflow-x: hidden !important;
+  padding-left: max(14px, env(safe-area-inset-left, 0px)) !important;
+  padding-right: max(14px, env(safe-area-inset-right, 0px)) !important;
+  padding-bottom: calc(var(--mobile-dock-height, 112px) + env(safe-area-inset-bottom, 0px) + 28px) !important;
+}
+
+@media (max-width: 900px) {
+  .mcpd-command-header {
+    gap: 10px !important;
+  }
+
+  .mcpd-header-search {
+    order: 3;
+    flex: 1 1 100% !important;
+    width: 100% !important;
+  }
+
+  .mcpd-header-user {
+    flex-wrap: wrap !important;
+    justify-content: flex-end !important;
+  }
+
+  .wc-live-grid,
+  .wc-analytics-grid,
+  .mcpd-readiness-board,
+  .forms-manager-layout,
+  .assistant-ops-layout {
+    grid-template-columns: 1fr !important;
+  }
+
+  .wc-queue-grid,
+  .mcpd-ops-snapshot,
+  .mcpd-readiness-grid,
+  .mcpd-action-grid,
+  .forms-results-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 640px) {
+  :root {
+    --layout-gap: 12px;
+  }
+
+  .wc-queue-grid,
+  .mcpd-ops-snapshot,
+  .mcpd-readiness-grid,
+  .mcpd-action-grid,
+  .forms-results-grid,
+  .forms-manager-field-grid,
+  .forms-manager-check-grid,
+  .form-section-grid,
+  .recon-form-grid,
+  .assistant-ops-metrics {
+    grid-template-columns: 1fr !important;
+  }
+
+  .mcpd-command-header,
+  .mcpd-mobile-topbar {
+    min-height: 64px !important;
+  }
+
+  .mcpd-header-user > div {
+    max-width: 150px;
+  }
+
+  .btn,
+  button,
+  input[type="submit"],
+  input[type="button"],
+  .mobile-tool-card,
+  .mcpd-action-card,
+  .forms-card-actions .btn,
+  .form-action-footer .btn,
+  .form-action-bar .btn {
+    width: 100%;
+  }
+
+  .wc-live-feed-row,
+  .wc-row-card,
+  .forms-result-card,
+  .mobile-tool-card {
+    align-items: stretch !important;
+  }
+
+  .table th,
+  .table td {
+    white-space: normal !important;
+  }
+}
