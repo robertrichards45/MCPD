@@ -600,7 +600,7 @@ def api_units():
         elif is_demo:
             status = _DEMO_STATUSES[idx % len(_DEMO_STATUSES)]
         else:
-            status = 'Off Duty'
+            status = 'On Duty'
         if status in _OFF_DUTY_STATUSES:
             continue
         lat, lng = _resolve_location(assignment, idx) if assignment else _DEMO_SCATTER[idx % len(_DEMO_SCATTER)]
