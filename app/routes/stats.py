@@ -1,4 +1,4 @@
-﻿import os
+import os
 import json
 from datetime import datetime
 from flask import Blueprint, render_template, request, redirect, url_for, current_app, abort

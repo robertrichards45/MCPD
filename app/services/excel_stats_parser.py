@@ -1,4 +1,4 @@
-﻿import json
+import json
 from datetime import datetime
 try:
     from openpyxl import load_workbook
