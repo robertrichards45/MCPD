@@ -308,6 +308,83 @@ GEORGIA_CODES = (
     ),
     LegalEntry(
         source='GEORGIA',
+        code='OCGA 40-6-240',
+        title='Backing Vehicles',
+        summary='Prohibits backing a vehicle unless the movement can be made safely and without interfering with other traffic.',
+        elements=(
+            'The accused operated a motor vehicle in reverse.',
+            'The backing movement was unsafe or interfered with other traffic.',
+        ),
+        notes='Applies in all traffic situations including parking lots, roadways, and driveways open to public use.',
+        keywords=(
+            'backing', 'backed', 'backed into', 'backing into', 'reversing',
+            'reversed into', 'back up', 'back-up collision', 'backing accident',
+            'backing crash', 'vehicle in reverse', 'reverse collision',
+        ),
+        narrative_triggers=(
+            'backed into', 'backing into', 'backed up into', 'reversed into',
+            'was backing', 'vehicle backed', 'car backed', 'truck backed',
+            'while backing', 'when backing', 'as it backed', 'back into',
+            'back of vehicle struck', 'rear struck while reversing',
+        ),
+        scenario_triggers=(
+            'vehicle backed into another vehicle',
+            'driver reversed into oncoming traffic',
+            'backing movement caused collision',
+            'driver backed without looking',
+            'backed out of parking space into traffic',
+        ),
+        conduct_verbs=(
+            'backed', 'reversed', 'backing', 'reversing',
+        ),
+        traffic_context=(
+            'backing collision', 'reverse collision', 'parking lot backing',
+            'backing out', 'reverse movement', 'unsafe backing',
+        ),
+        related_codes=('OCGA 40-6-390', 'OCGA 40-6-270', 'OCGA 40-6-271'),
+        minimum_punishment='Traffic offense with fines and potential points on license.',
+        maximum_punishment='May be elevated when backing causes injury or death.',
+    ),
+    LegalEntry(
+        source='GEORGIA',
+        code='OCGA 40-6-270',
+        title='Duty Upon Striking an Occupied Vehicle or Injuring a Person',
+        summary='Requires a driver who strikes an occupied vehicle or injures a person to stop, render aid, and provide identifying information.',
+        elements=(
+            'The accused was operating a motor vehicle.',
+            'The vehicle struck another occupied vehicle or injured a person.',
+            'The accused knew or reasonably should have known of the collision or injury.',
+            'The accused failed to stop, render reasonable aid, or provide required identifying information.',
+        ),
+        notes='This is the occupied-vehicle or personal-injury counterpart to 40-6-271; carries heavier penalties.',
+        keywords=(
+            'hit and run occupied', 'struck occupied vehicle', 'left the scene injury',
+            'failed to render aid', 'failure to stop', 'failure to render assistance',
+            'leaving after collision', 'fleeing after accident',
+        ),
+        narrative_triggers=(
+            'struck an occupied', 'hit an occupied', 'collided with an occupied',
+            'failed to stop after', 'left the scene', 'fled the scene',
+            'did not stop', 'drove away after', 'did not render aid',
+        ),
+        scenario_triggers=(
+            'driver fled after striking occupied vehicle',
+            'driver did not stop after collision with injury',
+            'failed to provide information after occupied vehicle collision',
+        ),
+        conduct_verbs=(
+            'fled', 'left', 'failed to stop', 'failed to render',
+        ),
+        traffic_context=(
+            'occupied vehicle collision', 'hit and run with injury',
+            'failure to stop after accident', 'duty upon striking',
+        ),
+        related_codes=('OCGA 40-6-271', 'OCGA 40-6-390'),
+        minimum_punishment='Misdemeanor at minimum; elevated based on injury severity.',
+        maximum_punishment='Felony exposure when serious injury or death results from the collision.',
+    ),
+    LegalEntry(
+        source='GEORGIA',
         code='OCGA 40-6-271',
         title='Duty Upon Striking an Unattended Vehicle or Property',
         summary='Requires a driver to stop and provide notice after striking unattended vehicles or property.',

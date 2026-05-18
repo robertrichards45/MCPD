@@ -364,7 +364,27 @@
         <span class="unit-map-live-dot"></span>
         Installation Operational Map
       </div>
-      <span class="unit-map-badge">Command View</span>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <button id="bldg-edit-btn" class="unit-map-badge" style="cursor:pointer;background:rgba(245,158,11,.18);border-color:rgba(251,191,36,.35);color:#fbbf24;border:1px solid;padding:2px 10px;border-radius:5px;font-size:.65rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;">Edit Buildings</button>
+        <span class="unit-map-badge">Command View</span>
+      </div>
+    </div>
+    <!-- Building edit toolbar (hidden until edit mode active) -->
+    <div id="bldg-toolbar" style="display:none;padding:8px 14px;background:rgba(245,158,11,.08);border-bottom:1px solid rgba(251,191,36,.2);display:none;gap:8px;align-items:center;flex-wrap:wrap;">
+      <span style="font-size:.7rem;color:#fbbf24;font-weight:700;text-transform:uppercase;letter-spacing:.06em;">Building Edit Mode</span>
+      <button id="bldg-add-btn" style="background:rgba(34,197,94,.18);border:1px solid rgba(34,197,94,.4);border-radius:5px;color:#86efac;font-size:.68rem;font-weight:700;padding:3px 10px;cursor:pointer;">+ Add Pin</button>
+      <span style="font-size:.68rem;color:#8ba5c0;">Click a pin to edit · Drag to move · Right-click to delete</span>
+      <button id="bldg-done-btn" style="margin-left:auto;background:rgba(99,102,241,.22);border:1px solid rgba(99,102,241,.4);border-radius:5px;color:#a5b4fc;font-size:.68rem;font-weight:700;padding:3px 10px;cursor:pointer;">Done</button>
+    </div>
+    <!-- Add-pin dialog -->
+    <div id="bldg-add-dialog" style="display:none;padding:10px 14px;background:#071b33;border-bottom:1px solid #1e3555;">
+      <p style="margin:0 0 6px;font-size:.72rem;color:#fbbf24;font-weight:700;">Place Building Pin — click the map to position it</p>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+        <input id="bldg-new-number" placeholder="Building #" maxlength="20" style="background:#0a1e35;border:1px solid #2a4060;border-radius:5px;color:#e0eaf8;font-size:.8rem;padding:5px 9px;width:100px;">
+        <input id="bldg-new-name" placeholder="Name (optional)" maxlength="120" style="background:#0a1e35;border:1px solid #2a4060;border-radius:5px;color:#e0eaf8;font-size:.8rem;padding:5px 9px;flex:1;min-width:120px;">
+        <button id="bldg-add-cancel" style="background:rgba(100,116,139,.2);border:1px solid rgba(100,116,139,.4);border-radius:5px;color:#94a3b8;font-size:.68rem;font-weight:700;padding:4px 10px;cursor:pointer;">Cancel</button>
+      </div>
+      <p style="margin:6px 0 0;font-size:.67rem;color:#64748b;">Switch to Satellite view for accurate placement.</p>
     </div>
     <div id="unit-map-canvas" role="img" aria-label="MCLB Albany unit positions map"></div>
     <div class="unit-map-legend">
@@ -516,37 +536,6 @@
     // Zone A cross-road
     + '<line x1="324" y1="481" x2="486" y2="523" stroke="#162840" stroke-width="5" stroke-linecap="round"/>'
     + '<line x1="486" y1="523" x2="568" y2="411" stroke="#162840" stroke-width="5" stroke-linecap="round"/>'
-    // ── Buildings ──
-    // Main Gate guardhouse
-    + '<rect x="212" y="589" width="38" height="33" rx="3" fill="#162d52"/>'
-    + '<rect x="210" y="587" width="42" height="37" rx="4" fill="none" stroke="#2a5a9a" stroke-width="1.5"/>'
-    + '<text x="231" y="641" text-anchor="middle" fill="#60a0d0" font-family="Arial,sans-serif" font-size="10.5" font-weight="bold" letter-spacing="0.5">MAIN GATE</text>'
-    // PMO / Dispatch
-    + '<rect x="303" y="460" width="48" height="42" rx="3" fill="#1a3060"/>'
-    + '<rect x="301" y="458" width="52" height="46" rx="4" fill="none" stroke="#3a7acc" stroke-width="2"/>'
-    + '<text x="327" y="478" text-anchor="middle" fill="#93c5fd" font-family="Arial,sans-serif" font-size="11" font-weight="bold">PMO</text>'
-    + '<text x="327" y="492" text-anchor="middle" fill="#6090b8" font-family="Arial,sans-serif" font-size="8.5">DISPATCH</text>'
-    // Gate 2
-    + '<rect x="387" y="428" width="36" height="30" rx="3" fill="#162d52"/>'
-    + '<rect x="385" y="426" width="40" height="34" rx="3" fill="none" stroke="#2a5a9a" stroke-width="1.5"/>'
-    + '<text x="405" y="476" text-anchor="middle" fill="#60a0d0" font-family="Arial,sans-serif" font-size="10" font-weight="bold">GATE 2</text>'
-    // North Gate
-    + '<rect x="414" y="300" width="37" height="30" rx="3" fill="#162d52"/>'
-    + '<rect x="412" y="298" width="41" height="34" rx="3" fill="none" stroke="#2a5a9a" stroke-width="1.5"/>'
-    + '<text x="432" y="349" text-anchor="middle" fill="#60a0d0" font-family="Arial,sans-serif" font-size="10" font-weight="bold">N. GATE</text>'
-    // HQ
-    + '<rect x="543" y="389" width="52" height="46" rx="3" fill="#162240"/>'
-    + '<rect x="541" y="387" width="56" height="50" rx="4" fill="none" stroke="#2a4a80" stroke-width="1.5"/>'
-    + '<text x="569" y="418" text-anchor="middle" fill="#a0c4e8" font-family="Arial,sans-serif" font-size="12" font-weight="bold">HQ</text>'
-    // MCX
-    + '<rect x="682" y="520" width="44" height="38" rx="3" fill="#121e34"/>'
-    + '<text x="704" y="548" text-anchor="middle" fill="#7090b0" font-family="Arial,sans-serif" font-size="10">MCX</text>'
-    // Logistics
-    + '<rect x="710" y="314" width="50" height="38" rx="3" fill="#121e34"/>'
-    + '<text x="735" y="338" text-anchor="middle" fill="#7090b0" font-family="Arial,sans-serif" font-size="9.5">LOGISTICS</text>'
-    // Chapel
-    + '<rect x="524" y="554" width="36" height="30" rx="3" fill="#121e34"/>'
-    + '<text x="542" y="604" text-anchor="middle" fill="#7090b0" font-family="Arial,sans-serif" font-size="9.5">CHAPEL</text>'
     // ── Patrol Zones (dashed circles) ──
     + '<circle cx="486" cy="523" r="22" fill="rgba(22,103,199,0.08)" stroke="#1667c7" stroke-width="1" stroke-dasharray="5,4"/>'
     + '<text x="486" y="552" text-anchor="middle" fill="#4a80b8" font-family="Arial,sans-serif" font-size="9.5" font-weight="bold">ZONE A</text>'
@@ -913,6 +902,209 @@
   setInterval(loadUnits, 20000); // auto-refresh every 20s
 
   // Geolocation is auto-pushed by base.html on every page load (5-min interval).
+
+  // ── Building Pin Management ────────────────────────────────────
+  var buildingLayer = L.layerGroup().addTo(map);
+  var buildingMarkers = {};   // id → L.marker
+  var editMode = false;
+  var addMode  = false;       // waiting for map click to place a new pin
+
+  function bldgIcon(number, editing) {
+    var bg      = editing ? '#f59e0b' : '#1e40af';
+    var border  = editing ? '#fbbf24' : '#60a5fa';
+    var shadow  = editing ? 'rgba(245,158,11,.5)' : 'rgba(30,64,175,.5)';
+    var label   = String(number);
+    var fs      = label.length > 5 ? '8px' : label.length > 4 ? '9px' : '10px';
+    return L.divIcon({
+      html: '<div style="background:' + bg + ';border:2px solid ' + border + ';border-radius:4px;'
+          + 'padding:2px 4px;white-space:nowrap;font-family:Arial,sans-serif;font-size:' + fs + ';'
+          + 'font-weight:800;color:#fff;box-shadow:0 2px 6px ' + shadow + ';min-width:24px;text-align:center;">'
+          + label + '</div>',
+      className: '',
+      iconSize:   null,
+      iconAnchor: [0, 0],
+      popupAnchor: [0, -4],
+    });
+  }
+
+  function bldgPopupHtml(b) {
+    if (!editMode) {
+      return '<div style="font-size:.8rem;color:#e0eaf8;">'
+           + '<strong style="font-size:.95rem;">Bldg ' + b.number + '</strong>'
+           + (b.name ? '<br><span style="color:#8ba5c0;">' + b.name + '</span>' : '')
+           + (b.notes ? '<br><span style="color:#64748b;font-size:.72rem;">' + b.notes + '</span>' : '')
+           + '</div>';
+    }
+    return '<div style="min-width:210px;font-size:.78rem;color:#e0eaf8;">'
+         + '<p style="margin:0 0 6px;font-weight:700;color:#fbbf24;">Edit Building Pin</p>'
+         + '<label style="font-size:.68rem;color:#8ba5c0;display:block;margin-bottom:2px;">Building #</label>'
+         + '<input id="bpop-num-' + b.id + '" value="' + b.number + '" maxlength="20" style="width:100%;background:#0a1e35;border:1px solid #2a4060;border-radius:4px;color:#e0eaf8;font-size:.8rem;padding:4px 7px;box-sizing:border-box;margin-bottom:6px;">'
+         + '<label style="font-size:.68rem;color:#8ba5c0;display:block;margin-bottom:2px;">Name (optional)</label>'
+         + '<input id="bpop-name-' + b.id + '" value="' + (b.name || '') + '" maxlength="120" style="width:100%;background:#0a1e35;border:1px solid #2a4060;border-radius:4px;color:#e0eaf8;font-size:.8rem;padding:4px 7px;box-sizing:border-box;margin-bottom:8px;">'
+         + '<div style="display:flex;gap:6px;">'
+         + '<button onclick="saveBldg(' + b.id + ')" style="flex:1;background:#1667c7;border:none;border-radius:4px;color:#fff;font-size:.72rem;font-weight:700;padding:5px;cursor:pointer;">Save</button>'
+         + '<button onclick="deleteBldg(' + b.id + ')" style="background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.4);border-radius:4px;color:#fca5a5;font-size:.72rem;font-weight:700;padding:5px 8px;cursor:pointer;">Delete</button>'
+         + '</div>'
+         + '<p style="margin:6px 0 0;font-size:.65rem;color:#64748b;">Drag marker to reposition.</p>'
+         + '</div>';
+  }
+
+  function addBuildingMarker(b) {
+    var m = L.marker([b.lat, b.lng], {
+      icon: bldgIcon(b.number, false),
+      draggable: false,
+      zIndexOffset: -100,
+    }).bindPopup(bldgPopupHtml(b), { maxWidth: 260 });
+    m._bldgData = b;
+
+    m.on('contextmenu', function (e) {
+      if (!editMode) return;
+      L.DomEvent.stopPropagation(e);
+      if (confirm('Delete building ' + b.number + '?')) { deleteBldg(b.id); }
+    });
+
+    m.addTo(buildingLayer);
+    buildingMarkers[b.id] = m;
+  }
+
+  function setEditMode(active) {
+    editMode = active;
+    var toolbar = document.getElementById('bldg-toolbar');
+    var editBtn  = document.getElementById('bldg-edit-btn');
+    toolbar.style.display = active ? 'flex' : 'none';
+    editBtn.textContent    = active ? 'Editing…' : 'Edit Buildings';
+    editBtn.style.background = active ? 'rgba(245,158,11,.3)' : 'rgba(245,158,11,.18)';
+
+    // Toggle draggable and icon color
+    Object.keys(buildingMarkers).forEach(function (id) {
+      var m = buildingMarkers[id];
+      if (active) {
+        m.options.draggable = true;
+        m.dragging && m.dragging.enable();
+        m.setIcon(bldgIcon(m._bldgData.number, true));
+        m.on('dragend', function () { saveBldgPosition(m._bldgData.id, m.getLatLng()); });
+      } else {
+        m.dragging && m.dragging.disable();
+        m.setIcon(bldgIcon(m._bldgData.number, false));
+        m.off('dragend');
+      }
+      // Refresh popup content
+      m.setPopupContent(bldgPopupHtml(m._bldgData));
+    });
+
+    // Cancel add mode if exiting
+    if (!active) { setAddMode(false); }
+  }
+
+  function setAddMode(active) {
+    addMode = active;
+    var dialog   = document.getElementById('bldg-add-dialog');
+    var addBtn   = document.getElementById('bldg-add-btn');
+    dialog.style.display = active ? 'block' : 'none';
+    addBtn.textContent   = active ? 'Cancel Add' : '+ Add Pin';
+    map.getContainer().style.cursor = active ? 'crosshair' : '';
+  }
+
+  function loadBuildings() {
+    fetch('/watch-commander/api/buildings')
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        // Remove stale markers
+        Object.keys(buildingMarkers).forEach(function (id) {
+          if (!data.find(function (b) { return String(b.id) === id; })) {
+            buildingLayer.removeLayer(buildingMarkers[id]);
+            delete buildingMarkers[id];
+          }
+        });
+        // Add or update
+        data.forEach(function (b) {
+          if (buildingMarkers[b.id]) {
+            buildingMarkers[b.id].setLatLng([b.lat, b.lng]);
+            buildingMarkers[b.id]._bldgData = b;
+            buildingMarkers[b.id].setPopupContent(bldgPopupHtml(b));
+          } else {
+            addBuildingMarker(b);
+          }
+        });
+      })
+      .catch(function () {});
+  }
+
+  window.saveBldg = function (id) {
+    var numInput  = document.getElementById('bpop-num-' + id);
+    var nameInput = document.getElementById('bpop-name-' + id);
+    if (!numInput) return;
+    fetch('/watch-commander/api/buildings/' + id, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+      body: JSON.stringify({ number: numInput.value, name: nameInput ? nameInput.value : '' }),
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (d.ok) { map.closePopup(); loadBuildings(); }
+    });
+  };
+
+  window.deleteBldg = function (id) {
+    map.closePopup();
+    fetch('/watch-commander/api/buildings/' + id, {
+      method: 'DELETE',
+      headers: { 'X-CSRFToken': csrfToken },
+    })
+    .then(function () { loadBuildings(); });
+  };
+
+  function saveBldgPosition(id, latlng) {
+    fetch('/watch-commander/api/buildings/' + id, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+      body: JSON.stringify({ lat: latlng.lat, lng: latlng.lng }),
+    }).catch(function () {});
+  }
+
+  // Edit mode button
+  document.getElementById('bldg-edit-btn').addEventListener('click', function () {
+    setEditMode(!editMode);
+  });
+
+  // Done button
+  document.getElementById('bldg-done-btn').addEventListener('click', function () {
+    setEditMode(false);
+  });
+
+  // Add pin button
+  document.getElementById('bldg-add-btn').addEventListener('click', function () {
+    setAddMode(!addMode);
+  });
+
+  // Cancel add
+  document.getElementById('bldg-add-cancel').addEventListener('click', function () {
+    setAddMode(false);
+  });
+
+  // Map click → place new building pin
+  map.on('click', function (e) {
+    if (!editMode || !addMode) return;
+    var number = (document.getElementById('bldg-new-number').value || '').trim();
+    if (!number) { alert('Enter a building number first.'); return; }
+    var name = (document.getElementById('bldg-new-name').value || '').trim();
+    fetch('/watch-commander/api/buildings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+      body: JSON.stringify({ number: number, name: name, lat: e.latlng.lat, lng: e.latlng.lng }),
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (d.id) {
+        document.getElementById('bldg-new-number').value = '';
+        document.getElementById('bldg-new-name').value   = '';
+        setAddMode(false);
+        loadBuildings();
+      }
+    });
+  });
+
+  loadBuildings();
 }());
 </script>
 {% endblock %}
