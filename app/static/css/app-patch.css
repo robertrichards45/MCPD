@@ -3046,3 +3046,74 @@ body[data-theme="dark"] .mcpd-metric-chip-val {
     font-size: 1.35rem;
   }
 }
+
+/* ================================================================
+   GLOBAL LAYOUT TIGHTENING  2026-05
+   Every selector uses body:not(.mobile-foundation) prefix, which:
+     (a) limits changes to desktop—mobile layouts untouched
+     (b) raises specificity to (0,2,0), beating command-hybrid.css
+         !important rules that sit at specificity (0,1,0)
+   app-patch.css loads after app.css and before command-hybrid.css,
+   so same-specificity !important rules here beat app.css and beat
+   any non-!important command-hybrid rules regardless of load order.
+   ================================================================ */
+
+/* Page wrappers: top 28px→14px, bottom 40-42px→24px ------------ */
+body:not(.mobile-foundation) .page-wrap,
+body:not(.mobile-foundation) .dashboard {
+  padding-top: 14px !important;
+  padding-bottom: 24px !important;
+}
+
+body:not(.mobile-foundation) .mcpd-command-main,
+body:not(.mobile-foundation) .demo-main {
+  padding-top: 14px !important;
+  padding-bottom: 24px !important;
+}
+
+/* Page / section headers: 22px→13px padding, 18px→10px margin -- */
+.page-head,
+.mcpd-page-head {
+  padding: 13px 18px !important;
+  margin-bottom: 10px !important;
+}
+
+/* Card / panel vertical padding: 18px→13px (keep 18px side pads) */
+body:not(.mobile-foundation) .card-body,
+body:not(.mobile-foundation) .card-footer,
+body:not(.mobile-foundation) .mcpd-panel,
+body:not(.mobile-foundation) .ai-box {
+  padding-top: 13px !important;
+  padding-bottom: 13px !important;
+}
+
+/* Card / panel header rows */
+body:not(.mobile-foundation) .card-header,
+body:not(.mobile-foundation) .mcpd-panel-head {
+  padding-top: 10px !important;
+  padding-bottom: 10px !important;
+}
+
+/* Grid gaps: 16px→10px ------------------------------------------ */
+body:not(.mobile-foundation) .stats-grid,
+body:not(.mobile-foundation) .card-grid,
+body:not(.mobile-foundation) .demo-card-grid {
+  gap: 10px !important;
+}
+
+/* Legal / authority page inner gap */
+body:not(.mobile-foundation) .authority-page-wrap {
+  gap: 10px !important;
+}
+
+/* ops-panel stacking: mb-3 (16px) → 10px on desktop */
+body:not(.mobile-foundation) .ops-panel.mb-3,
+body:not(.mobile-foundation) .ops-head-card.mb-3,
+body:not(.mobile-foundation) .search-panel.mb-3 {
+  margin-bottom: 10px !important;
+}
+
+body:not(.mobile-foundation) .ops-panel.mb-4,
+body:not(.mobile-foundation) .ops-head-card.mb-4 {
+  margin-bottom: 14px !important;
+}
