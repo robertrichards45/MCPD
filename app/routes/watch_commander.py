@@ -44,7 +44,7 @@ from ..models import (
     WatchShift,
     utcnow_naive,
 )
-from ..models import ROLE_ASSISTANT_OPERATIONS_OFFICER
+from ..models import ROLE_ASSISTANT_OPERATIONS_OFFICER, ROLE_WEBSITE_CONTROLLER
 from ..permissions import can_manage_site, effective_role
 
 bp = Blueprint('watch_commander', __name__, url_prefix='/watch-commander')
