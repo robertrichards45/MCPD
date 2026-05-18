@@ -560,9 +560,7 @@
   var _svgBlob = new Blob([_svg], { type: 'image/svg+xml' });
   var _svgUrl = URL.createObjectURL(_svgBlob);
   var schematicLayer = L.imageOverlay(_svgUrl, BASE_BOUNDS, { interactive: false, zIndex: 1 });
-  schematicLayer.addTo(map);
 
-  // ── Optional external tile layers ──────────────────────────────
   var osmLayer = L.tileLayer(
     'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
     { attribution: '&copy; OpenStreetMap', subdomains: 'abc', maxZoom: 19, zIndex: 2 }
@@ -576,8 +574,16 @@
     { attribution: '&copy; CARTO', subdomains: 'abcd', maxZoom: 20, zIndex: 3 }
   );
 
+  // Default to real street map; fall back to offline schematic if tiles blocked
+  osmLayer.addTo(map);
+  var _tilesLoaded = false;
+  osmLayer.on('tileload', function () { _tilesLoaded = true; });
+  setTimeout(function () {
+    if (!_tilesLoaded) { map.removeLayer(osmLayer); schematicLayer.addTo(map); }
+  }, 4000);
+
   L.control.layers(
-    { 'Schematic (Offline)': schematicLayer, 'Street Map': osmLayer, 'Satellite': satLayer },
+    { 'Street Map': osmLayer, 'Satellite': satLayer, 'Schematic (Offline)': schematicLayer },
     { 'Labels Overlay': labelsLayer },
     { position: 'topright', collapsed: true }
   ).addTo(map);

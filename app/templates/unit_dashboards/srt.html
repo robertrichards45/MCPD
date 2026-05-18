@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/watch_commander.css', v='2026-05-12') }}" />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/command_center.css', v='2026-05-16-dispatch') }}" />
+{% endblock %}
+{% block body %}
+<div class="app-shell mcpd-command-app wc-module">
+  {% include 'partials/nav.html' %}
+  <main class="wc-page-shell">
+    <header class="wc-page-header">
+      <div>
+        <p class="eyebrow">Specialized Unit</p>
+        <h1>SRT Readiness Dashboard</h1>
+        <p>Team readiness status, qualification tracking, equipment verification, and activation log for the Special Reaction Team.</p>
+      </div>
+      <nav class="wc-page-tabs" aria-label="Unit navigation">
+        <a href="{{ url_for('dashboard.k9_dashboard') }}">K-9</a>
+        <a href="{{ url_for('dashboard.cvi_dashboard') }}">CVI</a>
+        <a href="{{ url_for('dashboard.srt_dashboard') }}" aria-current="page">SRT</a>
+        <a href="{{ url_for('dashboard.dispatch_command_center') }}">Command Center</a>
+      </nav>
+    </header>
+
+    {% if demo %}
+    <section class="wc-summary-grid">
+      {% for m in metrics %}
+      <article class="wc-summary-card"><span>{{ m.label }}</span><strong>{{ m.value }}</strong><small>{{ m.detail }}</small></article>
+      {% endfor %}
+    </section>
+
+    <div class="wc-two-column">
+      <section>
+        <h2 class="wc-big-number" style="font-size:1rem;font-weight:600;margin:1.2rem 0 .5rem">Team Status</h2>
+        <div class="ops-panel">
+          {% for member in team %}
+          <div class="command-row">
+            <span class="command-status-dot {{ member.state_class }}" aria-hidden="true"></span>
+            <div>
+              <strong>{{ member.name }}</strong> &mdash; <em>{{ member.role }}</em>
+              <small>{{ member.note }}</small>
+            </div>
+            <span class="command-pill">{{ member.status }}</span>
+          </div>
+          {% endfor %}
+        </div>
+      </section>
+
+      <section>
+        <h2 class="wc-big-number" style="font-size:1rem;font-weight:600;margin:1.2rem 0 .5rem">Readiness Checklist</h2>
+        <div class="ops-panel">
+          {% for item in readiness %}
+          <div class="command-row">
+            <span style="font-size:1.1rem;flex-shrink:0">
+              {% if item.ok == True %}✅{% elif item.ok == False %}❌{% else %}🔄{% endif %}
+            </span>
+            <div style="flex:1">
+              <strong>{{ item.item }}</strong>
+            </div>
+            <span class="command-pill {% if item.ok == True %}{% elif item.ok == False %}alert{% else %}busy{% endif %}">{{ item.status }}</span>
+          </div>
+          {% endfor %}
+        </div>
+
+        <h2 class="wc-big-number" style="font-size:1rem;font-weight:600;margin:1.5rem 0 .5rem">Quick Actions</h2>
+        <div class="wc-action-grid">
+          <a href="{{ url_for('watch_commander.unit_map') }}">Unit Map<span>Current SRT team positions.</span></a>
+          <a href="{{ url_for('watch_commander.briefing') }}">Briefing<span>Current threat picture and notices.</span></a>
+          <a href="{{ url_for('training.training_menu') }}">Training<span>SRT qualification and training records.</span></a>
+          <a href="{{ url_for('notifications.inbox') }}">Messages<span>Command messages and activation alerts.</span></a>
+        </div>
+      </section>
+    </div>
+    {% else %}
+    <div class="ops-panel" style="margin:2rem auto;max-width:600px;text-align:center;padding:2rem;">
+      <strong>Live readiness data requires officer sign-on.</strong>
+      <p style="margin-top:.5rem;color:var(--text-secondary)">SRT members must check in to appear here. Enable Demo Mode to see sample readiness data.</p>
+      <a class="command-action-btn" href="{{ url_for('watch_commander.sign_on') }}" style="display:inline-block;margin-top:1rem">Check In</a>
+    </div>
+    {% endif %}
+  </main>
+</div>
+{% endblock %}

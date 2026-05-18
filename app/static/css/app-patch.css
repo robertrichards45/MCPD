@@ -232,6 +232,8 @@ body[data-theme="dark"] .order-matched-block .text-muted {
 #sig-pad {
   background: #ffffff !important;
 }
+<<<<<<< HEAD
+=======
 
 /* --- Code / output pre blocks ------------------------------------ */
 .code-output-pre,
@@ -2812,3 +2814,4 @@ body[data-theme="dark"] .ops-panel .table thead th {
   border-color: rgba(34,197,94,.3);
 }
 .nav-shift-pill:hover { opacity: .8; }
+>>>>>>> 73c725b38f1e058b3b8f8f481446ade5f6f049b4

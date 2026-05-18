@@ -448,16 +448,115 @@ def dashboard():
 @bp.route('/command-center')
 @login_required
 def dispatch_command_center():
+    from ..routes.watch_commander import OFFICER_STATUSES
     return _no_store_response(
         render_template(
             'dispatch_command_center.html',
             user=current_user,
+            statuses=OFFICER_STATUSES,
             **_dispatch_demo_context(),
         )
     )
 
 
-@bp.route('/dashboard/customize', methods=['GET', 'POST'])
+def _demo_mode():
+    from flask import session as _s
+    return bool(_s.get('demo_mode'))
+
+
+@bp.route('/k9')
+@login_required
+def k9_dashboard():
+    demo = _demo_mode()
+    context = {
+        'user': current_user,
+        'team': [
+            {'name': 'Sgt. Carter', 'partner': 'Rex', 'status': 'On Patrol', 'state_class': '', 'assignment': 'North Gate sweep'},
+            {'name': 'Ofc. Davis',  'partner': 'Bruno', 'status': 'Available', 'state_class': '', 'assignment': 'Ready for deployment'},
+            {'name': 'Ofc. Lewis',  'partner': 'Kira', 'status': 'Training', 'state_class': 'busy', 'assignment': 'Obedience refresher — K9 Compound'},
+            {'name': 'Ofc. Nguyen', 'partner': 'Axel', 'status': 'On Patrol', 'state_class': '', 'assignment': 'Barracks area'},
+            {'name': 'Ofc. Torres', 'partner': 'Shadow', 'status': 'Off Duty', 'state_class': 'standby', 'assignment': '—'},
+        ] if demo else [],
+        'metrics': [
+            {'label': 'Teams on duty', 'value': '4', 'detail': '1 off duty'},
+            {'label': 'Sweeps this shift', 'value': '3', 'detail': 'North Gate, Barracks, MCX'},
+            {'label': 'Alerts issued', 'value': '0', 'detail': 'No active narcotics alerts'},
+            {'label': 'Training hours (MTD)', 'value': '42', 'detail': '87% of monthly target'},
+        ] if demo else [],
+        'alerts': [
+            {'title': 'Sweep Request — MCX Parking', 'detail': 'Requested by Desk Sgt at 1340', 'priority': 'Routine'},
+            {'title': 'K9 Cert Renewal', 'detail': 'Kira due for annual cert — contact Kennel Master', 'priority': 'Admin'},
+        ] if demo else [],
+        'demo': demo,
+    }
+    return _no_store_response(render_template('unit_dashboards/k9.html', **context))
+
+
+@bp.route('/cvi')
+@login_required
+def cvi_dashboard():
+    demo = _demo_mode()
+    context = {
+        'user': current_user,
+        'team': [
+            {'name': 'Lt. Harper',  'status': 'Monitoring', 'state_class': '', 'post': 'CVI Station — Command'},
+            {'name': 'Ofc. Mason',  'status': 'Inspecting', 'state_class': 'busy', 'post': 'Gate 2 Lane 1 — CMV inspection'},
+            {'name': 'Ofc. Perry',  'status': 'Inspecting', 'state_class': 'busy', 'post': 'Gate 2 Lane 2'},
+            {'name': 'Ofc. Quinn',  'status': 'Available', 'state_class': '', 'post': 'CVI Station — standby'},
+            {'name': 'Ofc. Russell','status': 'Report Writing', 'state_class': 'busy', 'post': 'PMO — completing OOS paperwork'},
+            {'name': 'Ofc. Sanders','status': 'Off Duty', 'state_class': 'standby', 'post': '—'},
+        ] if demo else [],
+        'metrics': [
+            {'label': 'Inspections today', 'value': '14', 'detail': '2 OOS violations'},
+            {'label': 'OOS vehicles', 'value': '2', 'detail': '1 resolved, 1 pending paperwork'},
+            {'label': 'Officers on post', 'value': '5', 'detail': '1 off duty'},
+            {'label': 'Avg inspection time', 'value': '18 min', 'detail': 'Below 25-min target'},
+        ] if demo else [],
+        'log': [
+            {'time': '1312', 'entry': 'CMV — flatbed tractor, OOS: brake defect. Driver notified, paperwork initiated. Ofc. Russell.'},
+            {'time': '1227', 'entry': 'CMV — tanker, passed inspection. No violations. Ofc. Mason.'},
+            {'time': '1148', 'entry': 'POV — routine access check, cleared. Ofc. Perry.'},
+            {'time': '1053', 'entry': 'CMV — box truck, OOS: expired registration. Vehicle secured Gate 2. Resolved 1138.'},
+        ] if demo else [],
+        'demo': demo,
+    }
+    return _no_store_response(render_template('unit_dashboards/cvi.html', **context))
+
+
+@bp.route('/srt')
+@login_required
+def srt_dashboard():
+    demo = _demo_mode()
+    context = {
+        'user': current_user,
+        'team': [
+            {'name': 'Lt. Lawson', 'role': 'SRT Commander', 'status': 'Standby', 'state_class': '', 'note': 'Command ready'},
+            {'name': 'Ofc. Bishop', 'role': 'Breacher', 'status': 'Training', 'state_class': 'busy', 'note': 'CQB refresher'},
+            {'name': 'Ofc. Cole',   'role': 'Sniper', 'status': 'Standby', 'state_class': '', 'note': 'Qualification current'},
+            {'name': 'Ofc. Drake',  'role': 'Medic', 'status': 'Standby', 'state_class': '', 'note': 'TCCC cert current'},
+            {'name': 'Ofc. Evans',  'role': 'Entry', 'status': 'Standby', 'state_class': '', 'note': 'Equipment inspected'},
+            {'name': 'Ofc. Flynn',  'role': 'Entry', 'status': 'Leave', 'state_class': 'standby', 'note': 'Returns Friday'},
+        ] if demo else [],
+        'readiness': [
+            {'item': 'Team qualification current', 'status': 'GO', 'ok': True},
+            {'item': 'Equipment inventory verified', 'status': 'GO', 'ok': True},
+            {'item': 'Command notification list current', 'status': 'GO', 'ok': True},
+            {'item': 'CQB training — monthly requirement', 'status': 'IN PROGRESS', 'ok': None},
+            {'item': 'Vehicle readiness check', 'status': 'GO', 'ok': True},
+            {'item': 'Medical kit inspection', 'status': 'GO', 'ok': True},
+        ] if demo else [],
+        'metrics': [
+            {'label': 'Members available', 'value': '5 / 6', 'detail': '1 on leave'},
+            {'label': 'Readiness level', 'value': 'STANDBY', 'detail': 'Full deployment capable'},
+            {'label': 'Last activation', 'value': '47 days', 'detail': 'Training exercise'},
+            {'label': 'Next training', 'value': 'Thu 0800', 'detail': 'CQB — Range 3'},
+        ] if demo else [],
+        'demo': demo,
+    }
+    return _no_store_response(render_template('unit_dashboards/srt.html', **context))
+
+
+
 @login_required
 def customize_dashboard():
     snapshot = _dashboard_snapshot()
