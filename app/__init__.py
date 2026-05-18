@@ -1,4 +1,4 @@
-from flask import Flask, Response, g, redirect, render_template, request, send_file, session, url_for
+from flask import Flask, Response, g, has_request_context, redirect, render_template, request, send_file, session, url_for
 from flask_login import current_user
 from dotenv import dotenv_values, load_dotenv
 from datetime import datetime, timezone
@@ -10,8 +10,9 @@ import secrets
 import weakref
 import warnings
 from urllib.parse import urlparse
-from sqlalchemy import inspect, text
+from sqlalchemy import event, inspect, text
 from sqlalchemy.exc import OperationalError
+from sqlalchemy.orm import Session, with_loader_criteria
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 try:
@@ -32,9 +33,83 @@ if not (os.environ.get('RAILWAY_ENVIRONMENT') or os.environ.get('RAILWAY_PROJECT
 
 from .config import Config, _database_url_from_env, _normalize_database_uri
 from .extensions import db, login_manager
-from .models import ALL_PORTAL_ROLES, ROLE_LABELS, ROLE_WEBSITE_CONTROLLER, ROLE_WATCH_COMMANDER, Role, User
+from .models import (
+    ALL_PORTAL_ROLES,
+    ROLE_LABELS,
+    ROLE_WEBSITE_CONTROLLER,
+    ROLE_WATCH_COMMANDER,
+    AccidentReconstruction,
+    DemoRecord,
+    Form,
+    IncidentDraft,
+    IncidentPacket,
+    OperationsTask,
+    Report,
+    Role,
+    SavedForm,
+    ShiftBrief,
+    TrainingRoster,
+    TrainingSignature,
+    User,
+    WatchApproval,
+    WatchAssignment,
+    WatchNote,
+    WatchShift,
+)
 
 _CREATED_APPS = weakref.WeakSet()
+_DEMO_ROW_FILTER_INSTALLED = False
+
+_DEMO_FILTER_MODELS = (
+    User,
+    Form,
+    SavedForm,
+    TrainingRoster,
+    TrainingSignature,
+    DemoRecord,
+    Report,
+    AccidentReconstruction,
+    IncidentPacket,
+    IncidentDraft,
+    WatchShift,
+    WatchAssignment,
+    WatchNote,
+    WatchApproval,
+    OperationsTask,
+    ShiftBrief,
+)
+
+
+def _should_hide_demo_rows():
+    if not has_request_context():
+        return False
+    endpoint = request.endpoint or ''
+    if endpoint.startswith('demo.'):
+        return False
+    if endpoint.startswith('auth.'):
+        return True
+    return not bool(session.get('demo_mode'))
+
+
+def _install_demo_row_filter():
+    global _DEMO_ROW_FILTER_INSTALLED
+    if _DEMO_ROW_FILTER_INSTALLED:
+        return
+
+    @event.listens_for(Session, 'do_orm_execute')
+    def _hide_demo_rows(execute_state):
+        if not execute_state.is_select or execute_state.is_column_load or execute_state.is_relationship_load:
+            return
+        if not _should_hide_demo_rows():
+            return
+        statement = execute_state.statement
+        for model in _DEMO_FILTER_MODELS:
+            statement = statement.options(
+                with_loader_criteria(model, lambda cls: cls.is_demo.is_not(True), include_aliases=True)
+            )
+        execute_state.statement = statement
+
+    _DEMO_ROW_FILTER_INSTALLED = True
 
 
 def _database_uri_is_ephemeral(uri):
@@ -390,6 +465,7 @@ def ensure_schema():
 
 
 def create_app():
+    _install_demo_row_filter()
     app = Flask(__name__)
     _CREATED_APPS.add(app)
     app.config.from_object(Config)
