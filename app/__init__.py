@@ -257,6 +257,7 @@ def ensure_schema():
 
 
 def create_app():
+    _install_demo_row_filter()
     app = Flask(__name__)
     _CREATED_APPS.add(app)
     app.config.from_object(Config)
