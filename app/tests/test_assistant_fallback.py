@@ -1,14 +1,31 @@
 from app import create_app
-from app.models import User
+from app.extensions import db
+from app.models import ROLE_WEBSITE_CONTROLLER, User
 from app.services import ai_client
+from werkzeug.security import generate_password_hash
 
 
 def _logged_in_client():
     app = create_app()
     app.config['TESTING'] = True
     with app.app_context():
-        user = User.query.filter(User.username.ilike('robertrichards')).first() or User.query.first()
-        assert user is not None
+        user = (
+            User.query.filter(User.username.ilike('robertrichards')).first()
+            or User.query.filter_by(role=ROLE_WEBSITE_CONTROLLER).first()
+        )
+        if user is None:
+            user = User(
+                username='assistant-test-controller',
+                email='assistant-test-controller@example.test',
+                first_name='Assistant',
+                last_name='Test',
+                role=ROLE_WEBSITE_CONTROLLER,
+                password_hash=generate_password_hash('test-password'),
+                active=True,
+                pending_approval=False,
+            )
+            db.session.add(user)
+            db.session.commit()
         client = app.test_client()
         with client.session_transaction() as session:
             session['_user_id'] = str(user.id)

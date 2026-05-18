@@ -76,6 +76,8 @@ try:
 except ZoneInfoNotFoundError:
     EASTERN_TZ = None
 
+ET_ZONE = EASTERN_TZ or timezone.utc
+
 
 def _get_or_404(model, object_id):
     obj = db.session.get(model, object_id)
@@ -86,6 +88,21 @@ def _get_or_404(model, object_id):
 
 def _utcnow_naive():
     return datetime.now(timezone.utc).replace(tzinfo=None)
+
+
+def _write_audit(actor_id, action, details=None):
+    try:
+        if isinstance(details, (dict, list)):
+            detail_text = json.dumps(details, default=str)
+        elif details is None:
+            detail_text = ''
+        else:
+            detail_text = str(details)
+        db.session.add(AuditLog(actor_id=actor_id, action=action, details=detail_text))
+        db.session.commit()
+    except Exception as exc:
+        db.session.rollback()
+        current_app.logger.warning('Ops module audit write failed for %s: %s', action, exc)
 
 
 def _is_sensitive_cac_path():
