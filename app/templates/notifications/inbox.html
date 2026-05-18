@@ -70,17 +70,11 @@
           </div>
           {% set user_read = m.reads | selectattr('user_id', 'equalto', current_user.id) | list %}
           {% if m.is_broadcast and not user_read %}
-          <form method="post" action="{{ url_for('notifications.mark_read', msg_id=m.id) }}">
-            <input type="hidden" name="csrf_token" value="{{ g.csrf_token }}">
-            <button class="btn btn-sm btn-outline-secondary">Mark Read</button>
-          </form>
+          <button class="btn btn-sm btn-outline-secondary mark-read-btn" data-msg-id="{{ m.id }}" data-article="msg-{{ m.id }}">Mark Read</button>
           {% elif m.is_broadcast and user_read %}
           <span class="small text-muted">Read {{ user_read[0].read_at.strftime('%H:%M') }}</span>
           {% elif not m.is_broadcast and not m.read_at and m.recipient_id == current_user.id %}
-          <form method="post" action="{{ url_for('notifications.mark_read', msg_id=m.id) }}">
-            <input type="hidden" name="csrf_token" value="{{ g.csrf_token }}">
-            <button class="btn btn-sm btn-outline-secondary">Mark Read</button>
-          </form>
+          <button class="btn btn-sm btn-outline-secondary mark-read-btn" data-msg-id="{{ m.id }}" data-article="msg-{{ m.id }}">Mark Read</button>
           {% elif not m.is_broadcast and m.read_at %}
           <span class="small text-muted">Read {{ m.read_at.strftime('%H:%M') }}</span>
           {% endif %}
@@ -138,6 +132,29 @@
             status.textContent = 'Network error.';
             status.style.display = '';
           });
+      });
+    });
+
+    var csrf = (document.querySelector('meta[name="csrf-token"]') || {}).getAttribute('content') || '';
+    document.querySelectorAll('.mark-read-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var msgId   = btn.dataset.msgId;
+        var article = document.getElementById(btn.dataset.article);
+        btn.disabled = true;
+        fetch('/notifications/read/' + msgId, {
+          method: 'POST',
+          headers: { 'X-Requested-With': 'fetch', 'X-CSRFToken': csrf },
+        })
+          .then(function (r) { return r.json(); })
+          .then(function (d) {
+            if (d.ok && article) {
+              btn.replaceWith(Object.assign(document.createElement('span'), {
+                className: 'small text-muted',
+                textContent: 'Read',
+              }));
+            }
+          })
+          .catch(function () { btn.disabled = false; });
       });
     });
     </script>

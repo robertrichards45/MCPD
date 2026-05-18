@@ -255,7 +255,9 @@ def mark_read(msg_id):
         if not msg.read_at:
             msg.read_at = utcnow_naive()
             db.session.commit()
-    return jsonify({'ok': True})
+    if request.headers.get('X-Requested-With') == 'fetch':
+        return jsonify({'ok': True})
+    return redirect(url_for('notifications.inbox'))
 
 
 # ── Reply to a message ─────────────────────────────────────────────────────
