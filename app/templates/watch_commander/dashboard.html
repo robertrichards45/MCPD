@@ -70,6 +70,74 @@
   {% endfor %}
 </section>
 
+<section class="wc-command-board" aria-label="Command review board">
+  <article class="wc-live-panel wc-command-board-main">
+    <div class="wc-live-head">
+      <div>
+        <span>Command Queue</span>
+        <h2>What needs action now</h2>
+      </div>
+      <a href="{{ url_for('watch_commander.approvals') }}">Open Approvals</a>
+    </div>
+    <div class="wc-command-queue-grid">
+      {% for item in review_queue_groups %}
+      <a class="wc-command-queue-card is-{{ item.tone }}" href="{{ url_for(item.endpoint) }}">
+        <div>
+          <span>{{ item.label }}</span>
+          <strong>{{ item.detail }}</strong>
+          <small>{{ item.action }}</small>
+        </div>
+        <b>{{ item.count }}</b>
+      </a>
+      {% endfor %}
+    </div>
+  </article>
+
+  <aside class="wc-live-panel">
+    <div class="wc-live-head">
+      <div>
+        <span>Readiness Bars</span>
+        <h2>Operational trend</h2>
+      </div>
+    </div>
+    <div class="wc-readiness-bars">
+      {% for item in readiness_bars %}
+      <div class="wc-readiness-bar is-{{ item.tone }}">
+        <div class="wc-readiness-bar-head">
+          <strong>{{ item.label }}</strong>
+          <b>{{ item.value }}%</b>
+        </div>
+        <div class="wc-readiness-track"><span style="width: {{ item.value }}%"></span></div>
+        <small>{{ item.detail }}</small>
+      </div>
+      {% endfor %}
+    </div>
+  </aside>
+</section>
+
+<section class="wc-live-panel wc-incident-matrix-panel" aria-label="Incident status matrix">
+  <div class="wc-live-head">
+    <div>
+      <span>Incident Matrix</span>
+      <h2>Active incident and alert status</h2>
+    </div>
+    <a href="{{ url_for('watch_commander.reports') }}">Review Reports</a>
+  </div>
+  <div class="wc-incident-matrix">
+    {% for item in incident_matrix %}
+    <a class="wc-incident-row is-{{ item.tone }}" href="{{ item.url }}">
+      <span>{{ item.type }}</span>
+      <strong>{{ item.title }}</strong>
+      <small>{{ item.location }}</small>
+      <em>{{ item.owner }}</em>
+      <b>{{ item.status }}</b>
+    </a>
+    {% else %}
+    <div class="wc-empty-state">No active draft, report, correction, or BOLO rows are waiting in the command matrix.</div>
+    {% endfor %}
+  </div>
+</section>
+
 <section class="wc-analytics-grid" aria-label="Command analytics">
   <article class="wc-live-panel">
     <div class="wc-live-head">

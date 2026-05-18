@@ -231,8 +231,19 @@ def _dashboard_context():
         'summary': summary,
         'status_breakdown': _status_breakdown(active_assignments),
         'queue_cards': _queue_cards(summary, correction_reports),
+        'review_queue_groups': _review_queue_groups(
+            pending_reports=pending_reports,
+            correction_reports=correction_reports,
+            pending_saved_forms=pending_saved_forms,
+            active_rosters=active_rosters,
+            pending_approvals=pending_approvals,
+            active_bolos=active_bolos,
+            active_drafts=active_drafts,
+        ),
+        'incident_matrix': _incident_matrix(active_drafts, pending_reports, correction_reports, active_bolos),
         'live_incident_feed': _live_incident_feed(active_drafts, pending_reports, correction_reports, active_bolos, shift_notes),
         'analytics_cards': _analytics_cards(officers, active_assignments, packets, saved_forms, rosters),
+        'readiness_bars': _readiness_bars(officers, active_assignments, packets, saved_forms, rosters, pending_approvals),
         'map_layers': _map_layers(),
         'mobile_cards': [
             ('Shift Status', 'watch_commander.shift'),
@@ -245,6 +256,115 @@ def _dashboard_context():
         ],
     }
     return context
+
+
+def _review_queue_groups(pending_reports, correction_reports, pending_saved_forms, active_rosters, pending_approvals, active_bolos, active_drafts):
+    groups = [
+        {
+            'label': 'Report Review',
+            'count': len(pending_reports),
+            'detail': 'Submitted packets awaiting action',
+            'action': 'Open review queue',
+            'endpoint': 'watch_commander.reports',
+            'tone': 'warning' if pending_reports else 'success',
+        },
+        {
+            'label': 'Corrections',
+            'count': len(correction_reports),
+            'detail': 'Returned packets still unresolved',
+            'action': 'Inspect returns',
+            'endpoint': 'watch_commander.reports',
+            'tone': 'danger' if correction_reports else 'success',
+        },
+        {
+            'label': 'Saved Work',
+            'count': len(pending_saved_forms),
+            'detail': 'Forms, drafts, and packet work pending review',
+            'action': 'Review saved work',
+            'endpoint': 'watch_commander.saved_work',
+            'tone': 'primary',
+        },
+        {
+            'label': 'Training Oversight',
+            'count': len(active_rosters),
+            'detail': 'Active rosters requiring signature monitoring',
+            'action': 'View rosters',
+            'endpoint': 'watch_commander.training',
+            'tone': 'warning' if active_rosters else 'success',
+        },
+        {
+            'label': 'Approvals Center',
+            'count': pending_approvals,
+            'detail': 'Grouped supervisor approvals and returns',
+            'action': 'Open approvals',
+            'endpoint': 'watch_commander.approvals',
+            'tone': 'warning' if pending_approvals else 'success',
+        },
+        {
+            'label': 'Alerts / BOLO',
+            'count': len(active_bolos),
+            'detail': 'Active alerts needing watch awareness',
+            'action': 'Open BOLO board',
+            'endpoint': 'bolo.bolo_board',
+            'tone': 'danger' if active_bolos else 'success',
+        },
+        {
+            'label': 'Active Drafts',
+            'count': len(active_drafts),
+            'detail': 'Officer field work not submitted yet',
+            'action': 'Monitor reports',
+            'endpoint': 'watch_commander.reports',
+            'tone': 'primary',
+        },
+    ]
+    return groups
+
+
+def _incident_matrix(active_drafts, pending_reports, correction_reports, active_bolos):
+    rows = []
+    for item in active_drafts[:4]:
+        rows.append({
+            'type': 'Active Draft',
+            'title': _incident_label(item),
+            'location': _incident_location(item),
+            'status': item.status or 'ACTIVE',
+            'owner': item.officer.display_name if item.officer else 'Officer',
+            'tone': 'primary',
+            'endpoint': 'watch_commander.reports',
+        })
+    for item in pending_reports[:4]:
+        rows.append({
+            'type': 'Pending Report',
+            'title': _incident_label(item),
+            'location': _incident_location(item),
+            'status': item.approval_status,
+            'owner': item.officer.display_name if item.officer else 'Officer',
+            'tone': 'warning',
+            'endpoint': 'watch_commander.reports',
+        })
+    for item in correction_reports[:3]:
+        rows.append({
+            'type': 'Needs Correction',
+            'title': _incident_label(item),
+            'location': _incident_location(item),
+            'status': item.approval_status,
+            'owner': item.officer.display_name if item.officer else 'Officer',
+            'tone': 'danger',
+            'endpoint': 'watch_commander.reports',
+        })
+    for item in active_bolos[:3]:
+        rows.append({
+            'type': 'BOLO',
+            'title': _incident_label(item),
+            'location': _incident_location(item),
+            'status': item.threat_level or item.status,
+            'owner': 'Command',
+            'tone': 'danger',
+            'endpoint': 'bolo.bolo_board',
+        })
+    for row in rows:
+        row['url'] = url_for(row['endpoint'])
+    return rows[:12]
 
 
 def _status_breakdown(assignments):
@@ -309,11 +429,13 @@ def _incident_label(item):
     if isinstance(item, IncidentPacket):
         return item.call_type or 'Submitted packet'
     if isinstance(item, BOLOEntry):
-        return item.title or 'BOLO'
+        return item.subject_name or item.offense or 'BOLO'
     return getattr(item, 'title', None) or 'Watch note'
 
 
 def _incident_location(item):
+    if isinstance(item, BOLOEntry):
+        return item.offense or item.description or item.vehicle_description or 'Command alert'
     return getattr(item, 'location', None) or getattr(item, 'summary', None) or getattr(item, 'body', None) or 'No location entered'
 
 
@@ -397,6 +519,57 @@ def _analytics_cards(officers, assignments, packets, saved_forms, rosters):
             'label': 'Training Load',
             'value': active_rosters,
             'detail': 'Active rosters requiring oversight',
+        },
+    ]
+
+
+def _readiness_bars(officers, assignments, packets, saved_forms, rosters, pending_approvals):
+    active_officer_count = len([officer for officer in officers if officer.active])
+    on_duty_count = len(assignments)
+    packet_total = len(packets)
+    approved_packets = len([packet for packet in packets if packet.approval_status == PACKET_APPROVAL_APPROVED])
+    saved_pending = len([item for item in saved_forms if str(item.status or '').upper() in {'DRAFT', 'SUBMITTED', 'PENDING'}])
+    active_rosters = len([roster for roster in rosters if str(roster.status or '').upper() == 'ACTIVE'])
+
+    def pct(value, total, fallback=100):
+        if not total:
+            return fallback
+        return max(0, min(100, round((value / total) * 100)))
+
+    backlog_pressure = max(0, min(100, 100 - min(100, saved_pending * 12)))
+    approval_pressure = max(0, min(100, 100 - min(100, pending_approvals * 14)))
+    training_posture = max(0, min(100, 100 - min(100, active_rosters * 18)))
+
+    return [
+        {
+            'label': 'Watch Readiness',
+            'value': pct(on_duty_count, active_officer_count, fallback=0),
+            'detail': f'{on_duty_count} visible / {active_officer_count} active personnel',
+            'tone': 'success' if active_officer_count and on_duty_count else 'warning',
+        },
+        {
+            'label': 'Report Clearance',
+            'value': pct(approved_packets, packet_total),
+            'detail': f'{approved_packets} approved / {packet_total} recent packets',
+            'tone': 'success' if not packet_total or approved_packets == packet_total else 'warning',
+        },
+        {
+            'label': 'Saved Work Pressure',
+            'value': backlog_pressure,
+            'detail': f'{saved_pending} draft/submitted saved work items',
+            'tone': 'warning' if saved_pending else 'success',
+        },
+        {
+            'label': 'Training Posture',
+            'value': training_posture,
+            'detail': f'{active_rosters} active rosters being monitored',
+            'tone': 'warning' if active_rosters else 'success',
+        },
+        {
+            'label': 'Approval Load',
+            'value': approval_pressure,
+            'detail': f'{pending_approvals} grouped approvals pending',
+            'tone': 'warning' if pending_approvals else 'success',
         },
     ]
 
