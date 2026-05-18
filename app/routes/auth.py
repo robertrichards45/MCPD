@@ -23,6 +23,7 @@ from ..models import (
     ROLE_WATCH_COMMANDER,
     USMC_INSTALLATIONS,
     User,
+    WatchAssignment,
 )
 from ..permissions import (
     assignable_roles,
@@ -44,6 +45,30 @@ _login_attempts = {}
 
 def _utcnow_naive():
     return datetime.now(timezone.utc).replace(tzinfo=None)
+
+
+def _ensure_watch_assignment(user):
+    """Auto-create or reactivate a WatchAssignment for an officer assigned to a supervisor."""
+    if not getattr(user, 'supervisor_id', None):
+        return
+    try:
+        existing = (WatchAssignment.query
+                    .filter_by(officer_id=user.id)
+                    .order_by(WatchAssignment.updated_at.desc(), WatchAssignment.id.desc())
+                    .first())
+        if existing:
+            if existing.status not in ('Off Duty', 'Leave'):
+                return
+            existing.status = 'On Duty'
+        else:
+            db.session.add(WatchAssignment(
+                officer_id=user.id,
+                assignment_type='Patrol',
+                status='On Duty',
+            ))
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
 
 
 def _request_prefers_mobile_home() -> bool:
@@ -666,6 +691,7 @@ def login():
     from flask_login import login_user
 
     login_user(user)
+    _ensure_watch_assignment(user)
     session.pop('acting_role', None)
     session.pop('acting_watch_commander_id', None)
     _safe_audit(actor_id=user.id, action='login', details='User login')
@@ -771,6 +797,7 @@ def login_by_name():
     from flask_login import login_user
 
     login_user(user)
+    _ensure_watch_assignment(user)
     session.pop('acting_role', None)
     session.pop('acting_watch_commander_id', None)
     _safe_audit(actor_id=user.id, action='login_name', details='User login by name')
@@ -836,6 +863,7 @@ def cac_login():
     from flask_login import login_user
 
     login_user(user)
+    _ensure_watch_assignment(user)
     session.pop('acting_role', None)
     session.pop('acting_watch_commander_id', None)
     _safe_audit(actor_id=user.id, action='login_cac', details=context['identifier_value'])
@@ -1174,6 +1202,7 @@ def manage_users():
                 return render_template('admin_users.html', **context_kwargs(error=str(exc)))
             if not _commit_or_rollback():
                 return render_template('admin_users.html', **context_kwargs(error='Unable to update that user right now. Try again later.'))
+            _ensure_watch_assignment(target)
             audit_action = 'user_transfer' if action == 'transfer' else 'user_update_role'
             _safe_audit(actor_id=current_user.id, action=audit_action, details=f'{target.username}:{target.role}:{target.section_unit or ""}')
         elif action == 'delete':
@@ -1226,6 +1255,7 @@ def manage_users():
             target.pending_approval = False
             if not _commit_or_rollback():
                 return render_template('admin_users.html', **context_kwargs(error='Unable to approve that account right now.'))
+            _ensure_watch_assignment(target)
             _safe_audit(actor_id=current_user.id, action='user_approve', details=f'{target.username}:{role}')
         elif action == 'reject':
             pending_id = request.form.get('pending_id', '').strip()
@@ -1326,6 +1356,7 @@ def edit_user(user_id):
             return render_template('admin_user_edit.html', **context, error=str(exc))
         if not _commit_or_rollback():
             return render_template('admin_user_edit.html', **context, error='Unable to save that officer right now. Try again later.')
+        _ensure_watch_assignment(target)
         _safe_audit(actor_id=current_user.id, action='user_profile_admin_edit', details=f'{target.username}:{target.role}')
         return redirect(url_for('auth.manage_users'))
 
