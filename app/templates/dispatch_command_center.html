@@ -185,6 +185,7 @@
       </div>
     </section>
 
+    {% if demo %}
     <section class="command-metrics-grid" aria-label="Command center metrics">
       {% for metric in dispatch_metrics %}
       <article class="command-metric">
@@ -194,6 +195,7 @@
       </article>
       {% endfor %}
     </section>
+    {% endif %}
 
     <!-- ── Full-width operational map ──────────────────────────── -->
     <section style="margin-bottom:16px;">
@@ -270,7 +272,8 @@
       </article>
     </section>
 
-    <!-- ── Unit status + Active incidents ──────────────────────── -->
+    {% if demo %}
+    <!-- ── Unit status + Active incidents (demo only) ─────────── -->
     <section class="command-grid">
       <article class="command-panel" style="grid-column: span 1;">
         <div class="command-panel-head">
@@ -301,6 +304,7 @@
         </div>
       </article>
     </section>
+    {% endif %}
 
     <section class="command-actions" aria-label="Command center actions">
       <a class="command-action-btn" href="{{ url_for('watch_commander.dashboard') }}">Watch Commander Hub</a>
