@@ -16,6 +16,99 @@
   {% endfor %}
 </section>
 
+<section class="wc-live-grid" aria-label="Live command status">
+  <article class="wc-live-panel wc-live-panel-wide">
+    <div class="wc-live-head">
+      <div>
+        <span>Live Incident Status</span>
+        <h2>Operational feed</h2>
+      </div>
+      <a href="{{ url_for('watch_commander.unit_map') }}">Open Unit Map</a>
+    </div>
+    <div class="wc-live-feed" id="wc-live-feed">
+      {% for item in live_incident_feed %}
+      <a class="wc-live-feed-row is-{{ item.tone }}" href="{{ item.url }}">
+        <div>
+          <span>{{ item.type }}</span>
+          <strong>{{ item.label }}</strong>
+          <small>{{ item.location }}</small>
+        </div>
+        <b>{{ item.status }}</b>
+      </a>
+      {% else %}
+      <div class="wc-empty-state">No active incident feed items. Submitted reports, active drafts, BOLOs, and shift notes will appear here.</div>
+      {% endfor %}
+    </div>
+  </article>
+
+  <aside class="wc-live-panel">
+    <div class="wc-live-head">
+      <div>
+        <span>Unit Status</span>
+        <h2>Shift posture</h2>
+      </div>
+    </div>
+    <div class="wc-status-stack">
+      {% for item in status_breakdown %}
+      <div class="wc-status-row">
+        <span class="wc-status-dot" style="background: {{ item.color }}"></span>
+        <strong>{{ item.status }}</strong>
+        <b>{{ item.count }}</b>
+      </div>
+      {% endfor %}
+    </div>
+  </aside>
+</section>
+
+<section class="wc-queue-grid" aria-label="Watch Commander queues">
+  {% for item in queue_cards %}
+  <a class="wc-queue-card is-{{ item.tone }}" href="{{ url_for(item.endpoint) }}">
+    <span>{{ item.label }}</span>
+    <strong>{{ item.value }}</strong>
+    <small>{{ item.detail }}</small>
+  </a>
+  {% endfor %}
+</section>
+
+<section class="wc-analytics-grid" aria-label="Command analytics">
+  <article class="wc-live-panel">
+    <div class="wc-live-head">
+      <div>
+        <span>Analytics</span>
+        <h2>Command readiness</h2>
+      </div>
+    </div>
+    <div class="wc-analytics-list">
+      {% for item in analytics_cards %}
+      <div class="wc-analytics-row">
+        <div>
+          <strong>{{ item.label }}</strong>
+          <small>{{ item.detail }}</small>
+        </div>
+        <b>{{ item.value }}</b>
+      </div>
+      {% endfor %}
+    </div>
+  </article>
+
+  <article class="wc-live-panel">
+    <div class="wc-live-head">
+      <div>
+        <span>Map / GIS</span>
+        <h2>Operational layers</h2>
+      </div>
+    </div>
+    <div class="wc-map-layer-list">
+      {% for layer in map_layers %}
+      <a href="{{ url_for(layer.endpoint) }}">
+        <strong>{{ layer.label }}</strong>
+        <small>{{ layer.detail }}</small>
+      </a>
+      {% endfor %}
+    </div>
+  </article>
+</section>
+
 <section class="wc-action-grid">
   <a href="{{ url_for('watch_commander.briefing') }}">Start Shift Brief<span>Current notices, BOLOs, assignments, and safety notes.</span></a>
   <a href="{{ url_for('watch_commander.reports') }}">Review Reports<span>Approve, return, or inspect submitted packets.</span></a>
@@ -58,4 +151,33 @@
     </div>
   </article>
 </section>
+
+<script>
+(function () {
+  var feed = document.getElementById('wc-live-feed');
+  if (!feed || !window.fetch) return;
+  function escapeText(value) {
+    return String(value == null ? '' : value).replace(/[&<>"']/g, function (char) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char];
+    });
+  }
+  function renderFeed(items) {
+    if (!items || !items.length) return;
+    feed.innerHTML = items.slice(0, 12).map(function (item) {
+      return '<a class="wc-live-feed-row is-' + escapeText(item.tone || 'primary') + '" href="' + escapeText(item.url || '#') + '">'
+        + '<div><span>' + escapeText(item.type) + '</span><strong>' + escapeText(item.label) + '</strong><small>' + escapeText(item.location) + '</small></div>'
+        + '<b>' + escapeText(item.status) + '</b></a>';
+    }).join('');
+  }
+  function refreshStatus() {
+    fetch('{{ url_for("watch_commander.api_operational_status") }}', { credentials: 'same-origin' })
+      .then(function (response) { return response.ok ? response.json() : null; })
+      .then(function (payload) {
+        if (payload && payload.ok) renderFeed(payload.live_incident_feed);
+      })
+      .catch(function () {});
+  }
+  window.setInterval(refreshStatus, 30000);
+})();
+</script>
 {% endblock %}

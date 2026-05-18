@@ -200,22 +200,40 @@ def _dashboard_context():
     open_shift = WatchShift.query.filter(WatchShift.status != 'CLOSED').order_by(WatchShift.created_at.desc()).first()
     pending_approvals = WatchApproval.query.filter_by(status='PENDING').count()
     shift_notes = WatchNote.query.order_by(WatchNote.created_at.desc()).limit(8).all()
-    return {
+    active_assignments = WatchAssignment.query.filter(
+        WatchAssignment.status.notin_(list(_OFF_DUTY_STATUSES))
+    ).order_by(WatchAssignment.updated_at.desc(), WatchAssignment.id.desc()).limit(120).all()
+    active_drafts = IncidentDraft.query.filter_by(status='ACTIVE').order_by(IncidentDraft.updated_at.desc()).limit(20).all()
+    active_bolos = BOLOEntry.query.filter_by(status='ACTIVE').order_by(BOLOEntry.created_at.desc()).limit(10).all()
+    pending_reports = [p for p in packets if p.approval_status == PACKET_APPROVAL_PENDING]
+    correction_reports = [p for p in packets if p.approval_status == PACKET_APPROVAL_NEEDS_CORRECTION]
+    pending_saved_forms = [f for f in saved_forms if str(f.status or '').upper() in {'DRAFT', 'SUBMITTED', 'PENDING'}]
+    active_rosters = [r for r in rosters if str(r.status or '').upper() == 'ACTIVE']
+    summary = {
+        'officers_on_duty': len(active_assignments),
+        'reports_pending': len(pending_reports),
+        'saved_forms_pending': len(pending_saved_forms),
+        'training_pending': len(active_rosters),
+        'open_incidents': len(active_drafts),
+        'shift_notes': len(shift_notes),
+        'pending_approvals': pending_approvals,
+    }
+    context = {
         'officers': officers,
         'open_shift': open_shift,
         'packets': packets,
         'saved_forms': saved_forms,
         'rosters': rosters,
         'shift_notes': shift_notes,
-        'summary': {
-            'officers_on_duty': WatchAssignment.query.filter(WatchAssignment.status.in_(['On Duty', 'Patrol', 'Gate', 'Report Writing', 'Training'])).count(),
-            'reports_pending': sum(1 for p in packets if p.approval_status == PACKET_APPROVAL_PENDING),
-            'saved_forms_pending': sum(1 for f in saved_forms if str(f.status or '').upper() in {'DRAFT', 'SUBMITTED', 'PENDING'}),
-            'training_pending': sum(1 for r in rosters if str(r.status or '').upper() == 'ACTIVE'),
-            'open_incidents': IncidentDraft.query.filter_by(status='ACTIVE').count(),
-            'shift_notes': len(shift_notes),
-            'pending_approvals': pending_approvals,
-        },
+        'active_assignments': active_assignments,
+        'active_drafts': active_drafts,
+        'active_bolos': active_bolos,
+        'summary': summary,
+        'status_breakdown': _status_breakdown(active_assignments),
+        'queue_cards': _queue_cards(summary, correction_reports),
+        'live_incident_feed': _live_incident_feed(active_drafts, pending_reports, correction_reports, active_bolos, shift_notes),
+        'analytics_cards': _analytics_cards(officers, active_assignments, packets, saved_forms, rosters),
+        'map_layers': _map_layers(),
         'mobile_cards': [
             ('Shift Status', 'watch_commander.shift'),
             ('Officers', 'watch_commander.officers'),
@@ -225,6 +243,193 @@ def _dashboard_context():
             ('Approvals', 'watch_commander.approvals'),
             ('Briefing', 'watch_commander.briefing'),
         ],
+    }
+    return context
+
+
+def _status_breakdown(assignments):
+    counts = {status: 0 for status in OFFICER_STATUSES}
+    for assignment in assignments:
+        status = assignment.status or 'On Duty'
+        counts[status] = counts.get(status, 0) + 1
+    return [
+        {
+            'status': status,
+            'count': count,
+            'color': _status_color(status),
+        }
+        for status, count in counts.items()
+        if count or status not in _OFF_DUTY_STATUSES
+    ]
+
+
+def _queue_cards(summary, correction_reports):
+    return [
+        {
+            'label': 'Pending Reports',
+            'value': summary['reports_pending'],
+            'detail': 'Submitted packets awaiting review',
+            'endpoint': 'watch_commander.reports',
+            'tone': 'warning' if summary['reports_pending'] else 'success',
+        },
+        {
+            'label': 'Needs Correction',
+            'value': len(correction_reports),
+            'detail': 'Packets already returned to officers',
+            'endpoint': 'watch_commander.reports',
+            'tone': 'danger' if correction_reports else 'success',
+        },
+        {
+            'label': 'Saved Work',
+            'value': summary['saved_forms_pending'],
+            'detail': 'Drafts, forms, and packets to inspect',
+            'endpoint': 'watch_commander.saved_work',
+            'tone': 'primary',
+        },
+        {
+            'label': 'Training Rosters',
+            'value': summary['training_pending'],
+            'detail': 'Active rosters/signatures to monitor',
+            'endpoint': 'watch_commander.training',
+            'tone': 'primary',
+        },
+        {
+            'label': 'Approvals',
+            'value': summary['pending_approvals'],
+            'detail': 'Grouped supervisor actions',
+            'endpoint': 'watch_commander.approvals',
+            'tone': 'warning' if summary['pending_approvals'] else 'success',
+        },
+    ]
+
+
+def _incident_label(item):
+    if isinstance(item, IncidentDraft):
+        return item.call_type or 'Active draft'
+    if isinstance(item, IncidentPacket):
+        return item.call_type or 'Submitted packet'
+    if isinstance(item, BOLOEntry):
+        return item.title or 'BOLO'
+    return getattr(item, 'title', None) or 'Watch note'
+
+
+def _incident_location(item):
+    return getattr(item, 'location', None) or getattr(item, 'summary', None) or getattr(item, 'body', None) or 'No location entered'
+
+
+def _live_incident_feed(active_drafts, pending_reports, correction_reports, active_bolos, shift_notes):
+    feed = []
+    for item in active_drafts[:5]:
+        feed.append({
+            'type': 'Active Draft',
+            'label': _incident_label(item),
+            'location': _incident_location(item),
+            'status': item.status,
+            'endpoint': 'watch_commander.reports',
+            'tone': 'primary',
+        })
+    for item in pending_reports[:5]:
+        feed.append({
+            'type': 'Pending Report',
+            'label': _incident_label(item),
+            'location': _incident_location(item),
+            'status': item.approval_status,
+            'endpoint': 'watch_commander.reports',
+            'tone': 'warning',
+        })
+    for item in correction_reports[:3]:
+        feed.append({
+            'type': 'Correction',
+            'label': _incident_label(item),
+            'location': _incident_location(item),
+            'status': item.approval_status,
+            'endpoint': 'watch_commander.reports',
+            'tone': 'danger',
+        })
+    for item in active_bolos[:3]:
+        feed.append({
+            'type': 'BOLO',
+            'label': _incident_label(item),
+            'location': _incident_location(item),
+            'status': item.status,
+            'endpoint': 'bolo.bolo_board',
+            'tone': 'danger',
+        })
+    for item in shift_notes[:3]:
+        feed.append({
+            'type': item.note_type.replace('_', ' ').title(),
+            'label': item.title,
+            'location': item.body[:120],
+            'status': item.priority,
+            'endpoint': 'watch_commander.blotter',
+            'tone': 'primary',
+        })
+    for entry in feed:
+        entry['url'] = url_for(entry['endpoint'])
+    return feed[:12]
+
+
+def _analytics_cards(officers, assignments, packets, saved_forms, rosters):
+    active_officer_count = len([officer for officer in officers if officer.active])
+    on_duty_count = len(assignments)
+    packet_total = len(packets)
+    pending_packets = len([packet for packet in packets if packet.approval_status == PACKET_APPROVAL_PENDING])
+    approved_packets = len([packet for packet in packets if packet.approval_status == PACKET_APPROVAL_APPROVED])
+    active_rosters = len([roster for roster in rosters if str(roster.status or '').upper() == 'ACTIVE'])
+    saved_pending = len([item for item in saved_forms if str(item.status or '').upper() in {'DRAFT', 'SUBMITTED', 'PENDING'}])
+    return [
+        {
+            'label': 'Watch Readiness',
+            'value': f'{round((on_duty_count / active_officer_count) * 100) if active_officer_count else 0}%',
+            'detail': f'{on_duty_count} of {active_officer_count} active personnel visible',
+        },
+        {
+            'label': 'Report Clearance',
+            'value': f'{round((approved_packets / packet_total) * 100) if packet_total else 100}%',
+            'detail': f'{pending_packets} pending / {packet_total} recent packets',
+        },
+        {
+            'label': 'Saved Work Backlog',
+            'value': saved_pending,
+            'detail': 'Forms and packets still pending review',
+        },
+        {
+            'label': 'Training Load',
+            'value': active_rosters,
+            'detail': 'Active rosters requiring oversight',
+        },
+    ]
+
+
+def _map_layers():
+    return [
+        {
+            'label': 'Unit Positions',
+            'detail': 'Live officer status markers, assignment location, and GPS fallback.',
+            'endpoint': 'watch_commander.unit_map',
+        },
+        {
+            'label': 'Gate / Zone View',
+            'detail': 'Known MCLB Albany gates, PMO, HQ, patrol zones, and key locations.',
+            'endpoint': 'watch_commander.unit_map',
+        },
+        {
+            'label': 'Incident / BOLO Layer',
+            'detail': 'Operational feed links BOLOs, active drafts, and pending reports.',
+            'endpoint': 'watch_commander.dashboard',
+        },
+    ]
+
+
+def _operational_status_payload():
+    ctx = _dashboard_context()
+    return {
+        'ok': True,
+        'summary': ctx['summary'],
+        'status_breakdown': ctx['status_breakdown'],
+        'queue_cards': ctx['queue_cards'],
+        'analytics_cards': ctx['analytics_cards'],
+        'live_incident_feed': ctx['live_incident_feed'],
     }
 
 
@@ -240,6 +445,13 @@ def index():
 def dashboard():
     _require_watch_tools()
     return render_template('watch_commander/dashboard.html', title='Watch Commander Dashboard', user=current_user, **_dashboard_context())
+
+
+@bp.route('/api/operational-status')
+@login_required
+def api_operational_status():
+    _require_watch_tools()
+    return jsonify(_operational_status_payload())
 
 
 @bp.route('/shift', methods=['GET', 'POST'])
