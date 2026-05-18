@@ -5,6 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   {% if config.GOOGLE_SITE_VERIFICATION %}<meta name="google-site-verification" content="{{ config.GOOGLE_SITE_VERIFICATION }}" />{% endif %}
   <title>{{ title if title else 'MCPD Portal' }}</title>
+  <meta name="application-name" content="MCPD Portal" />
+  <meta name="theme-color" content="#071b33" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="MCPD Portal" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="csrf-token" content="{{ g.csrf_token }}" />
+  <link rel="manifest" href="{{ url_for('pwa_manifest') }}" />
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='icons/mcpd-icon-32.png') }}" />
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='icons/mcpd-icon.svg') }}" />
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='icons/mcpd-apple-touch-icon.png') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css', v='2026-05-09-live-stability') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/command-hybrid.css', v='2026-05-16-command-hybrid-v2') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-refresh.css', v='2026-05-16-mobile-refresh-v1') }}" />
@@ -12,8 +23,279 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/command-final.css', v='2026-05-18-audit1') }}" />
   {% block head %}{% endblock %}
 </head>
-<body class="{{ body_class|default('') }}">{% block body %}{% endblock %}
-<script src="{{ url_for('static', filename='js/command_readiness.js', v='2026-05-16-command') }}"></script>
-{% block scripts %}{% endblock %}
+<body class="{{ body_class|default('') }}">
+  <a class="skip-nav-link" href="#main-content">Skip to main content</a>
+  <script>
+  (function () {
+    var stored = localStorage.getItem('mcpd-theme');
+    var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var theme = stored || (prefersDark ? 'dark' : 'light');
+    document.body.setAttribute('data-theme', theme);
+    var viewMode = localStorage.getItem('mcpdViewMode') || localStorage.getItem('mcpd-view') || 'auto';
+    if (viewMode === 'mobile') document.body.classList.add('force-mobile-view', 'view-mobile');
+    if (viewMode === 'desktop') document.body.classList.add('view-desktop');
+  }());
+  </script>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="global-flash-stack" role="alert" aria-live="assertive" aria-atomic="true">
+      {% for category, message in messages %}
+      <div class="global-flash global-flash-{{ category or 'info' }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  {% endwith %}
+  {% if portal_demo_mode %}
+  <div class="demo-mode-banner" role="status">
+    <strong>DEMO MODE — SAMPLE DATA ONLY</strong>
+    <span>{% if portal_demo_viewing_as %}Viewing as {{ portal_demo_viewing_as }}{% else %}Command demonstration data is active{% endif %}</span>
+    <a href="{{ url_for('demo.dashboard') }}">Demo Dashboard</a>
+    <a href="{{ url_for('demo.users') }}">Switch User</a>
+    {% if portal_demo_viewing_as %}
+    <form method="post" action="{{ url_for('demo.return_admin') }}">
+      <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
+      <button type="submit">Return to Owner</button>
+    </form>
+    {% elif portal_is_site_owner %}
+    <form method="post" action="{{ url_for('demo.toggle') }}">
+      <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
+      <button type="submit">Turn Demo Off</button>
+    </form>
+    {% endif %}
+  </div>
+  {% endif %}
+  {% block body %}{% endblock %}
+  <script src="{{ url_for('static', filename='js/command_readiness.js', v='2026-05-16-command') }}"></script>
+  <script src="{{ url_for('static', filename='js/app.js', v='2026-05-05-mobile-nav') }}"></script>
+  <script src="{{ url_for('static', filename='js/voice_assistant.js', v='2026-05-09-voice-stability') }}"></script>
+  <script src="{{ url_for('static', filename='js/assistant.js', v='2026-05-09-voice-stability') }}"></script>
+  <script>
+  (function () {
+    var meta = document.querySelector('meta[name="csrf-token"]');
+    if (!meta) return;
+    var csrfToken = meta.getAttribute('content') || '';
+    var _origFetch = window.fetch;
+    window.fetch = function (input, init) {
+      init = init || {};
+      var method = (init.method || 'GET').toUpperCase();
+      if (['POST', 'PUT', 'PATCH', 'DELETE'].indexOf(method) !== -1) {
+        init.headers = init.headers || {};
+        if (typeof init.headers.set === 'function') {
+          init.headers.set('X-CSRFToken', csrfToken);
+        } else {
+          init.headers['X-CSRFToken'] = csrfToken;
+        }
+      }
+      return _origFetch.call(this, input, init);
+    };
+  }());
+  </script>
+  <script>
+  /* ── CSRF auto-inject for HTML form submissions ─────────────────────── */
+  (function () {
+    var meta = document.querySelector('meta[name="csrf-token"]');
+    if (!meta) return;
+    var csrfToken = meta.getAttribute('content') || '';
+    document.addEventListener('submit', function (e) {
+      var form = e.target;
+      if (!form || (form.method || '').toUpperCase() !== 'POST') return;
+      if (!form.querySelector('input[name="_csrf_token"]')) {
+        var inp = document.createElement('input');
+        inp.type = 'hidden';
+        inp.name = '_csrf_token';
+        inp.value = csrfToken;
+        form.appendChild(inp);
+      }
+    }, true);
+  }());
+  </script>
+  <script>
+  (function () {
+    function setTheme(theme) {
+      document.body.setAttribute('data-theme', theme);
+      localStorage.setItem('mcpd-theme', theme);
+      document.querySelectorAll('[data-theme-toggle]').forEach(function (button) {
+        button.setAttribute('aria-label', theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+        button.textContent = theme === 'dark' ? 'Light' : 'Dark';
+      });
+    }
+    function syncViewLabels() {
+      var mobile = document.body.classList.contains('force-mobile-view');
+      document.querySelectorAll('[data-view-toggle]').forEach(function (btn) {
+        btn.textContent = mobile ? 'Desktop Mode' : 'Mobile Mode';
+        btn.setAttribute('aria-label', mobile ? 'Switch to desktop mode' : 'Switch to mobile mode');
+      });
+    }
+    function setView(mode) {
+      var mobile = mode === 'mobile';
+      document.body.classList.toggle('force-mobile-view', mobile);
+      document.body.classList.toggle('view-mobile', mobile);
+      document.body.classList.toggle('view-desktop', !mobile);
+      localStorage.setItem('mcpdViewMode', mobile ? 'mobile' : 'desktop');
+      localStorage.setItem('mcpd-view', mobile ? 'mobile' : 'desktop');
+      syncViewLabels();
+    }
+    document.addEventListener('click', function (event) {
+      var viewBtn = event.target.closest('[data-view-toggle]');
+      if (viewBtn) {
+        setView(document.body.classList.contains('force-mobile-view') ? 'desktop' : 'mobile');
+        return;
+      }
+      var button = event.target.closest('[data-theme-toggle]');
+      if (button) {
+        var next = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        setTheme(next);
+      }
+    });
+    setTheme(document.body.getAttribute('data-theme') || 'light');
+    syncViewLabels();
+  }());
+  </script>
+  {% block scripts %}{% endblock %}
+  {% if current_user and current_user.is_authenticated %}
+  <script>
+  /* ── Location reporter ──────────────────────────────────────────────────
+     Uses watchPosition so tracking persists across page navigations.
+     Throttled to one push per 60 seconds. enableHighAccuracy forces GPS
+     hardware instead of WiFi/IP fallback (which can be miles off). */
+  (function () {
+    if (!navigator.geolocation) return;
+    var KEY      = 'mcpd-loc-ts';
+    var INTERVAL = 60 * 1000;
+    var csrf     = (document.querySelector('meta[name="csrf-token"]') || {}).content || '';
+
+    function push(lat, lng) {
+      fetch('/watch-commander/api/unit-location', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+        body: JSON.stringify({ lat: lat, lng: lng }),
+      }).catch(function () {});
+    }
+
+    function showLocationWarning() {
+      if (document.getElementById('mcpd-loc-warn')) return;
+      var bar = document.createElement('div');
+      bar.id = 'mcpd-loc-warn';
+      bar.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#b45309;color:#fff;padding:10px 16px;font-size:.85rem;font-weight:600;display:flex;align-items:center;justify-content:space-between;gap:8px;';
+      bar.innerHTML = '<span>&#9888; Location sharing is OFF &mdash; your position cannot be tracked. Enable location in your browser settings and reload.</span>'
+        + '<button onclick="this.parentNode.remove()" style="background:none;border:1px solid rgba(255,255,255,.5);color:#fff;padding:2px 10px;border-radius:4px;cursor:pointer;font-size:.8rem;">Dismiss</button>';
+      document.body.appendChild(bar);
+    }
+
+    var _lastPush = parseInt(localStorage.getItem(KEY) || '0', 10);
+
+    navigator.geolocation.watchPosition(
+      function (pos) {
+        var warn = document.getElementById('mcpd-loc-warn');
+        if (warn) warn.remove();
+        var now = Date.now();
+        if (now - _lastPush >= INTERVAL) {
+          push(pos.coords.latitude, pos.coords.longitude);
+          _lastPush = now;
+          localStorage.setItem(KEY, now);
+        }
+      },
+      function (err) {
+        if (err.code === 1) { showLocationWarning(); } /* PERMISSION_DENIED */
+      },
+      { timeout: 15000, maximumAge: 0, enableHighAccuracy: true }
+    );
+
+    /* Always push on first page load to register position immediately */
+    navigator.geolocation.getCurrentPosition(
+      function (pos) {
+        push(pos.coords.latitude, pos.coords.longitude);
+        _lastPush = Date.now();
+        localStorage.setItem(KEY, _lastPush);
+      },
+      function (err) {
+        if (err.code === 1) { showLocationWarning(); }
+      },
+      { timeout: 15000, maximumAge: 0, enableHighAccuracy: true }
+    );
+  }());
+  </script>
+
+  <script>
+  /* ── Command Notification System ────────────────────────────────────────
+     Connects to SSE stream for real-time messages, shows Browser
+     Notifications, and maintains an unread-count badge in the sidebar.  */
+  (function () {
+    /* ── Unread badge helper ── */
+    function updateUnreadBadge(count) {
+      var badge = document.getElementById('nav-unread-badge');
+      if (!badge) return;
+      if (count > 0) {
+        badge.textContent = count > 9 ? '9+' : String(count);
+        badge.style.display = '';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+
+    /* ── Browser Notification permission ── */
+    if (window.Notification && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+
+    /* ── Show a browser notification for an incoming command message ── */
+    function showDesktopNotification(msg) {
+      if (!window.Notification || Notification.permission !== 'granted') return;
+      var title = (msg.priority && msg.priority !== 'Normal' ? '[' + msg.priority + '] ' : '') +
+                  (msg.subject || 'Command Message');
+      var n = new Notification(title, {
+        body: msg.body,
+        icon: '/static/icons/mcpd-icon-32.png',
+        tag: 'mcpd-msg-' + msg.id,
+        requireInteraction: msg.priority === 'Emergency',
+      });
+      n.onclick = function () {
+        window.focus();
+        window.location.href = '/notifications/inbox';
+        n.close();
+      };
+    }
+
+    /* ── SSE connection with auto-reconnect ── */
+    var _sseRetry = 2000;
+    function connectSSE() {
+      var src = new EventSource('/notifications/stream');
+
+      src.addEventListener('command_message', function (evt) {
+        try {
+          var msg = JSON.parse(evt.data);
+          showDesktopNotification(msg);
+          /* Refresh badge without a separate poll on this event */
+          fetch('/notifications/unread')
+            .then(function (r) { return r.json(); })
+            .then(function (d) { updateUnreadBadge(d.count); })
+            .catch(function () {});
+        } catch (e) {}
+      });
+
+      src.addEventListener('connected', function () {
+        _sseRetry = 2000; /* reset backoff on successful connect */
+      });
+
+      src.addEventListener('error', function () {
+        src.close();
+        setTimeout(connectSSE, _sseRetry);
+        _sseRetry = Math.min(_sseRetry * 2, 30000); /* exponential backoff up to 30s */
+      });
+    }
+    connectSSE();
+
+    /* ── Poll unread count every 8 s ── */
+    function pollUnread() {
+      fetch('/notifications/unread')
+        .then(function (r) { return r.json(); })
+        .then(function (d) { updateUnreadBadge(d.count); })
+        .catch(function () {});
+    }
+    pollUnread();
+    setInterval(pollUnread, 8000);
+  }());
+  </script>
+  {% endif %}
 </body>
 </html>

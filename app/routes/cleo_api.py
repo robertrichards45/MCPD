@@ -161,7 +161,12 @@ def cleo_save(page_key):
     else:
         row.data_json = json.dumps(data)
         row.updated_at = datetime.utcnow()
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
+        return jsonify({"ok": False, "error": "Database error"}), 500
     return jsonify({'ok': True})
 
 @bp.route('/api/cleo/<page_key>', methods=['DELETE'])
@@ -170,7 +175,12 @@ def cleo_clear(page_key):
     row = CleoFormData.query.filter_by(user_id=current_user.id, page_key=page_key).first()
     if row:
         db.session.delete(row)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            current_app.logger.exception("db commit failed")
+            return jsonify({"ok": False, "error": "Database error"}), 500
     return jsonify({'ok': True})
 
 @bp.route('/api/cleo-layout/<page_key>', methods=['GET'])
@@ -195,7 +205,12 @@ def cleo_layout_save(page_key):
     else:
         row.layout_json = json.dumps(layout)
         row.updated_at = datetime.utcnow()
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
+        return jsonify({"ok": False, "error": "Database error"}), 500
     return jsonify({'ok': True})
 
 @bp.route('/api/cleo-layout/<page_key>', methods=['DELETE'])
@@ -206,7 +221,12 @@ def cleo_layout_clear(page_key):
     row = CleoFormLayout.query.filter_by(page_key=page_key).first()
     if row:
         db.session.delete(row)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            current_app.logger.exception("db commit failed")
+            return jsonify({"ok": False, "error": "Database error"}), 500
     return jsonify({'ok': True})
 
 @bp.route('/api/cleo-file/<page_key>', methods=['POST'])
@@ -233,7 +253,12 @@ def cleo_file_upload(page_key):
             uploaded_at=datetime.utcnow()
         )
         db.session.add(row)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
+        return jsonify({"ok": False, "error": "Database error"}), 500
     return jsonify({'ok': True})
 
 @bp.route('/api/cleo-file/<page_key>/latest', methods=['GET'])
@@ -271,7 +296,12 @@ def cleo_file_delete(file_id):
     except Exception:
         _log.exception('Failed to delete cleo file at %s (file_id=%s)', row.file_path, file_id)
     db.session.delete(row)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
+        return jsonify({"ok": False, "error": "Database error"}), 500
     return jsonify({'ok': True})
 
 @bp.route('/api/cleo-reports', methods=['GET'])
@@ -287,7 +317,12 @@ def cleo_reports_create():
     title = (payload.get('title') or '').strip() or None
     row = CleoReport(user_id=current_user.id, title=title, status='DRAFT')
     db.session.add(row)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
+        return jsonify({"ok": False, "error": "Database error"}), 500
     return jsonify({'id': row.id})
 
 @bp.route('/api/cleo-reports/<int:report_id>/page/<page_key>', methods=['GET'])
@@ -320,7 +355,12 @@ def cleo_report_page_save(report_id, page_key):
         if not (report.title or '').strip():
             report.title = _generate_case_control_number(report, data)
     report.updated_at = datetime.utcnow()
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
+        return jsonify({"ok": False, "error": "Database error"}), 500
     return jsonify({'ok': True, 'case_control_number': report.title or ''})
 
 @bp.route('/api/cleo-reports/<int:report_id>/summary', methods=['GET'])
@@ -363,7 +403,12 @@ def cleo_report_delete(report_id):
     CleoReportAnnotation.query.filter_by(report_id=report_id).delete()
     CleoReportGrade.query.filter_by(report_id=report_id).delete()
     db.session.delete(report)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
+        return jsonify({"ok": False, "error": "Database error"}), 500
     return jsonify({'ok': True})
 
 @bp.route('/cleo/report/<int:report_id>', methods=['GET'])
@@ -410,7 +455,12 @@ def cleo_report_submit(report_id):
     report.updated_at = datetime.utcnow()
     report.submitted_at = datetime.utcnow()
     report.submitted_by = current_user.id
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
+        return jsonify({"ok": False, "error": "Database error"}), 500
     return jsonify({'ok': True, 'status': report.status})
 
 
@@ -481,7 +531,11 @@ def cleo_report_grade(report_id):
         report.graded_at = datetime.utcnow()
         report.graded_by = current_user.id
 
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
     return render_template('cleo_grade_saved.html', report=report, disposition=disposition)
 
 @bp.route('/cleo/reports', methods=['GET'])

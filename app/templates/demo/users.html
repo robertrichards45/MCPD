@@ -13,7 +13,7 @@
         <a class="btn btn-outline-secondary" href="{{ url_for('demo.dashboard') }}">Demo Dashboard</a>
         {% if current_user.is_demo %}
         <form method="post" action="{{ url_for('demo.return_admin') }}">
-          <input type="hidden" name="csrf_token" value="{{ g.csrf_token }}">
+          <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
           <button class="btn btn-primary" type="submit">Return to Demo Controller</button>
         </form>
         {% endif %}
@@ -29,7 +29,7 @@
           <code>{{ demo_user.username }}</code>
         </div>
         <form method="post" action="{{ url_for('demo.impersonate', user_id=demo_user.id) }}">
-          <input type="hidden" name="csrf_token" value="{{ g.csrf_token }}">
+          <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
           <button class="btn btn-primary" type="submit">Impersonate Demo User</button>
         </form>
       </article>

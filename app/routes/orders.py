@@ -473,7 +473,11 @@ def _seed_orders_library():
         inserted += 1
 
     if inserted:
-        db.session.commit()
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            current_app.logger.exception("db commit failed")
     return inserted, skipped
 
 
@@ -1359,7 +1363,11 @@ def library():
                         doc.last_indexed_at = datetime.utcnow()
                         updated += 1
             if updated:
-                db.session.commit()
+                try:
+                    db.session.commit()
+                except Exception:
+                    db.session.rollback()
+                    current_app.logger.exception("db commit failed")
                 flash(f'Reindex complete: {updated} document(s) refreshed.', 'success')
             else:
                 flash('Reindex complete: no updates required.', 'success')
@@ -1378,7 +1386,11 @@ def library():
                         doc.last_indexed_at = datetime.utcnow()
                         updated += 1
             if updated:
-                db.session.commit()
+                try:
+                    db.session.commit()
+                except Exception:
+                    db.session.rollback()
+                    current_app.logger.exception("db commit failed")
                 flash(f'Approved-source reindex complete: {updated} document(s) refreshed.', 'success')
             else:
                 flash('Approved-source reindex complete: no updates required.', 'success')
@@ -1448,8 +1460,13 @@ def library():
             last_indexed_at=datetime.utcnow(),
         )
         db.session.add(document)
-        db.session.commit()
-        flash('Order uploaded.', 'success')
+        try:
+            db.session.commit()
+            flash('Order uploaded.', 'success')
+        except Exception:
+            db.session.rollback()
+            current_app.logger.exception("db commit failed")
+            flash("A database error occurred. Please try again.", "error")
         return redirect(url_for('orders.library'))
 
     search_term = (request.args.get('q') or '').strip()
@@ -1622,14 +1639,24 @@ def orders_source_admin():
                     doc.is_active = False
                     updated += 1
             if updated:
-                db.session.commit()
-            flash(f'Archived {updated} unapproved document(s).' if updated else 'No active unapproved documents needed archiving.', 'success')
+                try:
+                    db.session.commit()
+                    flash(f'Archived {updated} unapproved document(s).' if updated else 'No active unapproved documents needed archiving.', 'success')
+                except Exception:
+                    db.session.rollback()
+                    current_app.logger.exception("db commit failed")
+                    flash("A database error occurred. Please try again.", "error")
             return redirect(url_for('orders.orders_source_admin'))
         if action == 'archive_doc':
             document = OrderDocument.query.get_or_404(request.form.get('document_id', type=int))
             document.is_active = False
-            db.session.commit()
-            flash(f'Archived "{document.title}".', 'success')
+            try:
+                db.session.commit()
+                flash(f'Archived "{document.title}".', 'success')
+            except Exception:
+                db.session.rollback()
+                current_app.logger.exception("db commit failed")
+                flash("A database error occurred. Please try again.", "error")
             return redirect(url_for('orders.orders_source_admin'))
         if action == 'reindex_approved':
             updated = 0
@@ -1642,8 +1669,13 @@ def orders_source_admin():
                         doc.last_indexed_at = datetime.utcnow()
                         updated += 1
             if updated:
-                db.session.commit()
-            flash(f'Approved-source reindex complete: {updated} document(s) refreshed.' if updated else 'Approved-source reindex complete: no updates required.', 'success')
+                try:
+                    db.session.commit()
+                    flash(f'Approved-source reindex complete: {updated} document(s) refreshed.' if updated else 'Approved-source reindex complete: no updates required.', 'success')
+                except Exception:
+                    db.session.rollback()
+                    current_app.logger.exception("db commit failed")
+                    flash("A database error occurred. Please try again.", "error")
             return redirect(url_for('orders.orders_source_admin'))
 
     documents = OrderDocument.query.order_by(OrderDocument.uploaded_at.desc(), OrderDocument.id.desc()).all()
@@ -1784,7 +1816,11 @@ def view_order(order_id):
         document.extracted_text = _extract_text_from_file(download_path)
         document.last_indexed_at = datetime.utcnow()
         document.parser_confidence = 0.9 if document.extracted_text else 0.35
-        db.session.commit()
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            current_app.logger.exception("db commit failed")
 
     body_text = _document_body_text(document) or document.summary or ''
     reader_context = _reader_context(body_text, search_term or document.title, before=1, after=2, extra_before=3, extra_after=4)
@@ -1863,7 +1899,11 @@ def toggle_order(order_id):
 
     document = OrderDocument.query.get_or_404(order_id)
     document.is_active = not document.is_active
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
     flash(
         'Order activated.' if document.is_active else 'Order archived.',
         'success',

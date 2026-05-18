@@ -697,7 +697,11 @@ def _sync_forms_from_storage():
 
     details = f"Recovered {len(imported)} form file(s) from storage."
     db.session.add(AuditLog(actor_id=uploaded_by, action='forms_storage_recovery', details=details))
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
     return len(imported)
 
 
@@ -1549,8 +1553,13 @@ def forms_manager():
                 return redirect(url_for('forms.forms_manager'))
             form.is_active = False
             db.session.add(AuditLog(actor_id=current_user.id, action='form_library_hide', details=form.title))
-            db.session.commit()
-            flash(f'{form.title} was removed from the active forms library.', 'success')
+            try:
+                db.session.commit()
+                flash(f'{form.title} was removed from the active forms library.', 'success')
+            except Exception:
+                db.session.rollback()
+                current_app.logger.exception("db commit failed")
+                flash("A database error occurred. Please try again.", "error")
             return redirect(url_for('forms.forms_manager', edit=form.id))
 
         if action == 'restore':
@@ -1559,8 +1568,13 @@ def forms_manager():
                 return redirect(url_for('forms.forms_manager'))
             form.is_active = True
             db.session.add(AuditLog(actor_id=current_user.id, action='form_library_restore', details=form.title))
-            db.session.commit()
-            flash(f'{form.title} was restored to the active forms library.', 'success')
+            try:
+                db.session.commit()
+                flash(f'{form.title} was restored to the active forms library.', 'success')
+            except Exception:
+                db.session.rollback()
+                current_app.logger.exception("db commit failed")
+                flash("A database error occurred. Please try again.", "error")
             return redirect(url_for('forms.forms_manager', edit=form.id))
 
         if not form:
@@ -1609,13 +1623,23 @@ def forms_manager():
                 db.session.add(AuditLog(actor_id=current_user.id, action='form_official_source_update', details=f'{form.title}|{result.source_url}'))
             else:
                 db.session.add(AuditLog(actor_id=current_user.id, action='form_official_source_check', details=f'{form.title}|{result.status}|{result.source_url}'))
-            db.session.commit()
-            flash(result.message, 'success' if result.ok else 'error')
+            try:
+                db.session.commit()
+                flash(result.message, 'success' if result.ok else 'error')
+            except Exception:
+                db.session.rollback()
+                current_app.logger.exception("db commit failed")
+                flash("A database error occurred. Please try again.", "error")
             return redirect(url_for('forms.forms_manager', edit=form.id))
 
         db.session.add(AuditLog(actor_id=current_user.id, action='form_library_update', details=form.title))
-        db.session.commit()
-        flash(f'Saved form: {form.title}', 'success')
+        try:
+            db.session.commit()
+            flash(f'Saved form: {form.title}', 'success')
+        except Exception:
+            db.session.rollback()
+            current_app.logger.exception("db commit failed")
+            flash("A database error occurred. Please try again.", "error")
         return redirect(url_for('forms.forms_manager', edit=form.id))
 
     _sync_forms_from_storage()
@@ -1659,8 +1683,13 @@ def call_type_rules_manager():
                 rules.pop(old_slug, None)
                 save_call_type_rules(rules)
                 db.session.add(AuditLog(actor_id=current_user.id, action='call_type_rule_delete', details=deleted_title))
-                db.session.commit()
-                flash(f'Removed call type: {deleted_title}', 'success')
+                try:
+                    db.session.commit()
+                    flash(f'Removed call type: {deleted_title}', 'success')
+                except Exception:
+                    db.session.rollback()
+                    current_app.logger.exception("db commit failed")
+                    flash("A database error occurred. Please try again.", "error")
             return redirect(url_for('forms.call_type_rules_manager'))
 
         recommended_forms = split_multivalue(
@@ -1687,8 +1716,13 @@ def call_type_rules_manager():
         rules[rule['slug']] = rule
         save_call_type_rules(rules)
         db.session.add(AuditLog(actor_id=current_user.id, action='call_type_rule_save', details=rule['title']))
-        db.session.commit()
-        flash(f'Saved call type: {rule["title"]}', 'success')
+        try:
+            db.session.commit()
+            flash(f'Saved call type: {rule["title"]}', 'success')
+        except Exception:
+            db.session.rollback()
+            current_app.logger.exception("db commit failed")
+            flash("A database error occurred. Please try again.", "error")
         return redirect(url_for('forms.call_type_rules_manager', edit=rule['slug']))
 
     edit_slug = slugify_call_type(request.args.get('edit') or '')
@@ -1777,7 +1811,11 @@ def upload_form():
                 latest_id = latest.id if latest else None
                 for existing in related:
                     existing.is_active = (existing.id == latest_id)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            current_app.logger.exception("db commit failed")
         return redirect(url_for('forms.list_forms'))
 
     return render_template('forms_upload.html', user=current_user, category_options=category_options(), retention_options=sorted(RETENTION_MODES))
@@ -1804,7 +1842,11 @@ def download_form(form_id):
         payload = _empty_payload(schema)
         pdf_path, render_meta = render_form_pdf(file_path, schema, payload, blank_mode=True)
         _log_pdf_render_event(form, 'blank_download_compatible', render_meta, no_retention=_form_policy(form).get('is_no_retention', False))
-        db.session.commit()
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            current_app.logger.exception("db commit failed")
         return _send_ephemeral_file(pdf_path, _preview_pdf_filename(form, blank_mode=True))
     return send_file(file_path, as_attachment=True)
 
@@ -1850,7 +1892,11 @@ def blank_form_pdf(form_id):
     payload = _empty_payload(schema)
     pdf_path, render_meta = render_form_pdf(_pdf_source_for_form(form), schema, payload, blank_mode=True)
     _log_pdf_render_event(form, 'blank_pdf', render_meta, no_retention=_form_policy(form).get('is_no_retention', False))
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
     return _send_ephemeral_file(pdf_path, _preview_pdf_filename(form, blank_mode=True))
 
 
@@ -2381,7 +2427,11 @@ def preview_temp_form(form_id, token):
     payload = _normalize_payload(payload_raw, schema)
     sections, role_rows = _build_preview_sections(schema, payload, blank_mode=False)
     _log_no_retention_event(form, 'preview_temp')
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
     return render_template('forms_preview.html', user=current_user, form=form, schema=schema, payload=payload, sections=sections, role_rows=role_rows, blank_mode=False, print_mode=request.args.get('print') == '1', preview_title='Completed Form Preview (No-Retention)', generated_at=_safe_display_dt(_utcnow_naive()), saved_record=None, temp_token=token, no_retention_mode=True, preview_pdf_url=url_for('forms.preview_temp_form_pdf', form_id=form.id, token=token, v=int(time.time())), preview_pdf_download_name=_preview_pdf_filename(form, blank_mode=False))
 
 
@@ -2399,7 +2449,11 @@ def preview_temp_form_pdf(form_id, token):
     payload = _normalize_payload(payload_raw, schema)
     pdf_path, render_meta = render_form_pdf(_pdf_source_for_form(form), schema, payload, blank_mode=False)
     _log_pdf_render_event(form, 'preview_temp_pdf', render_meta, no_retention=True)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
     return _send_ephemeral_file(pdf_path, _preview_pdf_filename(form, blank_mode=False))
 
 
@@ -2420,7 +2474,11 @@ def download_temp_form(form_id, token):
     filename = f"{secure_filename(form.title or 'form')}-{_utcnow_naive().strftime('%Y%m%d-%H%M%S')}.pdf"
     _log_no_retention_event(form, 'download_temp')
     _log_pdf_render_event(form, 'download_temp', render_meta, no_retention=True)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
     return _send_ephemeral_file(pdf_path, filename)
 
 
@@ -2505,7 +2563,11 @@ def fill_form(form_id):
                     details=f"form_id={form.id}|unexpected_keys={','.join(unexpected_keys[:20])}",
                 )
             )
-            db.session.commit()
+            try:
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+                current_app.logger.exception("db commit failed")
             if saved_form_id:
                 return redirect(url_for('forms.fill_form', form_id=form.id, saved_form_id=saved_form_id))
             return redirect(url_for('forms.fill_form', form_id=form.id))
@@ -2613,7 +2675,11 @@ def fill_form(form_id):
         target.field_data_json = json.dumps(payload, ensure_ascii=True)
         _save_audit(target.id, 'update', f'Updated action={action}')
         db.session.add(AuditLog(actor_id=current_user.id, action='saved_form_upsert', details=f'form_id={form.id}|saved_form_id={target.id}|status={target.status}|action={action}'))
-        db.session.commit()
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            current_app.logger.exception("db commit failed")
         if action == 'preview_completed':
             return redirect(url_for('forms.preview_saved_form', saved_form_id=target.id))
         if action == 'print_completed':
@@ -2718,7 +2784,11 @@ def preview_saved_form(saved_form_id):
     print_mode = request.args.get('print') == '1'
     sections, role_rows = _build_preview_sections(schema, payload, blank_mode=blank_mode)
     _save_audit(record.id, 'print_preview', f'blank={blank_mode}|print={print_mode}')
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
     return render_template('forms_preview.html', user=current_user, form=form, schema=schema, payload=payload, sections=sections, role_rows=role_rows, blank_mode=blank_mode, print_mode=print_mode, preview_title='Completed Form Preview' if not blank_mode else 'Blank Form Preview', generated_at=_safe_display_dt(_utcnow_naive()), saved_record=record, temp_token='', no_retention_mode=False, preview_pdf_url=url_for('forms.preview_saved_form_pdf', saved_form_id=record.id, blank='1' if blank_mode else '0', v=int(time.time())), preview_pdf_download_name=_preview_pdf_filename(form, blank_mode=blank_mode))
 
 
@@ -2734,7 +2804,11 @@ def preview_saved_form_pdf(saved_form_id):
     blank_mode = request.args.get('blank') == '1'
     pdf_path, render_meta = render_form_pdf(_pdf_source_for_form(form), schema, payload, blank_mode=blank_mode)
     _log_pdf_render_event(form, 'preview_saved_pdf', render_meta, saved_form_id=record.id, no_retention=False)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
     return _send_ephemeral_file(pdf_path, _preview_pdf_filename(form, blank_mode=blank_mode))
 
 
@@ -2812,7 +2886,11 @@ def download_saved_form(saved_form_id):
     pdf_path, render_meta = render_form_pdf(_pdf_source_for_form(form) if form else None, schema, payload, blank_mode=False)
     if form:
         _log_pdf_render_event(form, 'download_saved', render_meta, saved_form_id=record.id, no_retention=False)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
     filename = f"{secure_filename(record.title or 'saved-form')}-{record.id}.pdf"
     return _send_ephemeral_file(pdf_path, filename)
 

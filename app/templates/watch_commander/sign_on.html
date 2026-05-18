@@ -39,7 +39,7 @@
         <h2>{% if is_on_duty %}Update Assignment{% else %}Start Shift{% endif %}</h2>
       </div>
       <form method="post" action="{{ url_for('watch_commander.sign_on') }}">
-        <input type="hidden" name="csrf_token" value="{{ g.csrf_token }}">
+        <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
         <input type="hidden" name="action" value="sign_on">
         <div class="row g-3">
           <div class="col-md-6">

@@ -311,7 +311,7 @@
           </div>
         </div>
         <form class="incident-command-form" method="post" action="{{ url_for('incident_command.add_log') }}">
-          <input type="hidden" name="csrf_token" value="{{ g.csrf_token }}">
+          <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
           <label>Entry Type
             <select name="note_type">
               <option value="incident_command">Command Update</option>

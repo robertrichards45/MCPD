@@ -27,7 +27,7 @@
   <div class="mcpd-header-user">
     {% if portal_is_site_owner|default(false) %}
     <form class="mcpd-demo-toggle-form" method="post" action="{{ url_for('demo.toggle') }}">
-      <input type="hidden" name="csrf_token" value="{{ g.csrf_token }}">
+      <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
       <button class="mcpd-demo-toggle {% if portal_demo_mode|default(false) %}is-on{% endif %}" type="submit">
         {% if portal_demo_mode|default(false) %}Demo On{% else %}Demo Mode{% endif %}
       </button>
@@ -130,7 +130,7 @@
     <strong>Demo Mode</strong>
     <span>{% if portal_demo_mode|default(false) %}Sample data is active{% else %}Owner-only toggle{% endif %}</span>
     <form method="post" action="{{ url_for('demo.toggle') }}">
-      <input type="hidden" name="csrf_token" value="{{ g.csrf_token }}">
+      <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
       <button class="{% if portal_demo_mode|default(false) %}is-on{% endif %}" type="submit">
         {% if portal_demo_mode|default(false) %}Turn Demo Off{% else %}Turn Demo On{% endif %}
       </button>

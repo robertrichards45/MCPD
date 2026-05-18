@@ -74,7 +74,7 @@ def _require_task_creator():
 
 def _require_csrf():
     expected = session.get('_csrf_token', '')
-    supplied = request.form.get('csrf_token') or request.headers.get('X-CSRFToken') or ''
+    supplied = request.form.get('_csrf_token') or request.headers.get('X-CSRFToken') or ''
     if not expected or not hmac.compare_digest(str(expected), str(supplied)):
         abort(400)
 

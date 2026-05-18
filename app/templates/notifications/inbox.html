@@ -19,7 +19,7 @@
     <details class="ops-panel mb-3 collapse-card" id="compose-panel">
       <summary>Compose Message</summary>
       <form method="post" action="{{ url_for('notifications.send') }}" class="mt-3">
-        <input type="hidden" name="csrf_token" value="{{ g.csrf_token }}">
+        <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
         <div class="row g-3">
           <div class="col-md-5">
             <label class="form-label text-dark">Recipient</label>
@@ -83,7 +83,7 @@
         {% if not can_compose and not m.is_broadcast and m.recipient_id == current_user.id %}
         <div class="mt-3 pt-3" style="border-top:1px solid rgba(255,255,255,.08)">
           <form class="reply-form d-flex gap-2 align-items-end" data-msg-id="{{ m.id }}">
-            <input type="hidden" name="csrf_token" value="{{ g.csrf_token }}">
+            <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
             <textarea class="form-control form-control-sm" name="body" rows="2"
               placeholder="Reply to {{ m.sender.display_name }}…" style="flex:1;min-width:0;resize:none;"></textarea>
             <button type="submit" class="btn btn-sm btn-primary" style="white-space:nowrap">Reply</button>

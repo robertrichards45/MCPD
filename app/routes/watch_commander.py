@@ -1,7 +1,7 @@
 import json
 from datetime import date
 
-from flask import Blueprint, abort, flash, jsonify, redirect, render_template, request, session, url_for
+from flask import Blueprint, abort, current_app, flash, jsonify, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_required
 
 from ..extensions import db
@@ -678,8 +678,13 @@ def shift():
             db.session.add(assignment)
             _audit('watch_assignment_changed', f'officer_id={officer.id}|shift_id={item.id}|assignment={assignment.assignment_type}|status={assignment.status}')
 
-        db.session.commit()
-        flash('Shift saved and assignments updated.' if assigned_officer_ids else 'Shift saved.', 'success')
+        try:
+            db.session.commit()
+            flash('Shift saved and assignments updated.' if assigned_officer_ids else 'Shift saved.', 'success')
+        except Exception:
+            db.session.rollback()
+            current_app.logger.exception("db commit failed")
+            flash("A database error occurred. Please try again.", "error")
         return redirect(url_for('watch_commander.shift'))
     shifts = WatchShift.query.order_by(WatchShift.shift_date.desc(), WatchShift.created_at.desc()).limit(30).all()
     return render_template(
@@ -713,8 +718,13 @@ def officers():
         assignment.notes = (request.form.get('notes') or '').strip()
         db.session.add(assignment)
         _audit('watch_assignment_changed', f'officer_id={officer.id}|assignment={assignment.assignment_type}|status={assignment.status}')
-        db.session.commit()
-        flash('Officer assignment updated.', 'success')
+        try:
+            db.session.commit()
+            flash('Officer assignment updated.', 'success')
+        except Exception:
+            db.session.rollback()
+            current_app.logger.exception("db commit failed")
+            flash("A database error occurred. Please try again.", "error")
         return redirect(url_for('watch_commander.officers'))
     rows = []
     for officer in _officers():
@@ -756,8 +766,13 @@ def report_action(packet_id, action):
     if notes:
         packet.supervisor_notes = notes
     _audit(audit_action, f'packet_id={packet.id}|officer_id={packet.officer_user_id}|notes={notes}')
-    db.session.commit()
-    flash('Report review updated.', 'success')
+    try:
+        db.session.commit()
+        flash('Report review updated.', 'success')
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
+        flash("A database error occurred. Please try again.", "error")
     return redirect(url_for('watch_commander.reports'))
 
 
@@ -805,8 +820,13 @@ def blotter():
             return redirect(url_for('watch_commander.blotter'))
         db.session.add(note)
         _audit('watch_note_created', f'note_type={note.note_type}|title={note.title}')
-        db.session.commit()
-        flash('Watch note created.', 'success')
+        try:
+            db.session.commit()
+            flash('Watch note created.', 'success')
+        except Exception:
+            db.session.rollback()
+            current_app.logger.exception("db commit failed")
+            flash("A database error occurred. Please try again.", "error")
         return redirect(url_for('watch_commander.blotter'))
     notes = WatchNote.query.order_by(WatchNote.created_at.desc()).limit(100).all()
     shifts = WatchShift.query.order_by(WatchShift.created_at.desc()).limit(20).all()
@@ -826,8 +846,13 @@ def approvals():
             item.reviewed_by = current_user.id
             item.comments = (request.form.get('comments') or '').strip()
             _audit('watch_approval_updated', f'approval_id={item.id}|status={item.status}|target={item.target_type}:{item.target_id}')
-            db.session.commit()
-            flash('Approval updated.', 'success')
+            try:
+                db.session.commit()
+                flash('Approval updated.', 'success')
+            except Exception:
+                db.session.rollback()
+                current_app.logger.exception("db commit failed")
+                flash("A database error occurred. Please try again.", "error")
         return redirect(url_for('watch_commander.approvals'))
     queues = {
         'Reports pending review': IncidentPacket.query.filter_by(approval_status=PACKET_APPROVAL_PENDING).all(),
@@ -863,8 +888,13 @@ def assignments():
         assignment.notes = (request.form.get('notes') or '').strip()
         db.session.add(assignment)
         _audit('watch_assignment_changed', f'officer_id={officer.id}|shift_id={shift_id or ""}|assignment={assignment.assignment_type}|status={assignment.status}')
-        db.session.commit()
-        flash('Assignment saved.', 'success')
+        try:
+            db.session.commit()
+            flash('Assignment saved.', 'success')
+        except Exception:
+            db.session.rollback()
+            current_app.logger.exception("db commit failed")
+            flash("A database error occurred. Please try again.", "error")
         return redirect(url_for('watch_commander.assignments'))
     assignments = WatchAssignment.query.order_by(WatchAssignment.updated_at.desc()).limit(150).all()
     shifts = WatchShift.query.filter(WatchShift.status != 'CLOSED').order_by(WatchShift.created_at.desc()).all()
@@ -895,8 +925,13 @@ def briefing():
             return redirect(url_for('watch_commander.briefing'))
         db.session.add(brief)
         _audit('shift_brief_created', f'title={brief.title}|status={brief.status}')
-        db.session.commit()
-        flash('Shift brief saved.', 'success')
+        try:
+            db.session.commit()
+            flash('Shift brief saved.', 'success')
+        except Exception:
+            db.session.rollback()
+            current_app.logger.exception("db commit failed")
+            flash("A database error occurred. Please try again.", "error")
         return redirect(url_for('watch_commander.briefing'))
     briefs = ShiftBrief.query.order_by(ShiftBrief.created_at.desc()).limit(50).all()
     shifts = WatchShift.query.order_by(WatchShift.created_at.desc()).limit(20).all()
@@ -912,8 +947,13 @@ def acknowledge_brief(brief_id):
     exists = ShiftBriefAcknowledgement.query.filter_by(brief_id=brief.id, officer_id=current_user.id).first()
     if not exists:
         db.session.add(ShiftBriefAcknowledgement(brief_id=brief.id, officer_id=current_user.id))
-        db.session.commit()
-    flash('Brief acknowledged.', 'success')
+        try:
+            db.session.commit()
+            flash('Brief acknowledged.', 'success')
+        except Exception:
+            db.session.rollback()
+            current_app.logger.exception("db commit failed")
+            flash("A database error occurred. Please try again.", "error")
     return redirect(url_for('watch_commander.briefing'))
 
 
@@ -931,8 +971,13 @@ def notifications():
         )
         db.session.add(note)
         _audit('watch_notification_sent', f'type={note.note_type}|priority={note.priority}|title={note.title}')
-        db.session.commit()
-        flash('Notification saved.', 'success')
+        try:
+            db.session.commit()
+            flash('Notification saved.', 'success')
+        except Exception:
+            db.session.rollback()
+            current_app.logger.exception("db commit failed")
+            flash("A database error occurred. Please try again.", "error")
         return redirect(url_for('watch_commander.notifications'))
     notes = WatchNote.query.order_by(WatchNote.created_at.desc()).limit(60).all()
     return render_template('watch_commander/notifications.html', title='Notifications', user=current_user, notes=notes, officers=_officers())
@@ -1038,7 +1083,12 @@ def api_update_unit_status(officer_id):
         db.session.add(assignment)
     assignment.status = new_status
     _audit('unit_status_changed', f'officer_id={officer.id}|status={new_status}')
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
+        return jsonify({"ok": False, "error": "Database error"}), 500
     return jsonify({'ok': True, 'status': new_status, 'color': _status_color(new_status)})
 
 
@@ -1074,7 +1124,12 @@ def api_update_unit_location():
     assignment.unit_lat = lat
     assignment.unit_lng = lng
     assignment.location_updated_at = utcnow_naive()
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
+        return jsonify({"ok": False, "error": "Database error"}), 500
     return jsonify({'ok': True})
 
 
@@ -1099,7 +1154,11 @@ def sign_on():
             if existing:
                 existing.status = 'Off Duty'
                 existing.updated_at = utcnow_naive()
-                db.session.commit()
+                try:
+                    db.session.commit()
+                except Exception:
+                    db.session.rollback()
+                    current_app.logger.exception("db commit failed")
                 _audit('shift_sign_off', 'self')
             flash('Shift ended. Stay safe out there.', 'success')
             return redirect(url_for('dashboard.dashboard'))
@@ -1123,7 +1182,11 @@ def sign_on():
                 status='On Duty',
             )
             db.session.add(existing)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            current_app.logger.exception("db commit failed")
         _audit('shift_sign_on', f'type={atype}|location={location}')
         flash('Shift started. You are now visible on the unit map.', 'success')
         return redirect(url_for('dashboard.dashboard'))
@@ -1169,7 +1232,11 @@ def api_close_shift():
         a.status = 'Off Duty'
         a.updated_at = utcnow_naive()
         count += 1
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
     _audit('close_shift', f'count={count}|scope={scope_id}')
     return jsonify({'ok': True, 'closed': count})
 
@@ -1218,7 +1285,11 @@ def api_buildings_create():
         notes=(data.get('notes') or '').strip() or None,
     )
     db.session.add(b)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
     _audit('building_created', f'building_id={b.id}|number={b.number}|lat={b.lat}|lng={b.lng}')
     return jsonify({'id': b.id, 'number': b.number, 'lat': b.lat, 'lng': b.lng}), 201
 
@@ -1249,7 +1320,11 @@ def api_buildings_update(building_id):
     if 'notes' in data:
         b.notes = (data['notes'] or '').strip() or None
     b.updated_at = utcnow_naive()
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
     _audit('building_updated', f'building_id={b.id}|number={b.number}')
     return jsonify({'ok': True, 'id': b.id})
 
@@ -1262,7 +1337,11 @@ def api_buildings_delete(building_id):
     b = BaseBuilding.query.get_or_404(building_id)
     bldg_label = f'{b.number} (id={b.id})'
     db.session.delete(b)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
     _audit('building_deleted', f'building={bldg_label}')
     return jsonify({'ok': True})
 

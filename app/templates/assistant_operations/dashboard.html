@@ -100,7 +100,7 @@
           <span class="assistant-ops-badge">AOO</span>
         </div>
         <form method="post" action="{{ url_for('assistant_operations.create_task') }}" class="assistant-ops-form">
-          <input type="hidden" name="csrf_token" value="{{ g.csrf_token }}">
+          <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
           <label>Task Title
             <input name="task_title" required placeholder="Annual OC spray recertification">
           </label>
@@ -327,7 +327,7 @@
             </div>
 
             <form method="post" action="{{ url_for('assistant_operations.update_task', task_pk=task.id, status=selected_status, watch=selected_watch) }}" class="assistant-ops-update-form">
-              <input type="hidden" name="csrf_token" value="{{ g.csrf_token }}">
+              <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
               <div class="assistant-ops-two">
                 <label>Status
                   <select name="status">
@@ -364,7 +364,7 @@
             <div class="assistant-ops-comments">
               <h3>Comments</h3>
               <form method="post" action="{{ url_for('assistant_operations.add_comment', task_pk=task.id) }}">
-                <input type="hidden" name="csrf_token" value="{{ g.csrf_token }}">
+                <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
                 <textarea name="comment_text" rows="2" placeholder="Add status note, blocker, completion detail, or follow-up item." required></textarea>
                 <div class="assistant-ops-two">
                   <label class="assistant-ops-check"><input type="checkbox" name="follow_up_required" value="1"> Follow-up required</label>

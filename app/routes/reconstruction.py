@@ -57,7 +57,11 @@ def case_list():
         )
         db.session.add(row)
         db.session.add(AuditLog(actor_id=current_user.id, action="recon_case_create", details=title))
-        db.session.commit()
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            current_app.logger.exception("db commit failed")
         return redirect(url_for("reconstruction.case_detail", case_id=row.id))
 
     q = (request.args.get("q") or "").strip()
@@ -95,7 +99,11 @@ def case_update(case_id):
     row.updated_at = datetime.utcnow()
     db.session.add(row)
     db.session.add(AuditLog(actor_id=current_user.id, action="recon_case_update", details=str(row.id)))
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
     return redirect(url_for("reconstruction.case_detail", case_id=row.id))
 
 
@@ -113,7 +121,11 @@ def add_vehicle(case_id):
     row.updated_at = datetime.utcnow()
     db.session.add(v)
     db.session.add(row)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
     return redirect(url_for("reconstruction.case_detail", case_id=row.id))
 
 
@@ -134,7 +146,11 @@ def add_measurement(case_id):
     row.updated_at = datetime.utcnow()
     db.session.add(m)
     db.session.add(row)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
     return redirect(url_for("reconstruction.case_detail", case_id=row.id))
 
 
@@ -159,7 +175,11 @@ def upload(case_id):
     db.session.add(att)
     db.session.add(row)
     db.session.add(AuditLog(actor_id=current_user.id, action="recon_upload", details=f"{row.id}:{kind or ''}:{safe_name}"))
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
     return redirect(url_for("reconstruction.case_detail", case_id=row.id))
 
 
@@ -221,5 +241,9 @@ def diagram_save(case_id):
     row.updated_at = datetime.utcnow()
     db.session.add(row)
     db.session.add(AuditLog(actor_id=current_user.id, action="recon_diagram_save", details=str(row.id)))
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
     return {"ok": True}

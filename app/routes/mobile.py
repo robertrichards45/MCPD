@@ -134,7 +134,12 @@ def incident_draft_api():
     draft.updated_at = utcnow_naive()
     db.session.add(draft)
     db.session.add(AuditLog(actor_id=current_user.id, action='mobile_incident_draft_save', details=draft.call_type or 'draft'))
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
+        return jsonify({"ok": False, "error": "Database error"}), 500
     return jsonify({'ok': True, 'draftId': draft.id, 'updatedAt': draft.updated_at.isoformat() if draft.updated_at else None})
 
 
@@ -1248,8 +1253,13 @@ def officer_contact():
         profile.personal_phone = (request.form.get('personal_phone') or '').strip() or None
         profile.personal_email = (request.form.get('personal_email') or '').strip() or None
         db.session.add(AuditLog(actor_id=current_user.id, action='mobile_contact_update', details=current_user.username))
-        db.session.commit()
-        flash('Contact information saved.', 'success')
+        try:
+            db.session.commit()
+            flash('Contact information saved.', 'success')
+        except Exception:
+            db.session.rollback()
+            current_app.logger.exception("db commit failed")
+            flash("A database error occurred. Please try again.", "error")
         return redirect(url_for('mobile.officer_contact'))
     return render_template(
         'mobile_officer_contact.html',
@@ -1411,12 +1421,20 @@ def supervisor_officer_update(user_id):
         )
     )
     db.session.add(target)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
     if target.supervisor_id:
         try:
             if WatchAssignment.query.filter_by(officer_id=target.id).count() == 0:
                 db.session.add(WatchAssignment(officer_id=target.id, assignment_type='Patrol', status='On Duty'))
-                db.session.commit()
+                try:
+                    db.session.commit()
+                except Exception:
+                    db.session.rollback()
+                    current_app.logger.exception("db commit failed")
         except Exception:
             db.session.rollback()
     flash(f'{target.display_name} updated for mobile assignment.', 'success')
@@ -1869,7 +1887,12 @@ def send_packet_api():
         draft.status = 'SENT'
         draft.updated_at = utcnow_naive()
         db.session.add(draft)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
+        return jsonify({"ok": False, "error": "Database error"}), 500
     return jsonify(
         {
             'ok': True,
@@ -2163,5 +2186,10 @@ def supervisor_packet_action(packet_id):
             details=f'packet_id={packet_id}|officer_id={packet.officer_user_id}|notes_len={len(notes)}',
         )
     )
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
+        return jsonify({"ok": False, "error": "Database error"}), 500
     return jsonify({'ok': True, 'approval_status': packet.approval_status})

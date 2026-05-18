@@ -696,8 +696,13 @@ def armory_set_pin():
             details=f'user_id={target_user.id}',
         )
     )
-    db.session.commit()
-    flash(f'RFI PIN updated for {target_user.display_name}.', 'success')
+    try:
+        db.session.commit()
+        flash(f'RFI PIN updated for {target_user.display_name}.', 'success')
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
+        flash("A database error occurred. Please try again.", "error")
     return redirect(url_for('ops_modules.rfi'))
 
 
@@ -750,8 +755,13 @@ def armory_asset_save():
             details=f'{asset_type}|serial={serial_number}|rack={rack_number or ""}',
         )
     )
-    db.session.commit()
-    flash('RFI asset saved.', 'success')
+    try:
+        db.session.commit()
+        flash('RFI asset saved.', 'success')
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
+        flash("A database error occurred. Please try again.", "error")
     return redirect(url_for('ops_modules.rfi'))
 
 
@@ -807,8 +817,13 @@ def armory_asset_import():
             details=f'rows={len(rows)}|inserted={inserted_count}|updated={updated_count}',
         )
     )
-    db.session.commit()
-    flash(f'RFI import complete. Inserted {inserted_count}, updated {updated_count}.', 'success')
+    try:
+        db.session.commit()
+        flash(f'RFI import complete. Inserted {inserted_count}, updated {updated_count}.', 'success')
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
+        flash("A database error occurred. Please try again.", "error")
     return redirect(url_for('ops_modules.rfi'))
 
 
@@ -872,7 +887,11 @@ def rfi_asset_export_csv():
             details=f'rows={len(assets)}|asset_q={asset_q}|asset_status={asset_status}',
         )
     )
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
     return current_app.response_class(
         buffer.getvalue(),
         mimetype='text/csv',
@@ -931,7 +950,11 @@ def rfi_asset_single_export_csv(asset_id):
             details=f'asset_id={asset.id}',
         )
     )
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
     return current_app.response_class(
         buffer.getvalue(),
         mimetype='text/csv',
@@ -974,8 +997,13 @@ def armory_card_issue():
             details=f'user_id={target_user.id}|token={new_card.token_id}',
         )
     )
-    db.session.commit()
-    flash(f'New RFI card issued for {target_user.display_name}.', 'success')
+    try:
+        db.session.commit()
+        flash(f'New RFI card issued for {target_user.display_name}.', 'success')
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
+        flash("A database error occurred. Please try again.", "error")
     return redirect(url_for('ops_modules.rfi'))
 
 
@@ -1016,7 +1044,11 @@ def rfi_cards_print():
             details=f'cards={len(cards)}',
         )
     )
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
     return render_template(
         'armory_cards_print.html',
         title='RFI Cards',
@@ -1090,8 +1122,13 @@ def armory_transaction_save():
             details=f'{action}|user_id={officer.id}|asset_id={asset.id}|serial={asset.serial_number}',
         )
     )
-    db.session.commit()
-    flash(f'RFI {action.lower()} recorded for {officer.display_name}.', 'success')
+    try:
+        db.session.commit()
+        flash(f'RFI {action.lower()} recorded for {officer.display_name}.', 'success')
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
+        flash("A database error occurred. Please try again.", "error")
     return redirect(url_for('ops_modules.rfi'))
 
 
@@ -1143,8 +1180,13 @@ def armory_transaction_void():
             details=f'transaction_id={transaction.id}|reason={void_reason}',
         )
     )
-    db.session.commit()
-    flash('RFI transaction voided.', 'success')
+    try:
+        db.session.commit()
+        flash('RFI transaction voided.', 'success')
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
+        flash("A database error occurred. Please try again.", "error")
     return redirect(url_for('ops_modules.rfi'))
 
 
@@ -1213,7 +1255,11 @@ def rfi_transaction_export_csv(transaction_id):
             details=f'transaction_id={transaction.id}',
         )
     )
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
     return current_app.response_class(
         buffer.getvalue(),
         mimetype='text/csv',
@@ -1271,7 +1317,11 @@ def rfi_export_csv_log():
             details=f'rows={len(transactions)}|date_from={(request.args.get("date_from") or "").strip()}|date_to={(request.args.get("date_to") or "").strip()}',
         )
     )
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
     payload = buffer.getvalue()
     return current_app.response_class(
         payload,
@@ -2110,8 +2160,13 @@ def vehicle_inspection_save():
             details=f'date={inspection_date}|vehicle={vehicle_number}',
         )
     )
-    db.session.commit()
-    flash('Vehicle inspection saved.', 'success')
+    try:
+        db.session.commit()
+        flash('Vehicle inspection saved.', 'success')
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
+        flash("A database error occurred. Please try again.", "error")
     return redirect(url_for('ops_modules.vehicle_inspections', date=inspection_date))
 
 
@@ -2179,8 +2234,13 @@ def vehicle_inspection_sign():
             details=f'inspection_id={inspection.id}|role={sign_role}',
         )
     )
-    db.session.commit()
-    flash('Vehicle inspection signature saved.', 'success')
+    try:
+        db.session.commit()
+        flash('Vehicle inspection signature saved.', 'success')
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
+        flash("A database error occurred. Please try again.", "error")
     return redirect(url_for('ops_modules.vehicle_inspections', date=inspection.inspection_date))
 
 
@@ -2223,8 +2283,13 @@ def vehicle_inspection_return():
             details=f'inspection_id={inspection.id}|reason={correction_reason}',
         )
     )
-    db.session.commit()
-    flash('Vehicle inspection returned for correction.', 'success')
+    try:
+        db.session.commit()
+        flash('Vehicle inspection returned for correction.', 'success')
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
+        flash("A database error occurred. Please try again.", "error")
     return redirect(url_for('ops_modules.vehicle_inspections', date=inspection.inspection_date))
 
 
@@ -2353,7 +2418,11 @@ def vehicle_inspection_export_bundle(inspection_id):
             details=f'id={inspection.id}|date={inspection.inspection_date}',
         )
     )
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
     return send_file(
         path,
         as_attachment=True,
@@ -2416,7 +2485,11 @@ def vehicle_inspection_export_csv(inspection_id):
             details=f'id={inspection.id}|date={inspection.inspection_date}',
         )
     )
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
     return current_app.response_class(
         buffer.getvalue(),
         mimetype='text/csv',
@@ -2483,7 +2556,11 @@ def vehicle_inspection_export_json(inspection_id):
             details=f'id={inspection.id}|date={inspection.inspection_date}',
         )
     )
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
     return current_app.response_class(
         json.dumps(payload, indent=2),
         mimetype='application/json',
@@ -2515,7 +2592,11 @@ def vehicle_inspection_export_day():
             details=f'date={log_date}|count={len(inspections)}|q={search_term}|status={status_filter}',
         )
     )
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
     return send_file(
         zip_path,
         as_attachment=True,
@@ -2582,7 +2663,11 @@ def vehicle_inspection_export_day_csv():
             details=f'date={log_date}|count={len(inspections)}|q={search_term}|status={status_filter}',
         )
     )
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
     return current_app.response_class(
         buffer.getvalue(),
         mimetype='text/csv',
@@ -2670,7 +2755,11 @@ def vehicle_inspection_export_day_json():
             details=f'date={log_date}|count={len(rows)}|q={search_term}|status={status_filter}',
         )
     )
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
     return current_app.response_class(
         json.dumps(payload, indent=2),
         mimetype='application/json',
@@ -2991,7 +3080,11 @@ def truck_gate_database_add():
             details=f"{row['driver_name']}|{row['company_name']}|{row['plate_number']}",
         )
     )
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
 
     created_bits = []
     if result['company_created']:
@@ -3080,7 +3173,11 @@ def truck_gate_import_commit():
             details=f"{result['source_name']} rows={result['row_count']} inserted={result['inserted_count']} updated={result['updated_count']}",
         )
     )
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
     flash('Truck Gate import completed successfully.', 'success')
     return _render_truck_gate(import_result=result)
 
@@ -3129,7 +3226,11 @@ def truck_gate_log_create():
             details=f'{driver.full_name}|{inspection_type or "UNSPECIFIED"}',
         )
     )
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
     build_daily_workbook(log_date)
     flash('Truck Gate log entry saved.', 'success')
     return redirect(url_for('ops_modules.truck_gate_daily_log', log_date=log_date))
@@ -3397,8 +3498,13 @@ def rfi_profile_save():
             details=f'{profile.last_name},{profile.first_name}|rack={profile.rack_number or ""}|radio={profile.radio_identifier or ""}|oc={profile.oc_identifier or ""}',
         )
     )
-    db.session.commit()
-    flash('RFI weapon profile saved.', 'success')
+    try:
+        db.session.commit()
+        flash('RFI weapon profile saved.', 'success')
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
+        flash("A database error occurred. Please try again.", "error")
     return redirect(url_for('ops_modules.rfi'))
 
 
@@ -3437,8 +3543,13 @@ def rfi_profile_reset_defaults():
             details=f'{profile.last_name},{profile.first_name}|rack={profile.rack_number or ""}|radio={profile.radio_identifier or ""}|oc={profile.oc_identifier or ""}',
         )
     )
-    db.session.commit()
-    flash('RFI defaults reapplied.', 'success')
+    try:
+        db.session.commit()
+        flash('RFI defaults reapplied.', 'success')
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
+        flash("A database error occurred. Please try again.", "error")
     return redirect(url_for('ops_modules.rfi', edit_profile_id=profile.id))
 
 
@@ -3517,8 +3628,13 @@ def rfi_appointment_letter_commit():
             details=f'{upload.original_filename}|{last_name},{first_name}|rack={rack_number}',
         )
     )
-    db.session.commit()
-    flash('Pending appointment letter committed into the RFI database.', 'success')
+    try:
+        db.session.commit()
+        flash('Pending appointment letter committed into the RFI database.', 'success')
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
+        flash("A database error occurred. Please try again.", "error")
     return redirect(url_for('ops_modules.rfi'))
 
 
@@ -3562,8 +3678,13 @@ def rfi_appointment_letter_upload():
             details=f'metadata_entries={created}',
         )
     )
-    db.session.commit()
-    flash(f'{created} appointment letter entrie(s) staged for review. The file is not stored; only the extracted info is queued for the RFI weapons list.', 'success')
+    try:
+        db.session.commit()
+        flash(f'{created} appointment letter entrie(s) staged for review. The file is not stored; only the extracted info is queued for the RFI weapons list.', 'success')
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
+        flash("A database error occurred. Please try again.", "error")
     return redirect(url_for('ops_modules.rfi'))
 
 

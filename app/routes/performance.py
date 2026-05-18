@@ -5,7 +5,7 @@ Routes prefix: /performance/
 from datetime import date, datetime, timezone
 
 from flask import (
-    Blueprint, abort, flash, redirect, render_template, request, url_for,
+    Blueprint, abort, current_app, flash, redirect, render_template, request, url_for,
 )
 from flask_login import current_user, login_required
 from sqlalchemy import func
@@ -130,8 +130,13 @@ def submit_entry():
                 status=PERF_STATUS_PENDING,
             )
             db.session.add(sub)
-            db.session.commit()
-            flash(f'Submitted {quantity} × {element.name} — pending supervisor approval.', 'success')
+            try:
+                db.session.commit()
+                flash(f'Submitted {quantity} × {element.name} — pending supervisor approval.', 'success')
+            except Exception:
+                db.session.rollback()
+                current_app.logger.exception("db commit failed")
+                flash("A database error occurred. Please try again.", "error")
             return redirect(url_for('performance.my_stats'))
 
     preselect = request.args.get('element_id', type=int)
@@ -220,8 +225,13 @@ def approve_submission(sub_id):
     sub.reviewed_by    = current_user.id
     sub.review_comment = comment
     sub.reviewed_at    = _now()
-    db.session.commit()
-    flash(f'Approved: {sub.quantity} × {sub.element.name} for {sub.officer.display_name}.', 'success')
+    try:
+        db.session.commit()
+        flash(f'Approved: {sub.quantity} × {sub.element.name} for {sub.officer.display_name}.', 'success')
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
+        flash("A database error occurred. Please try again.", "error")
     return redirect(request.referrer or url_for('performance.pending'))
 
 
@@ -236,8 +246,13 @@ def reject_submission(sub_id):
     sub.reviewed_by    = current_user.id
     sub.review_comment = comment
     sub.reviewed_at    = _now()
-    db.session.commit()
-    flash('Submission rejected.', 'warning')
+    try:
+        db.session.commit()
+        flash('Submission rejected.', 'warning')
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
+        flash("A database error occurred. Please try again.", "error")
     return redirect(request.referrer or url_for('performance.pending'))
 
 
@@ -348,8 +363,13 @@ def element_new():
                 created_by=current_user.id,
             )
             db.session.add(el)
-            db.session.commit()
-            flash(f'"{name}" added for {year}.', 'success')
+            try:
+                db.session.commit()
+                flash(f'"{name}" added for {year}.', 'success')
+            except Exception:
+                db.session.rollback()
+                current_app.logger.exception("db commit failed")
+                flash("A database error occurred. Please try again.", "error")
             return redirect(url_for('performance.elements'))
     return render_template('perf_element_form.html', title='New Element', el=None, year=year, user=current_user)
 
@@ -366,8 +386,13 @@ def element_edit(el_id):
         el.goal_value  = int(request.form.get('goal_value') or el.goal_value)
         el.description = (request.form.get('description') or '').strip() or None
         el.active      = request.form.get('active') == '1'
-        db.session.commit()
-        flash('Element updated.', 'success')
+        try:
+            db.session.commit()
+            flash('Element updated.', 'success')
+        except Exception:
+            db.session.rollback()
+            current_app.logger.exception("db commit failed")
+            flash("A database error occurred. Please try again.", "error")
         return redirect(url_for('performance.elements'))
     return render_template('perf_element_form.html', title='Edit Element', el=el, year=el.year, user=current_user)
 
@@ -379,8 +404,13 @@ def element_deactivate(el_id):
         abort(403)
     el = YearElement.query.get_or_404(el_id)
     el.active = False
-    db.session.commit()
-    flash(f'"{el.name}" deactivated.', 'success')
+    try:
+        db.session.commit()
+        flash(f'"{el.name}" deactivated.', 'success')
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
+        flash("A database error occurred. Please try again.", "error")
     return redirect(url_for('performance.elements'))
 
 
@@ -425,7 +455,11 @@ def year_reset():
                         created_by=current_user.id,
                     ))
 
-            db.session.commit()
+            try:
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+                current_app.logger.exception("db commit failed")
             flash(
                 f'Year reset complete. Active year is now {new_year}.'
                 + (' Elements copied from previous year.' if copy_elements else ''),

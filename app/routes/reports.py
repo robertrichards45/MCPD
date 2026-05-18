@@ -314,8 +314,13 @@ def discard_draft():
     )
     if draft:
         draft.status = 'ABANDONED'
-        db.session.commit()
-        flash('Draft discarded.', 'info')
+        try:
+            db.session.commit()
+            flash('Draft discarded.', 'info')
+        except Exception:
+            db.session.rollback()
+            current_app.logger.exception("db commit failed")
+            flash("A database error occurred. Please try again.", "error")
     return redirect(url_for('reports.list_reports'))
 
 
@@ -515,7 +520,11 @@ def officer_accident_diagram_new():
     )
     db.session.add(row)
     db.session.add(AuditLog(actor_id=current_user.id, action='officer_accident_diagram_create', details='Officer Accident Diagram'))
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
     return redirect(url_for('reports.officer_accident_diagram', diagram_id=row.id))
 
 
@@ -530,7 +539,12 @@ def officer_accident_diagram(diagram_id):
             abort(403)
         _save_reconstruction_diagram_payload(row, request.get_json(silent=True) or {})
         db.session.add(AuditLog(actor_id=current_user.id, action='officer_accident_diagram_save', details=str(row.id)))
-        db.session.commit()
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            current_app.logger.exception("db commit failed")
+            return jsonify({"ok": False, "error": "Database error"}), 500
         return jsonify({'ok': True})
     return render_template(
         'accident_reconstruction_diagram.html',
@@ -556,7 +570,11 @@ def investigator_reconstruction_new():
     )
     db.session.add(row)
     db.session.add(AuditLog(actor_id=current_user.id, action='investigator_reconstruction_create', details='Accident Investigator Reconstruction'))
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
     return redirect(url_for('reports.investigator_reconstruction', reconstruction_id=row.id))
 
 
@@ -580,8 +598,13 @@ def investigator_reconstruction(reconstruction_id):
         row.updated_at = _utcnow_naive()
         db.session.add(row)
         db.session.add(AuditLog(actor_id=current_user.id, action='investigator_reconstruction_update', details=str(row.id)))
-        db.session.commit()
-        flash('Accident investigator reconstruction saved.', 'success')
+        try:
+            db.session.commit()
+            flash('Accident investigator reconstruction saved.', 'success')
+        except Exception:
+            db.session.rollback()
+            current_app.logger.exception("db commit failed")
+            flash("A database error occurred. Please try again.", "error")
         return redirect(url_for('reports.investigator_reconstruction', reconstruction_id=row.id))
     return render_template(
         'accident_reconstruction_detail.html',
@@ -625,7 +648,11 @@ def accident_reconstruction_new():
         )
         db.session.add(row)
         db.session.add(AuditLog(actor_id=current_user.id, action='accident_reconstruction_create', details=title[:120]))
-        db.session.commit()
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            current_app.logger.exception("db commit failed")
         return redirect(url_for('reports.accident_reconstruction_detail', reconstruction_id=row.id))
     return render_template('accident_reconstruction_new.html', user=current_user)
 
@@ -653,7 +680,11 @@ def report_scene_diagram(report_id):
         )
         db.session.add(row)
         db.session.add(AuditLog(actor_id=current_user.id, action='accident_reconstruction_from_report', details=str(report.id)))
-        db.session.commit()
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            current_app.logger.exception("db commit failed")
     return redirect(url_for('reports.accident_reconstruction_diagram', reconstruction_id=row.id))
 
 
@@ -674,8 +705,13 @@ def accident_reconstruction_detail(reconstruction_id):
         row.updated_at = _utcnow_naive()
         db.session.add(row)
         db.session.add(AuditLog(actor_id=current_user.id, action='accident_reconstruction_update', details=str(row.id)))
-        db.session.commit()
-        flash('Accident reconstruction saved.', 'success')
+        try:
+            db.session.commit()
+            flash('Accident reconstruction saved.', 'success')
+        except Exception:
+            db.session.rollback()
+            current_app.logger.exception("db commit failed")
+            flash("A database error occurred. Please try again.", "error")
         return redirect(url_for('reports.accident_reconstruction_detail', reconstruction_id=row.id))
     return render_template(
         'accident_reconstruction_detail.html',
@@ -696,7 +732,12 @@ def accident_reconstruction_diagram(reconstruction_id):
         payload = request.get_json(silent=True) or {}
         _save_reconstruction_diagram_payload(row, payload)
         db.session.add(AuditLog(actor_id=current_user.id, action='accident_reconstruction_diagram_save', details=str(row.id)))
-        db.session.commit()
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            current_app.logger.exception("db commit failed")
+            return jsonify({"ok": False, "error": "Database error"}), 500
         return jsonify({'ok': True})
     return render_template(
         'accident_reconstruction_diagram.html',
@@ -735,7 +776,11 @@ def accident_reconstruction_add_vehicle(reconstruction_id):
     row.updated_at = _utcnow_naive()
     db.session.add(vehicle)
     db.session.add(row)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
     return redirect(url_for('reports.accident_reconstruction_detail', reconstruction_id=row.id))
 
 
@@ -758,7 +803,11 @@ def accident_reconstruction_add_object(reconstruction_id):
     row.updated_at = _utcnow_naive()
     db.session.add(obj)
     db.session.add(row)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
     return redirect(url_for('reports.accident_reconstruction_detail', reconstruction_id=row.id))
 
 
@@ -783,7 +832,11 @@ def accident_reconstruction_add_measurement(reconstruction_id):
     row.updated_at = _utcnow_naive()
     db.session.add(measurement)
     db.session.add(row)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
     return redirect(url_for('reports.accident_reconstruction_detail', reconstruction_id=row.id))
 
 
@@ -816,7 +869,11 @@ def accident_reconstruction_add_media(reconstruction_id):
     row.updated_at = _utcnow_naive()
     db.session.add(item)
     db.session.add(row)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
     return redirect(url_for('reports.accident_reconstruction_detail', reconstruction_id=row.id))
 
 
@@ -841,7 +898,11 @@ def accident_reconstruction_add_timeline(reconstruction_id):
     row.updated_at = _utcnow_naive()
     db.session.add(item)
     db.session.add(row)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
     return redirect(url_for('reports.accident_reconstruction_detail', reconstruction_id=row.id))
 
 
@@ -862,11 +923,19 @@ def new_report():
         if _is_test_report_title(title) and not current_app.config.get('TESTING'):
             flash('Automated stress/test reports are disabled outside the test runner.', 'error')
             db.session.add(AuditLog(actor_id=current_user.id, action='report_test_create_blocked', details=title[:120]))
-            db.session.commit()
+            try:
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+                current_app.logger.exception("db commit failed")
             return redirect(url_for('reports.list_reports'))
         r = Report(title=title, owner_id=current_user.id, status='DRAFT')
         db.session.add(r)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            current_app.logger.exception("db commit failed")
         return redirect(url_for('reports.report_detail', report_id=r.id))
     return render_template('reports_new.html', user=current_user)
 
@@ -921,7 +990,11 @@ def report_upload(report_id):
     db.session.add(att)
     r.updated_at = _utcnow_naive()
     db.session.add(AuditLog(actor_id=current_user.id, action='report_upload', details=f'{r.id}:{page_key}'))
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
     return redirect(url_for('reports.report_detail', report_id=r.id))
 
 
@@ -970,7 +1043,12 @@ def report_photo_upload(report_id):
     db.session.add(attachment)
     db.session.add(report)
     db.session.add(AuditLog(actor_id=current_user.id, action='report_photo_upload', details=f'{report.id}:{filename}'))
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
+        return jsonify({"ok": False, "error": "Database error"}), 500
     return jsonify({'ok': True, 'id': attachment.id, 'detailUrl': url_for('reports.report_detail', report_id=report.id)})
 
 
@@ -1031,7 +1109,11 @@ def report_add_coauthor(report_id):
         if not existing:
             db.session.add(ReportCoAuthor(report_id=r.id, user_id=u.id))
             r.updated_at = _utcnow_naive()
-            db.session.commit()
+            try:
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+                current_app.logger.exception("db commit failed")
     return redirect(url_for('reports.report_detail', report_id=r.id))
 
 
@@ -1044,7 +1126,11 @@ def report_submit(report_id):
     r.status = 'SUBMITTED'
     r.updated_at = _utcnow_naive()
     db.session.add(AuditLog(actor_id=current_user.id, action='report_submit', details=str(r.id)))
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
     return redirect(url_for('reports.report_detail', report_id=r.id))
 
 
@@ -1056,7 +1142,11 @@ def report_return(report_id):
     r.status = 'RETURNED'
     r.updated_at = _utcnow_naive()
     db.session.add(AuditLog(actor_id=current_user.id, action='report_return', details=str(r.id)))
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
     return redirect(url_for('reports.report_detail', report_id=r.id))
 
 
@@ -1079,5 +1169,9 @@ def report_grade(report_id):
     r.updated_at = _utcnow_naive()
     db.session.add(grade)
     db.session.add(AuditLog(actor_id=current_user.id, action='report_grade', details=str(r.id)))
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
     return redirect(url_for('reports.report_detail', report_id=r.id))

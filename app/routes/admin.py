@@ -10,7 +10,7 @@ import subprocess
 import sys
 from uuid import uuid4
 
-from flask import Blueprint, Response, abort, flash, redirect, render_template, request, url_for
+from flask import Blueprint, Response, abort, current_app, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 import os
 
@@ -174,8 +174,13 @@ def create_builder_request():
             details=json.dumps({'request_id': row['id'], 'title': row['title'], 'priority': row['priority']}, sort_keys=True),
         )
     )
-    db.session.commit()
-    flash('Builder request saved.', 'success')
+    try:
+        db.session.commit()
+        flash('Builder request saved.', 'success')
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
+        flash("A database error occurred. Please try again.", "error")
     return redirect(url_for('admin.site_builder'))
 
 
@@ -210,8 +215,13 @@ def update_builder_request_status(request_id):
             details=json.dumps(changed, sort_keys=True),
         )
     )
-    db.session.commit()
-    flash('Builder request status updated.', 'success')
+    try:
+        db.session.commit()
+        flash('Builder request status updated.', 'success')
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
+        flash("A database error occurred. Please try again.", "error")
     return redirect(url_for('admin.site_builder'))
 
 
@@ -403,7 +413,11 @@ def stats_categories():
                         cat.target_value = int(val or 0)
                     except ValueError:
                         cat.target_value = 0
-        db.session.commit()
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            current_app.logger.exception("db commit failed")
         return redirect(url_for('admin.stats_categories'))
 
     categories = StatCategory.query.order_by(StatCategory.name).all()
@@ -431,7 +445,11 @@ def stats_targets_upload():
                 category.target_value = target
             updated += 1
         db.session.add(AuditLog(actor_id=current_user.id, action='stats_targets_upload', details=f'{updated} targets ({layout})'))
-        db.session.commit()
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            current_app.logger.exception("db commit failed")
         return redirect(url_for('admin.stats_categories'))
 
     return render_template('stats_targets_upload.html', user=current_user)
@@ -538,7 +556,11 @@ def legal_corpus_admin():
                     details='manual corpus reindex from admin',
                 )
             )
-            db.session.commit()
+            try:
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+                current_app.logger.exception("db commit failed")
             return redirect(url_for('admin.legal_corpus_admin'))
         if action == 'ingest_sources':
             source = (request.form.get('source') or 'ALL').strip().upper()
@@ -581,7 +603,11 @@ def legal_corpus_admin():
                     ),
                 )
             )
-            db.session.commit()
+            try:
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+                current_app.logger.exception("db commit failed")
             return redirect(url_for('admin.legal_corpus_admin'))
         if action == 'ingest_federal_url':
             source_url = (request.form.get('source_url') or '').strip()
@@ -609,7 +635,11 @@ def legal_corpus_admin():
                     details=f"url={source_url} imported={result.get('federal_usc_written', 0)} warnings={len(ingest_result.warnings)}",
                 )
             )
-            db.session.commit()
+            try:
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+                current_app.logger.exception("db commit failed")
             return redirect(url_for('admin.legal_corpus_admin'))
         if action == 'ingest_source_url':
             source_url = (request.form.get('source_url') or '').strip()
@@ -658,7 +688,11 @@ def legal_corpus_admin():
                     ),
                 )
             )
-            db.session.commit()
+            try:
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+                current_app.logger.exception("db commit failed")
             return redirect(url_for('admin.legal_corpus_admin'))
 
         upload = request.files.get('corpus_file')
@@ -702,7 +736,11 @@ def legal_corpus_admin():
                 details=f"source={source} georgia={result['georgia_written']} ucmj={result['ucmj_written']} base_order={result.get('base_order_written', 0)} federal_usc={result.get('federal_usc_written', 0)}",
             )
         )
-        db.session.commit()
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            current_app.logger.exception("db commit failed")
         return redirect(url_for('admin.legal_corpus_admin'))
 
     return render_template(
@@ -851,8 +889,13 @@ def legal_analytics_clear():
             details='cleared legal query telemetry log',
         )
     )
-    db.session.commit()
-    flash('Legal analytics log cleared.', 'success')
+    try:
+        db.session.commit()
+        flash('Legal analytics log cleared.', 'success')
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
+        flash("A database error occurred. Please try again.", "error")
     return redirect(url_for('admin.legal_analytics'))
 
 
@@ -908,8 +951,13 @@ def legal_analytics_backfill_generate():
             details=f'rows={len(rows)} terms={min(100, len(term_counter))} phrases={min(80, len(phrase_counter))}',
         )
     )
-    db.session.commit()
-    flash(f'Generated backfill queue with {len(rows)} items.', 'success')
+    try:
+        db.session.commit()
+        flash(f'Generated backfill queue with {len(rows)} items.', 'success')
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
+        flash("A database error occurred. Please try again.", "error")
     return redirect(url_for('admin.legal_analytics'))
 
 
@@ -925,8 +973,13 @@ def legal_analytics_backfill_clear():
             details='cleared legal backfill queue',
         )
     )
-    db.session.commit()
-    flash('Backfill queue cleared.', 'success')
+    try:
+        db.session.commit()
+        flash('Backfill queue cleared.', 'success')
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("db commit failed")
+        flash("A database error occurred. Please try again.", "error")
     return redirect(url_for('admin.legal_analytics'))
 
 
@@ -990,7 +1043,11 @@ def legal_federal_review():
                     details=f"action={action} code={changed_code} federal_written={result.get('federal_usc_written', 0)}",
                 )
             )
-            db.session.commit()
+            try:
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+                current_app.logger.exception("db commit failed")
             flash(f'Federal record updated: {changed_code}', 'success')
         else:
             flash('No changes applied.', 'warning')

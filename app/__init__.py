@@ -1,4 +1,4 @@
-from flask import Flask, Response, g, has_request_context, redirect, render_template, request, send_file, session, url_for
+from flask import Flask, Response, abort, g, has_request_context, redirect, render_template, request, send_file, session, url_for
 from flask_login import current_user
 from dotenv import dotenv_values, load_dotenv
 from datetime import datetime, timezone
@@ -666,6 +666,33 @@ def create_app():
         if '_csrf_token' not in session:
             session['_csrf_token'] = secrets.token_hex(32)
         g.csrf_token = session['_csrf_token']
+
+    # Endpoints that legitimately receive POST without a browser CSRF token
+    # (webhooks, external APIs, SSE handshakes, etc.)
+    _CSRF_EXEMPT_PREFIXES = (
+        '/cleo/api/',
+        '/api/',
+        '/notifications/stream',
+        '/watch-commander/api/',
+        '/mobile/api/',
+    )
+
+    @app.before_request
+    def _csrf_protect():
+        if request.method not in {'POST', 'PUT', 'PATCH', 'DELETE'}:
+            return
+        for prefix in _CSRF_EXEMPT_PREFIXES:
+            if request.path.startswith(prefix):
+                return
+        token = (
+            request.form.get('_csrf_token')
+            or request.headers.get('X-CSRFToken')
+            or request.headers.get('X-CSRF-Token')
+            or (request.get_json(silent=True) or {}).get('_csrf_token')
+        )
+        expected = session.get('_csrf_token', '')
+        if not expected or not hmac.compare_digest(str(token or ''), str(expected)):
+            abort(403)
 
     @app.get("/favicon.ico")
     def favicon():
