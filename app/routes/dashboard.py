@@ -725,6 +725,262 @@ def _dispatch_demo_context():
         'unit_status': unit_status,
         'active_incidents': active_incidents,
         'radio_summary': radio_summary,
+        'dispatch_mode_label': 'DEMO DATA',
+        'dispatch_workflow_cards': _dispatch_workflow_cards(is_command=True),
+        'dispatch_preplan_layers': _dispatch_preplan_layers(is_command=True),
+    }
+
+
+def _dispatch_workflow_cards(is_command):
+    """Shortcut cards for a First Due-style command workflow."""
+    if is_command:
+        return [
+            {
+                'label': 'Call Intake',
+                'detail': 'Start a packet, incident draft, or report workflow from the command board.',
+                'endpoint': 'reports.new_report',
+            },
+            {
+                'label': 'Assign Units',
+                'detail': 'Update officer assignments, patrol zones, gate posts, and shift status.',
+                'endpoint': 'watch_commander.officers',
+            },
+            {
+                'label': 'Review Queue',
+                'detail': 'Open submitted reports, saved work, corrections, and supervisor approvals.',
+                'endpoint': 'watch_commander.approvals',
+            },
+            {
+                'label': 'Shift Brief',
+                'detail': 'Publish watch notes, BOLO reminders, safety notes, and assignment updates.',
+                'endpoint': 'watch_commander.briefing',
+            },
+        ]
+    return [
+        {
+            'label': 'Start Report',
+            'detail': 'Create a new report or resume field reporting from your dashboard.',
+            'endpoint': 'reports.new_report',
+        },
+        {
+            'label': 'My Reports',
+            'detail': 'Review active packets, drafts, and returned correction items.',
+            'endpoint': 'reports.list_reports',
+        },
+        {
+            'label': 'Law Lookup',
+            'detail': 'Search approved references and add matching law/order notes to reports.',
+            'endpoint': 'legal.legal_home',
+        },
+        {
+            'label': 'Saved Work',
+            'detail': 'Resume saved forms, report drafts, and unfinished packets.',
+            'endpoint': 'forms.saved_forms',
+        },
+    ]
+
+
+def _dispatch_preplan_layers(is_command):
+    return [
+        {
+            'label': 'Installation Map',
+            'detail': 'Base map, primary gates, road grid, and common response zones.',
+            'endpoint': 'dashboard.dispatch_command_center',
+        },
+        {
+            'label': 'Units / Assignments',
+            'detail': 'Officer status, post assignment, patrol area, and live unit roster.',
+            'endpoint': 'watch_commander.unit_map' if is_command else 'mobile.home',
+        },
+        {
+            'label': 'Incidents / BOLOs',
+            'detail': 'Active incident drafts, submitted packets, BOLOs, and command alerts.',
+            'endpoint': 'watch_commander.dashboard' if is_command else 'announcements.board',
+        },
+        {
+            'label': 'Reports / Media',
+            'detail': 'Reports, accident diagrams, bodycam footage, saved forms, and photos.',
+            'endpoint': 'reports.list_reports',
+        },
+    ]
+
+
+def _dispatch_live_context():
+    is_command = bool(current_user.can_manage_team())
+    now = datetime.now().strftime('%H%M')
+    if is_command:
+        drafts = _safe_all(
+            'dispatch_live_drafts',
+            IncidentDraft.query.filter_by(status='ACTIVE').order_by(IncidentDraft.updated_at.desc()),
+            20,
+        )
+        packets = _safe_all(
+            'dispatch_live_packets',
+            IncidentPacket.query.order_by(IncidentPacket.submitted_at.desc()),
+            50,
+        )
+        assignments = _safe_all(
+            'dispatch_live_assignments',
+            WatchAssignment.query.filter(~WatchAssignment.status.in_(['Off Duty', 'Leave'])).order_by(
+                WatchAssignment.updated_at.desc(),
+                WatchAssignment.id.desc(),
+            ),
+            80,
+        )
+        active_bolos = _safe_all(
+            'dispatch_live_bolos',
+            BOLOEntry.query.filter_by(status='ACTIVE').order_by(BOLOEntry.created_at.desc()),
+            12,
+        )
+        active_rosters = _safe_count(
+            'dispatch_live_training_rosters',
+            TrainingRoster.query.filter(TrainingRoster.status.ilike('ACTIVE')),
+        )
+        pending_approvals = _safe_count(
+            'dispatch_live_approvals',
+            WatchApproval.query.filter_by(status='PENDING'),
+        )
+        shift_notes = _safe_all(
+            'dispatch_live_shift_notes',
+            WatchNote.query.order_by(WatchNote.created_at.desc()),
+            8,
+        )
+        open_shift = _safe_first(
+            'dispatch_live_open_shift',
+            WatchShift.query.filter(WatchShift.status != 'CLOSED').order_by(WatchShift.created_at.desc()),
+        )
+    else:
+        drafts = _safe_all(
+            'dispatch_live_user_drafts',
+            IncidentDraft.query.filter_by(officer_user_id=current_user.id, status='ACTIVE').order_by(
+                IncidentDraft.updated_at.desc()
+            ),
+            8,
+        )
+        packets = _safe_all(
+            'dispatch_live_user_packets',
+            IncidentPacket.query.filter_by(officer_user_id=current_user.id).order_by(IncidentPacket.submitted_at.desc()),
+            20,
+        )
+        assignments = _safe_all(
+            'dispatch_live_user_assignments',
+            WatchAssignment.query.filter_by(officer_id=current_user.id).order_by(
+                WatchAssignment.updated_at.desc(),
+                WatchAssignment.id.desc(),
+            ),
+            10,
+        )
+        active_bolos = []
+        active_rosters = 0
+        pending_approvals = 0
+        shift_notes = []
+        open_shift = None
+
+    pending_packets = [packet for packet in packets if packet.approval_status == PACKET_APPROVAL_PENDING]
+    correction_packets = [packet for packet in packets if packet.approval_status == PACKET_APPROVAL_NEEDS_CORRECTION]
+    approved_packets = [packet for packet in packets if packet.approval_status == PACKET_APPROVAL_APPROVED]
+
+    dispatch_summary = {
+        'current_time': now,
+        'shift_name': f'{open_shift.shift_type} / {open_shift.status}' if open_shift else 'Live Operational View',
+        'shift_status': 'Real-time data — unit positions update every 20s',
+    }
+    dispatch_metrics = [
+        {
+            'label': 'Units Visible',
+            'value': len(assignments),
+            'detail': 'Active unit/post assignments available to this view',
+        },
+        {
+            'label': 'Active Incidents',
+            'value': len(drafts),
+            'detail': 'Open field drafts and active incident work',
+        },
+        {
+            'label': 'Pending Reports',
+            'value': len(pending_packets),
+            'detail': 'Report packets waiting for supervisor review',
+        },
+        {
+            'label': 'Corrections',
+            'value': len(correction_packets),
+            'detail': 'Returned packets needing officer action',
+        },
+        {
+            'label': 'BOLOs',
+            'value': len(active_bolos),
+            'detail': 'Active alerts in the command picture',
+        },
+        {
+            'label': 'Approvals',
+            'value': pending_approvals,
+            'detail': 'Watch Commander approval actions pending',
+        },
+    ]
+
+    active_incidents = []
+    for draft in drafts[:5]:
+        active_incidents.append({
+            'title': draft.call_type or 'Active Incident Draft',
+            'detail': draft.location or draft.summary or 'Field draft missing location',
+            'priority': 'Active',
+            'state_class': 'busy',
+        })
+    for packet in pending_packets[:4]:
+        active_incidents.append({
+            'title': packet.call_type or 'Submitted Report Packet',
+            'detail': packet.location or packet.summary or 'Supervisor review required',
+            'priority': 'Review',
+            'state_class': 'busy',
+        })
+    for packet in correction_packets[:3]:
+        active_incidents.append({
+            'title': packet.call_type or 'Correction Packet',
+            'detail': packet.supervisor_notes or packet.location or 'Corrections requested',
+            'priority': 'Correct',
+            'state_class': 'alert',
+        })
+    for bolo in active_bolos[:3]:
+        active_incidents.append({
+            'title': bolo.subject_name or 'Active BOLO',
+            'detail': bolo.offense or bolo.description or bolo.vehicle_description or 'Command alert',
+            'priority': bolo.threat_level or 'BOLO',
+            'state_class': 'alert',
+        })
+    for note in shift_notes[:2]:
+        active_incidents.append({
+            'title': note.title,
+            'detail': note.body[:140],
+            'priority': note.priority or 'Note',
+            'state_class': '',
+        })
+    if not active_incidents:
+        active_incidents.append({
+            'title': 'No Active Incidents',
+            'detail': 'No active incident drafts, BOLOs, or review alerts are visible right now.',
+            'priority': 'Clear',
+            'state_class': '',
+        })
+
+    total_packets = len(packets)
+    clearance = round((len(approved_packets) / total_packets) * 100) if total_packets else 100
+    radio_summary = (
+        f"Live board: {len(assignments)} visible unit assignment(s), {len(drafts)} active incident draft(s), "
+        f"{len(pending_packets)} packet(s) pending review, {len(correction_packets)} correction item(s), "
+        f"{len(active_bolos)} active BOLO(s), and {pending_approvals} pending approval action(s). "
+        f"Recent packet clearance is {clearance}%. Verify all operational facts before command action."
+    )
+    if active_rosters:
+        radio_summary += f" Training oversight has {active_rosters} active roster(s) requiring monitoring."
+
+    return {
+        'dispatch_summary': dispatch_summary,
+        'dispatch_metrics': dispatch_metrics,
+        'active_incidents': active_incidents[:12],
+        'radio_summary': radio_summary,
+        'dispatch_mode_label': 'LIVE DATA',
+        'dispatch_workflow_cards': _dispatch_workflow_cards(is_command=is_command),
+        'dispatch_preplan_layers': _dispatch_preplan_layers(is_command=is_command),
     }
 
 
@@ -804,11 +1060,7 @@ def dispatch_command_center():
     if demo:
         ctx.update(_dispatch_demo_context())
     else:
-        ctx['dispatch_summary'] = {
-            'current_time': datetime.now().strftime('%H%M'),
-            'shift_name': 'Live Operational View',
-            'shift_status': 'Real-time data — unit positions update every 20s',
-        }
+        ctx.update(_dispatch_live_context())
     return _no_store_response(
         render_template(
             'dispatch_command_center.html',

@@ -206,6 +206,71 @@
 }
 .command-radio-box strong { color:#bbf7d0; display:block; margin-bottom:6px; }
 .command-radio-box p { color:#d1fae5; margin:0; line-height:1.45; }
+.command-card-list {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+}
+.command-mini-card,
+.command-layer-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 74px;
+  padding: 13px 14px;
+  border: 1px solid rgba(148,163,184,0.20);
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(15,23,42,0.76), rgba(30,41,59,0.56));
+  color: #e5edf7;
+  text-decoration: none;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+}
+.command-mini-card:hover,
+.command-layer-card:hover {
+  border-color: rgba(96,165,250,0.44);
+  background: linear-gradient(135deg, rgba(30,64,175,0.32), rgba(15,23,42,0.76));
+  text-decoration: none;
+}
+.command-mini-card strong,
+.command-layer-card strong {
+  display: block;
+  color: #f8fafc;
+  font-size: .94rem;
+}
+.command-mini-card small,
+.command-layer-card small {
+  display: block;
+  margin-top: 4px;
+  color: #a8b5c6;
+  line-height: 1.35;
+}
+.command-mini-card b {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  border-radius: 12px;
+  background: rgba(37,99,235,0.28);
+  color: #bfdbfe;
+  font-size: 1.2rem;
+}
+.command-workflow-grid {
+  grid-template-columns: minmax(320px, .9fr) minmax(420px, 1.75fr);
+  margin-top: 16px;
+}
+.command-layer-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 14px;
+}
+.command-layer-card {
+  align-items: flex-start;
+  justify-content: flex-start;
+  min-height: 112px;
+}
 .command-actions {
   display: flex;
   flex-wrap: wrap;
@@ -228,7 +293,9 @@
 .command-action-btn:hover { background: rgba(30,64,175,0.34); text-decoration: none; }
 @media (max-width: 1200px) {
   .command-metrics-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .command-grid { grid-template-columns: 1fr; }
+  .command-grid,
+  .command-workflow-grid { grid-template-columns: 1fr; }
+  .command-layer-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 767px) {
   .command-center { margin-left:0; padding: 86px 14px calc(var(--mobile-dock-height, 92px) + env(safe-area-inset-bottom) + 24px); }
@@ -238,4 +305,6 @@
   .command-map-panel { min-height: 420px; }
   .command-map-shell { min-height: 360px; }
   .command-map-area { inset: 18px; }
+  .command-mini-card,
+  .command-layer-card { min-height: 68px; padding: 12px; }
 }

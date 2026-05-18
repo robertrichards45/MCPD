@@ -172,10 +172,10 @@
         <h1>Dispatch / Command Center</h1>
         <p>Live operational view — real-time unit positions, status tracking, inline messaging, active incidents, and shift control.</p>
         <div class="command-badge-row">
-          <span class="command-badge">LIVE TRACKING</span>
+          <span class="command-badge">{{ dispatch_mode_label|default('LIVE DATA') }}</span>
           <span class="command-badge">INLINE MESSAGING</span>
           <span class="command-badge">SHIFT CONTROL</span>
-          <span class="command-badge">OFFLINE MAP</span>
+          <span class="command-badge">PRE-PLAN / GIS</span>
         </div>
       </div>
       <div class="command-clock-card">
@@ -185,7 +185,6 @@
       </div>
     </section>
 
-    {% if demo %}
     <section class="command-metrics-grid" aria-label="Command center metrics">
       {% for metric in dispatch_metrics %}
       <article class="command-metric">
@@ -195,7 +194,6 @@
       </article>
       {% endfor %}
     </section>
-    {% endif %}
 
     <!-- ── Full-width operational map ──────────────────────────── -->
     <section style="margin-bottom:16px;">
@@ -272,8 +270,7 @@
       </article>
     </section>
 
-    {% if demo %}
-    <!-- ── Unit status + Active incidents (demo only) ─────────── -->
+    <!-- ── Live command queues ─────────────────────────────────── -->
     <section class="command-grid">
       <article class="command-panel" style="grid-column: span 1;">
         <div class="command-panel-head">
@@ -304,7 +301,41 @@
         </div>
       </article>
     </section>
-    {% endif %}
+
+    <section class="command-grid command-workflow-grid" aria-label="Dispatch workflows and pre-plan layers">
+      <article class="command-panel">
+        <div class="command-panel-head">
+          <h2>Response Workflow</h2>
+          <span>Next Actions</span>
+        </div>
+        <div class="command-card-list">
+          {% for card in dispatch_workflow_cards %}
+          <a class="command-mini-card" href="{{ url_for(card.endpoint) }}">
+            <span>
+              <strong>{{ card.label }}</strong>
+              <small>{{ card.detail }}</small>
+            </span>
+            <b aria-hidden="true">→</b>
+          </a>
+          {% endfor %}
+        </div>
+      </article>
+
+      <article class="command-panel" style="grid-column: span 2;">
+        <div class="command-panel-head">
+          <h2>Pre-plan / GIS Layers</h2>
+          <span>Operational Context</span>
+        </div>
+        <div class="command-layer-grid">
+          {% for layer in dispatch_preplan_layers %}
+          <a class="command-layer-card" href="{{ url_for(layer.endpoint) }}">
+            <strong>{{ layer.label }}</strong>
+            <small>{{ layer.detail }}</small>
+          </a>
+          {% endfor %}
+        </div>
+      </article>
+    </section>
 
     <section class="command-actions" aria-label="Command center actions">
       <a class="command-action-btn" href="{{ url_for('watch_commander.dashboard') }}">Watch Commander Hub</a>
