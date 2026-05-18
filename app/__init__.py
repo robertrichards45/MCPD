@@ -260,15 +260,20 @@ def seed_admin():
 
 
 def seed_roles():
-    existing = {role.key for role in Role.query.all()}
-    changed = False
-    for role_key in ALL_PORTAL_ROLES:
-        if role_key in existing:
-            continue
-        db.session.add(Role(key=role_key, label=ROLE_LABELS.get(role_key, role_key.replace('_', ' ').title())))
-        changed = True
-    if changed:
-        db.session.commit()
+    _log = logging.getLogger(__name__)
+    try:
+        existing = {role.key for role in Role.query.all()}
+        changed = False
+        for role_key in ALL_PORTAL_ROLES:
+            if role_key in existing:
+                continue
+            db.session.add(Role(key=role_key, label=ROLE_LABELS.get(role_key, role_key.replace('_', ' ').title())))
+            changed = True
+        if changed:
+            db.session.commit()
+    except Exception:
+        db.session.rollback()
+        _log.exception('Role bootstrap failed')
 
 
 def _safe_schema_execute(statement, params=None):

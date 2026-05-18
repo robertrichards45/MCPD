@@ -1,8 +1,11 @@
-﻿import os
+﻿import logging
+import os
 import json
 from datetime import datetime
 from flask import Blueprint, request, jsonify, abort, current_app, send_file, render_template, redirect, url_for
 from flask_login import login_required, current_user
+
+_log = logging.getLogger(__name__)
 from ..extensions import db
 from ..models import CleoFormData, CleoFormLayout, CleoFormFile, CleoReport, CleoReportPage, CleoReportGrade, CleoReportAnnotation, User
 from ..permissions import can_manage_site, can_manage_team, can_view_user, can_grade_cleoc_reports
@@ -266,7 +269,7 @@ def cleo_file_delete(file_id):
         if os.path.exists(row.file_path):
             os.remove(row.file_path)
     except Exception:
-        pass
+        _log.exception('Failed to delete cleo file at %s (file_id=%s)', row.file_path, file_id)
     db.session.delete(row)
     db.session.commit()
     return jsonify({'ok': True})
