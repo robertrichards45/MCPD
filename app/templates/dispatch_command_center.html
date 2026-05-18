@@ -589,7 +589,9 @@
           if (ex) {
             ex.setLatLng([u.lat, u.lng]);
             ex.setIcon(unitIcon(u.color));
-            ex.setPopupContent(buildPopup(u));
+            if (!ex.isPopupOpen()) {
+              ex.setPopupContent(buildPopup(u));
+            }
             ex.setTooltipContent(u.name + ' — ' + u.status);
           } else {
             var m = L.marker([u.lat, u.lng], { icon: unitIcon(u.color) })
