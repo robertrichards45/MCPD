@@ -2301,15 +2301,51 @@ body[data-theme="dark"] .n5w-quality-inner {
 /* ── Dark mode ────────────────────────────────────────────────── */
 body[data-theme="dark"] .assistant-ops-hero { background: linear-gradient(135deg, #030d1a 0%, #071b33 100%); }
 body[data-theme="dark"] .assistant-ops-kpis article { background: #0d1828; border-color: #26374d; }
-body[data-theme="dark"] .assistant-ops-panel { background: #0d1828; border-color: #26374d; }
+body[data-theme="dark"] .assistant-ops-kpis article span { color: #8ba5c0; }
+body[data-theme="dark"] .assistant-ops-kpis article strong { color: #e5edf6; }
+body[data-theme="dark"] .assistant-ops-kpis article small { color: #8ba5c0; }
+body[data-theme="dark"] .assistant-ops-panel { background: #0d1828; border-color: #26374d; color: #e5edf6; }
+body[data-theme="dark"] .assistant-ops-panel-head h2 { color: #e5edf6; }
 body[data-theme="dark"] .assistant-ops-task-card { border-color: #26374d; }
-body[data-theme="dark"] .assistant-ops-task-card > summary { background: #0d1828; }
+body[data-theme="dark"] .assistant-ops-task-card > summary {
+  background: #0d1828;
+  color: #e5edf6;
+}
+body[data-theme="dark"] .assistant-ops-task-card > summary strong { color: #e5edf6; }
+body[data-theme="dark"] .assistant-ops-task-card > summary small { color: #8ba5c0; }
 body[data-theme="dark"] .assistant-ops-task-card[open] > summary { border-color: #26374d; }
+/* Status pills: replace light pastels with dark-mode variants */
+body[data-theme="dark"] .assistant-ops-status { background: rgba(148,163,184,.14); color: #cbd5e1; }
+body[data-theme="dark"] .assistant-ops-status.status-in-progress   { background: rgba(59,130,246,.18); color: #93c5fd; }
+body[data-theme="dark"] .assistant-ops-status.status-complete,
+body[data-theme="dark"] .assistant-ops-status.status-completed     { background: rgba(52,211,153,.15); color: #6ee7b7; }
+body[data-theme="dark"] .assistant-ops-status.status-overdue,
+body[data-theme="dark"] .assistant-ops-status.status-past-due      { background: rgba(248,113,113,.18); color: #fca5a5; }
+body[data-theme="dark"] .assistant-ops-status.status-command-critical { background: rgba(251,191,36,.16); color: #fde68a; }
+body[data-theme="dark"] .assistant-ops-status.status-cancelled     { background: rgba(100,116,139,.15); color: #94a3b8; }
+body[data-theme="dark"] .assistant-ops-due { color: #8ba5c0; }
+body[data-theme="dark"] .assistant-ops-due.is-danger { color: #fca5a5; }
+body[data-theme="dark"] .assistant-ops-percent { color: #7eb5f5; }
 body[data-theme="dark"] .assistant-ops-update-form { background: #060f1c; border-color: #26374d; }
 body[data-theme="dark"] .assistant-ops-comment-list > div { border-color: #26374d; }
+/* Form inputs inside assistant-ops panels need a visible border against the dark panel bg */
+body[data-theme="dark"] .assistant-ops-form input,
+body[data-theme="dark"] .assistant-ops-form select,
+body[data-theme="dark"] .assistant-ops-form textarea {
+  background: #060f1c !important;
+  border-color: rgba(148, 163, 184, 0.40) !important;
+  color: #e5edf6 !important;
+}
 body[data-theme="dark"] .assistant-ops-filters select { background: #0d1828; border-color: #26374d; color: #e8edf4; }
 body[data-theme="dark"] .assistant-ops-task-copy dl div { border-color: #1a2635; }
+body[data-theme="dark"] .assistant-ops-task-copy dt { color: #8ba5c0; }
+body[data-theme="dark"] .assistant-ops-task-copy dd { color: #e5edf6; }
+body[data-theme="dark"] .assistant-ops-task-copy p { color: #cbd5e1; }
 body[data-theme="dark"] .assistant-ops-ring span { background: #0d1828; }
+body[data-theme="dark"] .assistant-ops-empty { color: #8ba5c0; }
+body[data-theme="dark"] .assistant-ops-readiness-row strong { color: #e5edf6; }
+body[data-theme="dark"] .assistant-ops-readiness-row small { color: #8ba5c0; }
+body[data-theme="dark"] .assistant-ops-readiness-row b { color: #e5edf6; }
 
 /* ── Mobile responsive ────────────────────────────────────────── */
 @media (max-width: 600px) {

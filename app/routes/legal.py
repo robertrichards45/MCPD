@@ -949,13 +949,12 @@ def _order_reference_matches(query: str, related_terms: tuple[str, ...] | list[s
         return []
     from .orders import _filtered_orders
 
-    combined_query = ' '.join(
-        part for part in [clean_query, ' '.join(_dedupe_phrases(related_terms, limit=4))] if part.strip()
-    ).strip()
-    # Law Lookup has its own AI read of the incident statement. Use the local
-    # approved-order index here so one law search does not trigger a second,
-    # slower AI expansion pass from Orders & Memos.
-    documents = _filtered_orders(combined_query, status_filter='ACTIVE')
+    # Score against the original incident statement only.
+    # Including AI-expanded policy terms (combined_query) causes generic
+    # police vocabulary like "vehicle", "traffic", "accident" to match
+    # nearly every order in the corpus at 99%, flooding results with
+    # unrelated documents (weapons storage, CAC cards, timekeeping, etc.).
+    documents = _filtered_orders(clean_query, status_filter='ACTIVE')
     matches = []
     query_terms = {
         term for term in _tokenize(clean_query)
@@ -963,6 +962,7 @@ def _order_reference_matches(query: str, related_terms: tuple[str, ...] | list[s
     }
     for document in documents:
         reasons = list(getattr(document, 'match_reasons', []) or [])[:4]
+        confidence = getattr(document, 'search_confidence', 0)
         searchable_text = ' '.join((
             document.title or '',
             document.summary or '',
@@ -978,7 +978,10 @@ def _order_reference_matches(query: str, related_terms: tuple[str, ...] | list[s
         )
         if stopword_only_reason:
             continue
-        if not meaningful_overlap and getattr(document, 'search_confidence', 0) < 70:
+        # Require both meaningful term overlap AND a minimum confidence score.
+        # Without the confidence floor, any document containing a single
+        # common word (e.g. "back", "car") passes through regardless of relevance.
+        if not meaningful_overlap or confidence < 55:
             continue
         matches.append(
             {
@@ -987,7 +990,7 @@ def _order_reference_matches(query: str, related_terms: tuple[str, ...] | list[s
                 'source_type': document.source_type or 'LOCAL_DOCUMENT',
                 'order_number': document.order_number or document.memo_number or '',
                 'snippet': document.match_snippet or document.summary or '',
-                'confidence': getattr(document, 'search_confidence', 0),
+                'confidence': confidence,
                 'reasons': reasons,
                 'download_available': bool(getattr(document, 'download_available', False)),
             }
