@@ -250,7 +250,7 @@
     }
     connectSSE();
 
-    /* ── Poll unread count every 30 s ── */
+    /* ── Poll unread count every 8 s ── */
     function pollUnread() {
       fetch('/notifications/unread')
         .then(function (r) { return r.json(); })
@@ -258,7 +258,7 @@
         .catch(function () {});
     }
     pollUnread();
-    setInterval(pollUnread, 30000);
+    setInterval(pollUnread, 8000);
   }());
   </script>
   {% endif %}
