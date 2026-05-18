@@ -138,11 +138,11 @@
   <script>
   /* ── Location reporter ──────────────────────────────────────────────────
      Uses watchPosition so tracking persists across page navigations.
-     Throttled to one push per 5 minutes to conserve bandwidth.          */
+     Throttled to one push per 60 seconds to balance bandwidth and freshness. */
   (function () {
     if (!navigator.geolocation) return;
     var KEY      = 'mcpd-loc-ts';
-    var INTERVAL = 5 * 60 * 1000;
+    var INTERVAL = 60 * 1000;
     var csrf     = (document.querySelector('meta[name="csrf-token"]') || {}).content || '';
 
     function push(lat, lng) {
@@ -168,18 +168,16 @@
       { timeout: 10000, maximumAge: 120000, enableHighAccuracy: false }
     );
 
-    /* Immediate push on load if overdue */
-    if (Date.now() - _lastPush >= INTERVAL) {
-      navigator.geolocation.getCurrentPosition(
-        function (pos) {
-          push(pos.coords.latitude, pos.coords.longitude);
-          _lastPush = Date.now();
-          localStorage.setItem(KEY, _lastPush);
-        },
-        function () {},
-        { timeout: 8000, maximumAge: 60000, enableHighAccuracy: false }
-      );
-    }
+    /* Always push on first page load to register position immediately */
+    navigator.geolocation.getCurrentPosition(
+      function (pos) {
+        push(pos.coords.latitude, pos.coords.longitude);
+        _lastPush = Date.now();
+        localStorage.setItem(KEY, _lastPush);
+      },
+      function () {},
+      { timeout: 8000, maximumAge: 30000, enableHighAccuracy: false }
+    );
   }());
   </script>
 
