@@ -735,6 +735,8 @@ def register():
 def logout():
     from flask_login import logout_user
 
+    for key in ('demo_mode', 'demo_batch_id', 'demo_viewing_as', 'demo_controller_id'):
+        session.pop(key, None)
     logout_user()
     return redirect(url_for('auth.landing'))
 
