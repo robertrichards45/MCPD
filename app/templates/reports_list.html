@@ -40,6 +40,49 @@
       </div>
     </section>
 
+    <section class="ops-panel report-center-panel report-command-board" aria-label="Report operating picture">
+      <div class="report-panel-head">
+        <div>
+          <h3 class="mb-1">Report Operating Picture</h3>
+          <p class="text-muted mb-0">Live packet status, workflow steps, and command actions in one view.</p>
+        </div>
+        <span class="badge bg-primary">Live Queue</span>
+      </div>
+      <div class="report-ops-metrics">
+        {% for metric in report_ops_metrics %}
+        <article class="report-ops-metric is-{{ metric.tone }}">
+          <span>{{ metric.label }}</span>
+          <strong>{{ metric.value }}</strong>
+          <small>{{ metric.detail }}</small>
+        </article>
+        {% endfor %}
+      </div>
+      <div class="report-command-grid">
+        <div class="report-workflow-strip">
+          {% for step in report_workflow_steps %}
+          <article class="report-workflow-step">
+            <span>{{ loop.index }}</span>
+            <div>
+              <strong>{{ step.label }}</strong>
+              <small>{{ step.detail }}</small>
+            </div>
+          </article>
+          {% endfor %}
+        </div>
+        <div class="report-queue-card-list">
+          {% for card in report_queue_cards %}
+          <a class="report-queue-card is-{{ card.tone }}" href="{{ url_for(card.endpoint) }}">
+            <span>
+              <strong>{{ card.label }}</strong>
+              <small>{{ card.detail }}</small>
+            </span>
+            <b>{{ card.action }}</b>
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+
     <section class="ops-panel report-center-panel report-intake-panel">
       <div class="report-panel-head">
         <div>
@@ -100,6 +143,37 @@
     {% endif %}
 
     <div class="report-center-grid">
+      <section class="ops-panel report-center-panel">
+        <div class="report-panel-head">
+          <div>
+            <h3 class="mb-1">Submitted Field Packets</h3>
+            <p class="text-muted mb-0">Mobile/desktop packet status from the field workflow.</p>
+          </div>
+          <span class="badge bg-dark">{{ incident_packets|length }}</span>
+        </div>
+        <div class="report-hub-list report-packet-list">
+          {% for packet in incident_packets[:8] %}
+          <article class="result-card report-hub-card report-packet-card">
+            <div class="result-head">
+              <h4>#{{ packet.id }} {{ packet.call_type or 'Incident Packet' }}</h4>
+              <span class="badge {% if packet.approval_status == 'NEEDS_CORRECTION' %}bg-danger{% elif packet.approval_status == 'APPROVED' %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                {{ packet.approval_status.replace('_', ' ') }}
+              </span>
+            </div>
+            <p class="result-sub">
+              {{ packet.location or 'Location not entered' }}
+              {% if packet.submitted_at %} / Submitted {{ packet.submitted_at.strftime('%Y-%m-%d %H:%M') }}{% endif %}
+            </p>
+            {% if packet.summary %}
+              <p class="text-muted mb-2">{{ packet.summary }}</p>
+            {% endif %}
+          </article>
+          {% else %}
+          <div class="report-empty-state">No submitted field packets are visible yet.</div>
+          {% endfor %}
+        </div>
+      </section>
+
       <section class="ops-panel report-center-panel">
         <div class="report-panel-head">
           <div>

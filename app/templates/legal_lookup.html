@@ -8,7 +8,7 @@
     </div>
     {% set lead_item = lead_result if lead_result is defined else (results[0] if results else None) %}
 
-    <section class="search-hero legal-hero authority-hero mb-3">
+    <section class="search-hero legal-hero authority-hero legal-command-hero mb-3">
       <div class="search-hero-copy">
         <div class="eyebrow">{{ page_title }}</div>
         <h1>{{ page_subtitle }}</h1>
@@ -33,36 +33,53 @@
       </div>
     </section>
 
-    <div class="ops-panel mb-3 search-panel ops-search-shell authority-search-shell">
+    <div class="ops-panel mb-3 search-panel ops-search-shell authority-search-shell legal-command-search">
       <form method="get" action="{{ url_for('legal.legal_lookup') }}" class="legal-search-form" data-law-lookup-form>
-        <div class="legal-search-grid">
+        <div class="legal-search-grid legal-search-grid-v2">
           <div class="legal-statement-field">
             <label class="form-label" for="legal-incident-statement">Incident Statement</label>
-            <textarea id="legal-incident-statement" class="form-control legal-statement-search" name="q" rows="3" placeholder="Describe the full incident: who did what, where it happened, warnings/orders, property, weapons, injury, vehicle, or base context." required data-law-query>{{ query }}</textarea>
+            <textarea id="legal-incident-statement" class="form-control legal-statement-search" name="q" rows="6" placeholder="Describe the full incident: who did what, where it happened, warnings/orders, property, weapons, injury, vehicle, or base context." required data-law-query>{{ query }}</textarea>
           </div>
-          <div>
-            <label class="form-label">State</label>
-            <select class="form-control" name="state">
-              {% for code, label in state_options %}
-              <option value="{{ code }}" {% if state == code %}selected{% endif %}>{{ label }}</option>
-              {% endfor %}
-            </select>
-          </div>
-          <div>
-            <label class="form-label">Scope</label>
-            <select class="form-control" name="source">
-              {% for option in source_options %}
-              <option value="{{ option }}" {% if source == option %}selected{% endif %}>
-                {% if option == 'ALL' %}All{% elif option == 'STATE' %}State Law{% elif option == 'UCMJ' %}UCMJ{% elif option == 'BASE_ORDER' %}Base Orders{% else %}Federal USC{% endif %}
-              </option>
-              {% endfor %}
-            </select>
-          </div>
-          <div>
-            <button class="btn btn-primary w-100" type="submit" data-law-search-submit aria-label="Search incident statement">Search</button>
+          <div class="legal-filter-row">
+            <div>
+              <label class="form-label">State</label>
+              <select class="form-control" name="state">
+                {% for code, label in state_options %}
+                <option value="{{ code }}" {% if state == code %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Scope</label>
+              <select class="form-control" name="source">
+                {% for option in source_options %}
+                <option value="{{ option }}" {% if source == option %}selected{% endif %}>
+                  {% if option == 'ALL' %}All{% elif option == 'STATE' %}State Law{% elif option == 'UCMJ' %}UCMJ{% elif option == 'BASE_ORDER' %}Base Orders{% else %}Federal USC{% endif %}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="legal-search-action">
+              <label class="form-label">Action</label>
+              <button class="btn btn-primary w-100" type="submit" data-law-search-submit aria-label="Search incident statement">Read Statement</button>
+            </div>
           </div>
         </div>
       </form>
+      <div class="legal-search-assurance" aria-label="Law lookup search behavior">
+        <article>
+          <strong>Full-statement review</strong>
+          <span>Uses the complete narrative, not just one keyword.</span>
+        </article>
+        <article>
+          <strong>Source ranking</strong>
+          <span>Ranks Georgia, federal, UCMJ, base orders, and memos by fit.</span>
+        </article>
+        <article>
+          <strong>Officer verification</strong>
+          <span>AI suggestions are draft reference paths; verify before use.</span>
+        </article>
+      </div>
       <div class="search-panel-footer">
         <div class="small text-muted">Officer tip: {{ search_tip }}</div>
         {% if not state_corpus_available %}

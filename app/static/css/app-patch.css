@@ -3990,3 +3990,352 @@ body[data-theme="dark"] .mcpd-response-board {
     grid-template-columns: 1fr;
   }
 }
+
+/* Reports Center command operating picture */
+.report-command-board {
+  border-color: color-mix(in srgb, var(--primary, #2563eb) 20%, var(--border, #cbd5e1)) !important;
+}
+
+.report-ops-metrics {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.report-ops-metric {
+  display: grid;
+  gap: 6px;
+  min-height: 118px;
+  padding: 14px;
+  border: 1px solid var(--border, #cbd5e1);
+  border-radius: 18px;
+  background: var(--card, #fff);
+  box-shadow: var(--shadow-sm, 0 8px 22px rgba(15, 23, 42, .08));
+}
+
+.report-ops-metric span,
+.report-workflow-step span {
+  color: var(--muted, #64748b);
+  font-size: .72rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.report-ops-metric strong {
+  color: var(--text, #0f172a);
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.report-ops-metric small,
+.report-workflow-step small,
+.report-queue-card small {
+  color: var(--muted, #64748b);
+  line-height: 1.35;
+}
+
+.report-ops-metric.is-warning {
+  border-color: color-mix(in srgb, var(--warning, #f59e0b) 38%, var(--border, #cbd5e1));
+}
+
+.report-ops-metric.is-danger {
+  border-color: color-mix(in srgb, var(--danger, #dc2626) 38%, var(--border, #cbd5e1));
+}
+
+.report-ops-metric.is-success {
+  border-color: color-mix(in srgb, var(--success, #16a34a) 30%, var(--border, #cbd5e1));
+}
+
+.report-command-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(300px, .72fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.report-workflow-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.report-workflow-step,
+.report-queue-card {
+  display: flex;
+  gap: 12px;
+  min-width: 0;
+  padding: 13px;
+  border: 1px solid var(--border, #cbd5e1);
+  border-radius: 16px;
+  background: var(--panel, #f8fafc);
+}
+
+.report-workflow-step span {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--primary, #2563eb) 14%, transparent);
+  color: var(--primary, #2563eb);
+}
+
+.report-workflow-step strong,
+.report-queue-card strong {
+  display: block;
+  color: var(--text, #0f172a);
+}
+
+.report-queue-card-list {
+  display: grid;
+  gap: 10px;
+}
+
+.report-queue-card {
+  align-items: center;
+  justify-content: space-between;
+  color: var(--text, #0f172a);
+  text-decoration: none;
+}
+
+.report-queue-card:hover,
+.report-queue-card:focus {
+  border-color: color-mix(in srgb, var(--primary, #2563eb) 42%, var(--border, #cbd5e1));
+  text-decoration: none;
+}
+
+.report-queue-card b {
+  flex: 0 0 auto;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: var(--primary, #2563eb);
+  color: var(--button-text, #fff);
+  font-size: .78rem;
+}
+
+.report-packet-list {
+  grid-template-columns: 1fr !important;
+}
+
+.report-packet-card {
+  border-left: 4px solid var(--primary, #2563eb);
+}
+
+body[data-theme="dark"] .report-ops-metric,
+body[data-theme="dark"] .report-workflow-step,
+body[data-theme="dark"] .report-queue-card {
+  background: var(--card, #0f172a);
+}
+
+@media (max-width: 1180px) {
+  .report-ops-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .report-command-grid,
+  .report-workflow-strip {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .report-ops-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .report-ops-metric {
+    min-height: 104px;
+    padding: 12px;
+  }
+
+  .report-ops-metric strong {
+    font-size: 1.55rem;
+  }
+
+  .report-queue-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 460px) {
+  .report-ops-metrics {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Law Lookup command-grade layout refresh */
+.legal-lookup-page .legal-command-hero {
+  align-items: stretch !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.45fr) minmax(260px, .58fr) !important;
+  gap: 20px !important;
+}
+
+.legal-lookup-page .legal-command-hero h1 {
+  max-width: 920px;
+}
+
+.legal-lookup-page .authority-hero-meta {
+  align-content: stretch !important;
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 12px !important;
+}
+
+.legal-lookup-page .legal-hero-chip {
+  display: grid !important;
+  gap: 4px !important;
+  min-height: 0 !important;
+  padding: 14px 16px !important;
+}
+
+.legal-lookup-page .legal-hero-chip strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.legal-lookup-page .legal-command-search {
+  display: grid !important;
+  gap: 14px !important;
+  overflow: hidden;
+}
+
+.legal-lookup-page .legal-search-grid-v2 {
+  align-items: stretch !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, .34fr) !important;
+  gap: 16px !important;
+}
+
+.legal-lookup-page .legal-statement-field {
+  display: grid !important;
+  gap: 8px !important;
+  min-width: 0 !important;
+}
+
+.legal-lookup-page .legal-statement-search {
+  font-size: 1.04rem !important;
+  line-height: 1.45 !important;
+  min-height: 190px !important;
+  padding: 16px !important;
+}
+
+.legal-lookup-page .legal-filter-row {
+  align-content: stretch;
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.legal-lookup-page .legal-filter-row > div {
+  display: grid;
+  gap: 7px;
+}
+
+.legal-lookup-page .legal-search-action {
+  align-content: end;
+}
+
+.legal-lookup-page .legal-search-action .btn {
+  min-height: 52px;
+}
+
+.legal-search-assurance {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.legal-search-assurance article {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1px solid var(--border, #cbd5e1);
+  border-radius: 16px;
+  background: var(--panel, #f8fafc);
+}
+
+.legal-search-assurance strong {
+  color: var(--text, #0f172a);
+}
+
+.legal-search-assurance span {
+  color: var(--muted, #64748b);
+  font-size: .88rem;
+  line-height: 1.35;
+}
+
+.legal-lookup-page .intel-strip {
+  align-items: stretch;
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)) !important;
+  gap: 12px !important;
+}
+
+.legal-lookup-page .intel-card,
+.legal-lookup-page .lead-match-card,
+.legal-lookup-page .ai-law-candidates,
+.legal-lookup-page #legal-results {
+  background: var(--card, #fff) !important;
+  border: 1px solid var(--border, #cbd5e1) !important;
+  color: var(--text, #0f172a) !important;
+}
+
+.legal-lookup-page .legal-accordion-item,
+.legal-lookup-page .authority-result-item {
+  background: var(--card, #fff) !important;
+  border: 1px solid var(--border, #cbd5e1) !important;
+  color: var(--text, #0f172a) !important;
+}
+
+.legal-lookup-page .legal-accordion-summary {
+  gap: 12px !important;
+  min-width: 0 !important;
+}
+
+.legal-lookup-page .legal-accordion-title {
+  color: var(--text, #0f172a) !important;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+body[data-theme="dark"] .legal-search-assurance article,
+body[data-theme="dark"] .legal-lookup-page .intel-card,
+body[data-theme="dark"] .legal-lookup-page .lead-match-card,
+body[data-theme="dark"] .legal-lookup-page .ai-law-candidates,
+body[data-theme="dark"] .legal-lookup-page #legal-results,
+body[data-theme="dark"] .legal-lookup-page .legal-accordion-item,
+body[data-theme="dark"] .legal-lookup-page .authority-result-item {
+  background: var(--card, #0f172a) !important;
+  border-color: var(--border, #334155) !important;
+}
+
+@media (max-width: 1100px) {
+  .legal-lookup-page .legal-command-hero,
+  .legal-lookup-page .legal-search-grid-v2 {
+    grid-template-columns: 1fr !important;
+  }
+
+  .legal-lookup-page .authority-hero-meta {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .legal-lookup-page .legal-command-hero {
+    gap: 14px !important;
+  }
+
+  .legal-lookup-page .authority-hero-meta,
+  .legal-search-assurance {
+    grid-template-columns: 1fr !important;
+  }
+
+  .legal-lookup-page .legal-statement-search {
+    min-height: 220px !important;
+  }
+}

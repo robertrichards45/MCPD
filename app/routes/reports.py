@@ -16,6 +16,10 @@ from ..models import (
     AccidentReconstruction,
     CleoReport,
     IncidentDraft,
+    IncidentPacket,
+    PACKET_APPROVAL_APPROVED,
+    PACKET_APPROVAL_NEEDS_CORRECTION,
+    PACKET_APPROVAL_PENDING,
     ReconstructionMeasurement,
     ReconstructionMedia,
     ReconstructionObject,
@@ -82,6 +86,26 @@ def _report_query():
         ~Report.title.ilike('Test Report %'),
         ~Report.title.ilike('Mock Stress Report%'),
     )
+
+
+def _safe_all(label, query, limit=None):
+    try:
+        if limit:
+            query = query.limit(limit)
+        return query.all()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.warning('Reports query failed for %s', label, exc_info=True)
+        return []
+
+
+def _safe_count(label, query):
+    try:
+        return query.count()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.warning('Reports count failed for %s', label, exc_info=True)
+        return 0
 
 
 def require_admin():
@@ -299,28 +323,28 @@ def discard_draft():
 @login_required
 def list_reports():
     visible_ids = _visible_user_ids()
-    reports = (
+    reports = _safe_all(
+        'reports_center_standard_reports',
         _report_query()
         .filter(Report.owner_id.in_(visible_ids))
-        .order_by(Report.updated_at.desc())
-        .all()
+        .order_by(Report.updated_at.desc()),
     )
-    cleo_reports = (
+    cleo_reports = _safe_all(
+        'reports_center_cleo_reports',
         CleoReport.query
         .filter(CleoReport.user_id.in_(visible_ids))
-        .order_by(CleoReport.updated_at.desc())
-        .all()
+        .order_by(CleoReport.updated_at.desc()),
     )
     cleo_review_reports = []
     if can_manage_site(current_user) or can_manage_team(current_user) or can_grade_cleoc_reports(current_user):
-        cleo_review_reports = (
+        cleo_review_reports = _safe_all(
+            'reports_center_cleo_review',
             CleoReport.query
             .filter(
                 CleoReport.user_id.in_(visible_ids),
                 CleoReport.status.in_(REVIEWABLE_CLEO_STATUSES),
             )
-            .order_by(CleoReport.updated_at.desc())
-            .all()
+            .order_by(CleoReport.updated_at.desc()),
         )
     active_incident_draft = (
         IncidentDraft.query
@@ -328,12 +352,103 @@ def list_reports():
         .order_by(IncidentDraft.updated_at.desc())
         .first()
     )
+    incident_packets = _safe_all(
+        'reports_center_incident_packets',
+        IncidentPacket.query
+        .filter(IncidentPacket.officer_user_id.in_(visible_ids))
+        .order_by(IncidentPacket.submitted_at.desc()),
+        40,
+    )
+    pending_packets = [packet for packet in incident_packets if packet.approval_status == PACKET_APPROVAL_PENDING]
+    correction_packets = [packet for packet in incident_packets if packet.approval_status == PACKET_APPROVAL_NEEDS_CORRECTION]
+    approved_packets = [packet for packet in incident_packets if packet.approval_status == PACKET_APPROVAL_APPROVED]
+    accident_count = _safe_count(
+        'reports_center_accidents',
+        AccidentReconstruction.query.filter(AccidentReconstruction.officer_id.in_(visible_ids)),
+    )
+    report_ops_metrics = [
+        {
+            'label': 'Field Draft',
+            'value': 1 if active_incident_draft else 0,
+            'detail': 'Synced mobile/desktop report draft',
+            'tone': 'primary' if active_incident_draft else 'muted',
+        },
+        {
+            'label': 'Pending Review',
+            'value': len(pending_packets),
+            'detail': 'Submitted packets waiting on supervisor action',
+            'tone': 'warning' if pending_packets else 'success',
+        },
+        {
+            'label': 'Needs Correction',
+            'value': len(correction_packets),
+            'detail': 'Returned packets requiring officer updates',
+            'tone': 'danger' if correction_packets else 'success',
+        },
+        {
+            'label': 'Approved Packets',
+            'value': len(approved_packets),
+            'detail': 'Recently approved mobile packets',
+            'tone': 'success',
+        },
+        {
+            'label': 'Accident Cases',
+            'value': accident_count,
+            'detail': 'Officer diagrams and reconstruction records',
+            'tone': 'primary',
+        },
+    ]
+    report_queue_cards = [
+        {
+            'label': 'Start Field Workflow',
+            'detail': 'Use the same mobile packet steps: basics, parties, facts, narrative, paperwork, review.',
+            'endpoint': 'mobile.incident_start',
+            'action': 'Start' if not active_incident_draft else 'Continue',
+            'tone': 'primary',
+        },
+        {
+            'label': 'Report Review Queue',
+            'detail': f'{len(pending_packets)} pending / {len(correction_packets)} needing correction.',
+            'endpoint': 'watch_commander.reports' if can_manage_team(current_user) or can_manage_site(current_user) else 'reports.list_reports',
+            'action': 'Open Queue',
+            'tone': 'warning' if pending_packets or correction_packets else 'success',
+        },
+        {
+            'label': 'Paperwork Navigator',
+            'detail': 'Confirm required forms and report packet attachments before submission.',
+            'endpoint': 'reference.incident_paperwork_guide',
+            'action': 'Open',
+            'tone': 'primary',
+        },
+        {
+            'label': 'Accident Tools',
+            'detail': 'Open simple officer diagrams or advanced reconstruction tools.',
+            'endpoint': 'reports.accidents',
+            'action': 'Open',
+            'tone': 'primary',
+        },
+    ]
+    report_workflow_steps = [
+        {'label': 'Intake', 'detail': 'Call type, date/time, location, source, and initial summary.'},
+        {'label': 'Parties', 'detail': 'Victims, suspects, witnesses, vehicles, and involved units.'},
+        {'label': 'Facts', 'detail': 'Plain-language facts, observations, evidence, and timeline.'},
+        {'label': 'Narrative', 'detail': 'Officer-reviewed narrative draft and 5W extraction.'},
+        {'label': 'Paperwork', 'detail': 'Required forms, photos, bodycam, diagrams, and attachments.'},
+        {'label': 'Review', 'detail': 'Supervisor queue, corrections, approval, and final packet.'},
+    ]
     return render_template(
         'reports_list.html',
         reports=reports,
         cleo_reports=cleo_reports,
         cleo_review_reports=cleo_review_reports,
         active_incident_draft=active_incident_draft,
+        incident_packets=incident_packets,
+        pending_packets=pending_packets,
+        correction_packets=correction_packets,
+        approved_packets=approved_packets,
+        report_ops_metrics=report_ops_metrics,
+        report_queue_cards=report_queue_cards,
+        report_workflow_steps=report_workflow_steps,
         call_type_rules=load_call_type_rules(),
         report_count=len(reports),
         cleo_count=len(cleo_reports),
