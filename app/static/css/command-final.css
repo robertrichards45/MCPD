@@ -1,0 +1,506 @@
+/* FINAL COMMAND-LEVEL VISUAL CORRECTION LAYER
+   Purpose: restore the clean, professional MCPD command look across the portal.
+   Style direction: Marine Corps / federal internal system, not gaming, not flashy, not over-designed. */
+
+:root {
+  --mcpd-ink: #102033;
+  --mcpd-navy: #0b1f35;
+  --mcpd-navy-2: #123352;
+  --mcpd-blue: #1f5f9f;
+  --mcpd-gold: #b7975b;
+  --mcpd-bg: #f3f6fa;
+  --mcpd-surface: #ffffff;
+  --mcpd-surface-2: #f8fafc;
+  --mcpd-border: #d8e1eb;
+  --mcpd-muted: #5e7187;
+  --mcpd-shadow: 0 4px 14px rgba(15, 32, 51, 0.08);
+  --mcpd-radius: 14px;
+}
+
+html, body {
+  background: var(--mcpd-bg) !important;
+  color: var(--mcpd-ink) !important;
+  font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif !important;
+}
+
+body[data-theme="dark"] {
+  --mcpd-bg: #081522;
+  --mcpd-surface: #102033;
+  --mcpd-surface-2: #0c1a2a;
+  --mcpd-border: #24384f;
+  --mcpd-muted: #a9b7c7;
+  --mcpd-ink: #eef4fb;
+}
+
+/* Remove the flashy radial/gaming feel and force a professional gov-system canvas. */
+.mcpd-command-app,
+.app-shell,
+.mcpd-dashboard,
+.mcpd-command-main,
+.demo-main,
+.command-center,
+.mobile-shell,
+.mcpd-mobile-app,
+.page-wrap {
+  background: var(--mcpd-bg) !important;
+  color: var(--mcpd-ink) !important;
+}
+
+/* Header: clean federal/command bar. */
+.mcpd-command-header {
+  background: var(--mcpd-navy) !important;
+  color: #ffffff !important;
+  border-bottom: 3px solid var(--mcpd-gold) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18) !important;
+  backdrop-filter: none !important;
+}
+
+.mcpd-header-brand strong {
+  color: #ffffff !important;
+  letter-spacing: 0.08em !important;
+  font-size: 0.95rem !important;
+}
+
+.mcpd-header-user strong,
+.mcpd-header-user small {
+  color: #ffffff !important;
+}
+
+.mcpd-theme-toggle,
+.mcpd-demo-toggle,
+.mcpd-header-search button {
+  border-radius: 8px !important;
+  font-weight: 700 !important;
+}
+
+.mcpd-header-search input {
+  border-radius: 8px 0 0 8px !important;
+  min-height: 40px !important;
+}
+
+.mcpd-header-search button {
+  border-radius: 0 8px 8px 0 !important;
+  min-height: 40px !important;
+  background: var(--mcpd-blue) !important;
+}
+
+/* Sidebar: simple, readable, official. */
+.mcpd-command-sidebar {
+  background: #081b2f !important;
+  border-right: 1px solid rgba(255,255,255,0.10) !important;
+  box-shadow: none !important;
+}
+
+.mcpd-command-sidebar nav a,
+.mcpd-sidebar-admin summary {
+  border-radius: 8px !important;
+  margin: 2px 8px !important;
+  min-height: 40px !important;
+  color: #dbe7f3 !important;
+  font-weight: 650 !important;
+  border: 1px solid transparent !important;
+}
+
+.mcpd-command-sidebar nav a:hover,
+.mcpd-sidebar-admin summary:hover {
+  background: rgba(255,255,255,0.08) !important;
+  color: #ffffff !important;
+}
+
+.mcpd-command-sidebar nav a.is-active,
+.mcpd-sidebar-admin[open] summary {
+  background: #123352 !important;
+  color: #ffffff !important;
+  border-color: rgba(183,151,91,0.42) !important;
+  box-shadow: inset 3px 0 0 var(--mcpd-gold) !important;
+}
+
+/* Page headers: no giant watermark text; just command-level summary cards. */
+.mcpd-dashboard-head,
+.page-wrap > h1:first-child,
+.page-wrap > h2:first-child,
+.page-head,
+.mcpd-page-head,
+.demo-hero,
+.command-hero {
+  background: var(--mcpd-surface) !important;
+  color: var(--mcpd-ink) !important;
+  border: 1px solid var(--mcpd-border) !important;
+  border-left: 6px solid var(--mcpd-navy) !important;
+  border-radius: var(--mcpd-radius) !important;
+  box-shadow: var(--mcpd-shadow) !important;
+  padding: 20px 22px !important;
+  overflow: hidden !important;
+}
+
+.mcpd-dashboard-head::after,
+.command-hero::after {
+  display: none !important;
+  content: none !important;
+}
+
+.mcpd-dashboard-head h1,
+.page-head h1,
+.page-head h2,
+.mcpd-page-head h1,
+.mcpd-page-head h2,
+.demo-hero h1,
+.command-hero h1 {
+  color: var(--mcpd-ink) !important;
+  font-size: clamp(1.45rem, 2vw, 2.1rem) !important;
+  line-height: 1.15 !important;
+  letter-spacing: -0.015em !important;
+  margin: 0 0 4px !important;
+}
+
+.mcpd-dashboard-head p,
+.page-head p,
+.mcpd-page-head p,
+.demo-hero p,
+.command-hero p {
+  color: var(--mcpd-muted) !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  font-weight: 600 !important;
+}
+
+.mcpd-date-tile,
+.command-clock-card {
+  background: var(--mcpd-surface-2) !important;
+  border: 1px solid var(--mcpd-border) !important;
+  border-radius: 10px !important;
+  color: var(--mcpd-ink) !important;
+  box-shadow: none !important;
+}
+
+/* Cards and panels: consistent professional surface. */
+.card,
+.portal-card,
+.mcpd-panel,
+.mcpd-action-card,
+.mcpd-command-stat,
+.mcpd-briefing-card,
+.mcpd-briefing-item,
+.mcpd-field-actions-panel,
+.demo-panel,
+.demo-stat-card,
+.demo-user-card,
+.demo-launch-card,
+.demo-law-card,
+.demo-search-panel,
+.command-panel,
+.command-metric,
+.ai-box,
+.signature-box,
+.form-side-card,
+.form-right-panel,
+.right-panel,
+.list-group,
+.table-responsive {
+  background: var(--mcpd-surface) !important;
+  color: var(--mcpd-ink) !important;
+  border: 1px solid var(--mcpd-border) !important;
+  border-radius: var(--mcpd-radius) !important;
+  box-shadow: var(--mcpd-shadow) !important;
+}
+
+.card-header,
+.mcpd-panel-head,
+.command-panel-head {
+  background: var(--mcpd-surface-2) !important;
+  border-bottom: 1px solid var(--mcpd-border) !important;
+  color: var(--mcpd-ink) !important;
+  border-radius: var(--mcpd-radius) var(--mcpd-radius) 0 0 !important;
+}
+
+.card-header h1,
+.card-header h2,
+.card-header h3,
+.mcpd-panel-head h2,
+.command-panel-head h2,
+.mcpd-briefing-card h2,
+.mcpd-field-actions-panel h2 {
+  color: var(--mcpd-ink) !important;
+}
+
+/* Dashboard: reduce clutter and make it briefing-ready. */
+.mcpd-dashboard {
+  max-width: 1380px !important;
+  padding: 22px clamp(16px, 2vw, 30px) 40px !important;
+}
+
+.mcpd-action-grid {
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)) !important;
+  gap: 14px !important;
+  margin: 18px 0 !important;
+}
+
+.mcpd-action-card {
+  min-height: 122px !important;
+  padding: 18px !important;
+  text-decoration: none !important;
+  transition: border-color .12s ease, transform .12s ease, box-shadow .12s ease !important;
+}
+
+.mcpd-action-card:hover,
+.mcpd-action-card:focus {
+  transform: translateY(-1px) !important;
+  border-color: var(--mcpd-blue) !important;
+  box-shadow: 0 8px 20px rgba(15,32,51,0.12) !important;
+}
+
+.mcpd-action-card strong,
+.mcpd-panel strong,
+.command-row strong,
+.command-metric strong,
+.mcpd-command-stat strong,
+.demo-stat-card strong {
+  color: var(--mcpd-ink) !important;
+}
+
+.mcpd-action-card small,
+.mcpd-panel small,
+.command-row small,
+.command-metric small,
+.mcpd-command-stat small,
+.demo-stat-card span {
+  color: var(--mcpd-muted) !important;
+}
+
+.mcpd-action-icon {
+  background: #edf4fb !important;
+  color: var(--mcpd-blue) !important;
+  border-radius: 10px !important;
+}
+
+body[data-theme="dark"] .mcpd-action-icon {
+  background: #142a42 !important;
+  color: #93c5fd !important;
+}
+
+/* Command center: bring it back from gaming UI to official ops dashboard. */
+.command-center {
+  margin-left: var(--sidebar-width, 260px) !important;
+  padding: 92px 28px 36px !important;
+}
+
+.command-metrics-grid {
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)) !important;
+  gap: 12px !important;
+}
+
+.command-grid {
+  grid-template-columns: minmax(280px, .9fr) minmax(420px, 1.25fr) minmax(280px, .9fr) !important;
+  gap: 16px !important;
+}
+
+.command-panel-head span,
+.command-pill,
+.command-badge,
+.mcpd-briefing-badge,
+.demo-badge {
+  border-radius: 999px !important;
+  border: 1px solid var(--mcpd-border) !important;
+  background: var(--mcpd-surface-2) !important;
+  color: var(--mcpd-navy-2) !important;
+  font-weight: 800 !important;
+}
+
+body[data-theme="dark"] .command-panel-head span,
+body[data-theme="dark"] .command-pill,
+body[data-theme="dark"] .command-badge,
+body[data-theme="dark"] .mcpd-briefing-badge,
+body[data-theme="dark"] .demo-badge {
+  color: #dbeafe !important;
+}
+
+.command-map-shell {
+  background: #e8eef5 !important;
+  border-top: 1px solid var(--mcpd-border) !important;
+}
+
+.command-map-gridline {
+  opacity: .38 !important;
+}
+
+.command-map-area {
+  background: rgba(255,255,255,0.58) !important;
+  border-color: rgba(31,95,159,0.30) !important;
+}
+
+.command-map-label {
+  background: var(--mcpd-surface) !important;
+  border: 1px solid var(--mcpd-border) !important;
+  color: var(--mcpd-ink) !important;
+}
+
+.command-radio-box {
+  background: #f4f8fc !important;
+  color: var(--mcpd-ink) !important;
+  border: 1px solid var(--mcpd-border) !important;
+}
+
+.command-radio-box strong,
+.command-radio-box p {
+  color: var(--mcpd-ink) !important;
+}
+
+/* Forms, tables, and buttons. */
+.form-control,
+.form-select,
+input[type="text"],
+input[type="search"],
+input[type="date"],
+input[type="datetime-local"],
+input[type="number"],
+input[type="email"],
+textarea,
+select {
+  border-radius: 8px !important;
+  border: 1px solid var(--mcpd-border) !important;
+  background: var(--mcpd-surface) !important;
+  color: var(--mcpd-ink) !important;
+  min-height: 40px !important;
+}
+
+.form-label,
+label {
+  color: var(--mcpd-ink) !important;
+  font-weight: 700 !important;
+}
+
+.btn,
+button,
+input[type="submit"] {
+  border-radius: 8px !important;
+  font-weight: 700 !important;
+}
+
+.btn-primary,
+.command-action-btn,
+.mcpd-field-action:first-child {
+  background: var(--mcpd-navy-2) !important;
+  border-color: var(--mcpd-navy-2) !important;
+  color: #ffffff !important;
+}
+
+.btn-outline-secondary,
+.btn-secondary {
+  border-color: var(--mcpd-border) !important;
+}
+
+.table thead th {
+  background: var(--mcpd-surface-2) !important;
+  color: var(--mcpd-ink) !important;
+  border-bottom: 1px solid var(--mcpd-border) !important;
+}
+
+.table td,
+.table th {
+  color: var(--mcpd-ink) !important;
+  border-color: var(--mcpd-border) !important;
+}
+
+/* Demo banner: official warning banner, not flashy. */
+.demo-mode-banner {
+  background: #f4d06f !important;
+  color: #1f2937 !important;
+  border-bottom: 1px solid #d9a928 !important;
+  box-shadow: none !important;
+}
+
+.demo-mode-banner a,
+.demo-mode-banner button {
+  color: #0b1f35 !important;
+  font-weight: 800 !important;
+}
+
+/* Mobile: simple field layout with no clipped controls. */
+@media (max-width: 1200px) {
+  .command-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .mcpd-dashboard,
+  .page-wrap,
+  .mcpd-command-main,
+  .demo-main,
+  .command-center {
+    margin-left: 0 !important;
+    padding: 12px 12px calc(var(--mobile-dock-height, 96px) + env(safe-area-inset-bottom) + 26px) !important;
+    max-width: 100vw !important;
+  }
+
+  .mcpd-dashboard-head,
+  .page-wrap > h1:first-child,
+  .page-wrap > h2:first-child,
+  .page-head,
+  .mcpd-page-head,
+  .demo-hero,
+  .command-hero {
+    padding: 16px !important;
+    border-radius: 12px !important;
+  }
+
+  .mcpd-dashboard-head h1,
+  .page-head h1,
+  .page-head h2,
+  .command-hero h1 {
+    font-size: 1.35rem !important;
+  }
+
+  .mcpd-command-snapshot,
+  .command-metrics-grid,
+  .demo-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .mcpd-action-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+
+  .mcpd-action-card {
+    min-height: 108px !important;
+    padding: 14px !important;
+  }
+
+  .mcpd-action-card small {
+    display: none !important;
+  }
+
+  .mcpd-header-search,
+  .mcpd-dashboard-head-actions,
+  .mcpd-date-tile {
+    display: none !important;
+  }
+
+  .card,
+  .portal-card,
+  .mcpd-panel,
+  .command-panel,
+  .command-metric {
+    border-radius: 12px !important;
+  }
+
+  .card-body,
+  .card-footer,
+  .mcpd-panel,
+  .ai-box {
+    padding: 14px !important;
+  }
+
+  .btn,
+  button,
+  input[type="submit"] {
+    min-height: 44px !important;
+  }
+
+  .mcpd-map-canvas-wrap,
+  .command-map-shell {
+    min-height: 300px !important;
+  }
+}
