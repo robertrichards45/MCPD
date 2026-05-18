@@ -395,6 +395,26 @@ body[data-theme="dark"] .pdf-embed-frame {
   text-decoration: underline;
 }
 
+.demo-mode-banner form {
+  margin: 0;
+}
+
+.demo-mode-banner button {
+  min-height: 34px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(7, 27, 51, 0.28);
+  background: #071b33;
+  color: #fff;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.demo-mode-banner button:hover,
+.demo-mode-banner button:focus {
+  background: #0f2e52;
+}
+
 .demo-main {
   margin-left: var(--sidebar-width, 260px);
   padding: 96px 28px 40px;

@@ -52,6 +52,17 @@
     <span>{% if portal_demo_viewing_as %}Viewing as {{ portal_demo_viewing_as }}{% else %}Command demonstration data is active{% endif %}</span>
     <a href="{{ url_for('demo.dashboard') }}">Demo Dashboard</a>
     <a href="{{ url_for('demo.users') }}">Switch User</a>
+    {% if portal_demo_viewing_as %}
+    <form method="post" action="{{ url_for('demo.return_admin') }}">
+      <input type="hidden" name="csrf_token" value="{{ g.csrf_token }}">
+      <button type="submit">Return to Owner</button>
+    </form>
+    {% elif portal_is_site_owner %}
+    <form method="post" action="{{ url_for('demo.toggle') }}">
+      <input type="hidden" name="csrf_token" value="{{ g.csrf_token }}">
+      <button type="submit">Turn Demo Off</button>
+    </form>
+    {% endif %}
   </div>
   {% endif %}
   {% block body %}{% endblock %}
