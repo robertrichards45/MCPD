@@ -301,6 +301,36 @@ def _watch_readiness(tasks):
     return rows
 
 
+def _task_distribution(tasks, attr_name, choices):
+    total = len(tasks) or 1
+    rows = []
+    for choice in choices:
+        count = sum(1 for task in tasks if getattr(task, attr_name, None) == choice)
+        if not count:
+            continue
+        rows.append({
+            'label': choice,
+            'count': count,
+            'percent': round((count / total) * 100),
+        })
+    return rows
+
+
+def _at_risk_tasks(tasks, limit=6):
+    risky = [
+        task for task in tasks
+        if task.status in OPEN_STATUSES
+        and (task.is_overdue or task.priority == 'Command Critical' or 0 <= task.days_until_due <= 7)
+    ]
+    risky.sort(key=lambda task: (
+        0 if task.is_overdue else 1,
+        0 if task.priority == 'Command Critical' else 1,
+        task.days_until_due,
+        -(task.percent_complete or 0),
+    ))
+    return risky[:limit]
+
+
 @bp.route('/')
 @bp.route('/dashboard')
 @login_required
@@ -326,6 +356,9 @@ def dashboard():
         tasks=tasks,
         metrics=_dashboard_metrics(all_tasks),
         watch_readiness=_watch_readiness(all_tasks),
+        category_distribution=_task_distribution(all_tasks, 'task_category', TASK_CATEGORIES),
+        priority_distribution=_task_distribution(all_tasks, 'priority', PRIORITY_CHOICES),
+        at_risk_tasks=_at_risk_tasks(all_tasks),
         leads=_active_leads(),
         personnel=_active_personnel(),
         watch_commanders=_role_users(ROLE_WATCH_COMMANDER),

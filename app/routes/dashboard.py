@@ -25,6 +25,7 @@ from ..models import (
     WatchShift,
 )
 from ..permissions import can_access_assistant_operations, can_access_builder_mode
+from .incident_command import _can_access_incident_command
 
 bp = Blueprint('dashboard', __name__)
 _log = logging.getLogger(__name__)
@@ -33,6 +34,7 @@ DEFAULT_DASHBOARD_CARD_IDS = [
     'law_lookup',
     'start_report',
     'dispatch_command_center',
+    'incident_command',
     'forms_library',
     'orders_memos',
     'training',
@@ -474,6 +476,14 @@ def _dashboard_card_catalog():
             'endpoint': 'mobile.home',
         },
     ]
+    if _can_access_incident_command(current_user):
+        cards.append({
+            'id': 'incident_command',
+            'label': 'Incident Command',
+            'description': 'IC board, PAR/accountability, command log, and AAR snapshot',
+            'icon': 'orders',
+            'endpoint': 'incident_command.dashboard',
+        })
     if can_access_builder_mode(current_user):
         cards.append({
             'id': 'site_builder',
@@ -521,13 +531,15 @@ def _dashboard_card_catalog():
             },
         ])
     elif can_access_assistant_operations(current_user):
-        cards.append({
-            'id': 'assistant_operations_tracker',
-            'label': 'Assistant Ops Tracker',
-            'description': 'Due-outs, training, inspections, and projects',
-            'icon': 'orders',
-            'endpoint': 'assistant_operations.dashboard',
-        })
+        cards.extend([
+            {
+                'id': 'assistant_operations_tracker',
+                'label': 'Assistant Ops Tracker',
+                'description': 'Due-outs, training, inspections, and projects',
+                'icon': 'orders',
+                'endpoint': 'assistant_operations.dashboard',
+            },
+        ])
     return cards
 
 

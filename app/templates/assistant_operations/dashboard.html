@@ -24,6 +24,71 @@
       <article class="{% if metrics.command_critical %}is-warning{% endif %}"><span>Command Critical</span><strong>{{ metrics.command_critical }}</strong><small>Open critical items</small></article>
     </section>
 
+    <section class="assistant-ops-command-board" aria-label="Command tasking operating picture">
+      <article class="assistant-ops-panel assistant-ops-risk-panel">
+        <div class="assistant-ops-panel-head">
+          <div>
+            <p class="eyebrow">Command Attention</p>
+            <h2>At-Risk Due-Outs</h2>
+          </div>
+          <span class="assistant-ops-badge">{{ at_risk_tasks|length }} Watch</span>
+        </div>
+        <div class="assistant-ops-risk-list">
+          {% for task in at_risk_tasks %}
+          <a href="#task-list" class="assistant-ops-risk-row {% if task.is_overdue %}is-danger{% elif task.priority == 'Command Critical' %}is-warning{% endif %}">
+            <span>
+              <strong>{{ task.task_title }}</strong>
+              <small>{{ task.assigned_watch }} / {{ task.priority }} / {{ task.status }}</small>
+            </span>
+            <b>{% if task.is_overdue %}{{ 0 - task.days_until_due }}d overdue{% else %}{{ task.days_until_due }}d left{% endif %}</b>
+          </a>
+          {% else %}
+          <p class="assistant-ops-empty">No overdue, command-critical, or due-soon tasks are currently visible.</p>
+          {% endfor %}
+        </div>
+      </article>
+
+      <article class="assistant-ops-panel">
+        <div class="assistant-ops-panel-head">
+          <div>
+            <p class="eyebrow">Workload</p>
+            <h2>Task Categories</h2>
+          </div>
+        </div>
+        <div class="assistant-ops-bar-list">
+          {% for row in category_distribution[:8] %}
+          <div class="assistant-ops-bar-row">
+            <div><strong>{{ row.label }}</strong><small>{{ row.count }} task{{ '' if row.count == 1 else 's' }}</small></div>
+            <div class="assistant-ops-progress"><span style="width: {{ row.percent }}%"></span></div>
+            <b>{{ row.percent }}%</b>
+          </div>
+          {% else %}
+          <p class="assistant-ops-empty">No task category data yet.</p>
+          {% endfor %}
+        </div>
+      </article>
+
+      <article class="assistant-ops-panel">
+        <div class="assistant-ops-panel-head">
+          <div>
+            <p class="eyebrow">Risk</p>
+            <h2>Priority Pressure</h2>
+          </div>
+        </div>
+        <div class="assistant-ops-bar-list">
+          {% for row in priority_distribution %}
+          <div class="assistant-ops-bar-row">
+            <div><strong>{{ row.label }}</strong><small>{{ row.count }} task{{ '' if row.count == 1 else 's' }}</small></div>
+            <div class="assistant-ops-progress"><span style="width: {{ row.percent }}%"></span></div>
+            <b>{{ row.percent }}%</b>
+          </div>
+          {% else %}
+          <p class="assistant-ops-empty">No priority data yet.</p>
+          {% endfor %}
+        </div>
+      </article>
+    </section>
+
     <section class="assistant-ops-grid">
       {% if can_create_tasks %}
       <article class="assistant-ops-panel assistant-ops-create">

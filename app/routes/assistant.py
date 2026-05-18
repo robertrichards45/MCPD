@@ -172,6 +172,7 @@ def _assistant_action_for(message: str, page: dict | None = None) -> dict | None
         (('training', 'roster', 'training roster', 'training menu'), 'Training', url_for('training.training_menu')),
         (('personnel', 'officers', 'manage users', 'officer profiles', 'users'), 'Personnel', url_for('auth.manage_users')),
         (('watch commander', 'watch commander hub', 'watch dashboard'), 'Watch Commander Hub', url_for('watch_commander.dashboard')),
+        (('incident command', 'ic board', 'command board', 'incident commander', 'par board', 'accountability board'), 'Incident Command', url_for('incident_command.dashboard')),
         (('approve officers', 'assign officers', 'supervisor dashboard'), 'Approve / Assign Officers', url_for('mobile.supervisor_dashboard')),
         (('admin', 'administration', 'admin users'), 'Administration', url_for('auth.manage_users')),
         (('body cam', 'bodycam mode', 'body camera'), 'Body Cam Mode', url_for('bodycam.new_recording')),

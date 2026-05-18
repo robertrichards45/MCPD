@@ -1,0 +1,252 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell mcpd-command-app">
+  {% include 'partials/nav.html' %}
+  <main class="incident-command-main" id="main-content">
+    <section class="incident-command-hero">
+      <div>
+        <p class="eyebrow">Incident Command</p>
+        <h1>Command-grade incident control board.</h1>
+        <p>Run active incidents with accountability, resource assignment, command log, PAR timers, operational objectives, and after-action capture from one MCPD workspace.</p>
+        <div class="incident-command-tabs" aria-label="Incident command sections">
+          <a href="#overview">Overview</a>
+          <a href="#incidents">Incidents</a>
+          <a href="#resources">Resources</a>
+          <a href="#log">Command Log</a>
+          <a href="#aar">AAR</a>
+        </div>
+      </div>
+      <aside class="incident-command-status-card">
+        <span>Current Shift</span>
+        <strong>{{ open_shift.shift_type if open_shift else 'No Open Shift' }}</strong>
+        <small>{% if open_shift %}{{ open_shift.status }} / {{ open_shift.shift_date }}{% else %}Open a shift in Watch Commander tools{% endif %}</small>
+      </aside>
+    </section>
+
+    <section class="incident-command-metrics" id="overview" aria-label="Incident command metrics">
+      {% for metric in metrics %}
+      <article class="incident-command-metric is-{{ metric.tone }}">
+        <span>{{ metric.label }}</span>
+        <strong>{{ metric.value }}</strong>
+        <small>{{ metric.detail }}</small>
+      </article>
+      {% endfor %}
+    </section>
+
+    <section class="incident-command-layout">
+      <div class="incident-command-left">
+        <article class="incident-command-panel incident-command-map-panel">
+          <div class="incident-command-panel-head">
+            <div>
+              <p class="eyebrow">Operating Picture</p>
+              <h2>Incident Map / Tactical Board</h2>
+            </div>
+            <span>Live Concept</span>
+          </div>
+          <div class="incident-command-map">
+            <div class="incident-map-grid"></div>
+            <span class="incident-map-pin incident-map-pin-primary" style="left: 24%; top: 28%;">IC</span>
+            <span class="incident-map-pin incident-map-pin-danger" style="left: 64%; top: 36%;">INC</span>
+            <span class="incident-map-pin incident-map-pin-warning" style="left: 48%; top: 62%;">STG</span>
+            <span class="incident-map-pin incident-map-pin-success" style="left: 78%; top: 68%;">K9</span>
+            <div class="incident-map-overlay">
+              <strong>MCLB Albany Operational View</strong>
+              <span>Use Unit Map for live GPS; this board summarizes command sectors, staging, perimeter, and incident focus areas.</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="incident-command-panel" id="incidents">
+          <div class="incident-command-panel-head">
+            <div>
+              <p class="eyebrow">Active Work</p>
+              <h2>Incident Stack</h2>
+            </div>
+            <span>{{ incidents|length }} Items</span>
+          </div>
+          <div class="incident-stack">
+            {% for incident in incidents %}
+            <div class="incident-card is-{{ incident.tone }}">
+              <div>
+                <span>{{ incident.type }} / {{ incident.timer }}</span>
+                <strong>{{ incident.title }}</strong>
+                <small>{{ incident.location }}</small>
+              </div>
+              <b>{{ incident.status }}</b>
+            </div>
+            {% else %}
+            <div class="incident-empty">No active incident records are visible. Start a report, create a BOLO, or add a command note to populate this board.</div>
+            {% endfor %}
+          </div>
+        </article>
+
+        <article class="incident-command-panel" id="resources">
+          <div class="incident-command-panel-head">
+            <div>
+              <p class="eyebrow">Accountability</p>
+              <h2>Unit / Resource Board</h2>
+            </div>
+            <span>Next PAR {{ next_par_due.strftime('%H:%M') }}</span>
+          </div>
+          <div class="incident-resource-grid">
+            {% for unit in units %}
+            <div class="incident-resource-card is-{{ unit.tone }}">
+              <div>
+                <strong>{{ unit.name }}</strong>
+                <span>{{ unit.assignment }} / {{ unit.location }}</span>
+                <small>{{ unit.notes }}</small>
+              </div>
+              <b>{{ unit.status }}</b>
+              <em>{{ unit.par }} / {{ unit.timer }}</em>
+            </div>
+            {% else %}
+            <div class="incident-empty">No on-duty units are assigned yet. Use Watch Commander shift tools to assign officers, posts, and staged resources.</div>
+            {% endfor %}
+          </div>
+        </article>
+      </div>
+
+      <aside class="incident-command-right">
+        <article class="incident-command-panel">
+          <div class="incident-command-panel-head">
+            <div>
+              <p class="eyebrow">Readiness</p>
+              <h2>IC Checklist</h2>
+            </div>
+            <span>{{ checklist.percent }}%</span>
+          </div>
+          <div class="incident-check-progress"><span style="width: {{ checklist.percent }}%"></span></div>
+          <div class="incident-check-list">
+            {% for item in checklist.items_list %}
+            <div class="incident-check-item {% if item.done %}is-done{% endif %}">
+              <span aria-hidden="true">{{ '✓' if item.done else '!' }}</span>
+              <div>
+                <strong>{{ item.label }}</strong>
+                <small>{{ item.detail }}</small>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </article>
+
+        <article class="incident-command-panel">
+          <div class="incident-command-panel-head">
+            <div>
+              <p class="eyebrow">Objectives</p>
+              <h2>Suggested IC Objectives</h2>
+            </div>
+          </div>
+          <div class="incident-objective-list">
+            {% for objective in suggested_objectives %}
+            <div>{{ objective }}</div>
+            {% endfor %}
+          </div>
+        </article>
+
+        <article class="incident-command-panel">
+          <div class="incident-command-panel-head">
+            <div>
+              <p class="eyebrow">Status Mix</p>
+              <h2>Resource Status</h2>
+            </div>
+          </div>
+          <div class="incident-status-list">
+            {% for row in status_counts %}
+            <div><span>{{ row.label }}</span><strong>{{ row.count }}</strong></div>
+            {% else %}
+            <p class="incident-empty">No status data yet.</p>
+            {% endfor %}
+          </div>
+        </article>
+      </aside>
+    </section>
+
+    <section class="incident-command-bottom">
+      <article class="incident-command-panel" id="log">
+        <div class="incident-command-panel-head">
+          <div>
+            <p class="eyebrow">Chronology</p>
+            <h2>Command Log</h2>
+          </div>
+          <span>Decisions / Updates / Tasking</span>
+        </div>
+        <div class="incident-log-list">
+          {% for row in command_log %}
+          <div class="incident-log-row">
+            <time>{{ row.time.strftime('%H:%M') if row.time else '--:--' }}</time>
+            <div>
+              <strong>{{ row.label }}</strong>
+              <small>{{ row.source }} / {{ row.priority }}</small>
+              <p>{{ row.detail }}</p>
+            </div>
+          </div>
+          {% else %}
+          <p class="incident-empty">No command log entries yet.</p>
+          {% endfor %}
+        </div>
+      </article>
+
+      <article class="incident-command-panel">
+        <div class="incident-command-panel-head">
+          <div>
+            <p class="eyebrow">Add Entry</p>
+            <h2>Post Command Update</h2>
+          </div>
+        </div>
+        <form class="incident-command-form" method="post" action="{{ url_for('incident_command.add_log') }}">
+          <input type="hidden" name="csrf_token" value="{{ g.csrf_token }}">
+          <label>Entry Type
+            <select name="note_type">
+              <option value="incident_command">Command Update</option>
+              <option value="incident_objective">Incident Objective</option>
+              <option value="par_check">PAR / Accountability</option>
+              <option value="safety_message">Safety Message</option>
+              <option value="after_action">After-Action Note</option>
+            </select>
+          </label>
+          <label>Priority
+            <select name="priority">
+              <option>Normal</option>
+              <option>High</option>
+              <option>Command Critical</option>
+            </select>
+          </label>
+          <label>Title
+            <input name="title" placeholder="Example: Perimeter established">
+          </label>
+          <label>Command Note
+            <textarea name="body" rows="6" placeholder="Record the decision, assignment, update, or after-action observation."></textarea>
+          </label>
+          <button class="btn btn-primary" type="submit">Save Command Entry</button>
+        </form>
+      </article>
+
+      <article class="incident-command-panel" id="aar">
+        <div class="incident-command-panel-head">
+          <div>
+            <p class="eyebrow">After Action</p>
+            <h2>AAR Snapshot</h2>
+          </div>
+          <span>Command Review</span>
+        </div>
+        <div class="incident-aar-grid">
+          <div><span>What worked</span><strong>Capture decisions and response strengths during the incident, not hours later.</strong></div>
+          <div><span>Needs follow-up</span><strong>Use Assistant Ops Tracker for due-outs, training gaps, and corrective tasking.</strong></div>
+          <div><span>Evidence / reports</span><strong>Link reports, photos, bodycam footage, forms, and diagrams before closing.</strong></div>
+        </div>
+        <div class="incident-task-list">
+          {% for task in tasks %}
+          <a href="{{ url_for('assistant_operations.dashboard') }}">
+            <span>{{ task.priority }}</span>
+            <strong>{{ task.task_title }}</strong>
+            <small>{{ task.status }} / {{ task.percent_complete }}%</small>
+          </a>
+          {% else %}
+          <p class="incident-empty">No open Assistant Ops tasking is visible.</p>
+          {% endfor %}
+        </div>
+      </article>
+    </section>
+  </main>
+</div>
+{% endblock %}
