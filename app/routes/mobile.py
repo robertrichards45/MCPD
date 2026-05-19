@@ -115,7 +115,12 @@ def incident_draft_api():
             draft.updated_at = utcnow_naive()
             db.session.add(draft)
             db.session.add(AuditLog(actor_id=current_user.id, action='mobile_incident_draft_clear', details=str(draft.id)))
-            db.session.commit()
+            try:
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+                current_app.logger.exception('db commit failed clearing incident draft')
+                return jsonify({'ok': False, 'error': 'Database error'}), 500
         return jsonify({'ok': True})
 
     payload = request.get_json(silent=True) or {}
@@ -2087,6 +2092,10 @@ def supervisor_dashboard():
     for p in packets:
         officer_buckets[p.officer_user_id].append(p)
 
+    # Pre-load all officers that have 2+ packets to avoid N+1 queries
+    flagged_ids = [oid for oid, pkts in officer_buckets.items() if len(pkts) >= 2]
+    officers_by_id = {u.id: u for u in User.query.filter(User.id.in_(flagged_ids)).all()} if flagged_ids else {}
+
     officer_patterns = []
     for officer_id, o_packets in officer_buckets.items():
         if len(o_packets) < 2:
@@ -2110,10 +2119,8 @@ def supervisor_dashboard():
                 pass
         avg_wc = int(sum(o_word_counts) / len(o_word_counts)) if o_word_counts else 0
         flags = _compute_training_flags(o_missing, len(o_packets), avg_wc)
-        if flags:
-            officer = User.query.get(officer_id)
-            if officer:
-                officer_patterns.append({'officer': officer, 'packet_count': len(o_packets), 'flags': flags})
+        if flags and officer_id in officers_by_id:
+            officer_patterns.append({'officer': officers_by_id[officer_id], 'packet_count': len(o_packets), 'flags': flags})
 
     return render_template(
         'mobile_supervisor_dashboard.html',

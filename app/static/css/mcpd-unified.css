@@ -1227,54 +1227,9 @@ body[data-theme="dark"] .mobile-header {
   border-bottom-color: var(--mcpd-gold);
 }
 
-/* Mobile tab bar */
-.mobile-tab-bar {
-  position: fixed;
-  bottom: 0; left: 0; right: 0;
-  z-index: var(--z-dock, 400);
-  padding: 6px 8px calc(env(safe-area-inset-bottom, 0px) + 6px);
-  background: var(--mcpd-navy);
-  border-top: 2px solid var(--mcpd-gold);
-}
-
-.mobile-tab-strip {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 4px;
-  max-width: 640px;
-  margin: 0 auto;
-}
-
-.mobile-tab {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  min-height: 52px;
-  padding: 6px 4px;
-  border-radius: 10px;
-  text-decoration: none;
-  color: rgba(255,255,255,.6);
-  font-size: 0.68rem;
-  font-weight: 800;
-  letter-spacing: 0.03em;
-  border: 1px solid transparent;
-  transition: background .12s, color .12s;
-}
-
-.mobile-tab svg { width: 22px; height: 22px; stroke: currentColor; fill: none; flex-shrink: 0; }
-
-.mobile-tab.is-active {
-  background: rgba(183,151,91,.2);
-  border-color: rgba(183,151,91,.4);
-  color: var(--mcpd-gold-lt);
-}
-
-.mobile-tab:hover { color: rgba(255,255,255,.85); }
-
-body[data-theme="dark"] .mobile-tab-bar { background: #041120; }
-body[data-theme="dark"] .mobile-tab.is-active { background: rgba(183,151,91,.18); }
+/* Mobile tab bar — styles live in partials/mobile_tab_bar.html inline <style>
+   so they load with the partial and aren't affected by external CSS load order.
+   Do not add .mobile-tab-bar / .mobile-tab-strip / .mobile-tab rules here. */
 
 /* Mobile content area */
 .mobile-main {
@@ -1692,7 +1647,7 @@ body[data-theme="dark"] #sig-pad { background: #ffffff !important; }
 @media (max-width: 767px) {
   .mcpd-dashboard,
   .page-wrap {
-    padding: 12px 12px calc(var(--mcpd-dock-h) + 20px);
+    padding: 12px 12px calc(var(--mcpd-dock-h) + env(safe-area-inset-bottom, 0px) + 20px);
   }
 
   .mcpd-action-grid {
@@ -2545,7 +2500,7 @@ body[data-theme="dark"] .mcpd-mobile-topbar { background: #041120; }
   flex: 1 1 auto;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 14px 12px calc(var(--mcpd-dock-h, 68px) + env(safe-area-inset-bottom, 0px) + 16px);
+  padding: 14px 12px calc(var(--mcpd-dock-h, 96px) + env(safe-area-inset-bottom, 0px) + 16px);
   max-width: 640px;
   margin: 0 auto;
   width: 100%;
