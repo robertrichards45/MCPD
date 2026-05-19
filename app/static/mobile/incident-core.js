@@ -709,6 +709,19 @@
       const current = readState();
       return writeState(Object.assign({}, current, { packetStatus: status || current.packetStatus || 'draft' }));
     },
+    toggleStatute(value) {
+      const clean = String(value || '').trim();
+      if (!clean) return readState();
+      const current = readState();
+      const statutes = Array.isArray(current.statutes) ? current.statutes.slice() : [];
+      const index = statutes.findIndex((entry) => entry.toLowerCase() === clean.toLowerCase());
+      if (index >= 0) {
+        statutes.splice(index, 1);
+      } else {
+        statutes.push(clean);
+      }
+      return writeState(Object.assign({}, current, { statutes }));
+    },
   };
 
   function escapeHtml(value) {
@@ -1388,6 +1401,33 @@
     `;
   }
 
+  function inlineProgressChips(total, activeIndex) {
+    if (!total || total <= 1) return '';
+    const chips = [];
+    for (let i = 0; i < total; i++) {
+      chips.push(`<span class="mobile-progress-chip${i === activeIndex ? ' is-active' : i < activeIndex ? ' is-done' : ''}"></span>`);
+    }
+    return `<div class="mobile-progress-chips">${chips.join('')}</div>`;
+  }
+
+  function personOptionsMarkup(state, selectedPersonId) {
+    const persons = Array.isArray(state && state.persons) ? state.persons : [];
+    const options = persons.map((p) => {
+      const label = escapeHtml(`${p.role || 'Person'} — ${p.name || 'Unnamed'}`);
+      const selected = p.id === selectedPersonId ? ' selected' : '';
+      return `<option value="${escapeHtml(p.id)}"${selected}>${label}</option>`;
+    });
+    return `
+      <label class="mobile-field-block">
+        <span>Link to Involved Person</span>
+        <select class="mobile-text-input" name="personId">
+          <option value="">— none —</option>
+          ${options.join('')}
+        </select>
+      </label>
+    `;
+  }
+
   function bindSignatureCanvas(canvas, onChange) {
     if (!canvas) return;
     const context = canvas.getContext('2d');
@@ -1692,6 +1732,11 @@
       });
     }
     return steps;
+  }
+
+  function isDomesticSelected(state) {
+    const forms = Array.isArray(state && state.selectedForms) ? state.selectedForms : [];
+    return forms.some((name) => normalizeLookupKey(name).includes('domesticviolence'));
   }
 
   function isDomesticFieldRelevant(field, draft) {

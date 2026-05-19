@@ -16,7 +16,10 @@
   <div id="msr-no-state" class="msr-card" style="display:none;">
     <p class="msr-card-label">No Active Draft</p>
     <p class="msr-card-body">No incident draft found. Start an incident workflow and the packet readiness check will appear here.</p>
-    <a class="msr-btn-primary" href="{{ url_for('mobile.incident_start') }}">Start Incident</a>
+    <div class="msr-action-list">
+      <a class="msr-btn-primary" href="{{ url_for('mobile.incident_start') }}">Start Incident</a>
+      <a class="msr-btn-ghost" href="{{ url_for('mobile.home') }}">Back to Home</a>
+    </div>
   </div>
 
   <div id="msr-content" style="display:none;">

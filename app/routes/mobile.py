@@ -108,6 +108,12 @@ def incident_draft_api():
             }
         )
 
+    if request.method in ('POST', 'DELETE'):
+        _token = request.headers.get('X-CSRFToken') or (request.get_json(silent=True) or {}).get('_csrf_token') or ''
+        _expected = session.get('_csrf_token', '')
+        if not _expected or not hmac.compare_digest(str(_token), str(_expected)):
+            return jsonify({'ok': False, 'error': 'CSRF validation failed.'}), 403
+
     if request.method == 'DELETE':
         draft = _active_incident_draft()
         if draft:
@@ -1462,6 +1468,7 @@ def fast_capture():
 @bp.route('/mobile/supervisor-review')
 @login_required
 def supervisor_review():
+    _supervisor_required_or_403()
     return render_template(
         'mobile_supervisor_review.html',
         mobile_header_kicker='Supervisor Review',
@@ -1765,6 +1772,7 @@ def packet_success():
 
 @bp.route('/mobile/api/incident/send-packet', methods=['POST'])
 @login_required
+@_require_csrf
 def send_packet_api():
     payload = request.get_json(silent=True) or {}
     state = payload.get('incident') if isinstance(payload.get('incident'), dict) else payload
@@ -1886,7 +1894,7 @@ def send_packet_api():
         )
         db.session.add(packet_record)
     except Exception:
-        pass
+        current_app.logger.exception('Failed to create IncidentPacket record')
     draft = _active_incident_draft()
     if draft:
         draft.status = 'SENT'

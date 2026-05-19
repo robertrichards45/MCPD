@@ -153,10 +153,10 @@
     <p class="spr-card-body">Current status: <strong class="spr-approval-{{ packet.approval_status.lower() }}">{{ packet.approval_status.replace('_', ' ') }}</strong></p>
     <textarea id="spr-notes-input" class="spr-notes-input" placeholder="Add notes or required corrections (optional)…" rows="4">{{ packet.supervisor_notes or '' }}</textarea>
     <div class="spr-approval-btns">
-      <button class="spr-btn-approve" data-packet-id="{{ packet.id }}" data-action="approve">
+      <button class="spr-btn-approve" data-packet-id="{{ packet.id }}" data-action="approve" style="background:#16a34a;color:#fff;border:none;">
         &#10003; Mark Approved
       </button>
-      <button class="spr-btn-correction" data-packet-id="{{ packet.id }}" data-action="needs_correction">
+      <button class="spr-btn-correction" data-packet-id="{{ packet.id }}" data-action="needs_correction" style="background:#c53030;color:#fff;border:none;">
         &#9998; Needs Correction
       </button>
     </div>
@@ -193,7 +193,8 @@
         if (data.ok) {
           var label = action === 'approve' ? 'Approved' : 'Marked Needs Correction';
           fb.className = 'spr-action-feedback spr-feedback-ok';
-          fb.textContent = '✓ ' + label + '. Reload to see updated status.';
+          fb.textContent = '✓ ' + label + '. Refreshing…';
+          setTimeout(function () { window.location.reload(); }, 1200);
         } else {
           fb.className = 'spr-action-feedback spr-feedback-err';
           fb.textContent = data.error || 'Action failed.';

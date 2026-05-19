@@ -78,7 +78,7 @@
 
     <label class="mobile-officer-check">
       <input type="checkbox" name="active" value="1" {% if officer.active and not officer.pending_approval %}checked{% endif %} />
-      <span>Approve account and allow login</span>
+      <span>Account active and approved{% if officer.pending_approval %} (check to approve){% endif %}</span>
     </label>
 
     <button class="mobile-officer-save" type="submit">Save Assignment</button>
