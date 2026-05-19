@@ -630,6 +630,8 @@ def _packet_validation(state, form_entries, recipient):
 
     if not recipient and not _state_packet_email(state):
         errors.append({'field': 'Profile Email', 'message': 'Your profile email is required before sending the packet.'})
+    elif recipient and not re.match(r'^[^@\s]+@[^@\s]+\.[^@\s]+$', recipient):
+        errors.append({'field': 'Recipient Email', 'message': f'"{recipient}" is not a valid email address.'})
 
     return {
         'errors': errors,

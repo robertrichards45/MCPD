@@ -2274,6 +2274,7 @@
 
   function PersonsListPage(root, urls) {
     const state = incidentStore.getState();
+    if (!currentRule(state)) { window.location.replace(urls.start); return; }
     const persons = Array.isArray(state.persons) ? state.persons : [];
     root.innerHTML = `
       <section class="mobile-section-block">
@@ -2648,6 +2649,7 @@
 
   function FactsCapturePage(root, urls) {
     const state = incidentStore.getState();
+    if (!currentRule(state)) { window.location.replace(urls.start); return; }
     const values = factValueMap(state);
     const basics = state.incidentBasics || {};
     const persons = Array.isArray(state.persons) ? state.persons : [];
@@ -2924,6 +2926,7 @@
 
   function StatementLauncherPage(root, urls) {
     const state = incidentStore.getState();
+    if (!currentRule(state)) { window.location.replace(urls.start); return; }
     const statements = Array.isArray(state.statements) ? state.statements : [];
     const variant = defaultStatementVariant(state);
     const variantConfig = statementConfig(variant);
@@ -3457,6 +3460,7 @@
         status.textContent = 'Enter the email before sending.';
         return;
       }
+      if (!window.confirm(`Send the incident packet to ${recipient}?\n\nThis cannot be undone.`)) return;
       sendButton.disabled = true;
       status.textContent = 'Sending...';
       try {

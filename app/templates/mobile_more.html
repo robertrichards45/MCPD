@@ -44,6 +44,7 @@
       {{ tool_card('Assistant Ops Tracker', 'Due-outs, training, inspections, projects, and watch readiness.', url_for('assistant_operations.dashboard'), 'command', True) }}
     {% endif %}
     {{ tool_card('Start Report', 'Begin the mobile field reporting workflow.', url_for('mobile.incident_start'), 'reports', True) }}
+    {{ tool_card('Fast Capture', 'Log quick field notes now and refine in the full workflow later.', url_for('mobile.fast_capture'), 'narrative') }}
     {{ tool_card('Reports Center', 'Open visible reports, packets, and supervisor review status.', url_for('reports.list_reports'), 'reports') }}
     {{ tool_card('Forms Library', 'Open official forms and PDF workflows.', url_for('forms.list_forms'), 'library') }}
     {{ tool_card('Narrative Creator', 'Turn rough report notes into a clean draft narrative.', url_for('bodycam.mobile_narrative_tool'), 'narrative') }}
@@ -52,6 +53,8 @@
     {{ tool_card('Body Cam Mode', 'Record video, audio, and transcript notes.', url_for('bodycam.mobile_recording'), 'camera') }}
     {{ tool_card('Bodycam Footage', 'Review saved recordings and transcripts.', url_for('bodycam.mobile_library'), 'library') }}
     {{ tool_card('Saved Work', 'Open saved work, packets, and drafts.', url_for('forms.saved_forms'), 'saved') }}
+    {{ tool_card('My Stats', 'View your saved forms, reports, and submitted packet counts.', url_for('mobile.officer_stats'), 'reports') }}
+    {{ tool_card('Edit Contact Info', 'Update your profile email and contact details.', url_for('mobile.officer_contact'), 'officers') }}
     {% if portal_can_access_builder_mode %}
       {{ tool_card('Site Builder', 'Owner-controlled backend requests and build tools.', url_for('admin.site_builder'), 'builder') }}
     {% endif %}
