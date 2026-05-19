@@ -3155,3 +3155,118 @@ body[data-theme="dark"] .mcpd-mobile-nav-gps-error { background: rgba(120,53,15,
 }
 
 .mcpd-theme-toggle:hover { background: rgba(255,255,255,.1); }
+
+/* ── 21. DARK MODE OVERRIDES FOR HARDCODED COMPONENTS ───── */
+
+/* BOLO card dark mode — app.css uses hardcoded light colors, no dark mode */
+body[data-theme="dark"] .bolo-card {
+  background: var(--mcpd-surface);
+  color: var(--mcpd-ink);
+}
+
+body[data-theme="dark"] .bolo-card-photo { background: #0c1a2e; }
+body[data-theme="dark"] .bolo-no-photo   { color: var(--mcpd-subtle); }
+
+body[data-theme="dark"] .bolo-card-name    { color: var(--mcpd-ink); }
+body[data-theme="dark"] .bolo-card-alias   { color: var(--mcpd-muted); }
+body[data-theme="dark"] .bolo-card-offense { color: var(--mcpd-ink); }
+body[data-theme="dark"] .bolo-card-vehicle { color: var(--mcpd-muted); }
+body[data-theme="dark"] .bolo-card-meta    { color: var(--mcpd-subtle); }
+
+body[data-theme="dark"] .bolo-form-section-head {
+  color: var(--mcpd-muted);
+  border-bottom-color: var(--mcpd-line);
+}
+
+body[data-theme="dark"] .bolo-detail-no-photo {
+  background: #0c1a2e;
+  color: var(--mcpd-subtle);
+}
+
+/* Notification / messaging dark mode */
+body[data-theme="dark"] .ops-panel-head {
+  border-bottom-color: var(--mcpd-line);
+}
+
+/* Personnel edit dark mode */
+body[data-theme="dark"] .personnel-edit-page  { background: var(--mcpd-bg); }
+body[data-theme="dark"] .personnel-edit-card  { background: var(--mcpd-surface); border-color: var(--mcpd-line); }
+body[data-theme="dark"] .personnel-avatar     { background: var(--mcpd-navy-2); color: var(--mcpd-gold-lt); border-color: var(--mcpd-line); }
+
+/* Login page accents — ensure navy/gold palette renders on light bg */
+.login-callout {
+  background: rgba(31,95,159,.07);
+  border-color: rgba(31,95,159,.2);
+}
+
+body[data-theme="dark"] .login-panel {
+  background: var(--mcpd-surface);
+  border-color: var(--mcpd-line);
+}
+
+body[data-theme="dark"] .login-panel__brand {
+  background: var(--mcpd-navy-2);
+  border-right-color: var(--mcpd-line);
+}
+
+body[data-theme="dark"] .login-panel__auth { background: var(--mcpd-surface); }
+
+body[data-theme="dark"] .login-status-pill {
+  background: var(--mcpd-surf-2);
+  border-color: var(--mcpd-line);
+  color: var(--mcpd-muted);
+}
+
+body[data-theme="dark"] .login-status-pill strong { color: var(--mcpd-ink); }
+
+body[data-theme="dark"] .login-callout {
+  background: rgba(31,95,159,.12);
+  border-color: rgba(31,95,159,.3);
+}
+
+/* Admin system status dark mode */
+body[data-theme="dark"] .admin-status-card { background: var(--mcpd-surface); border-color: var(--mcpd-line); }
+
+/* Announcement cards dark mode */
+body[data-theme="dark"] .announcement-card { background: var(--mcpd-surface); border-color: var(--mcpd-line); }
+
+/* CLEO (AI writing) dark mode */
+body[data-theme="dark"] .cleo-panel,
+body[data-theme="dark"] .cleo-input-area,
+body[data-theme="dark"] .cleo-result-card {
+  background: var(--mcpd-surface);
+  border-color: var(--mcpd-line);
+  color: var(--mcpd-ink);
+}
+
+/* AI assistant box dark mode */
+body[data-theme="dark"] .ai-box,
+body[data-theme="dark"] .ai-drawer {
+  background: var(--mcpd-surface);
+  border-color: var(--mcpd-line);
+}
+
+/* Armory cards dark mode */
+body[data-theme="dark"] .armory-card { background: var(--mcpd-surface); border-color: var(--mcpd-line); }
+
+/* Report detail dark mode */
+body[data-theme="dark"] .report-detail-card { background: var(--mcpd-surface); border-color: var(--mcpd-line); }
+
+/* Incident command dark mode */
+body[data-theme="dark"] .incident-command-panel { background: var(--mcpd-surface); border-color: var(--mcpd-line); }
+
+/* Forms fill page dark mode */
+body[data-theme="dark"] .form-fill-panel,
+body[data-theme="dark"] .form-right-panel { background: var(--mcpd-surface); border-color: var(--mcpd-line); }
+
+/* Training pages dark mode */
+body[data-theme="dark"] .training-card,
+body[data-theme="dark"] .training-module { background: var(--mcpd-surface); border-color: var(--mcpd-line); }
+
+/* Qual tracker dark mode */
+body[data-theme="dark"] .qual-card { background: var(--mcpd-surface); border-color: var(--mcpd-line); }
+
+/* Reconstruction/diagram dark mode */
+body[data-theme="dark"] .recon-card,
+body[data-theme="dark"] .recon-canvas-panel,
+body[data-theme="dark"] .recon-inspector-panel { background: var(--mcpd-surface); border-color: var(--mcpd-line); }
