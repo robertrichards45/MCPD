@@ -3156,7 +3156,52 @@ body[data-theme="dark"] .mcpd-mobile-nav-gps-error { background: rgba(120,53,15,
 
 .mcpd-theme-toggle:hover { background: rgba(255,255,255,.1); }
 
-/* ── 21. DARK MODE OVERRIDES FOR HARDCODED COMPONENTS ───── */
+/* ── 21. MOBILE SECTION LABELS AND STATUS COLORS ─────────── */
+
+/* Section labels — gold accent for mobile pages */
+.mobile-section-label {
+  color: var(--mcpd-gold);
+}
+
+.mobile-card-status {
+  color: var(--mcpd-gold);
+}
+
+body[data-theme="dark"] .mobile-section-label,
+body[data-theme="dark"] .mobile-card-status {
+  color: var(--mcpd-gold-lt);
+}
+
+/* Mobile section head text colors */
+.mobile-section-head h3,
+.mobile-hero-copy h2,
+.mobile-action-card h4,
+.mobile-step-copy h4 {
+  color: var(--mcpd-ink);
+}
+
+.mobile-section-head p,
+.mobile-hero-copy p,
+.mobile-action-card p,
+.mobile-step-copy p {
+  color: var(--mcpd-muted);
+}
+
+body[data-theme="dark"] .mobile-section-head h3,
+body[data-theme="dark"] .mobile-hero-copy h2,
+body[data-theme="dark"] .mobile-action-card h4,
+body[data-theme="dark"] .mobile-step-copy h4 {
+  color: var(--mcpd-ink);
+}
+
+body[data-theme="dark"] .mobile-section-head p,
+body[data-theme="dark"] .mobile-hero-copy p,
+body[data-theme="dark"] .mobile-action-card p,
+body[data-theme="dark"] .mobile-step-copy p {
+  color: var(--mcpd-muted);
+}
+
+/* ── 22. DARK MODE OVERRIDES FOR HARDCODED COMPONENTS ───── */
 
 /* BOLO card dark mode — app.css uses hardcoded light colors, no dark mode */
 body[data-theme="dark"] .bolo-card {
