@@ -2067,6 +2067,7 @@ def _packet_review_context(packet: IncidentPacket) -> dict:
 @login_required
 def supervisor_dashboard():
     _supervisor_required_or_403()
+    total_packet_count = IncidentPacket.query.count()
     packets = (
         IncidentPacket.query
         .order_by(IncidentPacket.submitted_at.desc())
@@ -2143,6 +2144,8 @@ def supervisor_dashboard():
         top_missing=top_missing,
         focus_areas=focus_areas,
         officer_patterns=officer_patterns,
+        total_packet_count=total_packet_count,
+        showing_limit=60,
         PACKET_APPROVAL_PENDING=PACKET_APPROVAL_PENDING,
         PACKET_APPROVAL_APPROVED=PACKET_APPROVAL_APPROVED,
         PACKET_APPROVAL_NEEDS_CORRECTION=PACKET_APPROVAL_NEEDS_CORRECTION,

@@ -18,6 +18,11 @@
       <span class="cmd-count-label">Needs Correction</span>
     </div>
   </div>
+  {% if total_packet_count > showing_limit %}
+  <div class="cmd-card" style="background:#fff7dc;border-color:rgba(201,168,106,.55);">
+    <p class="cmd-card-body" style="color:#7c4a03;margin:0;">Showing the {{ showing_limit }} most recent of {{ total_packet_count }} total packets.</p>
+  </div>
+  {% endif %}
 
   <!-- Quick Links -->
   <div class="cmd-card">

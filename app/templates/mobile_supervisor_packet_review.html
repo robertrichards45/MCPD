@@ -76,8 +76,8 @@
   </div>
 
   <!-- Narrative preview -->
-  {% if narrative_text %}
   <div class="spr-card">
+    {% if narrative_text %}
     <p class="spr-card-label">Narrative ({{ narrative_quality.word_count }} words)</p>
     {% if narrative_quality.prompts %}
     <div class="spr-nq-prompts">
@@ -90,8 +90,11 @@
     </div>
     {% endif %}
     <div class="spr-narrative-text">{{ narrative_text }}</div>
+    {% else %}
+    <p class="spr-card-label">Narrative</p>
+    <p class="spr-card-body" style="color:#c53030;">No narrative written. Officer must complete the narrative before the packet can be approved.</p>
+    {% endif %}
   </div>
-  {% endif %}
 
   <!-- Persons -->
   {% if persons %}
@@ -151,7 +154,8 @@
   <div class="spr-card spr-approval-card">
     <p class="spr-card-label">Supervisor Action</p>
     <p class="spr-card-body">Current status: <strong class="spr-approval-{{ packet.approval_status.lower() }}">{{ packet.approval_status.replace('_', ' ') }}</strong></p>
-    <textarea id="spr-notes-input" class="spr-notes-input" placeholder="Add notes or required corrections (optional)…" rows="4">{{ packet.supervisor_notes or '' }}</textarea>
+    <textarea id="spr-notes-input" class="spr-notes-input" placeholder="Add notes or required corrections (optional)…" rows="4" maxlength="2000">{{ packet.supervisor_notes or '' }}</textarea>
+    <div class="spr-notes-count" style="font-size:.75rem;color:#94a3b8;text-align:right;" id="spr-notes-count"></div>
     <div class="spr-approval-btns">
       <button class="spr-btn-approve" data-packet-id="{{ packet.id }}" data-action="approve" style="background:#16a34a;color:#fff;border:none;">
         &#10003; Mark Approved
@@ -174,6 +178,17 @@
 <script>
 (function () {
   'use strict';
+  var notesInput = document.getElementById('spr-notes-input');
+  var notesCount = document.getElementById('spr-notes-count');
+  if (notesInput && notesCount) {
+    function updateCount() {
+      var len = notesInput.value.length;
+      notesCount.textContent = len + ' / 2000';
+      notesCount.style.color = len > 1800 ? '#c53030' : '#94a3b8';
+    }
+    notesInput.addEventListener('input', updateCount);
+    updateCount();
+  }
   var btns = document.querySelectorAll('[data-action]');
   btns.forEach(function (btn) {
     btn.addEventListener('click', function () {
