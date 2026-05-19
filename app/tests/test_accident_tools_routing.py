@@ -30,6 +30,7 @@ def _client_for_role(role=ROLE_WEBSITE_CONTROLLER):
         with client.session_transaction() as session:
             session["_user_id"] = str(user.id)
             session["_fresh"] = True
+            session["_csrf_token"] = "test-token"
     return client
 
 
@@ -95,6 +96,7 @@ def test_officer_diagram_saves_accident_details_and_vehicle_direction():
 
         save_response = client.post(
             f"/reports/accidents/officer-diagram/{diagram_id}",
+            headers={"X-CSRFToken": "test-token"},
             json={
                 "accidentDetails": {
                     "incidentNumber": "CAD-123",

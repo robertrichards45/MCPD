@@ -24,6 +24,11 @@
             <strong>{{ cleo_review_count|default(0) }}</strong>
           </article>
         </div>
+        <div class="forms-toolbar">
+          <a class="btn btn-primary" href="{{ url_for('reports.new_report') }}">Start New Report</a>
+          <a class="btn btn-outline-secondary" href="{{ url_for('reports.accidents') }}">Accident Tools</a>
+          <a class="btn btn-outline-secondary" href="{{ url_for('cleo_api.cleo_reports_page') }}">CLEOC Reports</a>
+        </div>
       </div>
     </section>
 

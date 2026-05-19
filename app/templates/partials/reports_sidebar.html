@@ -1,7 +1,10 @@
 <aside class="reports-command-sidebar" aria-label="Reports Center navigation">
   <div class="reports-sidebar-title">Reports Center</div>
   <a href="{{ url_for('reports.list_reports') }}">All Reports</a>
+  <a href="{{ url_for('reports.new_report') }}">Start New Report</a>
   <a href="{{ url_for('reports.list_reports') }}">My Reports</a>
   <a href="{{ url_for('reports.list_reports') }}">Traffic Stops</a>
   <a href="{{ url_for('reports.list_reports') }}">Incidents</a>
+  <a href="{{ url_for('reports.accidents') }}">Accident Tools</a>
+  <a href="{{ url_for('cleo_api.cleo_reports_page') }}">CLEOC Reports</a>
 </aside>

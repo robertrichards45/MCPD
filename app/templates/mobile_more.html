@@ -43,9 +43,14 @@
     {% if portal_can_access_assistant_operations %}
       {{ tool_card('Assistant Ops Tracker', 'Due-outs, training, inspections, projects, and watch readiness.', url_for('assistant_operations.dashboard'), 'command', True) }}
     {% endif %}
+    {{ tool_card('Start Report', 'Begin the mobile field reporting workflow.', url_for('mobile.incident_start'), 'reports', True) }}
     {{ tool_card('Reports Center', 'Open visible reports, packets, and supervisor review status.', url_for('reports.list_reports'), 'reports') }}
+    {{ tool_card('Forms Library', 'Open official forms and PDF workflows.', url_for('forms.list_forms'), 'library') }}
     {{ tool_card('Narrative Creator', 'Turn rough report notes into a clean draft narrative.', url_for('bodycam.mobile_narrative_tool'), 'narrative') }}
     {{ tool_card('5W Builder', 'Paste all facts in one box and extract the core 5Ws.', url_for('bodycam.mobile_five_w_tool'), 'narrative') }}
+    {{ tool_card('Accident Tools', 'Officer diagrams and reconstruction case tools.', url_for('reports.accidents'), 'vehicle') }}
+    {{ tool_card('Body Cam Mode', 'Record video, audio, and transcript notes.', url_for('bodycam.mobile_recording'), 'camera') }}
+    {{ tool_card('Bodycam Footage', 'Review saved recordings and transcripts.', url_for('bodycam.mobile_library'), 'library') }}
     {{ tool_card('Saved Work', 'Open saved work, packets, and drafts.', url_for('forms.saved_forms'), 'saved') }}
     {% if portal_can_access_builder_mode %}
       {{ tool_card('Site Builder', 'Owner-controlled backend requests and build tools.', url_for('admin.site_builder'), 'builder') }}

@@ -8,11 +8,16 @@ def _logged_in_client():
     app.config['TESTING'] = False
     with app.app_context():
         user = User.query.filter(User.username.ilike('robertrichards')).first() or User.query.first()
-        assert user is not None
+        if user is None:
+            user = User(username='forms_visibility_user', role='WEBSITE_CONTROLLER', active=True, pending_approval=False)
+            user.set_password('test-password')
+            db.session.add(user)
+            db.session.commit()
         client = app.test_client()
         with client.session_transaction() as session:
             session['_user_id'] = str(user.id)
             session['_fresh'] = True
+            session['_csrf_token'] = 'test-token'
     return client
 
 

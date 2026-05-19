@@ -16,24 +16,26 @@ def _client():
     return client
 
 
-def test_retired_desktop_modules_redirect_to_safe_pages():
+def test_restored_desktop_modules_load():
     client = _client()
 
-    forms = client.get('/forms', follow_redirects=False)
-    assert forms.status_code == 302
-    assert forms.headers['Location'].endswith('/forms/saved')
+    forms = client.get('/forms')
+    assert forms.status_code == 200
+    assert 'Forms Library' in forms.get_data(as_text=True)
 
-    bodycam = client.get('/bodycam', follow_redirects=False)
-    assert bodycam.status_code == 302
-    assert bodycam.headers['Location'].endswith('/dashboard')
+    bodycam = client.get('/bodycam')
+    assert bodycam.status_code == 200
+    assert 'Bodycam Footage' in bodycam.get_data(as_text=True)
 
-    accidents = client.get('/reports/accidents', follow_redirects=False)
-    assert accidents.status_code == 302
-    assert accidents.headers['Location'].endswith('/reports')
+    accidents = client.get('/reports/accidents')
+    assert accidents.status_code == 200
+    assert 'Accident Tools' in accidents.get_data(as_text=True)
 
-    report_builder = client.get('/reports/new', follow_redirects=False)
-    assert report_builder.status_code == 302
-    assert report_builder.headers['Location'].endswith('/reports')
+    report_builder = client.get('/reports/new')
+    assert report_builder.status_code == 200
+
+    cleoc = client.get('/cleo/reports')
+    assert cleoc.status_code == 200
 
 def test_narrative_creator_and_5w_builder_are_available():
     client = _client()
@@ -47,9 +49,8 @@ def test_narrative_creator_and_5w_builder_are_available():
     assert '5W Builder' in five_w.get_data(as_text=True)
 
 
-def test_retired_mobile_report_builder_redirects_home():
+def test_restored_mobile_report_builder_loads():
     client = _client()
 
     response = client.get('/mobile/incident/start', follow_redirects=False)
-    assert response.status_code == 302
-    assert response.headers['Location'].endswith('/mobile/home')
+    assert response.status_code == 200

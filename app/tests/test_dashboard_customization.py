@@ -35,8 +35,8 @@ def test_dashboard_customize_page_loads():
         assert "Customize Dashboard" in html
         assert "Quick Action Cards" in html
         assert "Dashboard Panels" in html
-        assert "Start New Report" not in html
-        assert "Forms Library" not in html
+        assert "Start New Report" in html
+        assert "Forms Library" in html
         assert "Narrative Creator" in html
         assert "5W Builder" in html
     finally:

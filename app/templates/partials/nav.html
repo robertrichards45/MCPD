@@ -57,8 +57,25 @@
     <details class="mcpd-sidebar-admin" {% if reports_active %}open{% endif %}>
       <summary><svg class="nav-icon" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 2h7l3 3v9H3V2z"/><path d="M10 2v3h3"/><line x1="5" y1="8" x2="11" y2="8"/><line x1="5" y1="11" x2="9" y2="11"/></svg>Reports</summary>
       <a href="{{ url_for('reports.list_reports') }}">All Reports</a>
+      <a href="{{ url_for('reports.new_report') }}" {% if endpoint == 'reports.new_report' %}class="is-active"{% endif %}>Start New Report</a>
       <a href="{{ url_for('bodycam.narrative_tool') }}" {% if endpoint == 'bodycam.narrative_tool' %}class="is-active"{% endif %}>Narrative Creator</a>
       <a href="{{ url_for('bodycam.five_w_tool') }}" {% if endpoint == 'bodycam.five_w_tool' %}class="is-active"{% endif %}>5W Builder</a>
+      <a href="{{ url_for('reports.accidents') }}" {% if endpoint.startswith('reports.accident') or endpoint.startswith('reports.officer_accident') or endpoint.startswith('reports.investigator_reconstruction') %}class="is-active"{% endif %}>Accident Tools</a>
+      <a href="{{ url_for('cleo_api.cleo_reports_page') }}" {% if endpoint.startswith('cleo_api.') %}class="is-active"{% endif %}>CLEOC Reports</a>
+    </details>
+    <details class="mcpd-sidebar-admin" {% if forms_active %}open{% endif %}>
+      <summary><svg class="nav-icon" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2" y="2" width="12" height="12" rx="1"/><path d="M5 5h6M5 8h6M5 11h4"/></svg>Forms</summary>
+      <a href="{{ url_for('forms.list_forms') }}" {% if endpoint == 'forms.list_forms' %}class="is-active"{% endif %}>Forms Library</a>
+      <a href="{{ url_for('forms.saved_forms') }}">Saved Forms</a>
+      {% if portal_effective_role == 'WEBSITE_CONTROLLER' %}
+        <a href="{{ url_for('forms.forms_manager') }}" {% if endpoint == 'forms.forms_manager' %}class="is-active"{% endif %}>Forms Manager</a>
+        <a href="{{ url_for('forms.call_type_rules_manager') }}" {% if endpoint == 'forms.call_type_rules_manager' %}class="is-active"{% endif %}>Call Type Rules</a>
+      {% endif %}
+    </details>
+    <details class="mcpd-sidebar-admin" {% if endpoint.startswith('bodycam.') and endpoint not in ['bodycam.narrative_tool', 'bodycam.five_w_tool'] %}open{% endif %}>
+      <summary><svg class="nav-icon" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2" y="4" width="9" height="8" rx="1"/><path d="M11 7l3-2v6l-3-2"/></svg>Bodycam</summary>
+      <a href="{{ url_for('bodycam.new_recording') }}" {% if endpoint == 'bodycam.new_recording' %}class="is-active"{% endif %}>Body Cam Mode</a>
+      <a href="{{ url_for('bodycam.library') }}" {% if endpoint == 'bodycam.library' %}class="is-active"{% endif %}>Bodycam Footage</a>
     </details>
     <a class="{% if orders_active %}is-active{% endif %}" href="{{ url_for('orders.reference_search') }}"><svg class="nav-icon" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2" y="3" width="10" height="12" rx="1"/><path d="M5 3V1h8v12h-1"/><line x1="4" y1="7" x2="9" y2="7"/><line x1="4" y1="10" x2="7" y2="10"/></svg>Orders &amp; Memos</a>
     <a class="{% if training_active %}is-active{% endif %}" href="{{ url_for('training.training_menu') }}"><svg class="nav-icon" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><polygon points="8,2 15,6 8,10 1,6"/><path d="M4 8.5v3.5a4 4 0 0 0 8 0V8.5"/><line x1="14" y1="6" x2="14" y2="11"/></svg>Training</a>

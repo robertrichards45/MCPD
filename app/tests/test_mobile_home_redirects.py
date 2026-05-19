@@ -50,19 +50,19 @@ def test_dashboard_keeps_desktop_user_agents_on_desktop_dashboard():
     assert response.status_code == 200
     html = response.get_data(as_text=True)
     assert 'Operational picture' in html
-    assert 'Start New Report' not in html
-    assert 'Forms Library' not in html
+    assert 'Start New Report' in html
+    assert 'Forms Library' in html
 
 
-def test_mobile_home_rebuild_has_only_primary_field_actions():
+def test_mobile_home_has_primary_field_actions():
     client = _logged_in_client()
     response = client.get('/mobile/home')
     assert response.status_code == 200
     html = response.get_data(as_text=True)
     assert 'MCPD' in html
     assert 'Law Lookup' in html
-    assert 'Start Report' not in html
-    assert 'Forms' not in html
+    assert 'Start Report' in html or 'Continue Report' in html
+    assert 'Forms' in html
     assert 'Officer Stats' in html
     assert 'Contact Info' in html
     assert 'Edit' in html
@@ -112,8 +112,7 @@ def test_mobile_stats_and_contact_pages_work_without_desktop_shell():
 def test_mobile_shell_pages_always_have_home_and_menu_escape_links():
     client = _logged_in_client()
     response = client.get('/mobile/incident/start', follow_redirects=False)
-    assert response.status_code == 302
-    assert response.headers['Location'].endswith('/mobile/home')
+    assert response.status_code == 200
     response = client.get('/mobile/more')
     assert response.status_code == 200
     html = response.get_data(as_text=True)
