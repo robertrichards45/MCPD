@@ -46,3 +46,18 @@
         <strong>No-Retention Mode:</strong> This completed data is temporary and will not be saved on the website.
       </div>
       {% endif %}
+
+      {% if field_values %}
+      <div class="form-fields-preview">
+        {% for field in form_fields %}
+        <div class="form-preview-row">
+          <span class="form-preview-label">{{ field.label }}</span>
+          <span class="form-preview-value">{{ field_values.get(field.name, '') }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
