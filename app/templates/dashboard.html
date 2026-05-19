@@ -173,7 +173,11 @@
           <h2>Operational picture</h2>
           <p>Incident status, unit posture, map layers, and readiness analytics in one command-grade view.</p>
         </div>
+        {% if dashboard_live_ops.is_command %}
         <a class="btn btn-outline-secondary" href="{{ url_for('incident_command.dashboard') }}">Open Incident Command</a>
+        {% else %}
+        <a class="btn btn-outline-secondary" href="{{ url_for('reports.list_reports') }}">Open Reports</a>
+        {% endif %}
       </div>
 
       <div class="mcpd-response-alerts">

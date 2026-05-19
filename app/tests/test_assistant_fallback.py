@@ -47,8 +47,8 @@ def test_assistant_returns_local_report_help_when_ai_key_missing(monkeypatch):
     payload = response.get_json()
     assert payload['ok'] is True
     assert payload['mode'] == 'local_fallback'
-    assert 'Start Report' in payload['reply']
-    assert '/reports/new' in payload['reply']
+    assert 'Reports Center' in payload['reply']
+    assert '/reports' in payload['reply']
 
 
 def test_assistant_returns_local_law_lookup_help_when_ai_key_missing(monkeypatch):
@@ -102,13 +102,13 @@ def test_assistant_short_navigation_command_opens_law_lookup(monkeypatch):
     assert payload['action']['url'] == '/legal/search'
 
 
-def test_assistant_can_navigate_to_bodycam_and_builder(monkeypatch):
+def test_assistant_can_navigate_to_narrative_tools_and_builder(monkeypatch):
     monkeypatch.delenv('OPENAI_API_KEY', raising=False)
     client = _logged_in_client()
 
-    bodycam = client.post(
+    narrative = client.post(
         '/api/assistant/ask',
-        json={'message': 'open bodycam mode'},
+        json={'message': 'open narrative creator'},
         headers={'X-CSRFToken': 'test-token'},
     ).get_json()
     builder = client.post(
@@ -117,7 +117,7 @@ def test_assistant_can_navigate_to_bodycam_and_builder(monkeypatch):
         headers={'X-CSRFToken': 'test-token'},
     ).get_json()
 
-    assert bodycam['action']['url'] == '/bodycam/new'
+    assert narrative['action']['url'] == '/tools/narrative'
     assert builder['action']['url'] == '/admin/site-builder'
 
 

@@ -35,6 +35,17 @@ def test_retired_desktop_modules_redirect_to_safe_pages():
     assert report_builder.status_code == 302
     assert report_builder.headers['Location'].endswith('/reports')
 
+def test_narrative_creator_and_5w_builder_are_available():
+    client = _client()
+
+    narrative = client.get('/tools/narrative')
+    assert narrative.status_code == 200
+    assert 'Narrative Creator' in narrative.get_data(as_text=True)
+
+    five_w = client.get('/tools/5w')
+    assert five_w.status_code == 200
+    assert '5W Builder' in five_w.get_data(as_text=True)
+
 
 def test_retired_mobile_report_builder_redirects_home():
     client = _client()

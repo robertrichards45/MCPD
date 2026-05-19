@@ -33,6 +33,8 @@ _log = logging.getLogger(__name__)
 DEFAULT_DASHBOARD_CARD_IDS = [
     'law_lookup',
     'incident_command',
+    'narrative_creator',
+    'five_w_builder',
     'orders_memos',
     'training',
     'saved_work',
@@ -405,6 +407,20 @@ def _dashboard_card_catalog():
             'endpoint': 'forms.saved_forms',
         },
         {
+            'id': 'narrative_creator',
+            'label': 'Narrative Creator',
+            'description': 'Turn rough notes into a clean draft narrative',
+            'icon': 'report',
+            'endpoint': 'bodycam.narrative_tool',
+        },
+        {
+            'id': 'five_w_builder',
+            'label': '5W Builder',
+            'description': 'Paste one block of facts and extract who, what, when, where, and why',
+            'icon': 'report',
+            'endpoint': 'bodycam.five_w_tool',
+        },
+        {
             'id': 'mobile_field_view',
             'label': 'Mobile Field View',
             'description': 'Open the phone/tablet field dashboard',
@@ -488,6 +504,8 @@ def _dashboard_panel_catalog(snapshot):
             'items': [
                 {'label': 'Reports Center', 'detail': snapshot['metrics'][0]['detail'] if snapshot['metrics'] else 'Open reports and packets', 'endpoint': 'reports.list_reports'},
                 {'label': 'Submitted Packets', 'detail': 'Supervisor review and correction status', 'endpoint': 'reports.list_reports'},
+                {'label': 'Narrative Creator', 'detail': 'Draft a professional narrative from rough notes', 'endpoint': 'bodycam.narrative_tool'},
+                {'label': '5W Builder', 'detail': 'Extract the core 5Ws from one statement box', 'endpoint': 'bodycam.five_w_tool'},
                 {'label': 'My Profile', 'detail': 'Contact info and emergency contacts', 'endpoint': 'officers.profile'},
             ],
         },

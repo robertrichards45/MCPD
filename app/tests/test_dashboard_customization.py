@@ -37,6 +37,8 @@ def test_dashboard_customize_page_loads():
         assert "Dashboard Panels" in html
         assert "Start New Report" not in html
         assert "Forms Library" not in html
+        assert "Narrative Creator" in html
+        assert "5W Builder" in html
     finally:
         _dispose_app(client.application)
 

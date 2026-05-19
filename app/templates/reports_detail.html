@@ -153,6 +153,7 @@
         <div class="reports-rail-tabs" role="tablist">
           <a class="is-active" href="{{ url_for('legal.legal_home') }}">Law Lookup</a>
           <a href="{{ url_for('orders.reference_search') }}">Orders</a>
+          <a href="{{ url_for('bodycam.narrative_tool') }}">Narrative</a>
           <a href="{{ url_for('forms.saved_forms') }}">Notes</a>
         </div>
         <div class="ops-panel">
@@ -160,6 +161,8 @@
           <p class="text-muted mb-3">Use the side workspace to reference laws, orders, and saved work without losing the report context.</p>
           <div class="forms-toolbar">
             <a class="btn btn-primary" href="{{ url_for('legal.legal_home') }}">Open Law Lookup</a>
+            <a class="btn btn-outline-secondary" href="{{ url_for('bodycam.narrative_tool') }}">Narrative Creator</a>
+            <a class="btn btn-outline-secondary" href="{{ url_for('bodycam.five_w_tool') }}">5W Builder</a>
             <a class="btn btn-outline-secondary" href="{{ url_for('orders.reference_search') }}">Orders &amp; Memos</a>
           </div>
         </div>

@@ -21,6 +21,16 @@ _VIDEO_EXTENSIONS = {
 
 @bp.before_request
 def _retired_bodycam_tools():
+    allowed_endpoints = {
+        'bodycam.narrative_tool',
+        'bodycam.five_w_tool',
+        'bodycam.bodycam_narrative_alias',
+        'bodycam.mobile_narrative_tool',
+        'bodycam.mobile_five_w_tool',
+        'bodycam.narrative_quality_check',
+    }
+    if request.endpoint in allowed_endpoints:
+        return None
     return redirect(url_for('dashboard.dashboard'))
 
 

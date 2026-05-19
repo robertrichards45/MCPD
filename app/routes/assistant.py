@@ -90,6 +90,11 @@ def _local_assistant_reply(message: str) -> str:
             'The standalone report builder has been removed from the normal portal. '
             f'Open Reports Center to review visible reports and packet status: {url_for("reports.list_reports")}.'
         )
+    if any(term in text for term in ('narrative', '5w', 'five w', 'five ws', '5ws')):
+        return (
+            'Use the writing tools for report wording. Narrative Creator drafts a narrative from rough notes, and 5W Builder extracts the core who, what, when, where, and why/how. '
+            f'Open Narrative Creator: {url_for("bodycam.narrative_tool")} or 5W Builder: {url_for("bodycam.five_w_tool")}.'
+        )
     if any(term in text for term in ('law', 'charge', 'statute', 'ucmj', 'federal', 'georgia', 'order applies')):
         return (
             'Use Law Lookup in plain language. Describe what happened, who was involved, where it happened, and whether it was on base. '
@@ -164,6 +169,8 @@ def _assistant_action_for(message: str, page: dict | None = None) -> dict | None
         (('customize dashboard', 'dashboard settings'), 'Customize Dashboard', url_for('dashboard.customize_dashboard')),
         (('law lookup', 'legal lookup', 'look up law', 'search law', 'charges', 'statutes'), 'Law Lookup', url_for('legal.legal_lookup')),
         (('reports center', 'all reports', 'reports page', 'report center'), 'Reports Center', url_for('reports.list_reports')),
+        (('narrative creator', 'narrative tool', 'write narrative', 'draft narrative'), 'Narrative Creator', url_for('bodycam.narrative_tool')),
+        (('5w builder', '5 w builder', 'five w builder', '5ws', '5 w', 'five ws'), '5W Builder', url_for('bodycam.five_w_tool')),
         (('saved forms', 'saved work', 'drafts'), 'Saved Work', url_for('forms.saved_forms')),
         (('orders', 'memos', 'orders and memos', 'orders & memos', 'base orders'), 'Orders & Memos', url_for('orders.library')),
         (('training', 'roster', 'training roster', 'training menu'), 'Training', url_for('training.training_menu')),

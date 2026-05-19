@@ -22,7 +22,6 @@
           <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('bodycam.five_w_tool') if tool_mode == 'narrative' else url_for('bodycam.narrative_tool') }}">
             Switch to {{ '5W Builder' if tool_mode == 'narrative' else 'Narrative Creator' }}
           </a>
-          <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('bodycam.blotter_tool') }}">Blotter Writer</a>
         {% elif tool_mode == 'blotter' %}
           <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('bodycam.narrative_tool') }}">Narrative Creator</a>
           <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('bodycam.five_w_tool') }}">5W Builder</a>
