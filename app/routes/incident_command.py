@@ -482,9 +482,7 @@ def _command_actions():
         {'label': 'Assign Units', 'detail': 'Update shift resources', 'endpoint': 'watch_commander.officers'},
         {'label': 'Review Reports', 'detail': 'Open pending packets', 'endpoint': 'watch_commander.reports'},
         {'label': 'BOLO / Intel', 'detail': 'Review active alerts', 'endpoint': 'bolo.bolo_board'},
-        {'label': 'Bodycam Library', 'detail': 'Review video/transcripts', 'endpoint': 'bodycam.library'},
         {'label': 'Assistant Ops', 'detail': 'Create follow-up tasking', 'endpoint': 'assistant_operations.dashboard'},
-        {'label': 'Accident Tools', 'detail': 'Open crash diagram/reconstruction', 'endpoint': 'reports.accidents'},
         {'label': 'Shift Brief', 'detail': 'Publish command brief', 'endpoint': 'watch_commander.briefing'},
     ]
 

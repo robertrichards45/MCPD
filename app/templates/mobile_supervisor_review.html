@@ -15,9 +15,8 @@
 
   <div id="msr-no-state" class="msr-card" style="display:none;">
     <p class="msr-card-label">No Active Draft</p>
-    <p class="msr-card-body">No incident draft found. Start an incident workflow and the packet readiness check will appear here.</p>
+    <p class="msr-card-body">No active packet is available for review from this mobile page.</p>
     <div class="msr-action-list">
-      <a class="msr-btn-primary" href="{{ url_for('mobile.incident_start') }}">Start Incident</a>
       <a class="msr-btn-ghost" href="{{ url_for('mobile.home') }}">Back to Home</a>
     </div>
   </div>
@@ -40,7 +39,6 @@
       <p class="msr-card-label">Quick Actions</p>
       <div class="msr-action-list">
         <a class="msr-btn-primary" href="{{ url_for('mobile.packet_review') }}">Open Packet Review</a>
-        <a class="msr-btn-secondary" href="{{ url_for('mobile.incident_start') }}">Start New Incident</a>
         <a class="msr-btn-ghost" href="{{ url_for('mobile.home') }}">Back to Field Portal</a>
       </div>
     </div>

@@ -48,6 +48,41 @@ from ..services.mobile_incident_documents import build_narrative_draft, build_pa
 from ..services.mobile_form_catalog import build_mobile_form_catalog
 
 bp = Blueprint('mobile', __name__)
+_RETIRED_MOBILE_REPORT_ENDPOINTS = {
+    'incident_draft_api',
+    'narrative_suggest',
+    'incident_summary_api',
+    'fast_capture',
+    'critical_incident',
+    'accident_diagram_entry',
+    'incident_start',
+    'incident_basics',
+    'incident_statute',
+    'incident_checklist',
+    'incident_persons',
+    'incident_person_editor',
+    'incident_facts',
+    'statement_launcher',
+    'statement_entry',
+    'statement_review',
+    'statement_signature_capture',
+    'incident_narrative_review',
+    'incident_domestic_supplemental',
+    'incident_selected_forms',
+    'packet_review',
+    'send_packet',
+    'packet_success',
+    'send_packet_api',
+}
+
+
+@bp.before_request
+def _retired_mobile_report_builder():
+    endpoint = (request.endpoint or '').split('.')[-1]
+    if endpoint in _RETIRED_MOBILE_REPORT_ENDPOINTS:
+        if request.method == 'GET':
+            return redirect(url_for('mobile.home'))
+        return jsonify({'ok': False, 'error': 'This workflow has been removed from the normal portal.'}), 410
 
 
 @bp.route('/mobile')
@@ -1175,9 +1210,9 @@ def home():
     active_incident_draft = _active_incident_draft()
     primary_cards = [
         {
-            'title': 'Start Incident',
-            'subtitle': 'Full intake workflow',
-            'href': url_for('mobile.incident_start'),
+            'title': 'Law Lookup',
+            'subtitle': 'Search approved references',
+            'href': url_for('legal.legal_home'),
             'is_live': True,
             'is_primary': True,
         },
@@ -1190,12 +1225,10 @@ def home():
         },
     ]
     feature_cards = [
-        {'title': 'Forms', 'href': url_for('forms.list_forms'), 'is_live': True},
         {'title': 'Law Lookup', 'href': url_for('legal.legal_home'), 'is_live': True},
         {'title': 'Reference Library', 'href': url_for('reference.incident_paperwork_guide'), 'is_live': True},
         {'title': 'Supervisor Review', 'href': url_for('mobile.supervisor_review'), 'is_live': True},
         {'title': 'Critical Incident', 'href': url_for('mobile.critical_incident'), 'is_live': True},
-        {'title': 'Accident Diagram', 'href': url_for('mobile.accident_diagram_entry'), 'is_live': True},
     ]
     if current_user.can_manage_team():
         feature_cards.append({'title': 'Admin', 'href': url_for('admin.stats_uploads'), 'is_live': True})

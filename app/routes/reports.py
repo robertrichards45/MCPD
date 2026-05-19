@@ -38,6 +38,32 @@ from ..services.call_type_rules import load_call_type_rules
 
 bp = Blueprint('reports', __name__)
 REVIEWABLE_CLEO_STATUSES = ('SUBMITTED', 'RETURNED', 'GRADED')
+_RETIRED_REPORT_TOOL_ENDPOINTS = {
+    'new_report',
+    'accidents',
+    'officer_accident_diagram_new',
+    'officer_accident_diagram',
+    'investigator_reconstruction_new',
+    'investigator_reconstruction',
+    'accident_reconstruction_list',
+    'accident_reconstruction_new',
+    'report_scene_diagram',
+    'accident_reconstruction_detail',
+    'accident_reconstruction_diagram',
+    'accident_reconstruction_add_vehicle',
+    'accident_reconstruction_add_object',
+    'accident_reconstruction_add_measurement',
+    'accident_reconstruction_add_media',
+    'accident_reconstruction_add_timeline',
+    'accident_reconstruction_export',
+}
+
+
+@bp.before_request
+def _retired_report_tools():
+    endpoint = (request.endpoint or '').split('.')[-1]
+    if endpoint in _RETIRED_REPORT_TOOL_ENDPOINTS:
+        return redirect(url_for('reports.list_reports'))
 
 
 def _utcnow_naive():
@@ -367,17 +393,7 @@ def list_reports():
     pending_packets = [packet for packet in incident_packets if packet.approval_status == PACKET_APPROVAL_PENDING]
     correction_packets = [packet for packet in incident_packets if packet.approval_status == PACKET_APPROVAL_NEEDS_CORRECTION]
     approved_packets = [packet for packet in incident_packets if packet.approval_status == PACKET_APPROVAL_APPROVED]
-    accident_count = _safe_count(
-        'reports_center_accidents',
-        AccidentReconstruction.query.filter(AccidentReconstruction.officer_id.in_(visible_ids)),
-    )
     report_ops_metrics = [
-        {
-            'label': 'Field Draft',
-            'value': 1 if active_incident_draft else 0,
-            'detail': 'Synced mobile/desktop report draft',
-            'tone': 'primary' if active_incident_draft else 'muted',
-        },
         {
             'label': 'Pending Review',
             'value': len(pending_packets),
@@ -396,21 +412,8 @@ def list_reports():
             'detail': 'Recently approved mobile packets',
             'tone': 'success',
         },
-        {
-            'label': 'Accident Cases',
-            'value': accident_count,
-            'detail': 'Officer diagrams and reconstruction records',
-            'tone': 'primary',
-        },
     ]
     report_queue_cards = [
-        {
-            'label': 'Start Field Workflow',
-            'detail': 'Use the same mobile packet steps: basics, parties, facts, narrative, paperwork, review.',
-            'endpoint': 'mobile.incident_start',
-            'action': 'Start' if not active_incident_draft else 'Continue',
-            'tone': 'primary',
-        },
         {
             'label': 'Report Review Queue',
             'detail': f'{len(pending_packets)} pending / {len(correction_packets)} needing correction.',
@@ -418,27 +421,11 @@ def list_reports():
             'action': 'Open Queue',
             'tone': 'warning' if pending_packets or correction_packets else 'success',
         },
-        {
-            'label': 'Paperwork Navigator',
-            'detail': 'Confirm required forms and report packet attachments before submission.',
-            'endpoint': 'reference.incident_paperwork_guide',
-            'action': 'Open',
-            'tone': 'primary',
-        },
-        {
-            'label': 'Accident Tools',
-            'detail': 'Open simple officer diagrams or advanced reconstruction tools.',
-            'endpoint': 'reports.accidents',
-            'action': 'Open',
-            'tone': 'primary',
-        },
     ]
     report_workflow_steps = [
-        {'label': 'Intake', 'detail': 'Call type, date/time, location, source, and initial summary.'},
-        {'label': 'Parties', 'detail': 'Victims, suspects, witnesses, vehicles, and involved units.'},
-        {'label': 'Facts', 'detail': 'Plain-language facts, observations, evidence, and timeline.'},
-        {'label': 'Narrative', 'detail': 'Officer-reviewed narrative draft and 5W extraction.'},
-        {'label': 'Paperwork', 'detail': 'Required forms, photos, bodycam, diagrams, and attachments.'},
+        {'label': 'Submitted', 'detail': 'Report packet entered into the visible queue.'},
+        {'label': 'Supervisor Review', 'detail': 'Desk Sgt / Watch Commander review and correction notes.'},
+        {'label': 'Corrections', 'detail': 'Returned items tracked until resolved by the owner.'},
         {'label': 'Review', 'detail': 'Supervisor queue, corrections, approval, and final packet.'},
     ]
     return render_template(

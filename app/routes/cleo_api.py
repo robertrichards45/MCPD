@@ -12,6 +12,11 @@ from ..permissions import can_manage_site, can_manage_team, can_view_user, can_g
 
 bp = Blueprint('cleo_api', __name__)
 
+
+@bp.before_request
+def _retired_cleo_training_tools():
+    return redirect(url_for('dashboard.dashboard'))
+
 MONTH_ABBR = {
     1: 'JAN', 2: 'FEB', 3: 'MAR', 4: 'APR', 5: 'MAY', 6: 'JUN',
     7: 'JUL', 8: 'AUG', 9: 'SEP', 10: 'OCT', 11: 'NOV', 12: 'DEC'

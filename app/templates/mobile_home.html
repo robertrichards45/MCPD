@@ -20,18 +20,6 @@
         <h1>{{ user.display_name }}</h1>
         <span class="mcpd-mobile-greeting-role">{{ user.section_unit or portal_effective_role_label }}</span>
       </div>
-      {% if active_incident_draft %}
-      <div class="mcpd-mobile-draft-row">
-        <a class="mcpd-mobile-draft-badge" href="{{ url_for('mobile.incident_start') }}">
-          <span class="mcpd-mobile-draft-dot"></span>
-          Draft in progress
-        </a>
-        <form method="post" action="{{ url_for('reports.discard_draft') }}" style="display:inline;" onsubmit="return confirm('Discard this draft?');">
-          <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}" />
-          <button type="submit" class="mcpd-mobile-draft-discard">✕</button>
-        </form>
-      </div>
-      {% endif %}
     </section>
 
     <section class="mcpd-mobile-grid" aria-label="Quick actions">
@@ -40,18 +28,6 @@
           <svg viewBox="0 0 24 24"><path d="M12 3v18M5 7h14M7 7l-3 7h6L7 7ZM17 7l-3 7h6l-3-7ZM9 21h6"/></svg>
         </span>
         Law Lookup
-      </a>
-      <a href="{{ url_for('mobile.incident_start') }}" class="tile-report{% if active_incident_draft %} tile-active{% endif %}">
-        <span class="mcpd-mobile-tile-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z"/><path d="M14 3v5h5M8 13h8M8 17h6"/></svg>
-        </span>
-        {% if active_incident_draft %}Continue Report{% else %}Start Report{% endif %}
-      </a>
-      <a href="{{ url_for('forms.list_forms') }}" class="tile-forms">
-        <span class="mcpd-mobile-tile-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
-        </span>
-        Forms
       </a>
       <a href="{{ url_for('orders.reference_search') }}" class="tile-orders">
         <span class="mcpd-mobile-tile-icon" aria-hidden="true">
@@ -76,7 +52,7 @@
     <section class="mcpd-mobile-stats-row" aria-label="Officer summary">
       <div class="mcpd-mobile-stat-chip">
         <strong>{{ dashboard_saved_forms_count|default(0) }}</strong>
-        <span>Forms</span>
+        <span>Saved</span>
       </div>
       <div class="mcpd-mobile-stat-chip">
         <strong>{{ dashboard_report_count|default(0) }}</strong>
@@ -91,16 +67,6 @@
         <span>Contact Info</span>
       </a>
     </section>
-
-    {% if active_incident_draft %}
-    <section class="mcpd-mobile-officer-panel mcpd-mobile-panel-highlight">
-      <div>
-        <strong>Active Draft</strong>
-        <span>{{ active_incident_draft.location or active_incident_draft.call_type or 'Report in progress' }}</span>
-      </div>
-      <a href="{{ url_for('mobile.incident_start') }}">Open &rsaquo;</a>
-    </section>
-    {% endif %}
 
     <section class="mcpd-mobile-map-panel" aria-label="MCLB Albany installation map">
       <div class="mcpd-mobile-map-head">

@@ -13,6 +13,7 @@ def _logged_in_client():
         with client.session_transaction() as session:
             session['_user_id'] = str(user.id)
             session['_fresh'] = True
+            session['_csrf_token'] = 'test-token'
     return client
 
 
@@ -48,9 +49,9 @@ def test_dashboard_keeps_desktop_user_agents_on_desktop_dashboard():
     )
     assert response.status_code == 200
     html = response.get_data(as_text=True)
-    assert 'Welcome back' in html
-    assert 'Start New Report' in html
-    assert 'Forms Library' in html
+    assert 'Operational picture' in html
+    assert 'Start New Report' not in html
+    assert 'Forms Library' not in html
 
 
 def test_mobile_home_rebuild_has_only_primary_field_actions():
@@ -60,7 +61,8 @@ def test_mobile_home_rebuild_has_only_primary_field_actions():
     html = response.get_data(as_text=True)
     assert 'MCPD' in html
     assert 'Law Lookup' in html
-    assert 'Start Report' in html
+    assert 'Start Report' not in html
+    assert 'Forms' not in html
     assert 'Officer Stats' in html
     assert 'Contact Info' in html
     assert 'Edit' in html
@@ -109,7 +111,10 @@ def test_mobile_stats_and_contact_pages_work_without_desktop_shell():
 
 def test_mobile_shell_pages_always_have_home_and_menu_escape_links():
     client = _logged_in_client()
-    response = client.get('/mobile/incident/start')
+    response = client.get('/mobile/incident/start', follow_redirects=False)
+    assert response.status_code == 302
+    assert response.headers['Location'].endswith('/mobile/home')
+    response = client.get('/mobile/more')
     assert response.status_code == 200
     html = response.get_data(as_text=True)
     assert 'class="mobile-header-nav"' in html
@@ -121,7 +126,7 @@ def test_mobile_shell_pages_always_have_home_and_menu_escape_links():
 
 def test_mobile_bottom_more_tab_opens_mobile_menu_not_desktop_dashboard():
     client = _logged_in_client()
-    response = client.get('/mobile/incident/start')
+    response = client.get('/mobile/more')
     assert response.status_code == 200
     html = response.get_data(as_text=True)
     assert '<span class="mobile-tab-label">More</span>' in html

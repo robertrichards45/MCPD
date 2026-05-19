@@ -38,6 +38,21 @@ bp = Blueprint('forms', __name__)
 
 FORM_STATUSES = {'DRAFT', 'COMPLETED', 'SUBMITTED'}
 RETENTION_MODES = {'no_pii_retention', 'temporary_pii_only', 'save_allowed', 'blank_template_only', 'full_save_allowed'}
+_SAVED_WORK_ENDPOINTS = {
+    'saved_forms',
+    'view_saved_form',
+    'preview_saved_form',
+    'preview_saved_form_pdf',
+    'email_saved_form',
+    'download_saved_form',
+}
+
+
+@bp.before_request
+def _retired_forms_library_routes():
+    endpoint = (request.endpoint or '').split('.')[-1]
+    if endpoint and endpoint not in _SAVED_WORK_ENDPOINTS:
+        return redirect(url_for('forms.saved_forms'))
 TEMP_FORM_SESSION_KEY = 'forms_temp_payloads'
 TEMP_FORM_TTL_SECONDS = 60 * 60
 PERSON_ROLE_OPTIONS = ['Victim', 'Suspect', 'Complainant', 'Witness', 'Reporting Officer', 'Assisting Officer', 'Juvenile', 'Property Owner', 'Other']

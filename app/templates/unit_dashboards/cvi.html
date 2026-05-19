@@ -17,7 +17,7 @@
         <a href="{{ url_for('dashboard.k9_dashboard') }}">K-9</a>
         <a href="{{ url_for('dashboard.cvi_dashboard') }}" aria-current="page">CVI</a>
         <a href="{{ url_for('dashboard.srt_dashboard') }}">SRT</a>
-        <a href="{{ url_for('dashboard.dispatch_command_center') }}">Command Center</a>
+        <a href="{{ url_for('incident_command.dashboard') }}">Incident Command</a>
       </nav>
     </header>
 
@@ -62,7 +62,7 @@
         <div class="wc-action-grid">
           <a href="{{ url_for('watch_commander.unit_map') }}">Unit Map<span>Gate 2 and CVI station positions.</span></a>
           <a href="{{ url_for('watch_commander.reports') }}">Reports<span>OOS and inspection report review.</span></a>
-          <a href="{{ url_for('forms.list_forms') }}">Forms<span>OOS notices, inspection forms.</span></a>
+          <a href="{{ url_for('forms.saved_forms') }}">Saved Work<span>Saved packets and supervisor-visible items.</span></a>
           <a href="{{ url_for('notifications.inbox') }}">Messages<span>Command messages and gate alerts.</span></a>
         </div>
       </section>

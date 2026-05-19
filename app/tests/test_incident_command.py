@@ -30,6 +30,7 @@ def _client_for(user):
     with client.session_transaction() as session:
         session['_user_id'] = str(user.id)
         session['_fresh'] = True
+        session['_csrf_token'] = 'test-token'
     return app, client
 
 
@@ -66,6 +67,7 @@ def test_incident_command_log_entry_creates_note_and_audit():
         response = client.post(
             '/incident-command/log',
             data={
+                '_csrf_token': 'test-token',
                 'note_type': 'incident_objective',
                 'priority': 'Command Critical',
                 'title': 'Set inner perimeter',

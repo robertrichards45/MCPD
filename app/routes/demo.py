@@ -140,13 +140,10 @@ DEMO_ADMIN_USERS = [
     ('demo.admin.controller', 'Capt.', 'Rivers', ROLE_WEBSITE_CONTROLLER, 'Admin'),
     ('demo.assistant.ops', 'Lt.', 'Marlow', ROLE_ASSISTANT_OPERATIONS_OFFICER, 'Assistant Operations Officer'),
     ('demo.training.manager', 'Sgt.', 'Nolan', ROLE_TRAINING_MANAGER, 'Training Manager'),
-    ('demo.forms.manager', 'Ms.', 'Vale', ROLE_FORMS_MANAGER, 'Forms Manager'),
     ('demo.report.reviewer', 'Sgt.', 'Hale', ROLE_REPORT_REVIEWER, 'Report Reviewer'),
-    ('demo.accident.investigator', 'Lt.', 'Price', ROLE_ACCIDENT_INVESTIGATOR, 'Accident Investigator'),
 ]
 
 WORKFLOW_LAUNCHERS = [
-    ('officer-report', 'Officer Report Demo', '/mobile/incident/start', 'Patrol report workflow with AI narrative and packet submission.'),
     ('law-lookup', 'Law Lookup Demo', '/demo/law-lookup', 'Plain-language legal/reference examples using approved sample records.'),
     ('completed-reports', 'Completed Report Samples', '/demo/report-samples', 'View and print two fully completed, approved incident reports with all fields and paperwork.'),
     ('watch-commander', 'Watch Commander Demo', '/watch-commander/dashboard', 'Shift command, approvals, saved work, assignments, and briefing.'),
@@ -156,7 +153,6 @@ WORKFLOW_LAUNCHERS = [
     ('aid', 'AID Demo', '/demo/workflows/aid', 'Administrative investigation case tracking and follow-up assignments.'),
     ('srt', 'SRT Demo', '/demo/workflows/srt', 'SRT readiness, training, equipment, and after-action examples.'),
     ('k9', 'K-9 Demo', '/demo/workflows/k9', 'K-9 deployment, training, and kennel maintenance examples.'),
-    ('accident', 'Accident Demo', '/reports/accidents', 'Officer diagram and investigator reconstruction examples.'),
     ('admin', 'Admin Demo', '/demo/workflows/admin', 'User, role, reference data, and system settings demonstration.'),
 ]
 
@@ -413,9 +409,9 @@ def _create_reports_forms_training(batch_id, users):
             occurred_date=utcnow_naive().date().isoformat(),
             location='Demo barracks parking lot',
             summary=summary,
-            form_count=3,
+            form_count=0,
             statement_count=2,
-            packet_json=json.dumps({'parties': ['Reporting person', 'Witness'], 'facts': summary, 'ai_draft_used': True}),
+            packet_json=json.dumps({'parties': ['Reporting person', 'Witness'], 'facts': summary}),
             validation_json=json.dumps({'missing': [] if status == 'APPROVED' else ['Property value confirmation']}),
             approval_status=packet_status,
             reviewer_user_id=wc.id if status in {'NEEDS_CORRECTION', 'APPROVED'} else None,
@@ -423,43 +419,8 @@ def _create_reports_forms_training(batch_id, users):
             is_demo=True,
             demo_batch_id=batch_id,
         ))
-    db.session.add(IncidentDraft(
-        officer_user_id=officer.id,
-        status='ACTIVE',
-        call_type='Larceny',
-        location='Demo barracks parking lot',
-        summary='Draft demo incident with facts, parties, and AI narrative pending review.',
-        draft_json=json.dumps({'step': 'narrative', 'ai_banner': 'Draft only - officer review required'}),
-        is_demo=True,
-        demo_batch_id=batch_id,
-    ))
 
-    forms = [
-        ('Statement form', 'General'),
-        ('Field interview card', 'Reports'),
-        ('DD Form 1805', 'Traffic'),
-        ('DD Form 1408', 'Traffic'),
-        ('Evidence/property receipt', 'Evidence'),
-        ('Domestic violence supplemental', 'Domestic'),
-        ('Accident form', 'Traffic Accident'),
-        ('Training roster', 'Training'),
-    ]
-    for idx, (title, category) in enumerate(forms, start=1):
-        form = Form(title=f'DEMO {title}', category=category, file_path=f'demo/forms/{idx}-{title}.pdf', uploaded_by=desk.id, is_active=True, is_demo=True, demo_batch_id=batch_id, notes='Fake demonstration form metadata only.')
-        db.session.add(form)
-        db.session.flush()
-        db.session.add(SavedForm(
-            form_id=form.id,
-            officer_user_id=officer.id,
-            status=['DRAFT', 'PENDING', 'COMPLETED', 'RETURNED'][idx % 4],
-            title=f'Demo saved {title}',
-            field_data_json=json.dumps({'demo': True, 'status': 'sample data only'}),
-            access_scope='OFFICER_AND_WATCH_COMMAND',
-            is_demo=True,
-            demo_batch_id=batch_id,
-        ))
-
-    roster_titles = ['Use of Force Refresher', 'Domestic Disturbance Response', 'CLEOC Report Entry', 'DBIDS Scanner Refresher', 'Medical Response/AED']
+    roster_titles = ['Use of Force Refresher', 'Domestic Disturbance Response', 'DBIDS Scanner Refresher', 'Medical Response/AED']
     training_users = [user for user in users.values() if user.section_unit in {'Alpha Shift', 'Bravo Shift'}][:15]
     for idx, title in enumerate(roster_titles, start=1):
         roster = TrainingRoster(
@@ -621,7 +582,6 @@ def _load_demo_data():
     _create_shift_data(batch_id, users)
     _create_reports_forms_training(batch_id, users)
     _create_section_workflows(batch_id, users)
-    _create_accidents_and_tasks(batch_id, users)
     db.session.commit()
     session['demo_mode'] = True
     session['demo_batch_id'] = batch_id
@@ -635,10 +595,10 @@ def _demo_counts():
         'shifts': WatchShift.query.filter_by(is_demo=True).count(),
         'assignments': WatchAssignment.query.filter_by(is_demo=True).count(),
         'reports': Report.query.filter_by(is_demo=True).count() + IncidentPacket.query.filter_by(is_demo=True).count(),
-        'forms': Form.query.filter_by(is_demo=True).count() + SavedForm.query.filter_by(is_demo=True).count(),
+        'forms': 0,
         'training': TrainingRoster.query.filter_by(is_demo=True).count(),
         'approvals': WatchApproval.query.filter_by(is_demo=True).count(),
-        'accidents': AccidentReconstruction.query.filter_by(is_demo=True).count(),
+        'accidents': 0,
         'workflows': DemoRecord.query.filter_by(is_demo=True).count(),
     }
 

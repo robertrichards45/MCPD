@@ -19,6 +19,11 @@ _VIDEO_EXTENSIONS = {
 }
 
 
+@bp.before_request
+def _retired_bodycam_tools():
+    return redirect(url_for('dashboard.dashboard'))
+
+
 def _storage_root() -> Path:
     root = Path(current_app.config['UPLOAD_ROOT']) / 'bodycam'
     root.mkdir(parents=True, exist_ok=True)

@@ -16,6 +16,7 @@ def _client_with_user():
     with client.session_transaction() as session:
         session["_user_id"] = str(user_id)
         session["_fresh"] = True
+        session["_csrf_token"] = "test-token"
     return client, user_id
 
 
@@ -34,7 +35,8 @@ def test_dashboard_customize_page_loads():
         assert "Customize Dashboard" in html
         assert "Quick Action Cards" in html
         assert "Dashboard Panels" in html
-        assert "Start New Report" in html
+        assert "Start New Report" not in html
+        assert "Forms Library" not in html
     finally:
         _dispose_app(client.application)
 
@@ -46,7 +48,8 @@ def test_user_can_save_dashboard_card_and_panel_preferences():
             "/dashboard/customize",
             data={
                 "action": "save",
-                "cards": ["start_report", "forms_library"],
+                "_csrf_token": "test-token",
+                "cards": ["law_lookup", "saved_work"],
                 "panels": ["saved_work"],
             },
             follow_redirects=False,
@@ -56,15 +59,13 @@ def test_user_can_save_dashboard_card_and_panel_preferences():
         dashboard = client.get("/dashboard")
         html = dashboard.get_data(as_text=True)
         assert dashboard.status_code == 200
-        assert "Start New Report" in html
-        assert "Forms Library" in html
-        assert "<strong>Law Lookup</strong>" not in html
+        assert "<strong>Law Lookup</strong>" in html
         assert "Saved Work" in html
         assert "Training Rosters" not in html
 
         with client.application.app_context():
             user = db.session.get(User, user_id)
-            assert "start_report" in (user.dashboard_preferences_json or "")
+            assert "law_lookup" in (user.dashboard_preferences_json or "")
     finally:
         with client.application.app_context():
             user = db.session.get(User, user_id)
@@ -79,10 +80,10 @@ def test_user_can_reset_dashboard_preferences():
     try:
         with client.application.app_context():
             user = db.session.get(User, user_id)
-            user.dashboard_preferences_json = '{"cards":["start_report"],"panels":["saved_work"]}'
+            user.dashboard_preferences_json = '{"cards":["law_lookup"],"panels":["saved_work"]}'
             db.session.commit()
 
-        response = client.post("/dashboard/customize", data={"action": "reset"}, follow_redirects=False)
+        response = client.post("/dashboard/customize", data={"action": "reset", "_csrf_token": "test-token"}, follow_redirects=False)
         assert response.status_code in {302, 303}
 
         with client.application.app_context():

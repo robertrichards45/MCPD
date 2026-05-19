@@ -32,18 +32,10 @@ _log = logging.getLogger(__name__)
 
 DEFAULT_DASHBOARD_CARD_IDS = [
     'law_lookup',
-    'start_report',
-    'dispatch_command_center',
     'incident_command',
-    'forms_library',
     'orders_memos',
     'training',
     'saved_work',
-    'accident_tools',
-    'bodycam_mode',
-    'bodycam_footage',
-    'narrative_creator',
-    'five_w_builder',
 ]
 
 DEFAULT_DASHBOARD_PANEL_IDS = ['recent_reports', 'training_rosters', 'saved_work']
@@ -366,7 +358,7 @@ def _dashboard_live_ops(saved_forms_count, report_count, notice_count):
         },
         {
             'label': 'Reports / Media Layer',
-            'detail': 'Reports, bodycam footage, accident diagrams, and saved evidence photos.',
+            'detail': 'Reports, saved work, attachments, and supervisor review status.',
             'endpoint': 'reports.list_reports',
         },
     ]
@@ -392,27 +384,6 @@ def _dashboard_card_catalog():
             'endpoint': 'legal.legal_home',
         },
         {
-            'id': 'start_report',
-            'label': 'Start New Report',
-            'description': 'Create an incident report or blotter',
-            'icon': 'report',
-            'endpoint': 'reports.new_report',
-        },
-        {
-            'id': 'dispatch_command_center',
-            'label': 'Dispatch / Command Center',
-            'description': 'Live shift, unit status, active incidents, and radio-style command view',
-            'icon': 'orders',
-            'endpoint': 'dashboard.dispatch_command_center',
-        },
-        {
-            'id': 'forms_library',
-            'label': 'Forms Library',
-            'description': 'Fill out, save, and manage forms',
-            'icon': 'forms',
-            'endpoint': 'forms.list_forms',
-        },
-        {
             'id': 'orders_memos',
             'label': 'Orders & Memos',
             'description': 'Search orders, memos, and references',
@@ -429,44 +400,9 @@ def _dashboard_card_catalog():
         {
             'id': 'saved_work',
             'label': 'Saved Work',
-            'description': 'Saved forms, drafts, and packets',
+            'description': 'Saved work, drafts, and packets',
             'icon': 'saved',
             'endpoint': 'forms.saved_forms',
-        },
-        {
-            'id': 'accident_tools',
-            'label': 'Accident Tools',
-            'description': 'Officer diagrams and investigator reconstruction',
-            'icon': 'report',
-            'endpoint': 'reports.accidents',
-        },
-        {
-            'id': 'bodycam_mode',
-            'label': 'Body Cam Mode',
-            'description': 'Record video with transcript support',
-            'icon': 'report',
-            'endpoint': 'bodycam.new_recording',
-        },
-        {
-            'id': 'bodycam_footage',
-            'label': 'Bodycam Footage',
-            'description': 'Review saved recordings and transcripts',
-            'icon': 'saved',
-            'endpoint': 'bodycam.library',
-        },
-        {
-            'id': 'narrative_creator',
-            'label': 'Narrative Creator',
-            'description': 'Turn report facts into a draft narrative',
-            'icon': 'forms',
-            'endpoint': 'bodycam.narrative_tool',
-        },
-        {
-            'id': 'five_w_builder',
-            'label': '5W Builder',
-            'description': 'Paste one notes block and extract the 5Ws',
-            'icon': 'forms',
-            'endpoint': 'bodycam.five_w_tool',
         },
         {
             'id': 'mobile_field_view',
@@ -551,10 +487,8 @@ def _dashboard_panel_catalog(snapshot):
             'view_all_endpoint': 'reports.list_reports',
             'items': [
                 {'label': 'Reports Center', 'detail': snapshot['metrics'][0]['detail'] if snapshot['metrics'] else 'Open reports and packets', 'endpoint': 'reports.list_reports'},
-                {'label': 'Bodycam Footage', 'detail': 'Recordings and transcripts', 'endpoint': 'bodycam.library'},
-                {'label': 'Narrative Creator', 'detail': 'Standalone report writing tool', 'endpoint': 'bodycam.narrative_tool'},
-                {'label': '5W Builder', 'detail': 'Who, what, when, where, and why summary', 'endpoint': 'bodycam.five_w_tool'},
-                {'label': 'Accident Reconstruction', 'detail': 'Scene diagrams and crash reports', 'endpoint': 'reports.accident_reconstruction_list'},
+                {'label': 'Submitted Packets', 'detail': 'Supervisor review and correction status', 'endpoint': 'reports.list_reports'},
+                {'label': 'My Profile', 'detail': 'Contact info and emergency contacts', 'endpoint': 'officers.profile'},
             ],
         },
         {
@@ -583,8 +517,8 @@ def _dashboard_panel_catalog(snapshot):
             'view_all_endpoint': 'watch_commander.dashboard',
             'supervisor_only': True,
             'items': [
-                {'label': 'Dispatch / Command Center', 'detail': 'Live units, active incidents, and radio-style operational view', 'endpoint': 'dashboard.dispatch_command_center'},
                 {'label': 'Watch Commander Hub', 'detail': 'Shift supervision dashboard', 'endpoint': 'watch_commander.dashboard'},
+                {'label': 'Incident Command', 'detail': 'Incident status, PAR/accountability, and command log', 'endpoint': 'incident_command.dashboard'},
                 {'label': 'Assistant Ops Tracker', 'detail': 'Due-outs, training, inspections, and projects', 'endpoint': 'assistant_operations.dashboard'},
                 {'label': 'Approvals Center', 'detail': 'Review pending supervisor actions', 'endpoint': 'watch_commander.approvals'},
                 {'label': 'Shift Management', 'detail': 'Create shifts and assign officers', 'endpoint': 'watch_commander.shift'},
@@ -600,18 +534,18 @@ def _dashboard_readiness_items(saved_forms_count, report_count, cleo_report_coun
             'status': 'Operational',
             'value': report_count,
             'unit': 'active reports',
-            'detail': 'Officer reports, packets, accident tools, and narrative support are online.',
+            'detail': 'Officer reports, packets, and supervisor review are online.',
             'tone': 'success',
             'endpoint': 'reports.list_reports',
         },
         {
-            'label': 'Forms & Packets',
+            'label': 'Saved Work',
             'status': 'Ready',
             'value': saved_forms_count,
             'unit': 'saved items',
-            'detail': 'PDF-backed forms, saved work, preview, download, and packet workflows.',
+            'detail': 'Saved work, drafts, and packet status remain available.',
             'tone': 'primary',
-            'endpoint': 'forms.list_forms',
+            'endpoint': 'forms.saved_forms',
         },
         {
             'label': 'Law / Orders Reference',
@@ -730,7 +664,7 @@ def _dispatch_demo_context():
         {'title': 'Gate Access Issue', 'detail': 'Main Gate DBIDS verification request', 'priority': 'Monitor', 'state_class': ''},
         {'title': 'BOLO Acknowledgement', 'detail': 'Two officers pending review acknowledgement', 'priority': 'Action', 'state_class': 'alert'},
     ]
-    radio_summary = 'Alpha Net: Patrol 2 handling larceny follow-up. Desk Sgt monitoring packet queue. K-9 and SRT remain available. Command Center view is sample data only; verify all operational facts before action.'
+    radio_summary = 'Alpha Net: Patrol 2 handling larceny follow-up. Desk Sgt monitoring packet queue. K-9 and SRT remain available. Demo operating picture is sample data only; verify all operational facts before action.'
     return {
         'dispatch_summary': dispatch_summary,
         'dispatch_metrics': dispatch_metrics,
@@ -748,9 +682,9 @@ def _dispatch_workflow_cards(is_command):
     if is_command:
         return [
             {
-                'label': 'Call Intake',
-                'detail': 'Start a packet, incident draft, or report workflow from the command board.',
-                'endpoint': 'reports.new_report',
+                'label': 'Incident Command',
+                'detail': 'Open the active IC board, accountability checks, and command log.',
+                'endpoint': 'incident_command.dashboard',
             },
             {
                 'label': 'Assign Units',
@@ -770,9 +704,9 @@ def _dispatch_workflow_cards(is_command):
         ]
     return [
         {
-            'label': 'Start Report',
-            'detail': 'Create a new report or resume field reporting from your dashboard.',
-            'endpoint': 'reports.new_report',
+            'label': 'Reports Center',
+            'detail': 'Review active packets, drafts, and returned correction items.',
+            'endpoint': 'reports.list_reports',
         },
         {
             'label': 'My Reports',
@@ -797,7 +731,7 @@ def _dispatch_preplan_layers(is_command):
         {
             'label': 'Installation Map',
             'detail': 'Base map, primary gates, road grid, and common response zones.',
-            'endpoint': 'dashboard.dispatch_command_center',
+            'endpoint': 'incident_command.dashboard',
         },
         {
             'label': 'Units / Assignments',
@@ -811,7 +745,7 @@ def _dispatch_preplan_layers(is_command):
         },
         {
             'label': 'Reports / Media',
-            'detail': 'Reports, accident diagrams, bodycam footage, saved forms, and photos.',
+            'detail': 'Reports, saved work, attachments, and supervisor packet status.',
             'endpoint': 'reports.list_reports',
         },
     ]
@@ -1066,21 +1000,7 @@ def dashboard():
 @bp.route('/command-center')
 @login_required
 def dispatch_command_center():
-    from ..routes.watch_commander import OFFICER_STATUSES
-    demo = _demo_mode()
-    ctx = {'demo': demo}
-    if demo:
-        ctx.update(_dispatch_demo_context())
-    else:
-        ctx.update(_dispatch_live_context())
-    return _no_store_response(
-        render_template(
-            'dispatch_command_center.html',
-            user=current_user,
-            statuses=OFFICER_STATUSES,
-            **ctx,
-        )
-    )
+    return redirect(url_for('incident_command.dashboard'))
 
 
 def _demo_mode():

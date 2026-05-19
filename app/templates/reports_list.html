@@ -8,7 +8,7 @@
         <div class="ops-head-copy">
           <div class="eyebrow forms-library-eyebrow">Reporting Hub</div>
           <h2 class="mb-1">Reports Center</h2>
-          <p class="text-muted mb-0">Standard reports, field drafts, accident reports, and report packets. Mock report-writing forms now live under Forms.</p>
+          <p class="text-muted mb-0">Standard reports, submitted packets, correction status, and supervisor review queues.</p>
         </div>
         <div class="ops-head-stats">
           <article class="ops-stat-pill">
@@ -16,27 +16,14 @@
             <strong>{{ report_count|default(0) }}</strong>
           </article>
           <article class="ops-stat-pill">
-            <span>Mock Writing</span>
-            <strong>Forms</strong>
+            <span>Submitted Packets</span>
+            <strong>{{ incident_packets|length }}</strong>
           </article>
           <article class="ops-stat-pill">
             <span>Review Queue</span>
             <strong>{{ cleo_review_count|default(0) }}</strong>
           </article>
         </div>
-      </div>
-
-      <div class="forms-toolbar">
-        <a class="btn btn-primary" href="{{ url_for('mobile.incident_start') }}">
-          {% if active_incident_draft %}Continue Field Draft{% else %}Start Field Workflow{% endif %}
-        </a>
-        <a class="btn btn-outline-primary" href="{{ url_for('reports.new_report') }}">Quick Case Shell</a>
-        <a class="btn btn-outline-secondary" href="{{ url_for('bodycam.library') }}">Bodycam Footage</a>
-        <a class="btn btn-outline-secondary" href="{{ url_for('bodycam.narrative_tool') }}">Narrative Creator</a>
-        <a class="btn btn-outline-secondary" href="{{ url_for('bodycam.five_w_tool') }}">5W Builder</a>
-        <a class="btn btn-outline-secondary" href="{{ url_for('reports.accidents') }}">Accident Tools</a>
-        <a class="btn btn-outline-secondary" href="{{ url_for('cleo_api.cleo_reports_page') }}">Mock Report Writing</a>
-        <a class="btn btn-outline-secondary" href="{{ url_for('reference.incident_paperwork_guide') }}">Paperwork Navigator</a>
       </div>
     </section>
 
@@ -82,65 +69,6 @@
         </div>
       </div>
     </section>
-
-    <section class="ops-panel report-center-panel report-intake-panel">
-      <div class="report-panel-head">
-        <div>
-          <h3 class="mb-1">Start Report</h3>
-          <p class="text-muted mb-0">Same call-type workflow used on mobile: choose the incident type, then continue through basics, forms, parties, facts, narrative, and packet review.</p>
-        </div>
-        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('mobile.incident_start') }}">Open Full Workflow</a>
-      </div>
-      <div class="report-call-type-grid">
-        {% for slug, rule in call_type_rules.items() if rule.active is not defined or rule.active %}
-        <button
-          class="report-call-type-card"
-          type="button"
-          data-call-type="{{ rule.slug or slug }}"
-          data-next-url="{{ url_for('mobile.incident_basics') }}"
-        >
-          <span class="report-call-type-kicker">{{ rule.shortLabel or rule.title }}</span>
-          <strong>{{ rule.title }}</strong>
-          <p>{{ rule.description }}</p>
-          <span class="report-call-type-meta">
-            {{ (rule.recommendedForms or [])|length }} recommended / {{ (rule.optionalForms or [])|length }} optional
-          </span>
-        </button>
-        {% endfor %}
-      </div>
-    </section>
-
-    {% if active_incident_draft %}
-    <section class="ops-panel report-center-panel mb-3">
-      <div class="report-panel-head">
-        <div>
-          <h3 class="mb-1">Active Field Draft</h3>
-          <p class="text-muted mb-0">This draft is synced between desktop and mobile for your signed-in account.</p>
-        </div>
-        <span class="badge bg-primary">Synced</span>
-      </div>
-      <article class="result-card report-hub-card">
-        <div class="result-head">
-          <h4>{{ active_incident_draft.call_type or 'Incident draft' }}</h4>
-          <span class="badge bg-dark">DRAFT</span>
-        </div>
-        <p class="result-sub">
-          {{ active_incident_draft.location or 'Location not entered' }}
-          {% if active_incident_draft.updated_at %} / Updated {{ active_incident_draft.updated_at.strftime('%Y-%m-%d %H:%M') }}{% endif %}
-        </p>
-        {% if active_incident_draft.summary %}
-          <p class="text-muted mb-2">{{ active_incident_draft.summary }}</p>
-        {% endif %}
-        <div class="report-hub-actions">
-          <a class="btn btn-sm btn-primary" href="{{ url_for('mobile.incident_start') }}">Open Synced Draft</a>
-          <form method="post" action="{{ url_for('reports.discard_draft') }}" style="display:inline;" onsubmit="return confirm('Discard this draft? This cannot be undone.');">
-            <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}" />
-            <button type="submit" class="btn btn-sm btn-outline-danger">Discard Draft</button>
-          </form>
-        </div>
-      </article>
-    </section>
-    {% endif %}
 
     <div class="report-center-grid">
       <section class="ops-panel report-center-panel">
@@ -200,21 +128,6 @@
         </div>
       </section>
 
-      <section class="ops-panel report-center-panel">
-        <div class="report-panel-head">
-          <div>
-            <h3 class="mb-1">Mock Report Writing</h3>
-            <p class="text-muted mb-0">Incident-admin packet pages, narrative pages, enclosures, and mock review are handled in the CLEO training area.</p>
-          </div>
-          <span class="badge bg-dark">{{ cleo_reports|length }}</span>
-        </div>
-        <div class="report-empty-state">
-          Open the CLEO training area to create mock reports, continue report-writing pages, and review submitted mock packets.
-        </div>
-        <div class="report-hub-actions mt-2">
-          <a class="btn btn-sm btn-primary" href="{{ url_for('cleo_api.cleo_reports_page') }}">Open Mock Reports</a>
-        </div>
-      </section>
     </div>
 
   </div>

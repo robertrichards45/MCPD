@@ -6,13 +6,13 @@
     <section class="ops-head-card mb-3">
       <div class="ops-head-grid">
         <div class="ops-head-copy">
-          <div class="eyebrow forms-library-eyebrow">Paperwork Queue</div>
-          <h2 class="mb-1">Saved Forms</h2>
-          <p class="text-muted mb-0">Resume drafts, review completed paperwork, and keep the latest field work lined up in one place.</p>
+          <div class="eyebrow forms-library-eyebrow">Saved Work</div>
+          <h2 class="mb-1">Saved Work</h2>
+          <p class="text-muted mb-0">Review saved items, drafts, and submitted work that remains visible to your account.</p>
         </div>
         <div class="ops-head-stats">
           <article class="ops-stat-pill">
-            <span>Visible Forms</span>
+            <span>Visible Items</span>
             <strong>{{ saved_forms|length }}</strong>
           </article>
           <article class="ops-stat-pill">
@@ -27,8 +27,7 @@
       </div>
 
       <div class="forms-toolbar">
-        <a class="btn btn-primary" href="{{ url_for('forms.list_forms') }}">Open Forms Library</a>
-          <a class="btn btn-outline-secondary" href="{{ url_for('reference.incident_paperwork_guide') }}">Paperwork Navigator</a>
+        <a class="btn btn-primary" href="{{ url_for('dashboard.dashboard') }}">Back to Dashboard</a>
         <a class="btn btn-outline-secondary" href="{{ url_for('reports.list_reports') }}">Reports Center</a>
       </div>
     </section>
@@ -40,8 +39,8 @@
           <input class="form-control" id="saved-form-search" name="q" value="{{ search_term }}" placeholder="Search title or officer" />
         </div>
         <div class="col-md-3">
-          <label class="form-label forms-filter-label" for="saved-form-type">Form Type</label>
-          <input class="form-control" id="saved-form-type" name="form_type" value="{{ form_type }}" placeholder="Form type" />
+          <label class="form-label forms-filter-label" for="saved-form-type">Item Type</label>
+          <input class="form-control" id="saved-form-type" name="form_type" value="{{ form_type }}" placeholder="Item type" />
         </div>
         <div class="col-md-3">
           <label class="form-label forms-filter-label" for="saved-form-status">Status</label>

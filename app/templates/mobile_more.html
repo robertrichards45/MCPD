@@ -26,7 +26,7 @@
 <section class="mobile-more-page">
   <div class="mobile-section-head">
     <h3>More tools</h3>
-    <p>Command, reporting, bodycam, saved work, and owner tools.</p>
+    <p>Command, reference, saved work, and owner tools.</p>
   </div>
   <div class="mobile-more-grid">
     {% if portal_is_site_controller or portal_is_watch_commander_view %}
@@ -43,12 +43,8 @@
     {% if portal_can_access_assistant_operations %}
       {{ tool_card('Assistant Ops Tracker', 'Due-outs, training, inspections, projects, and watch readiness.', url_for('assistant_operations.dashboard'), 'command', True) }}
     {% endif %}
-    {{ tool_card('Reports Center', 'Open reports, crash tools, packets, and report photos.', url_for('reports.list_reports'), 'reports') }}
-    {{ tool_card('Body Cam Mode', 'Record field video and transcript into MCPD storage.', url_for('bodycam.mobile_recording'), 'camera', True) }}
-    {{ tool_card('Bodycam Footage', 'View saved recordings and transcripts.', url_for('bodycam.mobile_library'), 'library') }}
-    {{ tool_card('Narrative Creator', 'Turn field notes into a draft narrative for review.', url_for('bodycam.mobile_narrative_tool'), 'narrative') }}
-    {{ tool_card('5W Builder', 'Paste one notes block and extract who, what, when, where, and why.', url_for('bodycam.mobile_five_w_tool'), 'narrative') }}
-    {{ tool_card('Saved Work', 'Open saved forms, packets, and drafts.', url_for('forms.saved_forms'), 'saved') }}
+    {{ tool_card('Reports Center', 'Open visible reports, packets, and supervisor review status.', url_for('reports.list_reports'), 'reports') }}
+    {{ tool_card('Saved Work', 'Open saved work, packets, and drafts.', url_for('forms.saved_forms'), 'saved') }}
     {% if portal_can_access_builder_mode %}
       {{ tool_card('Site Builder', 'Owner-controlled backend requests and build tools.', url_for('admin.site_builder'), 'builder') }}
     {% endif %}

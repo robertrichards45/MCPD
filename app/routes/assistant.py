@@ -34,7 +34,7 @@ _SYSTEM_PROMPT = (
     "You are MCPD Assistant, a knowledgeable and professional AI assistant built into the Marine Corps "
     "Police Department field portal for MCLB Albany. You help officers with questions about law, policy, "
     "report writing, incident procedures, UCMJ, use of force, traffic enforcement, and general police work. "
-    "You can also help officers move around the portal and complete forms by asking one clear question at a time. "
+    "You can also help officers move around the portal and answer workflow questions one clear step at a time. "
     "Keep a natural multi-turn conversation like a professional voice assistant. "
     "Be concise, direct, and professional. When you don't know something with confidence, say so clearly. "
     "Avoid unnecessary filler phrases. Speak plainly as if briefing another officer. "
@@ -87,8 +87,8 @@ def _local_assistant_reply(message: str) -> str:
 
     if any(term in text for term in ('start report', 'start a report', 'new report', 'incident report', 'write report', 'start a call')):
         return (
-            'To start a report, open Start Report and work through Parties, Facts, Narrative, Paperwork, and Review. '
-            f'Start here: {url_for("reports.new_report")}. On mobile, use {url_for("mobile.incident_start")}.'
+            'The standalone report builder has been removed from the normal portal. '
+            f'Open Reports Center to review visible reports and packet status: {url_for("reports.list_reports")}.'
         )
     if any(term in text for term in ('law', 'charge', 'statute', 'ucmj', 'federal', 'georgia', 'order applies')):
         return (
@@ -102,8 +102,8 @@ def _local_assistant_reply(message: str) -> str:
         )
     if any(term in text for term in ('form', 'pdf', 'statement', 'domestic supplemental', 'stat sheet')):
         return (
-            'Open Forms Library, choose the official form, fill only fields shown on the source PDF, then preview before download or email. '
-            f'Open Forms: {url_for("forms.list_forms")}.'
+            'The Forms Library has been removed from the normal portal. '
+            f'Open Saved Work if you need to review existing saved items: {url_for("forms.saved_forms")}.'
         )
     if any(term in text for term in ('training', 'roster', 'sign training', 'qualification')):
         return (
@@ -122,11 +122,10 @@ def _local_assistant_reply(message: str) -> str:
         )
     if any(term in text for term in ('accident', 'crash', 'diagram', 'reconstruction')):
         return (
-            'Use Accident Reconstruction under Reports for crash diagrams, measurements, vehicles, media, timeline, and export. '
-            f'Open Accident Reconstruction: {url_for("reports.accident_reconstruction_list")}.'
+            'Accident tools and accident case workflows have been removed from the normal portal.'
         )
     return (
-        'I can help with report workflow, Law Lookup, paperwork guidance, forms, training, personnel, scanner fallback, and accident reconstruction. '
+        'I can help with Law Lookup, paperwork guidance, training, personnel, saved work, and supervisor workflow. '
         'Tell me the task or describe the incident in plain language.'
     )
 
@@ -164,9 +163,7 @@ def _assistant_action_for(message: str, page: dict | None = None) -> dict | None
         (('dashboard', 'home screen', 'main menu', 'command dashboard'), 'Dashboard', url_for('dashboard.dashboard')),
         (('customize dashboard', 'dashboard settings'), 'Customize Dashboard', url_for('dashboard.customize_dashboard')),
         (('law lookup', 'legal lookup', 'look up law', 'search law', 'charges', 'statutes'), 'Law Lookup', url_for('legal.legal_lookup')),
-        (('start report', 'new report', 'incident report', 'write report', 'start incident'), 'Start Report', url_for('reports.new_report')),
         (('reports center', 'all reports', 'reports page', 'report center'), 'Reports Center', url_for('reports.list_reports')),
-        (('forms library', 'forms page', 'open forms', 'find form', 'forms'), 'Forms Library', url_for('forms.list_forms')),
         (('saved forms', 'saved work', 'drafts'), 'Saved Work', url_for('forms.saved_forms')),
         (('orders', 'memos', 'orders and memos', 'orders & memos', 'base orders'), 'Orders & Memos', url_for('orders.library')),
         (('training', 'roster', 'training roster', 'training menu'), 'Training', url_for('training.training_menu')),
@@ -175,16 +172,7 @@ def _assistant_action_for(message: str, page: dict | None = None) -> dict | None
         (('incident command', 'ic board', 'command board', 'incident commander', 'par board', 'accountability board'), 'Incident Command', url_for('incident_command.dashboard')),
         (('approve officers', 'assign officers', 'supervisor dashboard'), 'Approve / Assign Officers', url_for('mobile.supervisor_dashboard')),
         (('admin', 'administration', 'admin users'), 'Administration', url_for('auth.manage_users')),
-        (('body cam', 'bodycam mode', 'body camera'), 'Body Cam Mode', url_for('bodycam.new_recording')),
-        (('bodycam footage', 'body cam footage', 'bodycam library'), 'Bodycam Footage', url_for('bodycam.library')),
-        (('narrative creator', 'narrative tool'), 'Narrative Creator', url_for('bodycam.narrative_tool')),
-        (('5w', '5ws', '5 w', 'five w', 'five ws', '5w builder'), '5W Builder', url_for('bodycam.five_w_tool')),
-        (('blotter', 'blotter writer', 'watch blotter', 'write blotter', 'blotter tool'), 'Blotter Writer', url_for('bodycam.blotter_tool')),
-        (('mock report', 'mock reports', 'cleo report', 'cleo reports'), 'Mock Report Writing', url_for('cleo_api.cleo_reports_page')),
         (('site builder', 'builder', 'builder mode'), 'Site Builder', url_for('admin.site_builder')),
-        (('accident tools', 'crash tools', 'accident diagram'), 'Accident Tools', url_for('reports.accidents')),
-        (('officer accident diagram', 'simple accident diagram'), 'Officer Accident Diagram', url_for('reports.officer_accident_diagram_new')),
-        (('accident reconstruction', 'reconstruction tool', 'investigator reconstruction'), 'Accident Reconstruction', url_for('reports.investigator_reconstruction_new')),
         (('scanner', 'scan id', 'camera scanner', 'id scanner'), 'Mobile ID Scanner', url_for('mobile.incident_person_editor')),
         (('mobile home', 'phone home', 'mobile page', 'mobile dashboard'), 'Mobile Home', url_for('mobile.home')),
         (('stats', 'my stats', 'performance'), 'My Stats', url_for('performance.my_stats')),
@@ -197,9 +185,6 @@ def _assistant_action_for(message: str, page: dict | None = None) -> dict | None
         for terms, label, target_url in navigation_targets:
             if _message_has_any(text, terms):
                 return {'type': 'navigate', 'url': target_url, 'label': label}
-
-    if _message_has_any(text, ('fill a form', 'fill out a form', 'complete a form')):
-        return {'type': 'navigate', 'url': url_for('forms.list_forms'), 'label': 'Forms Library'}
 
     return None
 
