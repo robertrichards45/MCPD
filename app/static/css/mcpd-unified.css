@@ -78,6 +78,7 @@
   --text-primary: #102033;
   --text-secondary: #5e7187;
   --border-color: #d8e1eb;
+  --panel:       #f8fafc;
   --surface:     #ffffff;
   --surface-soft: #f8fafc;
   --line:        #d8e1eb;
@@ -122,6 +123,7 @@ body[data-theme="dark"] {
   --text-primary: #e8f0f9;
   --text-secondary: #97aec4;
   --border-color: #1e3350;
+  --panel:        #0c1a2e;
   --surface:      #0f2033;
   --surface-soft: #0c1a2e;
   --line:         #1e3350;
@@ -1864,7 +1866,647 @@ body[data-theme="dark"] .progress { background: var(--mcpd-surf-3); }
 
 body[data-theme="dark"] ::-webkit-scrollbar-thumb { background: rgba(150,170,195,.2); }
 
-/* ── 19. MOBILE HOME SPECIFICS ───────────────────────────── */
+/* ── 19. DASHBOARD COMPONENT SYSTEM ─────────────────────── */
+
+/* Date tile (header right side) */
+.mcpd-date-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.2;
+}
+
+.mcpd-date-tile strong {
+  font-size: 0.87rem;
+  font-weight: 900;
+  color: var(--mcpd-ink);
+  letter-spacing: 0.06em;
+}
+
+.mcpd-date-tile span {
+  font-size: 0.72rem;
+  color: var(--mcpd-muted);
+  font-weight: 600;
+}
+
+/* Ops snapshot metrics row */
+.mcpd-ops-snapshot {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.mcpd-ops-snapshot-card {
+  background: var(--mcpd-surface);
+  border: 1px solid var(--mcpd-line);
+  border-radius: var(--mcpd-r);
+  padding: 14px 16px;
+  box-shadow: var(--mcpd-shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.mcpd-ops-snapshot-card span {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--mcpd-muted);
+}
+
+.mcpd-ops-snapshot-card strong {
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: var(--mcpd-ink);
+  line-height: 1;
+}
+
+.mcpd-ops-snapshot-card small {
+  font-size: 0.72rem;
+  color: var(--mcpd-muted);
+}
+
+body[data-theme="dark"] .mcpd-ops-snapshot-card {
+  background: var(--mcpd-surface);
+  border-color: var(--mcpd-line);
+}
+
+/* Response board — full-width bordered section */
+.mcpd-response-board {
+  background: var(--mcpd-surface);
+  border: 1px solid var(--mcpd-line);
+  border-radius: var(--mcpd-r-lg);
+  overflow: hidden;
+  box-shadow: var(--mcpd-shadow);
+  margin-bottom: 14px;
+}
+
+.mcpd-response-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 22px 14px;
+  border-bottom: 1px solid var(--mcpd-line);
+}
+
+.mcpd-response-head > div > span {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--mcpd-muted);
+  margin-bottom: 4px;
+}
+
+.mcpd-response-head > div > h2 {
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: var(--mcpd-ink);
+  margin: 0 0 4px;
+}
+
+.mcpd-response-head > div > p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--mcpd-muted);
+}
+
+/* Alert tiles row */
+.mcpd-response-alerts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1px;
+  background: var(--mcpd-line);
+  border-bottom: 1px solid var(--mcpd-line);
+}
+
+.mcpd-response-alert {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 12px 16px;
+  text-decoration: none;
+  background: var(--mcpd-surface);
+  transition: background .1s;
+}
+
+.mcpd-response-alert:hover { background: var(--mcpd-surf-2); }
+
+.mcpd-response-alert span {
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--mcpd-muted);
+}
+
+.mcpd-response-alert strong {
+  font-size: 1.4rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.mcpd-response-alert small {
+  font-size: 0.72rem;
+  color: var(--mcpd-muted);
+}
+
+/* Tone colors for alerts */
+.mcpd-response-alert.is-critical strong { color: var(--mcpd-danger); }
+.mcpd-response-alert.is-warn    strong  { color: var(--mcpd-warn); }
+.mcpd-response-alert.is-ok      strong  { color: var(--mcpd-ok); }
+.mcpd-response-alert.is-info    strong  { color: var(--mcpd-blue-lt); }
+.mcpd-response-alert.is-neutral strong  { color: var(--mcpd-ink); }
+
+/* Response panel grid (2×2 below alerts) */
+.mcpd-response-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--mcpd-line);
+}
+
+.mcpd-response-panel {
+  background: var(--mcpd-surface);
+  min-height: 180px;
+  overflow: hidden;
+}
+
+.mcpd-response-panel-large {
+  grid-column: span 2;
+}
+
+@media (max-width: 900px) {
+  .mcpd-response-grid {
+    grid-template-columns: 1fr;
+  }
+  .mcpd-response-panel-large {
+    grid-column: span 1;
+  }
+}
+
+.mcpd-response-panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--mcpd-line);
+}
+
+.mcpd-response-panel-head > div > span {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--mcpd-muted);
+  margin-bottom: 2px;
+}
+
+.mcpd-response-panel-head > div > h3 {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--mcpd-ink);
+  margin: 0;
+}
+
+.mcpd-response-panel-head a {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--mcpd-blue-lt);
+  text-decoration: none;
+  white-space: nowrap;
+  margin-top: 2px;
+}
+
+body[data-theme="dark"] .mcpd-response-board,
+body[data-theme="dark"] .mcpd-response-panel { background: var(--mcpd-surface); }
+body[data-theme="dark"] .mcpd-response-head,
+body[data-theme="dark"] .mcpd-response-panel-head { border-color: var(--mcpd-line); }
+body[data-theme="dark"] .mcpd-response-alert { background: var(--mcpd-surface); }
+body[data-theme="dark"] .mcpd-response-alert:hover { background: var(--mcpd-surf-2); }
+
+/* Live feed (incident feed rows) */
+.mcpd-live-feed {
+  display: flex;
+  flex-direction: column;
+}
+
+.mcpd-live-feed-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  text-decoration: none;
+  color: var(--mcpd-ink);
+  border-bottom: 1px solid var(--mcpd-line);
+  transition: background .1s;
+}
+
+.mcpd-live-feed-row:last-child { border-bottom: none; }
+.mcpd-live-feed-row:hover { background: var(--mcpd-surf-2); }
+
+.mcpd-live-feed-row > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+
+.mcpd-live-feed-row span {
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--mcpd-muted);
+}
+
+.mcpd-live-feed-row strong {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--mcpd-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mcpd-live-feed-row small {
+  font-size: 0.73rem;
+  color: var(--mcpd-muted);
+}
+
+.mcpd-live-feed-row b {
+  font-size: 0.72rem;
+  font-weight: 800;
+  white-space: nowrap;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--mcpd-surf-3);
+  color: var(--mcpd-muted);
+  flex-shrink: 0;
+}
+
+/* Feed row tones */
+.mcpd-live-feed-row.is-critical b { background: #fee2e2; color: #b91c1c; }
+.mcpd-live-feed-row.is-warn b     { background: #fef3c7; color: #b45309; }
+.mcpd-live-feed-row.is-ok b       { background: #dcfce7; color: #15803d; }
+.mcpd-live-feed-row.is-info b     { background: #dbeafe; color: #1d4ed8; }
+
+body[data-theme="dark"] .mcpd-live-feed-row.is-critical b { background: rgba(185,28,28,.2); color: #fca5a5; }
+body[data-theme="dark"] .mcpd-live-feed-row.is-warn b     { background: rgba(180,83,9,.2);  color: #fbbf24; }
+body[data-theme="dark"] .mcpd-live-feed-row.is-ok b       { background: rgba(21,128,61,.2); color: #86efac; }
+body[data-theme="dark"] .mcpd-live-feed-row.is-info b     { background: rgba(29,78,216,.2); color: #93c5fd; }
+
+/* Unit list */
+.mcpd-unit-list { display: flex; flex-direction: column; }
+
+.mcpd-unit-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 16px;
+  border-bottom: 1px solid var(--mcpd-line);
+}
+
+.mcpd-unit-row:last-child { border-bottom: none; }
+
+.mcpd-unit-row > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+
+.mcpd-unit-row strong {
+  font-size: 0.83rem;
+  font-weight: 700;
+  color: var(--mcpd-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mcpd-unit-row small { font-size: 0.72rem; color: var(--mcpd-muted); }
+
+.mcpd-unit-row > span {
+  font-size: 0.72rem;
+  font-weight: 800;
+  white-space: nowrap;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--mcpd-surf-3);
+  color: var(--mcpd-muted);
+  flex-shrink: 0;
+}
+
+.mcpd-unit-row.is-on-duty > span { background: #dcfce7; color: #15803d; }
+.mcpd-unit-row.is-off-duty > span { background: var(--mcpd-surf-3); color: var(--mcpd-subtle); }
+.mcpd-unit-row.is-patrol > span { background: #dbeafe; color: #1d4ed8; }
+
+body[data-theme="dark"] .mcpd-unit-row.is-on-duty > span  { background: rgba(21,128,61,.2); color: #86efac; }
+body[data-theme="dark"] .mcpd-unit-row.is-patrol > span   { background: rgba(29,78,216,.2); color: #93c5fd; }
+
+/* GIS / Pre-plan layer list */
+.mcpd-layer-list { display: flex; flex-direction: column; }
+
+.mcpd-layer-list a {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--mcpd-line);
+  text-decoration: none;
+  transition: background .1s;
+}
+
+.mcpd-layer-list a:last-child { border-bottom: none; }
+.mcpd-layer-list a:hover { background: var(--mcpd-surf-2); }
+
+.mcpd-layer-list a strong {
+  font-size: 0.83rem;
+  font-weight: 700;
+  color: var(--mcpd-ink);
+}
+
+.mcpd-layer-list a small { font-size: 0.72rem; color: var(--mcpd-muted); }
+
+/* Analytics list */
+.mcpd-analytics-list { display: flex; flex-direction: column; }
+
+.mcpd-analytics-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 16px;
+  border-bottom: 1px solid var(--mcpd-line);
+}
+
+.mcpd-analytics-row:last-child { border-bottom: none; }
+
+.mcpd-analytics-row > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+
+.mcpd-analytics-row strong {
+  font-size: 0.83rem;
+  font-weight: 700;
+  color: var(--mcpd-ink);
+}
+
+.mcpd-analytics-row small { font-size: 0.72rem; color: var(--mcpd-muted); }
+
+.mcpd-analytics-row b {
+  font-size: 1rem;
+  font-weight: 900;
+  color: var(--mcpd-ink);
+  white-space: nowrap;
+}
+
+/* Empty state */
+.mcpd-empty-state {
+  padding: 24px 16px;
+  text-align: center;
+  color: var(--mcpd-muted);
+  font-size: 0.82rem;
+}
+
+/* Board header (shared by readiness + command queue) */
+.mcpd-board-head {
+  padding: 18px 22px 14px;
+}
+
+.mcpd-board-head.compact { padding: 14px 18px 10px; }
+
+.mcpd-board-head span {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--mcpd-muted);
+  margin-bottom: 4px;
+}
+
+.mcpd-board-head h2 {
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: var(--mcpd-ink);
+  margin: 0 0 4px;
+}
+
+.mcpd-board-head p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--mcpd-muted);
+}
+
+/* Readiness board — side-by-side layout */
+.mcpd-readiness-board {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 14px;
+  margin-bottom: 14px;
+  align-items: start;
+}
+
+@media (max-width: 1000px) {
+  .mcpd-readiness-board {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mcpd-readiness-main {
+  background: var(--mcpd-surface);
+  border: 1px solid var(--mcpd-line);
+  border-radius: var(--mcpd-r-lg);
+  overflow: hidden;
+  box-shadow: var(--mcpd-shadow);
+}
+
+.mcpd-readiness-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1px;
+  background: var(--mcpd-line);
+  border-top: 1px solid var(--mcpd-line);
+}
+
+.mcpd-readiness-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  text-decoration: none;
+  background: var(--mcpd-surface);
+  transition: background .1s;
+}
+
+.mcpd-readiness-card:hover { background: var(--mcpd-surf-2); }
+
+.mcpd-readiness-card > div { display: flex; flex-direction: column; gap: 2px; }
+
+.mcpd-readiness-card span {
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--mcpd-muted);
+}
+
+.mcpd-readiness-card strong {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--mcpd-ink);
+}
+
+.mcpd-readiness-card b {
+  font-size: 1.6rem;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--mcpd-ink);
+}
+
+.mcpd-readiness-card small {
+  font-size: 0.72rem;
+  color: var(--mcpd-muted);
+}
+
+.mcpd-readiness-card p {
+  font-size: 0.75rem;
+  color: var(--mcpd-muted);
+  margin: 0;
+}
+
+/* Tone accents on readiness cards */
+.mcpd-readiness-card.is-critical b { color: var(--mcpd-danger); }
+.mcpd-readiness-card.is-warn b     { color: var(--mcpd-warn); }
+.mcpd-readiness-card.is-ok b       { color: var(--mcpd-ok); }
+.mcpd-readiness-card.is-info b     { color: var(--mcpd-blue-lt); }
+
+body[data-theme="dark"] .mcpd-readiness-main { background: var(--mcpd-surface); }
+body[data-theme="dark"] .mcpd-readiness-card { background: var(--mcpd-surface); }
+body[data-theme="dark"] .mcpd-readiness-card:hover { background: var(--mcpd-surf-2); }
+
+/* Command queue sidebar */
+.mcpd-command-queue {
+  background: var(--mcpd-surface);
+  border: 1px solid var(--mcpd-line);
+  border-radius: var(--mcpd-r-lg);
+  overflow: hidden;
+  box-shadow: var(--mcpd-shadow);
+}
+
+.mcpd-command-queue-list { display: flex; flex-direction: column; }
+
+.mcpd-command-queue-list a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 18px;
+  text-decoration: none;
+  border-bottom: 1px solid var(--mcpd-line);
+  transition: background .1s;
+}
+
+.mcpd-command-queue-list a:last-child { border-bottom: none; }
+.mcpd-command-queue-list a:hover { background: var(--mcpd-surf-2); }
+
+.mcpd-command-queue-list a > span {
+  font-size: 0.78rem;
+  color: var(--mcpd-muted);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mcpd-command-queue-list a > strong {
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: var(--mcpd-ink);
+  white-space: nowrap;
+}
+
+.mcpd-command-queue-list a > small {
+  font-size: 0.68rem;
+  color: var(--mcpd-muted);
+  display: block;
+}
+
+body[data-theme="dark"] .mcpd-command-queue { background: var(--mcpd-surface); border-color: var(--mcpd-line); }
+body[data-theme="dark"] .mcpd-command-queue-list a:hover { background: var(--mcpd-surf-2); }
+
+/* Dashboard panels row */
+.mcpd-dashboard-panels {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+/* Map card (within panels row) */
+.mcpd-map-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.mcpd-map-card-head {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--mcpd-line);
+}
+
+.mcpd-map-card-title-group {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.mcpd-map-card-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(31,95,159,.12);
+  color: var(--mcpd-blue);
+  flex-shrink: 0;
+}
+
+.mcpd-map-card-title-group > div h2 {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--mcpd-ink);
+  margin: 0 0 3px;
+}
+
+.mcpd-map-card-title-group > div p {
+  font-size: 0.75rem;
+  color: var(--mcpd-muted);
+  margin: 0;
+}
+
+.mcpd-map-card-info span {
+  font-size: 0.72rem;
+  color: var(--mcpd-muted);
+}
+
+.mcpd-map-canvas-wrap {
+  width: 100%;
+  height: 280px;
+  background: #e8eef5;
+  position: relative;
+  touch-action: pan-x pan-y;
+}
+
+body[data-theme="dark"] .mcpd-map-card-head { border-color: var(--mcpd-line); }
+
+/* Dashboard head actions alignment */
+.mcpd-dashboard-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+/* ── 20. MOBILE HOME SPECIFICS ───────────────────────────── */
 
 /* Topbar (sticky header on mobile home) */
 .mcpd-mobile-topbar {
