@@ -87,8 +87,8 @@ def _local_assistant_reply(message: str) -> str:
 
     if any(term in text for term in ('start report', 'start a report', 'new report', 'incident report', 'write report', 'start a call')):
         return (
-            'The standalone report builder has been removed from the normal portal. '
-            f'Open Reports Center to review visible reports and packet status: {url_for("reports.list_reports")}.'
+            'Open Start Report to begin a standard report, or use the mobile packet workflow when you are in the field. '
+            f'Start Report: {url_for("reports.new_report")}. Mobile Start Report: {url_for("mobile.incident_start")}.'
         )
     if any(term in text for term in ('narrative', '5w', 'five w', 'five ws', '5ws')):
         return (
@@ -107,8 +107,8 @@ def _local_assistant_reply(message: str) -> str:
         )
     if any(term in text for term in ('form', 'pdf', 'statement', 'domestic supplemental', 'stat sheet')):
         return (
-            'The Forms Library has been removed from the normal portal. '
-            f'Open Saved Work if you need to review existing saved items: {url_for("forms.saved_forms")}.'
+            'Open Forms Library to complete official forms, preview blanks, download packets, or resume saved forms. '
+            f'Open Forms Library: {url_for("forms.list_forms")}. Saved Work: {url_for("forms.saved_forms")}.'
         )
     if any(term in text for term in ('training', 'roster', 'sign training', 'qualification')):
         return (
@@ -127,7 +127,7 @@ def _local_assistant_reply(message: str) -> str:
         )
     if any(term in text for term in ('accident', 'crash', 'diagram', 'reconstruction')):
         return (
-            'Accident tools and accident case workflows have been removed from the normal portal.'
+            f'Open Accident Tools for officer diagrams and investigator reconstruction workflows: {url_for("reports.accidents")}.'
         )
     return (
         'I can help with Law Lookup, paperwork guidance, training, personnel, saved work, and supervisor workflow. '
@@ -168,10 +168,15 @@ def _assistant_action_for(message: str, page: dict | None = None) -> dict | None
         (('dashboard', 'home screen', 'main menu', 'command dashboard'), 'Dashboard', url_for('dashboard.dashboard')),
         (('customize dashboard', 'dashboard settings'), 'Customize Dashboard', url_for('dashboard.customize_dashboard')),
         (('law lookup', 'legal lookup', 'look up law', 'search law', 'charges', 'statutes'), 'Law Lookup', url_for('legal.legal_lookup')),
+        (('start report', 'start a report', 'new report', 'incident report', 'write report'), 'Start Report', url_for('reports.new_report')),
         (('reports center', 'all reports', 'reports page', 'report center'), 'Reports Center', url_for('reports.list_reports')),
         (('narrative creator', 'narrative tool', 'write narrative', 'draft narrative'), 'Narrative Creator', url_for('bodycam.narrative_tool')),
         (('5w builder', '5 w builder', 'five w builder', '5ws', '5 w', 'five ws'), '5W Builder', url_for('bodycam.five_w_tool')),
+        (('forms library', 'forms', 'official forms', 'pdf forms'), 'Forms Library', url_for('forms.list_forms')),
         (('saved forms', 'saved work', 'drafts'), 'Saved Work', url_for('forms.saved_forms')),
+        (('accident tools', 'accident diagram', 'crash diagram', 'reconstruction'), 'Accident Tools', url_for('reports.accidents')),
+        (('bodycam mode', 'body cam mode', 'bodycam', 'body cam', 'record bodycam'), 'Body Cam Mode', url_for('bodycam.new_recording')),
+        (('bodycam footage', 'body cam footage', 'footage library'), 'Bodycam Footage', url_for('bodycam.library')),
         (('orders', 'memos', 'orders and memos', 'orders & memos', 'base orders'), 'Orders & Memos', url_for('orders.library')),
         (('training', 'roster', 'training roster', 'training menu'), 'Training', url_for('training.training_menu')),
         (('personnel', 'officers', 'manage users', 'officer profiles', 'users'), 'Personnel', url_for('auth.manage_users')),

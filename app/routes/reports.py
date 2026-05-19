@@ -38,32 +38,6 @@ from ..services.call_type_rules import load_call_type_rules
 
 bp = Blueprint('reports', __name__)
 REVIEWABLE_CLEO_STATUSES = ('SUBMITTED', 'RETURNED', 'GRADED')
-_RETIRED_REPORT_TOOL_ENDPOINTS = {
-    'new_report',
-    'accidents',
-    'officer_accident_diagram_new',
-    'officer_accident_diagram',
-    'investigator_reconstruction_new',
-    'investigator_reconstruction',
-    'accident_reconstruction_list',
-    'accident_reconstruction_new',
-    'report_scene_diagram',
-    'accident_reconstruction_detail',
-    'accident_reconstruction_diagram',
-    'accident_reconstruction_add_vehicle',
-    'accident_reconstruction_add_object',
-    'accident_reconstruction_add_measurement',
-    'accident_reconstruction_add_media',
-    'accident_reconstruction_add_timeline',
-    'accident_reconstruction_export',
-}
-
-
-@bp.before_request
-def _retired_report_tools():
-    endpoint = (request.endpoint or '').split('.')[-1]
-    if endpoint in _RETIRED_REPORT_TOOL_ENDPOINTS:
-        return redirect(url_for('reports.list_reports'))
 
 
 def _utcnow_naive():

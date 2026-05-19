@@ -46,13 +46,6 @@ _SAVED_WORK_ENDPOINTS = {
     'email_saved_form',
     'download_saved_form',
 }
-
-
-@bp.before_request
-def _retired_forms_library_routes():
-    endpoint = (request.endpoint or '').split('.')[-1]
-    if endpoint and endpoint not in _SAVED_WORK_ENDPOINTS:
-        return redirect(url_for('forms.saved_forms'))
 TEMP_FORM_SESSION_KEY = 'forms_temp_payloads'
 TEMP_FORM_TTL_SECONDS = 60 * 60
 PERSON_ROLE_OPTIONS = ['Victim', 'Suspect', 'Complainant', 'Witness', 'Reporting Officer', 'Assisting Officer', 'Juvenile', 'Property Owner', 'Other']

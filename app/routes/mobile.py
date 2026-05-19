@@ -48,41 +48,6 @@ from ..services.mobile_incident_documents import build_narrative_draft, build_pa
 from ..services.mobile_form_catalog import build_mobile_form_catalog
 
 bp = Blueprint('mobile', __name__)
-_RETIRED_MOBILE_REPORT_ENDPOINTS = {
-    'incident_draft_api',
-    'narrative_suggest',
-    'incident_summary_api',
-    'fast_capture',
-    'critical_incident',
-    'accident_diagram_entry',
-    'incident_start',
-    'incident_basics',
-    'incident_statute',
-    'incident_checklist',
-    'incident_persons',
-    'incident_person_editor',
-    'incident_facts',
-    'statement_launcher',
-    'statement_entry',
-    'statement_review',
-    'statement_signature_capture',
-    'incident_narrative_review',
-    'incident_domestic_supplemental',
-    'incident_selected_forms',
-    'packet_review',
-    'send_packet',
-    'packet_success',
-    'send_packet_api',
-}
-
-
-@bp.before_request
-def _retired_mobile_report_builder():
-    endpoint = (request.endpoint or '').split('.')[-1]
-    if endpoint in _RETIRED_MOBILE_REPORT_ENDPOINTS:
-        if request.method == 'GET':
-            return redirect(url_for('mobile.home'))
-        return jsonify({'ok': False, 'error': 'This workflow has been removed from the normal portal.'}), 410
 
 
 @bp.route('/mobile')
