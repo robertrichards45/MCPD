@@ -1,3 +1,5 @@
+from flask import request
+
 from app import create_app
 from app.routes.credit_center import bp as credit_center_bp
 
@@ -14,20 +16,23 @@ def add_credit_center_navigation(response):
         return response
 
     html = response.get_data(as_text=True)
-    dashboard_link_end = '</a>'
-    dashboard_marker = "href=\"/dashboard\""
-    marker_index = html.find(dashboard_marker)
-    if marker_index < 0:
-        dashboard_marker = "href=\"/\""
-        marker_index = html.find(dashboard_marker)
-    if marker_index < 0 or '/credit-center/' in html:
+    if 'href="/credit-center/"' in html:
         return response
 
-    link_end = html.find(dashboard_link_end, marker_index)
+    dashboard_marker = 'href="/dashboard"'
+    marker_index = html.find(dashboard_marker)
+    if marker_index < 0:
+        dashboard_marker = 'href="/"'
+        marker_index = html.find(dashboard_marker)
+    if marker_index < 0:
+        return response
+
+    link_end = html.find('</a>', marker_index)
     if link_end < 0:
         return response
-    link_end += len(dashboard_link_end)
-    active_class = 'is-active' if getattr(__import__('flask').request, 'path', '') .startswith('/credit-center') else ''
+    link_end += len('</a>')
+
+    active_class = 'is-active' if request.path.startswith('/credit-center') else ''
     credit_link = (
         f'<a class="{active_class}" href="/credit-center/">'
         '<svg class="nav-icon" viewBox="0 0 16 16" width="16" height="16" fill="none" '
