@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% block head %}
+<style>
+.credit-shell{padding:24px;max-width:1500px;margin:0 auto}.credit-hero,.credit-card{background:var(--surface,#fff);border:1px solid var(--border-color,#dbe3ee);border-radius:18px;box-shadow:0 10px 30px rgba(15,23,42,.07)}.credit-hero{padding:24px;margin-bottom:16px}.credit-hero h1{margin:0 0 6px}.credit-hero p{margin:0;color:var(--muted,#64748b)}.credit-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px}.credit-card{padding:18px}.span-4{grid-column:span 4}.span-5{grid-column:span 5}.span-7{grid-column:span 7}.span-8{grid-column:span 8}.span-12{grid-column:span 12}.credit-card h2{margin:0 0 14px;font-size:1.05rem}.field-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.field{display:flex;flex-direction:column;gap:5px}.field label{font-size:.78rem;font-weight:700;color:var(--muted,#64748b)}.field input,.field select{border:1px solid var(--border-color,#cbd5e1);border-radius:10px;padding:10px;background:transparent;color:inherit}.credit-btn{border:0;border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer;background:#155eef;color:#fff}.credit-btn.secondary{background:#e8eef8;color:#17345f}.credit-btn.danger{background:#b42318}.credit-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.metric-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.metric{padding:14px;border-radius:14px;background:rgba(21,94,239,.08)}.metric span{display:block;font-size:.72rem;color:var(--muted,#64748b);font-weight:700}.metric strong{display:block;font-size:1.45rem;margin-top:3px}.account-table{width:100%;border-collapse:collapse;font-size:.86rem}.account-table th,.account-table td{padding:9px;border-bottom:1px solid var(--border-color,#e2e8f0);text-align:left}.account-table input,.account-table select{width:100%;box-sizing:border-box;border:1px solid var(--border-color,#cbd5e1);border-radius:8px;padding:7px;background:transparent;color:inherit}.recommendations{display:grid;gap:9px}.recommendation{padding:12px;border-radius:12px;background:rgba(16,185,129,.09);border-left:4px solid #10b981}.recommendation strong{display:block;margin-bottom:3px}.disclaimer{font-size:.78rem;color:var(--muted,#64748b);line-height:1.45}.score-band{height:14px;border-radius:999px;background:linear-gradient(90deg,#b42318,#f79009,#fdb022,#12b76a);position:relative;margin:14px 0 8px}.score-marker{position:absolute;top:-6px;width:4px;height:26px;background:currentColor;border-radius:2px}.scenario-list{display:grid;gap:8px}.scenario{display:grid;grid-template-columns:1fr 130px 34px;gap:8px;align-items:center}.scenario input,.scenario select{border:1px solid var(--border-color,#cbd5e1);border-radius:8px;padding:8px;background:transparent;color:inherit}.empty{padding:18px;text-align:center;color:var(--muted,#64748b)}@media(max-width:900px){.span-4,.span-5,.span-7,.span-8,.span-12{grid-column:span 12}.field-grid,.metric-row{grid-template-columns:1fr}.credit-shell{padding:14px}.account-table{display:block;overflow-x:auto}.scenario{grid-template-columns:1fr}}
+</style>
+{% endblock %}
+{% block body %}
+<div class="app-shell mcpd-command-app">
+  {% include 'partials/nav.html' %}
+  <main class="dashboard">
+    <div class="credit-shell" id="credit-center-app">
+      <section class="credit-hero">
+        <h1>Credit Center</h1>
+        <p>Enter your report information, test payoff scenarios, and build a prioritized action plan. Data is stored only in this browser.</p>
+      </section>
+
+      <div class="credit-grid">
+        <section class="credit-card span-4">
+          <h2>Current scores</h2>
+          <div class="field-grid">
+            <div class="field"><label>Experian</label><input id="score-experian" type="number" min="300" max="850" placeholder="300–850"></div>
+            <div class="field"><label>Equifax</label><input id="score-equifax" type="number" min="300" max="850" placeholder="300–850"></div>
+            <div class="field"><label>TransUnion</label><input id="score-transunion" type="number" min="300" max="850" placeholder="300–850"></div>
+            <div class="field"><label>Monthly payoff budget</label><input id="monthly-budget" type="number" min="0" step="10" placeholder="$0"></div>
+          </div>
+          <div class="credit-actions"><button class="credit-btn" id="save-profile" type="button">Save profile</button><button class="credit-btn secondary" id="clear-all" type="button">Clear browser data</button></div>
+        </section>
+
+        <section class="credit-card span-8">
+          <h2>Credit snapshot</h2>
+          <div class="metric-row">
+            <div class="metric"><span>Total revolving balance</span><strong id="metric-balance">$0</strong></div>
+            <div class="metric"><span>Total credit limits</span><strong id="metric-limit">$0</strong></div>
+            <div class="metric"><span>Utilization</span><strong id="metric-utilization">0%</strong></div>
+          </div>
+          <div class="score-band"><span class="score-marker" id="score-marker" style="left:0%"></span></div>
+          <div class="disclaimer" id="score-summary">Add your scores and accounts to see a planning estimate.</div>
+        </section>
+
+        <section class="credit-card span-12">
+          <h2>Accounts</h2>
+          <div style="overflow-x:auto">
+            <table class="account-table">
+              <thead><tr><th>Account</th><th>Type</th><th>Balance</th><th>Limit / original</th><th>Payment</th><th>Status</th><th></th></tr></thead>
+              <tbody id="accounts-body"></tbody>
+            </table>
+          </div>
+          <div class="credit-actions"><button class="credit-btn" id="add-account" type="button">Add account</button></div>
+        </section>
+
+        <section class="credit-card span-5">
+          <h2>What-if simulator</h2>
+          <div class="scenario-list" id="scenario-list"></div>
+          <div class="credit-actions"><button class="credit-btn" id="add-scenario" type="button">Add scenario</button><button class="credit-btn secondary" id="run-simulation" type="button">Run simulation</button></div>
+          <p class="disclaimer">Score changes are educational estimates, not bureau predictions or lending guarantees.</p>
+        </section>
+
+        <section class="credit-card span-7">
+          <h2>Estimated outcome</h2>
+          <div class="metric-row">
+            <div class="metric"><span>Projected utilization</span><strong id="projected-utilization">0%</strong></div>
+            <div class="metric"><span>Estimated score movement</span><strong id="projected-change">0 to 0</strong></div>
+            <div class="metric"><span>Projected revolving balance</span><strong id="projected-balance">$0</strong></div>
+          </div>
+          <div class="recommendations" id="recommendations"></div>
+        </section>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+(function(){
+  const KEY='mcpd-credit-center-v1';
+  const $=(id)=>document.getElementById(id);
+  const money=(n)=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(Number(n)||0);
+  const clamp=(n,min,max)=>Math.min(max,Math.max(min,n));
+  let state={scores:{experian:'',equifax:'',transunion:''},budget:'',accounts:[],scenarios:[]};
+
+  function load(){try{const raw=localStorage.getItem(KEY);if(raw)state=Object.assign(state,JSON.parse(raw));}catch(e){}render();}
+  function persist(){localStorage.setItem(KEY,JSON.stringify(state));}
+  function accountRow(account,index){return `<tr data-index="${index}"><td><input data-k="name" value="${account.name||''}" placeholder="Card or lender"></td><td><select data-k="type"><option ${account.type==='credit_card'?'selected':''} value="credit_card">Credit card</option><option ${account.type==='collection'?'selected':''} value="collection">Collection</option><option ${account.type==='loan'?'selected':''} value="loan">Installment loan</option><option ${account.type==='authorized_user'?'selected':''} value="authorized_user">Authorized user</option></select></td><td><input data-k="balance" type="number" min="0" value="${account.balance||0}"></td><td><input data-k="limit" type="number" min="0" value="${account.limit||0}"></td><td><input data-k="payment" type="number" min="0" value="${account.payment||0}"></td><td><select data-k="status"><option ${account.status==='current'?'selected':''} value="current">Current</option><option ${account.status==='late'?'selected':''} value="late">Late</option><option ${account.status==='closed'?'selected':''} value="closed">Closed</option><option ${account.status==='charged_off'?'selected':''} value="charged_off">Charged off</option></select></td><td><button class="credit-btn danger" data-remove-account="${index}" type="button">×</button></td></tr>`;}
+  function scenarioRow(s,index){return `<div class="scenario"><select data-scenario-k="action" data-index="${index}"><option ${s.action==='paydown'?'selected':''} value="paydown">Pay down revolving debt</option><option ${s.action==='remove_collection'?'selected':''} value="remove_collection">Remove collection</option><option ${s.action==='remove_au'?'selected':''} value="remove_au">Remove authorized-user account</option><option ${s.action==='on_time'?'selected':''} value="on_time">Add on-time payment history</option></select><input data-scenario-k="amount" data-index="${index}" type="number" min="0" value="${s.amount||0}" placeholder="Amount"><button class="credit-btn danger" data-remove-scenario="${index}" type="button">×</button></div>`;}
+  function totals(accounts){let balance=0,limit=0;accounts.forEach(a=>{if(['credit_card','authorized_user'].includes(a.type)&&a.status!=='closed'){balance+=Number(a.balance)||0;limit+=Number(a.limit)||0;}});return{balance,limit,util:limit?balance/limit*100:0};}
+  function recommendations(t){const items=[];if(t.util>89)items.push(['Lower revolving utilization below 89%','Even a small paydown may help because maxed-out cards are a major risk signal.']);if(t.util>49)items.push(['Target utilization below 49%','Pay balances down without closing the cards.']);if(t.util>29)items.push(['Next milestone: below 29%','Prioritize the card closest to dropping below a utilization threshold.']);if(t.util>9)items.push(['Long-term target: below 9%','Keep reported balances low while allowing at least one card to report a small balance.']);const collections=state.accounts.filter(a=>a.type==='collection');if(collections.length)items.push(['Review each collection before paying','Verify ownership, balance, dates, and whether deletion or recall is available in writing.']);const late=state.accounts.filter(a=>a.status==='late'||a.status==='charged_off');if(late.length)items.push(['Bring active accounts current first','Preventing new late payments generally matters more than optimizing older items.']);if(!items.length)items.push(['Maintain low balances and perfect payment history','Avoid unnecessary applications and review all three reports for errors.']);return items.slice(0,6);}
+  function estimateMovement(before,after,removedCollections,onTime){let low=0,high=0;const drop=before.util-after.util;if(drop>0){low+=Math.floor(drop*.15);high+=Math.ceil(drop*.45);}if(before.util>=90&&after.util<90){low+=4;high+=14;}if(before.util>=50&&after.util<50){low+=5;high+=18;}if(before.util>=30&&after.util<30){low+=7;high+=24;}if(before.util>=10&&after.util<10){low+=5;high+=18;}low+=removedCollections*3;high+=removedCollections*25;low+=onTime*1;high+=onTime*5;return{low:clamp(low,-80,120),high:clamp(high,-80,160)};}
+  function syncInputs(){state.scores.experian=$('score-experian').value;state.scores.equifax=$('score-equifax').value;state.scores.transunion=$('score-transunion').value;state.budget=$('monthly-budget').value;}
+  function render(){
+    $('score-experian').value=state.scores.experian||'';$('score-equifax').value=state.scores.equifax||'';$('score-transunion').value=state.scores.transunion||'';$('monthly-budget').value=state.budget||'';
+    $('accounts-body').innerHTML=state.accounts.length?state.accounts.map(accountRow).join(''):'<tr><td colspan="7" class="empty">No accounts entered yet.</td></tr>';
+    $('scenario-list').innerHTML=state.scenarios.length?state.scenarios.map(scenarioRow).join(''):'<div class="empty">Add a scenario to compare a possible change.</div>';
+    const t=totals(state.accounts);$('metric-balance').textContent=money(t.balance);$('metric-limit').textContent=money(t.limit);$('metric-utilization').textContent=t.util.toFixed(1)+'%';
+    const scores=Object.values(state.scores).map(Number).filter(n=>n>=300&&n<=850);const avg=scores.length?scores.reduce((a,b)=>a+b,0)/scores.length:300;$('score-marker').style.left=((avg-300)/550*100)+'%';$('score-summary').textContent=scores.length?`Average entered score: ${Math.round(avg)}. Utilization is ${t.util.toFixed(1)}%.`:'Add your bureau scores to display an average planning marker.';
+    $('recommendations').innerHTML=recommendations(t).map(r=>`<div class="recommendation"><strong>${r[0]}</strong><span>${r[1]}</span></div>`).join('');
+  }
+  function run(){syncInputs();let projected=JSON.parse(JSON.stringify(state.accounts));let removed=0,onTime=0;state.scenarios.forEach(s=>{const amount=Number(s.amount)||0;if(s.action==='paydown'){let remaining=amount;projected.filter(a=>['credit_card','authorized_user'].includes(a.type)&&Number(a.balance)>0).sort((a,b)=>(Number(b.balance)/Math.max(1,Number(b.limit)))-(Number(a.balance)/Math.max(1,Number(a.limit)))).forEach(a=>{const cut=Math.min(Number(a.balance)||0,remaining);a.balance=(Number(a.balance)||0)-cut;remaining-=cut;});}if(s.action==='remove_collection')removed+=Math.max(1,amount||1);if(s.action==='remove_au')projected=projected.filter(a=>a.type!=='authorized_user');if(s.action==='on_time')onTime+=Math.max(1,amount||1);});const before=totals(state.accounts),after=totals(projected),move=estimateMovement(before,after,removed,onTime);$('projected-utilization').textContent=after.util.toFixed(1)+'%';$('projected-change').textContent=`+${move.low} to +${move.high}`;$('projected-balance').textContent=money(after.balance);persist();}
+  $('add-account').addEventListener('click',()=>{state.accounts.push({name:'',type:'credit_card',balance:0,limit:0,payment:0,status:'current'});render();});
+  $('add-scenario').addEventListener('click',()=>{state.scenarios.push({action:'paydown',amount:0});render();});
+  $('save-profile').addEventListener('click',()=>{syncInputs();persist();render();});
+  $('run-simulation').addEventListener('click',run);
+  $('clear-all').addEventListener('click',()=>{if(confirm('Delete all Credit Center data stored in this browser?')){localStorage.removeItem(KEY);state={scores:{experian:'',equifax:'',transunion:''},budget:'',accounts:[],scenarios:[]};render();}});
+  document.addEventListener('input',e=>{const row=e.target.closest('tr[data-index]');if(row&&e.target.dataset.k){state.accounts[Number(row.dataset.index)][e.target.dataset.k]=e.target.value;persist();render();return;}if(e.target.dataset.scenarioK){state.scenarios[Number(e.target.dataset.index)][e.target.dataset.scenarioK]=e.target.value;persist();}});
+  document.addEventListener('change',e=>{if(e.target.dataset.k||e.target.dataset.scenarioK)e.target.dispatchEvent(new Event('input',{bubbles:true}));});
+  document.addEventListener('click',e=>{if(e.target.dataset.removeAccount!==undefined){state.accounts.splice(Number(e.target.dataset.removeAccount),1);persist();render();}if(e.target.dataset.removeScenario!==undefined){state.scenarios.splice(Number(e.target.dataset.removeScenario),1);persist();render();}});
+  load();
+})();
+</script>
+{% endblock %}
