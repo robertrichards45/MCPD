@@ -1,136 +1,57 @@
 {% extends 'base.html' %}
-{% block title %}Private Credit Simulator{% endblock %}
-{% block content %}
-<div class="container py-4" id="creditApp">
-  <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap mb-3">
-    <div>
-      <h1 class="h3 mb-1">Private Credit Scenario Simulator</h1>
-      <p class="text-muted mb-0">Upload a report, build unlimited scenarios, and compare several at once.</p>
-    </div>
-    <span class="badge text-bg-warning">Educational estimate — not a bureau score</span>
-  </div>
-
-  <div class="alert alert-info">
-    Results use a transparent approximation of public credit-risk factors. FICO, VantageScore, Equifax, Experian, and TransUnion formulas are proprietary, so exact scores cannot be guaranteed.
-  </div>
-
-  <div class="card mb-4">
-    <div class="card-body">
-      <h2 class="h5">1. Import or enter your baseline</h2>
-      <form id="uploadForm" class="row g-2 align-items-end">
-        <div class="col-md-7"><label class="form-label">Credit report file</label><input class="form-control" id="reportFile" type="file" accept=".pdf,.json,.csv,.txt"></div>
-        <div class="col-md-3"><button class="btn btn-primary w-100" type="submit">Import Report</button></div>
-        <div class="col-md-2"><button class="btn btn-outline-secondary w-100" type="button" id="loadDemo">Load Example</button></div>
-      </form>
-      <div id="uploadMessage" class="small mt-2"></div>
-      <hr>
-      <div class="row g-3">
-        <div class="col-md-3"><label class="form-label">Current score</label><input id="baselineScore" type="number" class="form-control" min="300" max="850" value="600"></div>
-        <div class="col-md-3"><label class="form-label">Recent inquiries</label><input id="baselineInquiries" type="number" class="form-control" min="0" value="0"></div>
-        <div class="col-md-6 d-flex align-items-end"><button class="btn btn-outline-primary" id="addAccount" type="button">Add account manually</button></div>
+{% block head %}
+<style>
+.credit-wrap{padding:24px;max-width:1400px;margin:0 auto}.credit-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:18px}.credit-head h1{margin:0 0 6px;font-size:1.8rem}.credit-head p{margin:0;color:var(--muted,#64748b)}.credit-badge{background:#fff7d6;border:1px solid #e8c55d;border-radius:999px;padding:7px 11px;font-weight:700;font-size:.78rem}.credit-grid{display:grid;grid-template-columns:1fr;gap:16px}.credit-card{background:var(--panel-bg,#fff);border:1px solid var(--border-color,#dbe3ee);border-radius:16px;padding:18px;box-shadow:0 8px 24px rgba(15,23,42,.06)}.credit-card h2{margin:0 0 14px;font-size:1.08rem}.credit-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:12px}.credit-field label{display:block;font-size:.78rem;font-weight:700;margin-bottom:5px}.credit-field input,.credit-field select{width:100%;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:8px;padding:9px;background:var(--panel-bg,#fff);color:inherit}.credit-actions{display:flex;gap:8px;flex-wrap:wrap}.credit-btn{border:0;border-radius:9px;padding:9px 13px;font-weight:700;cursor:pointer;background:#0f5ca8;color:white}.credit-btn.secondary{background:#e8eef6;color:#17324d}.credit-btn.danger{background:#b42318}.credit-btn.success{background:#147a4b}.credit-table{width:100%;border-collapse:collapse;font-size:.86rem}.credit-table th,.credit-table td{border-bottom:1px solid #dbe3ee;padding:8px;text-align:left;vertical-align:middle}.credit-table input,.credit-table select{width:100%;box-sizing:border-box;padding:7px;border:1px solid #cbd5e1;border-radius:7px;background:transparent;color:inherit}.credit-scroll{overflow-x:auto}.scenario{border:1px solid #dbe3ee;border-radius:12px;padding:12px;margin-top:10px}.scenario-top{display:flex;gap:8px;align-items:center}.scenario-top input[type=text]{flex:1}.result-positive{color:#08783e;font-weight:800}.result-negative{color:#b42318;font-weight:800}.credit-note{background:#edf6ff;border:1px solid #9ac7ef;border-radius:10px;padding:11px;margin-bottom:16px;font-size:.86rem}.empty{color:#64748b;padding:12px 0}.credit-message{font-size:.84rem;margin-top:8px}.credit-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}.credit-stat{border:1px solid #dbe3ee;border-radius:12px;padding:12px}.credit-stat span{display:block;font-size:.75rem;color:#64748b}.credit-stat strong{font-size:1.2rem}@media(max-width:850px){.credit-row,.credit-summary{grid-template-columns:1fr 1fr}.credit-wrap{padding:14px}.credit-head{display:block}.credit-badge{display:inline-block;margin-top:10px}}@media(max-width:520px){.credit-row,.credit-summary{grid-template-columns:1fr}}
+</style>
+{% endblock %}
+{% block body %}
+<div class="app-shell mcpd-command-app">
+  {% include 'partials/nav.html' %}
+  <main class="dashboard">
+    <div class="credit-wrap" id="creditApp">
+      <div class="credit-head"><div><h1>Private Credit Center</h1><p>Import a report, enter accounts manually, and compare multiple payoff or removal scenarios.</p></div><span class="credit-badge">Educational estimate — not a bureau score</span></div>
+      <div class="credit-note"><strong>Privacy:</strong> calculations run in your browser. Uploaded report data is parsed for this session and is not saved by this tool. Review imported information before relying on it.</div>
+      <div class="credit-grid">
+        <section class="credit-card">
+          <h2>1. Current credit profile</h2>
+          <form id="uploadForm" class="credit-row">
+            <div class="credit-field" style="grid-column:span 2"><label>Credit report file</label><input id="reportFile" type="file" accept=".pdf,.json,.csv,.txt"></div>
+            <div class="credit-field"><label>&nbsp;</label><button class="credit-btn" type="submit">Import report</button></div>
+            <div class="credit-field"><label>&nbsp;</label><button class="credit-btn secondary" id="loadDemo" type="button">Load example</button></div>
+          </form>
+          <div id="uploadMessage" class="credit-message"></div>
+          <div class="credit-row" style="margin-top:14px">
+            <div class="credit-field"><label>Current score</label><input id="baselineScore" type="number" min="300" max="850" value="600"></div>
+            <div class="credit-field"><label>Recent inquiries</label><input id="baselineInquiries" type="number" min="0" value="0"></div>
+            <div class="credit-field"><label>Monthly payoff budget</label><input id="monthlyBudget" type="number" min="0" value="500"></div>
+            <div class="credit-field"><label>&nbsp;</label><button class="credit-btn secondary" id="addAccount" type="button">Add account</button></div>
+          </div>
+          <div class="credit-summary"><div class="credit-stat"><span>Total debt</span><strong id="sumDebt">$0</strong></div><div class="credit-stat"><span>Card utilization</span><strong id="sumUtil">0%</strong></div><div class="credit-stat"><span>Negative items</span><strong id="sumNeg">0</strong></div><div class="credit-stat"><span>Accounts</span><strong id="sumAccounts">0</strong></div></div>
+          <div class="credit-scroll"><table class="credit-table"><thead><tr><th>Account</th><th>Type</th><th>Balance</th><th>Limit</th><th>Age (months)</th><th>AU</th><th>Negative</th><th></th></tr></thead><tbody id="accountsBody"></tbody></table></div>
+        </section>
+        <section class="credit-card"><div class="credit-head"><div><h2>2. Build scenarios</h2></div><button class="credit-btn success" id="newScenario" type="button">New scenario</button></div><div id="scenarioList"></div><button class="credit-btn" id="runSelected" type="button">Compare selected scenarios</button></section>
+        <section class="credit-card"><h2>3. Estimated results</h2><div class="credit-scroll"><table class="credit-table"><thead><tr><th>Scenario</th><th>Estimated score</th><th>Likely range</th><th>Change</th><th>Utilization</th><th>Debt</th><th>Main factors</th></tr></thead><tbody id="resultsBody"></tbody></table></div></section>
       </div>
-      <div class="table-responsive mt-3"><table class="table table-sm align-middle"><thead><tr><th>Account</th><th>Type</th><th>Balance</th><th>Limit</th><th>Age</th><th>AU</th><th>Negative</th><th></th></tr></thead><tbody id="accountsBody"></tbody></table></div>
     </div>
-  </div>
-
-  <div class="card mb-4">
-    <div class="card-body">
-      <div class="d-flex justify-content-between flex-wrap gap-2">
-        <h2 class="h5">2. Build scenarios</h2>
-        <button class="btn btn-success" id="newScenario" type="button">New Scenario</button>
-      </div>
-      <div id="scenarioList" class="mt-3"></div>
-      <button class="btn btn-primary mt-3" id="runSelected" type="button">Run selected scenarios together</button>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-body">
-      <h2 class="h5">3. Comparison results</h2>
-      <div class="table-responsive"><table class="table table-striped align-middle"><thead><tr><th>Scenario</th><th>Estimated score</th><th>Range</th><th>Change</th><th>Utilization</th><th>Debt</th><th>Key reasons</th></tr></thead><tbody id="resultsBody"></tbody></table></div>
-    </div>
-  </div>
+  </main>
 </div>
-
+{% endblock %}
+{% block scripts %}
 <script>
-(() => {
-  const state = { accounts: [], scenarios: [] };
-  const el = id => document.getElementById(id);
-  const money = n => '$' + Number(n || 0).toLocaleString(undefined, {maximumFractionDigits:0});
-  const uid = () => crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random());
-  const clamp = (n,a,b) => Math.max(a, Math.min(b,n));
-  function accountTemplate(a={}) { return {id:a.id||uid(),name:a.name||'New account',type:a.type||'revolving',balance:+a.balance||0,limit:+a.limit||0,original_balance:+a.original_balance||0,age_months:+a.age_months||0,late30:+a.late30||0,late60:+a.late60||0,late90:+a.late90||0,collection:!!a.collection,chargeoff:!!a.chargeoff,authorized_user:!!a.authorized_user,status:a.status||'open'}; }
-  function renderAccounts(){
-    el('accountsBody').innerHTML = state.accounts.map((a,i)=>`<tr>
-      <td><input class="form-control form-control-sm" data-ai="${i}" data-k="name" value="${a.name.replaceAll('"','&quot;')}"></td>
-      <td><select class="form-select form-select-sm" data-ai="${i}" data-k="type"><option value="revolving" ${a.type==='revolving'?'selected':''}>Credit card</option><option value="installment" ${a.type==='installment'?'selected':''}>Loan</option><option value="collection" ${a.type==='collection'?'selected':''}>Collection</option></select></td>
-      <td><input class="form-control form-control-sm" type="number" data-ai="${i}" data-k="balance" value="${a.balance}"></td>
-      <td><input class="form-control form-control-sm" type="number" data-ai="${i}" data-k="limit" value="${a.limit}"></td>
-      <td><input class="form-control form-control-sm" type="number" data-ai="${i}" data-k="age_months" value="${a.age_months}"></td>
-      <td><input type="checkbox" data-ai="${i}" data-k="authorized_user" ${a.authorized_user?'checked':''}></td>
-      <td><input type="checkbox" data-ai="${i}" data-k="negative" ${(a.collection||a.chargeoff||a.late90)?'checked':''}></td>
-      <td><button class="btn btn-sm btn-outline-danger" data-remove-account="${i}">Remove</button></td></tr>`).join('');
-  }
-  function scenarioTemplate(){ return {id:uid(),name:'Scenario '+(state.scenarios.length+1),selected:true,actions:[]}; }
-  function renderScenarios(){
-    el('scenarioList').innerHTML = state.scenarios.map((s,si)=>`<div class="border rounded p-3 mb-3">
-      <div class="row g-2 align-items-center"><div class="col-auto"><input type="checkbox" data-si="${si}" data-sk="selected" ${s.selected?'checked':''}></div><div class="col"><input class="form-control" data-si="${si}" data-sk="name" value="${s.name.replaceAll('"','&quot;')}"></div><div class="col-auto"><button class="btn btn-sm btn-outline-secondary" data-clone="${si}">Clone</button> <button class="btn btn-sm btn-outline-danger" data-remove-scenario="${si}">Delete</button></div></div>
-      <div class="mt-3">${s.actions.map((a,ai)=>actionHtml(a,si,ai)).join('')}</div>
-      <button class="btn btn-sm btn-outline-primary mt-2" data-add-action="${si}">Add action</button>
-    </div>`).join('') || '<p class="text-muted">Create a scenario to begin.</p>';
-  }
-  function actionHtml(a,si,ai){
-    const accountOptions = state.accounts.map(x=>`<option value="${x.id}" ${a.accountId===x.id?'selected':''}>${x.name}</option>`).join('');
-    return `<div class="row g-2 mb-2 align-items-center"><div class="col-md-4"><select class="form-select form-select-sm" data-si="${si}" data-ai2="${ai}" data-ak="type">
-      <option value="paydown" ${a.type==='paydown'?'selected':''}>Pay account down to amount</option><option value="remove" ${a.type==='remove'?'selected':''}>Remove tradeline</option><option value="remove_au" ${a.type==='remove_au'?'selected':''}>Remove authorized-user account</option><option value="delete_negative" ${a.type==='delete_negative'?'selected':''}>Delete negative item</option><option value="new_card" ${a.type==='new_card'?'selected':''}>Open new credit card</option><option value="age" ${a.type==='age'?'selected':''}>Age profile by months</option><option value="inquiries" ${a.type==='inquiries'?'selected':''}>Set inquiry count</option></select></div>
-      <div class="col-md-4">${['new_card','age','inquiries'].includes(a.type)?'<input class="form-control form-control-sm" type="number" data-si="'+si+'" data-ai2="'+ai+'" data-ak="value" value="'+(a.value||0)+'" placeholder="Amount / months / count">':'<select class="form-select form-select-sm" data-si="'+si+'" data-ai2="'+ai+'" data-ak="accountId">'+accountOptions+'</select>'}</div>
-      <div class="col-md-3">${a.type==='paydown'?'<input class="form-control form-control-sm" type="number" data-si="'+si+'" data-ai2="'+ai+'" data-ak="value" value="'+(a.value||0)+'" placeholder="New balance">':a.type==='new_card'?'<input class="form-control form-control-sm" type="number" data-si="'+si+'" data-ai2="'+ai+'" data-ak="limit" value="'+(a.limit||1000)+'" placeholder="New limit">':''}</div>
-      <div class="col-md-1"><button class="btn btn-sm btn-outline-danger" data-remove-action="${si}:${ai}">×</button></div></div>`;
-  }
-  function applyScenario(s){
-    let accounts = structuredClone(state.accounts), inquiries = +el('baselineInquiries').value||0;
-    for(const a of s.actions){
-      const idx=accounts.findIndex(x=>x.id===a.accountId);
-      if(a.type==='paydown'&&idx>=0) accounts[idx].balance=Math.max(0,+a.value||0);
-      if(a.type==='remove'&&idx>=0) accounts.splice(idx,1);
-      if(a.type==='remove_au') accounts=accounts.filter(x=>!(x.id===a.accountId&&x.authorized_user));
-      if(a.type==='delete_negative'&&idx>=0){accounts[idx].collection=false;accounts[idx].chargeoff=false;accounts[idx].late30=accounts[idx].late60=accounts[idx].late90=0;}
-      if(a.type==='new_card') {accounts.push(accountTemplate({name:'New card',type:'revolving',balance:+a.value||0,limit:+a.limit||1000,age_months:0}));inquiries++;}
-      if(a.type==='age') accounts.forEach(x=>x.age_months+=(+a.value||0));
-      if(a.type==='inquiries') inquiries=Math.max(0,+a.value||0);
-    }
-    return {accounts,inquiries};
-  }
-  function metrics(profile){
-    const rev=profile.accounts.filter(a=>a.type==='revolving'&&a.status!=='closed');
-    const limit=rev.reduce((s,a)=>s+a.limit,0), revBal=rev.reduce((s,a)=>s+a.balance,0), debt=profile.accounts.reduce((s,a)=>s+a.balance,0);
-    const util=limit?revBal/limit:0, maxUtil=rev.reduce((m,a)=>Math.max(m,a.limit?a.balance/a.limit:0),0);
-    const ages=profile.accounts.map(a=>a.age_months||0), avgAge=ages.length?ages.reduce((a,b)=>a+b,0)/ages.length:0, oldest=ages.length?Math.max(...ages):0;
-    const negatives=profile.accounts.reduce((s,a)=>s+(a.collection?45:0)+(a.chargeoff?55:0)+a.late30*8+a.late60*15+a.late90*24,0);
-    return {util,maxUtil,debt,avgAge,oldest,negatives,inquiries:profile.inquiries,accounts:profile.accounts.length};
-  }
-  function estimate(profile){
-    const base=clamp(+el('baselineScore').value||600,300,850), b=metrics({accounts:state.accounts,inquiries:+el('baselineInquiries').value||0}), m=metrics(profile); let delta=0, reasons=[];
-    const utilScore=u=>u<=.01?55:u<=.09?48:u<=.29?28:u<=.49?8:u<=.69?-12:u<=.89?-35:-60;
-    const du=utilScore(m.util)-utilScore(b.util); delta+=du; if(Math.abs(du)>=3) reasons.push(`${m.util<b.util?'Lower':'Higher'} overall utilization`);
-    const dmax=(utilScore(m.maxUtil)-utilScore(b.maxUtil))*.45; delta+=dmax; if(Math.abs(dmax)>=3) reasons.push('Individual card utilization changed');
-    const dneg=(b.negatives-m.negatives)*.7; delta+=clamp(dneg,-110,140); if(dneg>5) reasons.push('Negative history removed');
-    const dinq=(b.inquiries-m.inquiries)*4; delta+=clamp(dinq,-35,35); if(Math.abs(dinq)>=4) reasons.push(`${m.inquiries<b.inquiries?'Fewer':'More'} recent inquiries`);
-    const ageDelta=clamp((m.avgAge-b.avgAge)*.35,-35,35); delta+=ageDelta; if(Math.abs(ageDelta)>4) reasons.push('Average account age changed');
-    const accountPenalty = m.accounts>b.accounts ? -Math.min(18,(m.accounts-b.accounts)*7) : (m.accounts<b.accounts?-Math.min(12,(b.accounts-m.accounts)*3):0); delta+=accountPenalty;
-    const est=clamp(Math.round(base+delta),300,850), uncertainty=clamp(18+Math.abs(delta)*.08+(m.negatives?12:0),18,45);
-    return {est,low:clamp(Math.round(est-uncertainty),300,850),high:clamp(Math.round(est+uncertainty),300,850),delta:est-base,metrics:m,reasons:reasons.slice(0,4)};
-  }
-  el('uploadForm').addEventListener('submit',async e=>{e.preventDefault();const f=el('reportFile').files[0];if(!f)return;const fd=new FormData();fd.append('report',f);el('uploadMessage').textContent='Importing…';const r=await fetch('{{ url_for("credit_simulator.import_report") }}',{method:'POST',body:fd});const j=await r.json();if(!r.ok){el('uploadMessage').textContent=j.error||'Import failed';return;}state.accounts=(j.accounts||[]).map(accountTemplate);el('baselineScore').value=j.baseline_score||600;el('baselineInquiries').value=j.inquiries||0;renderAccounts();el('uploadMessage').textContent=`Imported ${state.accounts.length} accounts. Review every field before relying on results.`;});
-  el('loadDemo').onclick=()=>{state.accounts=[accountTemplate({name:'Card A',balance:900,limit:1000,age_months:30}),accountTemplate({name:'AU Card',balance:9000,limit:10000,age_months:60,authorized_user:true}),accountTemplate({name:'Collection',type:'collection',balance:500,collection:true,age_months:18})];renderAccounts();};
-  el('addAccount').onclick=()=>{state.accounts.push(accountTemplate());renderAccounts();};
-  el('newScenario').onclick=()=>{state.scenarios.push(scenarioTemplate());renderScenarios();};
-  el('accountsBody').addEventListener('input',e=>{const i=e.target.dataset.ai,k=e.target.dataset.k;if(i===undefined||!k)return;let v=e.target.type==='checkbox'?e.target.checked:e.target.value;if(e.target.type==='number')v=+v||0;if(k==='negative'){state.accounts[i].collection=v;state.accounts[i].chargeoff=false;}else state.accounts[i][k]=v;});
-  el('accountsBody').addEventListener('click',e=>{if(e.target.dataset.removeAccount!==undefined){state.accounts.splice(+e.target.dataset.removeAccount,1);renderAccounts();renderScenarios();}});
-  el('scenarioList').addEventListener('input',e=>{const si=e.target.dataset.si;if(si===undefined)return;if(e.target.dataset.sk){state.scenarios[si][e.target.dataset.sk]=e.target.type==='checkbox'?e.target.checked:e.target.value;}if(e.target.dataset.ai2!==undefined){const a=state.scenarios[si].actions[e.target.dataset.ai2],k=e.target.dataset.ak;a[k]=e.target.type==='number'?+e.target.value:e.target.value;if(k==='type')renderScenarios();}});
-  el('scenarioList').addEventListener('click',e=>{if(e.target.dataset.addAction!==undefined){state.scenarios[e.target.dataset.addAction].actions.push({type:'paydown',accountId:state.accounts[0]?.id||'',value:0});renderScenarios();}if(e.target.dataset.removeAction){const [s,a]=e.target.dataset.removeAction.split(':').map(Number);state.scenarios[s].actions.splice(a,1);renderScenarios();}if(e.target.dataset.removeScenario!==undefined){state.scenarios.splice(+e.target.dataset.removeScenario,1);renderScenarios();}if(e.target.dataset.clone!==undefined){const copy=structuredClone(state.scenarios[+e.target.dataset.clone]);copy.id=uid();copy.name+=' Copy';state.scenarios.push(copy);renderScenarios();}});
-  el('runSelected').onclick=()=>{const selected=state.scenarios.filter(s=>s.selected);el('resultsBody').innerHTML=selected.map(s=>{const r=estimate(applyScenario(s));return `<tr><td>${s.name}</td><td><strong>${r.est}</strong></td><td>${r.low}–${r.high}</td><td class="${r.delta>=0?'text-success':'text-danger'}">${r.delta>=0?'+':''}${r.delta}</td><td>${(r.metrics.util*100).toFixed(1)}%</td><td>${money(r.metrics.debt)}</td><td>${r.reasons.join('; ')||'Minimal modeled change'}</td></tr>`;}).join('');};
-  renderAccounts(); state.scenarios.push(scenarioTemplate()); renderScenarios();
-})();
+(()=>{const state={accounts:[],scenarios:[]},$=id=>document.getElementById(id),money=n=>'$'+Math.round(Number(n||0)).toLocaleString(),uid=()=>String(Date.now())+Math.random().toString(16).slice(2),clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+const acct=(a={})=>({id:a.id||uid(),name:a.name||'New account',type:a.type||'revolving',balance:+a.balance||0,limit:+a.limit||0,age_months:+a.age_months||0,collection:!!a.collection,chargeoff:!!a.chargeoff,late90:+a.late90||0,authorized_user:!!a.authorized_user,status:a.status||'open'});
+function metrics(accounts=state.accounts,inquiries=+$('baselineInquiries').value||0){const rev=accounts.filter(a=>a.type==='revolving'&&a.status!=='closed'),lim=rev.reduce((s,a)=>s+a.limit,0),rb=rev.reduce((s,a)=>s+a.balance,0),debt=accounts.reduce((s,a)=>s+a.balance,0),neg=accounts.filter(a=>a.collection||a.chargeoff||a.late90).length,ages=accounts.map(a=>a.age_months||0);return{debt,util:lim?rb/lim:0,maxUtil:rev.reduce((m,a)=>Math.max(m,a.limit?a.balance/a.limit:0),0),neg,avgAge:ages.length?ages.reduce((a,b)=>a+b,0)/ages.length:0,inquiries,count:accounts.length};}
+function summary(){const m=metrics();$('sumDebt').textContent=money(m.debt);$('sumUtil').textContent=Math.round(m.util*100)+'%';$('sumNeg').textContent=m.neg;$('sumAccounts').textContent=m.count;}
+function renderAccounts(){if(!state.accounts.length){$('accountsBody').innerHTML='<tr><td colspan="8" class="empty">No accounts entered yet.</td></tr>';summary();return;}$('accountsBody').innerHTML=state.accounts.map((a,i)=>`<tr><td><input data-i="${i}" data-k="name" value="${a.name.replaceAll('"','&quot;')}"></td><td><select data-i="${i}" data-k="type"><option value="revolving" ${a.type==='revolving'?'selected':''}>Credit card</option><option value="installment" ${a.type==='installment'?'selected':''}>Loan</option><option value="collection" ${a.type==='collection'?'selected':''}>Collection</option></select></td><td><input type="number" data-i="${i}" data-k="balance" value="${a.balance}"></td><td><input type="number" data-i="${i}" data-k="limit" value="${a.limit}"></td><td><input type="number" data-i="${i}" data-k="age_months" value="${a.age_months}"></td><td><input type="checkbox" data-i="${i}" data-k="authorized_user" ${a.authorized_user?'checked':''}></td><td><input type="checkbox" data-i="${i}" data-k="negative" ${(a.collection||a.chargeoff||a.late90)?'checked':''}></td><td><button class="credit-btn danger" data-rm="${i}" type="button">Remove</button></td></tr>`).join('');summary();}
+function scenario(){return{id:uid(),name:'Scenario '+(state.scenarios.length+1),selected:true,actions:[]};}
+function actionHtml(a,si,ai){const opts=state.accounts.map(x=>`<option value="${x.id}" ${a.accountId===x.id?'selected':''}>${x.name}</option>`).join('');return`<div class="credit-row"><div class="credit-field"><select data-si="${si}" data-ai="${ai}" data-ak="type"><option value="paydown" ${a.type==='paydown'?'selected':''}>Pay balance down to</option><option value="remove_au" ${a.type==='remove_au'?'selected':''}>Remove AU account</option><option value="delete_negative" ${a.type==='delete_negative'?'selected':''}>Delete negative item</option><option value="remove" ${a.type==='remove'?'selected':''}>Remove account</option><option value="age" ${a.type==='age'?'selected':''}>Age profile by months</option><option value="inquiries" ${a.type==='inquiries'?'selected':''}>Set inquiry count</option></select></div><div class="credit-field">${['age','inquiries'].includes(a.type)?`<input type="number" data-si="${si}" data-ai="${ai}" data-ak="value" value="${a.value||0}">`:`<select data-si="${si}" data-ai="${ai}" data-ak="accountId">${opts}</select>`}</div><div class="credit-field">${a.type==='paydown'?`<input type="number" data-si="${si}" data-ai="${ai}" data-ak="value" value="${a.value||0}" placeholder="New balance">`:''}</div><div><button class="credit-btn danger" data-rma="${si}:${ai}" type="button">Remove action</button></div></div>`;}
+function renderScenarios(){$('scenarioList').innerHTML=state.scenarios.map((s,si)=>`<div class="scenario"><div class="scenario-top"><input type="checkbox" data-si="${si}" data-sk="selected" ${s.selected?'checked':''}><input type="text" data-si="${si}" data-sk="name" value="${s.name.replaceAll('"','&quot;')}"><button class="credit-btn secondary" data-add="${si}" type="button">Add action</button><button class="credit-btn danger" data-rms="${si}" type="button">Delete</button></div>${s.actions.map((a,ai)=>actionHtml(a,si,ai)).join('')}</div>`).join('')||'<p class="empty">Create a scenario to begin.</p>';}
+function apply(s){let accounts=structuredClone(state.accounts),inq=+$('baselineInquiries').value||0;for(const a of s.actions){let i=accounts.findIndex(x=>x.id===a.accountId);if(a.type==='paydown'&&i>=0)accounts[i].balance=Math.max(0,+a.value||0);if(a.type==='remove'&&i>=0)accounts.splice(i,1);if(a.type==='remove_au')accounts=accounts.filter(x=>!(x.id===a.accountId&&x.authorized_user));if(a.type==='delete_negative'&&i>=0){accounts[i].collection=false;accounts[i].chargeoff=false;accounts[i].late90=0;}if(a.type==='age')accounts.forEach(x=>x.age_months+=+a.value||0);if(a.type==='inquiries')inq=Math.max(0,+a.value||0);}return{accounts,inquiries:inq};}
+function score(profile){const base=clamp(+$('baselineScore').value||600,300,850),b=metrics(),m=metrics(profile.accounts,profile.inquiries),u=x=>x<=.09?45:x<=.29?25:x<=.49?5:x<=.69?-15:x<=.89?-35:-58;let d=(u(m.util)-u(b.util))+(u(m.maxUtil)-u(b.maxUtil))*.4+(b.neg-m.neg)*38+(b.inquiries-m.inquiries)*4+clamp((m.avgAge-b.avgAge)*.3,-25,25);if(m.count<b.count)d-=Math.min(12,(b.count-m.count)*3);const est=clamp(Math.round(base+d),300,850),unc=25+(m.neg?12:0),reasons=[];if(m.util<b.util)reasons.push('lower utilization');if(m.neg<b.neg)reasons.push('negative item removed');if(m.inquiries<b.inquiries)reasons.push('fewer inquiries');if(m.avgAge>b.avgAge)reasons.push('older average age');return{est,low:clamp(est-unc,300,850),high:clamp(est+unc,300,850),delta:est-base,m,reasons};}
+$('accountsBody').addEventListener('input',e=>{const i=+e.target.dataset.i,k=e.target.dataset.k;if(!Number.isInteger(i)||!k)return;if(k==='authorized_user')state.accounts[i][k]=e.target.checked;else if(k==='negative'){state.accounts[i].collection=e.target.checked;state.accounts[i].chargeoff=false;state.accounts[i].late90=0;}else state.accounts[i][k]=['balance','limit','age_months'].includes(k)?+e.target.value:e.target.value;summary();});$('accountsBody').addEventListener('click',e=>{if(e.target.dataset.rm!==undefined){state.accounts.splice(+e.target.dataset.rm,1);renderAccounts();renderScenarios();}});
+$('scenarioList').addEventListener('input',e=>{const si=+e.target.dataset.si;if(!Number.isInteger(si))return;if(e.target.dataset.sk)state.scenarios[si][e.target.dataset.sk]=e.target.type==='checkbox'?e.target.checked:e.target.value;const ai=+e.target.dataset.ai;if(Number.isInteger(ai)&&e.target.dataset.ak){state.scenarios[si].actions[ai][e.target.dataset.ak]=e.target.dataset.ak==='value'?+e.target.value:e.target.value;if(e.target.dataset.ak==='type')renderScenarios();}});$('scenarioList').addEventListener('click',e=>{if(e.target.dataset.add!==undefined){const si=+e.target.dataset.add;state.scenarios[si].actions.push({type:'paydown',accountId:state.accounts[0]?.id||'',value:0});renderScenarios();}if(e.target.dataset.rms!==undefined){state.scenarios.splice(+e.target.dataset.rms,1);renderScenarios();}if(e.target.dataset.rma){const[si,ai]=e.target.dataset.rma.split(':').map(Number);state.scenarios[si].actions.splice(ai,1);renderScenarios();}});
+$('addAccount').onclick=()=>{state.accounts.push(acct());renderAccounts();renderScenarios();};$('newScenario').onclick=()=>{state.scenarios.push(scenario());renderScenarios();};$('loadDemo').onclick=()=>{state.accounts=[acct({name:'Primary card',balance:1000,limit:1000,age_months:42}),acct({name:'Authorized-user card',balance:9500,limit:10000,age_months:70,authorized_user:true}),acct({name:'Collection',type:'collection',balance:500,collection:true,age_months:20})];renderAccounts();renderScenarios();};
+$('uploadForm').onsubmit=async e=>{e.preventDefault();const f=$('reportFile').files[0];if(!f){$('uploadMessage').textContent='Choose a file first.';return;}const fd=new FormData();fd.append('report',f);$('uploadMessage').textContent='Importing…';try{const r=await fetch('{{ url_for("credit_simulator.import_report") }}',{method:'POST',body:fd}),j=await r.json();if(!r.ok)throw new Error(j.error||'Import failed');state.accounts=(j.accounts||[]).map(acct);$('baselineScore').value=j.baseline_score||600;$('baselineInquiries').value=j.inquiries||0;renderAccounts();renderScenarios();$('uploadMessage').textContent=`Imported ${state.accounts.length} accounts. Verify every item.`;}catch(err){$('uploadMessage').textContent=err.message;}};
+$('runSelected').onclick=()=>{$('resultsBody').innerHTML=state.scenarios.filter(s=>s.selected).map(s=>{const r=score(apply(s));return`<tr><td>${s.name}</td><td><strong>${r.est}</strong></td><td>${r.low}–${r.high}</td><td class="${r.delta>=0?'result-positive':'result-negative'}">${r.delta>=0?'+':''}${r.delta}</td><td>${Math.round(r.m.util*100)}%</td><td>${money(r.m.debt)}</td><td>${r.reasons.join(', ')||'limited change'}</td></tr>`;}).join('')||'<tr><td colspan="7" class="empty">Select at least one scenario.</td></tr>';};renderAccounts();state.scenarios.push(scenario());renderScenarios();})();
 </script>
 {% endblock %}
