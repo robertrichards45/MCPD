@@ -1,6 +1,41 @@
+from flask_login import current_user
+
 from . import auth, dashboard, forms, training, stats, annual_ai, admin, cleo_api, reports, reconstruction, officers, ops_modules, legal, orders, reference, announcements, mobile
 from . import credit_simulator
 
 # Nest the private simulator under a blueprint already registered by the app
 # factory, avoiding any change to the large central application factory.
 admin.bp.register_blueprint(credit_simulator.bp)
+
+
+@admin.bp.after_app_request
+def _inject_private_credit_center_navigation(response):
+    """Add the private Credit Center to the owner's normal sidebar navigation."""
+    if response.mimetype != 'text/html' or not getattr(current_user, 'is_authenticated', False):
+        return response
+    username = (getattr(current_user, 'username', '') or '').strip().lower()
+    email = (getattr(current_user, 'email', '') or '').strip().lower()
+    if username not in {'robertrichards45', 'robert.richards'} and email != 'robertrichards45@gmail.com':
+        return response
+    try:
+        html = response.get_data(as_text=True)
+    except (RuntimeError, UnicodeDecodeError):
+        return response
+    if 'href="/private/credit-simulator/"' in html or 'mcpd-command-sidebar' not in html:
+        return response
+    marker = '<nav aria-label="Main navigation">'
+    if marker not in html:
+        return response
+    active = ' is-active' if '/private/credit-simulator' in (getattr(response, 'location', '') or '') else ''
+    link = (
+        '<a class="credit-center-nav' + active + '" href="/private/credit-simulator/" '
+        'title="Private credit report and score simulator">'
+        '<svg class="nav-icon" viewBox="0 0 16 16" width="16" height="16" fill="none" '
+        'stroke="currentColor" stroke-width="1.5" aria-hidden="true">'
+        '<rect x="1.5" y="3" width="13" height="10" rx="2"/>'
+        '<path d="M1.5 6h13M4 10h3"/></svg>Credit Center</a>'
+    )
+    html = html.replace(marker, marker + link, 1)
+    response.set_data(html)
+    response.headers['Content-Length'] = str(len(response.get_data()))
+    return response
