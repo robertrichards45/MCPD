@@ -81,6 +81,18 @@ def test_fto_center_returns_expanded_category_scoring_and_followup():
     assert 'Professionalism' in html
     assert 'Policy / Procedure Awareness' in html
     assert 'assigned FTO/instructor owns the final rating' in html
+    assert 'Why was this flagged?' in html
+
+
+def test_fto_center_exposes_standard_and_accelerated_program_roadmaps():
+    client = _client()
+    response = client.get('/sentinel/fto-center')
+    html = response.get_data(as_text=True)
+    assert response.status_code == 200
+    assert 'Standard FTO Program — 8 Weeks' in html
+    assert 'Accelerated FTO Program — 4 Weeks' in html
+    assert 'DOR &amp; Remediation Workflow' in html or 'DOR & Remediation Workflow' in html
+    assert 'will not automatically pass, fail, advance, extend, discipline' in html
 
 
 def test_old_fto_instructor_get_redirects_to_fto_center():
@@ -101,6 +113,19 @@ def test_universal_portal_search_renders_safe_workflow_shortcuts():
     assert 'Narrative Creator' in html
     assert 'FTO Center' in html
     assert 'Report search uses report titles/status only' in html
+
+
+def test_reports_center_contains_call_type_driven_incident_workspace():
+    client = _client()
+    response = client.get('/reports')
+    html = response.get_data(as_text=True)
+    assert response.status_code == 200
+    assert 'Incident Workspace' in html
+    assert 'Choose the Call Type First' in html
+    assert 'Default paperwork' in html
+    assert 'Conditional paperwork' in html
+    assert 'Narrative Creator + Sentinel' in html
+    assert 'Traffic Accident' in html
 
 
 def test_retired_incident_command_and_shift_checkin_redirect():
