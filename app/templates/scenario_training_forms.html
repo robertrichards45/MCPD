@@ -7,7 +7,7 @@
       <div class="ops-head-copy">
         <div class="eyebrow">Sentinel — Training Forms</div>
         <h2 class="mb-1">{{ 'FTO Form Review' if read_only else 'Complete Selected Training Forms' }}</h2>
-        <p class="text-muted mb-0">These are synthetic training replicas built from the controlled MCPD form-field registry. They do not create or modify an operational police record.</p>
+        <p class="text-muted mb-0">Officer-completed forms use the controlled MCPD form-field registry. Declarant statements are handled separately and remain read-only.</p>
       </div>
       <div class="ops-head-actions d-flex gap-2 flex-wrap">
         <a class="btn btn-outline-secondary" href="{{ back_url }}">Back to Training Package</a>
@@ -26,7 +26,17 @@
     </section>
 
     {% if not definitions %}
-    <section class="ops-panel mb-3"><h3>No Selected Training Forms</h3><p class="text-muted mb-0">The trainee did not select a document that requires a form replica for this revision.</p></section>
+    <section class="ops-panel mb-3">
+      <div class="eyebrow">No Officer-Editable Form Fields</div>
+      <h3>No Additional Officer Form Needs Entry</h3>
+      <p class="text-muted">Your selected documents either consist only of declarant-completed statement forms or do not require a separate officer-editable replica here. Written statements are completed by the simulated declarant and are reviewed from the Training Package.</p>
+      {% if not read_only %}
+      <form method="post">
+        <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
+        <button class="btn btn-primary" type="submit">Continue With Selected Documentation</button>
+      </form>
+      {% endif %}
+    </section>
     {% else %}
     <form method="post">
       <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
@@ -35,36 +45,40 @@
       <section class="ops-panel mb-3">
         <div class="d-flex justify-content-between gap-3 align-items-start flex-wrap mb-3">
           <div>
-            <div class="eyebrow">Training Replica</div>
+            <div class="eyebrow">Official MCPD Form — Training Replica</div>
             <h3 class="mb-1">{{ document.document_name }}</h3>
             <div class="small text-muted">Schema source: {{ document.source|replace('_',' ')|title }}{% if document.registry_pattern %} — registry match: {{ document.registry_pattern }}{% endif %}</div>
           </div>
           <span class="badge text-bg-secondary">Synthetic Only</span>
         </div>
-        {% if document.notes %}<div class="alert alert-light small">{{ document.notes }}</div>{% endif %}
-        <div class="row g-3">
-          {% for field in document.fields %}
-          {% set value = saved.get(field.name, '') %}
-          <div class="{% if field.type == 'textarea' %}col-12{% else %}col-md-6{% endif %}">
-            <label class="form-label" for="{{ field.input_name }}"><strong>{{ field.label }}</strong>{% if field.required %} <span class="text-danger">*</span>{% endif %}</label>
-            {% if read_only %}
-              <div class="border rounded p-2 bg-light" style="min-height:42px;white-space:pre-wrap">{{ value or '—' }}</div>
-            {% elif field.type == 'textarea' %}
-              <textarea class="form-control" id="{{ field.input_name }}" name="{{ field.input_name }}" rows="6" {% if field.required %}required{% endif %}>{{ value }}</textarea>
-            {% elif field.type == 'checkbox' %}
-              <label class="border rounded p-2 d-flex gap-2 align-items-center"><input class="form-check-input" id="{{ field.input_name }}" name="{{ field.input_name }}" type="checkbox" value="yes" {% if value %}checked{% endif %}><span>Yes / checked</span></label>
-            {% elif field.type == 'number' %}
-              <input class="form-control" id="{{ field.input_name }}" name="{{ field.input_name }}" type="number" value="{{ value }}" {% if field.required %}required{% endif %}>
-            {% elif field.type in ['date','time'] %}
-              <input class="form-control" id="{{ field.input_name }}" name="{{ field.input_name }}" type="{{ field.type }}" value="{{ value }}" {% if field.required %}required{% endif %}>
-            {% else %}
-              <input class="form-control" id="{{ field.input_name }}" name="{{ field.input_name }}" type="text" value="{{ value }}" {% if field.required %}required{% endif %}>
-            {% endif %}
-            {% if field.training_signature and not read_only %}<div class="form-text">Synthetic training entry only. Do not enter a real signature or initials belonging to another person.</div>{% endif %}
-            {% if field.mapping_status %}<div class="form-text">Registry mapping: {{ field.mapping_status }}</div>{% endif %}
+        {% if document.mapping_missing %}
+          <div class="alert alert-danger"><strong>Official form mapping unavailable.</strong> Sentinel will not substitute a generic form. This form must be mapped to its real MCPD form fields before it can be used in an evaluation.</div>
+        {% else %}
+          {% if document.notes %}<div class="alert alert-light small">{{ document.notes }}</div>{% endif %}
+          <div class="row g-3">
+            {% for field in document.fields %}
+            {% set value = saved.get(field.name, '') %}
+            <div class="{% if field.type == 'textarea' %}col-12{% else %}col-md-6{% endif %}">
+              <label class="form-label" for="{{ field.input_name }}"><strong>{{ field.label }}</strong>{% if field.required %} <span class="text-danger">*</span>{% endif %}</label>
+              {% if read_only %}
+                <div class="border rounded p-2 bg-light" style="min-height:42px;white-space:pre-wrap">{{ value or '—' }}</div>
+              {% elif field.type == 'textarea' %}
+                <textarea class="form-control" id="{{ field.input_name }}" name="{{ field.input_name }}" rows="6" {% if field.required %}required{% endif %}>{{ value }}</textarea>
+              {% elif field.type == 'checkbox' %}
+                <label class="border rounded p-2 d-flex gap-2 align-items-center"><input class="form-check-input" id="{{ field.input_name }}" name="{{ field.input_name }}" type="checkbox" value="yes" {% if value %}checked{% endif %}><span>Yes / checked</span></label>
+              {% elif field.type == 'number' %}
+                <input class="form-control" id="{{ field.input_name }}" name="{{ field.input_name }}" type="number" value="{{ value }}" {% if field.required %}required{% endif %}>
+              {% elif field.type in ['date','time'] %}
+                <input class="form-control" id="{{ field.input_name }}" name="{{ field.input_name }}" type="{{ field.type }}" value="{{ value }}" {% if field.required %}required{% endif %}>
+              {% else %}
+                <input class="form-control" id="{{ field.input_name }}" name="{{ field.input_name }}" type="text" value="{{ value }}" {% if field.required %}required{% endif %}>
+              {% endif %}
+              {% if field.training_signature and not read_only %}<div class="form-text">Synthetic training entry only. Do not enter a real signature or initials belonging to another person.</div>{% endif %}
+              {% if field.mapping_status %}<div class="form-text">Registry mapping: {{ field.mapping_status }}</div>{% endif %}
+            </div>
+            {% endfor %}
           </div>
-          {% endfor %}
-        </div>
+        {% endif %}
       </section>
       {% endfor %}
 
