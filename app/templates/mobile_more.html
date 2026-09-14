@@ -12,8 +12,8 @@
   {% elif name == 'sentinel' %}<svg viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 4.8 3.2 7.5 8 9 4.8-1.5 8-4.2 8-9V6l-8-3Z"/><path d="m9 12 2 2 4-5"/></svg>
   {% else %}<svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>{% endif %}
 {%- endmacro %}
-{% macro tool_card(title, desc, href, icon, strong=False) -%}
-  <a class="mobile-tool-card{% if strong %} mobile-tool-card-strong{% endif %}" href="{{ href }}">
+{% macro tool_card(title, desc, href, icon, strong=False, force_mode='') -%}
+  <a class="mobile-tool-card{% if strong %} mobile-tool-card-strong{% endif %}" href="{{ href }}"{% if force_mode == 'desktop' %} data-force-desktop{% elif force_mode == 'mobile' %} data-force-mobile{% endif %}>
     <span class="mobile-tool-card-icon" aria-hidden="true">{{ tool_icon(icon) }}</span>
     <span class="mobile-tool-card-copy">
       <span class="mobile-tool-card-title">{{ title }}</span>
@@ -52,7 +52,7 @@
     {% if portal_can_access_builder_mode %}
       {{ tool_card('Site Builder', 'Owner-controlled backend requests and build tools.', url_for('admin.site_builder'), 'builder') }}
     {% endif %}
-    {{ tool_card('Desktop Dashboard', 'Switch to the full portal workspace.', url_for('dashboard.dashboard'), 'desktop') }}
+    {{ tool_card('Desktop Dashboard', 'Switch to the full portal workspace.', url_for('dashboard.dashboard'), 'desktop', False, 'desktop') }}
   </div>
 </section>
 {% endblock %}
