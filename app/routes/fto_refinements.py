@@ -237,8 +237,6 @@ def persist_critical_scenario_alert(response):
     if not isinstance(state, dict):
         return response
 
-    # A handle can be left in place on evaluator/review requests where the live
-    # trainee state did not need to be hydrated.
     if state.get(_SERVER_STATE_MARKER):
         return response
 
@@ -277,8 +275,6 @@ def persist_critical_scenario_alert(response):
             state['alert_id'] = alert.id
             state['alert_delivery'] = 'Delivered to the assigned FTO Center work queue for human review.'
 
-        # Alert-delivery state belongs with the server-side run so it survives
-        # session compaction and pause/resume.
         try:
             persist_run(state, current_user.id)
         except Exception:
@@ -380,7 +376,9 @@ from . import scenario_lab_live as _scenario_lab
 from . import scenario_shift as _scenario_shift
 from . import scenario_notebook as _scenario_notebook
 from . import scenario_paperwork as _scenario_paperwork
+from . import scenario_analytics as _scenario_analytics
 bp.register_blueprint(_scenario_lab.bp)
 bp.register_blueprint(_scenario_shift.bp)
 bp.register_blueprint(_scenario_notebook.bp)
 bp.register_blueprint(_scenario_paperwork.bp)
+bp.register_blueprint(_scenario_analytics.bp)
