@@ -88,7 +88,7 @@ def test_restart_same_scenario_family_changes_fact_pattern():
     assert second != first
 
 
-def test_catastrophic_deadly_force_decision_terminates_exercise_and_flags_fto():
+def test_catastrophic_deadly_force_decision_terminates_exercise_and_requires_training_package_before_debrief():
     _app, client, _uid = _client()
     client.get('/sentinel/fto-center/scenario-lab/?scenario_id=S001')
     response = client.post('/sentinel/fto-center/scenario-lab/', data={
@@ -101,7 +101,9 @@ def test_catastrophic_deadly_force_decision_terminates_exercise_and_flags_fto():
     assert response.status_code == 200
     assert 'Simulation Ended' in html
     assert 'deadly-force decision unsupported' in html
-    assert 'After-Action Review' in html
+    assert 'Complete Training Package' in html
+    assert 'Complete the post-call documentation and self-assessment before debrief.' in html
+    assert 'After-Action Review' not in html
     with client.session_transaction() as s:
         state = s['sentinel_scenario_lab_v2']
         assert state['terminated'] is True
