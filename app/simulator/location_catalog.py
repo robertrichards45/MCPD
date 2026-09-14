@@ -1,16 +1,20 @@
-"""Approved non-sensitive facility references for synthetic patrol training.
+"""Approved non-sensitive facility and roadway references for synthetic patrol training.
 
 The source material for these building-number/name pairs is the MCPD Officer/FTO
-Handbook Security Checklist.  The repository is public, so this module purposely
-contains only ordinary/public-facing or administrative destinations needed to make
-training dispatches realistic.  It does NOT reproduce the security checklist,
-security routes, weapons/ammunition facilities, perimeter vulnerabilities, or
-other LES-sensitive entries.
+Handbook Security Checklist. Public roadway names are limited to names documented
+on public-facing MCLB Albany maps/pages. The repository is public, so this module
+purposely contains only ordinary/public-facing or administrative destinations
+needed to make training dispatches realistic. It does NOT reproduce the security
+checklist, security routes, weapons/ammunition facilities, perimeter
+vulnerabilities, or other LES-sensitive entries.
 
 Keep sensitive locations in an agency-private/admin-managed source if they are ever
-needed for training.  Do not expand this public catalog by copying the full
+needed for training. Do not expand this public catalog by copying the full
 Security Checklist into source control.
 """
+
+import random
+
 
 SAFE_TRAINING_FACILITIES = {
     'commissary': 'Bldg. 7501 — Commissary',
@@ -35,6 +39,39 @@ SAFE_TRAINING_FACILITIES = {
     'base_maintenance': 'Bldg. 1291 — Base Maintenance',
 }
 
+# Public roadway names only. These names are documented on public MCLB Albany
+# pages/maps and are not intended to represent a security patrol route.
+PUBLIC_MCLB_ROADS = (
+    'Radford Boulevard',
+    'Putnam Boulevard',
+    'Goodloe Circle',
+    'Wilkinson Road',
+    'Weed Street',
+    'Johnson Road',
+    'Walker Avenue',
+)
+
+_PUBLIC_MCLB_ROAD_ALIASES = (
+    'radford boulevard', 'radford blvd',
+    'putnam boulevard', 'putnam blvd',
+    'goodloe circle',
+    'wilkinson road', 'wilkinson rd',
+    'weed street', 'weed st',
+    'johnson road', 'johnson rd',
+    'walker avenue', 'walker ave',
+)
+
+# Crash locations deliberately use ordinary public roadway references and public
+# landmarks. A seed locks the location for the entire synthetic call.
+CRASH_LOCATIONS = (
+    'Radford Boulevard near Bldg. 3500 — LOGCOM Headquarters',
+    'Radford Boulevard at Walker Avenue',
+    'Putnam Boulevard near the housing community',
+    'Goodloe Circle near Bldg. 10200',
+    'Wilkinson Road at Weed Street',
+    'Johnson Road',
+)
+
 # Scenario-family pools intentionally use only non-sensitive facilities above.
 DISORDERLY_LOCATIONS = tuple(SAFE_TRAINING_FACILITIES[key] for key in (
     'commissary', 'fitness_center', 'credit_union', 'marine_corps_exchange',
@@ -55,18 +92,74 @@ MEDICAL_LOCATIONS = tuple(SAFE_TRAINING_FACILITIES[key] for key in (
     'soi_logistics', 'mwr', 'base_maintenance',
 ))
 
-# These are synthetic roadside descriptions anchored to an approved facility
-# number/name rather than a security route or checkpoint location.
-TRAFFIC_LOCATIONS = tuple(
-    f"installation roadway near {SAFE_TRAINING_FACILITIES[key]}"
-    for key in ('marine_corps_exchange', 'fitness_center', 'logcom_hq', 'base_maintenance')
+# Traffic/self-initiated scenarios should sound like patrol on the actual
+# installation rather than a generic "installation roadway."
+TRAFFIC_LOCATIONS = (
+    'Radford Boulevard near Bldg. 3500 — LOGCOM Headquarters',
+    'Putnam Boulevard',
+    'Goodloe Circle',
+    'Wilkinson Road',
+    'Weed Street',
+    'Johnson Road',
 )
 
 # The Security Checklist identifies gate/checkpoint entries differently from
-# ordinary numbered facilities.  Do not fabricate a building number for a gate.
+# ordinary numbered facilities. Do not fabricate a building number for a gate.
 ACCESS_CONTROL_LOCATIONS = (
     'Installation access-control inspection area — gate designation provided by Dispatch',
 )
+
+
+def _clean(value):
+    return ' '.join(str(value or '').split()).strip()
+
+
+def crash_location_for_seed(seed=None):
+    """Choose one stable public-road crash location for a synthetic run."""
+    try:
+        chosen_seed = int(seed)
+    except (TypeError, ValueError):
+        chosen_seed = 1
+    return random.Random(chosen_seed).choice(CRASH_LOCATIONS)
+
+
+def is_vehicle_crash_dispatch(text):
+    low = _clean(text).lower()
+    return any(term in low for term in (
+        'vehicle crash',
+        'motor vehicle crash',
+        'traffic crash',
+        'vehicle collision',
+        'motor vehicle collision',
+        'two-vehicle crash',
+        'single-vehicle crash',
+    ))
+
+
+def dispatch_has_public_road(text):
+    low = _clean(text).lower()
+    return any(alias in low for alias in _PUBLIC_MCLB_ROAD_ALIASES)
+
+
+def enrich_vehicle_crash_dispatch(text, seed=None):
+    """Replace a generic installation crash dispatch with a real public road.
+
+    Existing dispatches that already name a known public MCLB roadway are left
+    untouched. This helper changes location wording only; it never invents injury,
+    traffic, enforcement, or investigative facts.
+    """
+    clean = _clean(text)
+    if not clean or not is_vehicle_crash_dispatch(clean) or dispatch_has_public_road(clean):
+        return clean
+
+    location = crash_location_for_seed(seed)
+    generic = 'Respond to a vehicle crash aboard the installation.'
+    if clean.lower().startswith(generic.lower()):
+        remainder = clean[len(generic):].strip()
+        replacement = f'Respond to a vehicle crash on {location}, MCLB Albany.'
+        return f'{replacement} {remainder}'.strip()
+
+    return f'Location: {location}, MCLB Albany. {clean}'
 
 
 def facility_values():
