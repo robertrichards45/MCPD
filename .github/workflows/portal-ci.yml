@@ -41,6 +41,9 @@ jobs:
       - name: Compile Python source
         run: python -m compileall -q app
 
+      - name: Check browser JavaScript syntax
+        run: node --check app/static/js/app.js
+
       - name: Verify application routes load
         run: |
           python - <<'PY'
