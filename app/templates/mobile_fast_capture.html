@@ -86,10 +86,7 @@
     var allRules = {};
     try { allRules = JSON.parse(document.getElementById('fc-rules-data').textContent); } catch (e) {}
     var rule = allRules[slug] || null;
-    var baseList = rule ? JSON.parse(JSON.stringify(rule.recommendedForms || [])) : [];
-    var selectedForms = ['MCPD Stat Sheet'].concat(
-      baseList.filter(function (f) { return f !== 'MCPD Stat Sheet'; })
-    );
+    var selectedForms = rule ? JSON.parse(JSON.stringify(rule.recommendedForms || [])) : [];
     var checklist = rule ? rule.checklistItems.map(function (label, i) {
       return { id: slug + '-check-' + (i + 1), label: label, completed: false };
     }) : [];
@@ -129,6 +126,14 @@
       narrativeApproved: false,
       statements:      [],
       formDrafts:      {},
+      paperworkCircumstances: {},
+      paperworkManualForms: [],
+      paperworkSuppressedForms: [],
+      paperworkGuidance: rule ? {
+        conditionalRules: JSON.parse(JSON.stringify(rule.conditionalRules || [])),
+        optionalForms: JSON.parse(JSON.stringify(rule.optionalForms || [])),
+        notNormallyRequiredForms: JSON.parse(JSON.stringify(rule.notNormallyRequiredForms || []))
+      } : {},
       packetStatus:    'draft',
     };
   }
