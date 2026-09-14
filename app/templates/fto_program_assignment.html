@@ -1,0 +1,267 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell mcpd-command-app">
+  {% include 'partials/nav.html' %}
+  <main class="page-wrap narrative-tool-page">
+    <section class="ops-head-card mb-3">
+      <div class="ops-head-copy">
+        <div class="eyebrow">FTO Center — Trainee Record</div>
+        <h2 class="mb-1">{{ assignment.trainee.display_name }}</h2>
+        <p class="text-muted mb-0">{{ summary.phase_label }} &bull; {{ assignment.program_type|title }} program &bull; Assigned FTO: {{ assignment.assigned_fto.display_name }}</p>
+      </div>
+      <div class="ops-head-actions d-flex gap-2 flex-wrap">
+        <a class="btn btn-outline-secondary" href="{{ url_for('reports.sentinel.fto_program.dashboard') }}">Program Dashboard</a>
+        <a class="btn btn-outline-secondary" href="{{ url_for('reports.sentinel.fto_center') }}">Scenario Lab</a>
+      </div>
+    </section>
+
+    <div class="alert alert-warning mb-3">
+      <strong>Official evaluation is human-controlled.</strong> All ratings on this page are entered by an FTO or authorized supervisor. Sentinel scenario scores are coaching cues only and are not official DOR ratings.
+    </div>
+
+    <section class="row g-3 mb-3">
+      <div class="col-6 col-lg-3"><article class="ops-panel h-100"><div class="small text-muted">Status</div><h4 class="mb-0">{{ assignment.status|replace('_', ' ')|title }}</h4><div class="small mt-1">{{ summary.phase_label }}</div></article></div>
+      <div class="col-6 col-lg-3"><article class="ops-panel h-100"><div class="small text-muted">Progress</div><h4 class="mb-0">{{ assignment.progress_percent }}%</h4><div class="small mt-1">{{ summary.finalized_count }} finalized DOR(s)</div></article></div>
+      <div class="col-6 col-lg-3"><article class="ops-panel h-100"><div class="small text-muted">Open Remediation</div><h4 class="mb-0">{{ summary.open_remediation|length }}</h4><div class="small mt-1">Human verification required to close</div></article></div>
+      <div class="col-6 col-lg-3"><article class="ops-panel h-100"><div class="small text-muted">Average Rating</div><h4 class="mb-0">{{ summary.overall_average if summary.overall_average is not none else '—' }}</h4><div class="small mt-1">Human-entered observed ratings only</div></article></div>
+    </section>
+
+    <section class="ops-panel mb-3">
+      <div class="row g-3">
+        <div class="col-md-6 col-xl-3"><div class="small text-muted">Program Path</div><strong>{{ assignment.program_type|title }} — {{ summary.base_weeks }} weeks</strong></div>
+        <div class="col-md-6 col-xl-3"><div class="small text-muted">Assigned FTO</div><strong>{{ assignment.assigned_fto.display_name }}</strong></div>
+        <div class="col-md-6 col-xl-3"><div class="small text-muted">Supervisor</div><strong>{{ assignment.supervisor.display_name if assignment.supervisor else 'Not assigned' }}</strong></div>
+        <div class="col-md-6 col-xl-3"><div class="small text-muted">Expected Completion</div><strong>{{ assignment.expected_completion_date.strftime('%d %b %Y') if assignment.expected_completion_date else 'Not set' }}</strong></div>
+      </div>
+      <div class="progress mt-3" role="progressbar" aria-valuenow="{{ assignment.progress_percent }}" aria-valuemin="0" aria-valuemax="100">
+        <div class="progress-bar" style="width: {{ assignment.progress_percent }}%">{{ assignment.progress_percent }}%</div>
+      </div>
+    </section>
+
+    <section class="row g-3 mb-3">
+      <div class="col-xl-5">
+        <article class="ops-panel h-100">
+          <div class="eyebrow">Performance Trend</div>
+          <h3>Human-Entered DOR Ratings</h3>
+          <p class="text-muted">Trend labels compare recorded FTO ratings over time. They are not AI pass/fail recommendations.</p>
+          <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+              <thead><tr><th>Area</th><th>Avg.</th><th>Trend</th><th>Obs.</th></tr></thead>
+              <tbody>
+                {% for item in summary.trends %}
+                <tr>
+                  <td>{{ item.area }}</td>
+                  <td>{{ item.average if item.average is not none else '—' }}</td>
+                  <td><span class="badge {% if item.trend == 'Improving' %}text-bg-success{% elif item.trend == 'Declining' %}text-bg-warning{% else %}text-bg-light text-dark{% endif %}">{{ item.trend }}</span></td>
+                  <td>{{ item.observations }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </article>
+      </div>
+
+      <div class="col-xl-7">
+        <article class="ops-panel h-100">
+          <div class="eyebrow">Review Queue</div>
+          <h3>What Needs Attention</h3>
+          <div class="row g-2">
+            <div class="col-md-4"><div class="border rounded p-3 h-100"><div class="small text-muted">Draft DORs</div><strong class="fs-4">{{ summary.draft_count }}</strong></div></div>
+            <div class="col-md-4"><div class="border rounded p-3 h-100"><div class="small text-muted">Pending Trainee Ack</div><strong class="fs-4">{{ summary.pending_ack_count }}</strong></div></div>
+            <div class="col-md-4"><div class="border rounded p-3 h-100"><div class="small text-muted">Pending Supervisor Review</div><strong class="fs-4">{{ summary.pending_supervisor_review_count }}</strong></div></div>
+          </div>
+          <div class="mt-3 small text-muted">A trainee acknowledgment records receipt of a finalized DOR; it does not necessarily mean agreement with the evaluation.</div>
+        </article>
+      </div>
+    </section>
+
+    {% if can_evaluate and assignment.status != 'COMPLETED' %}
+    <section class="ops-panel mb-3">
+      <div class="eyebrow">Daily Observation Report</div>
+      <h3>Enter FTO Observations — {{ summary.phase_label }}</h3>
+      <p class="text-muted">Rate only performance actually observed. Use Not Observed when an area was not demonstrated during this shift or training event.</p>
+      <form method="post" action="{{ url_for('reports.sentinel.fto_program.create_dor', assignment_id=assignment.id) }}">
+        <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label" for="training_date"><strong>Training Date</strong></label>
+            <input class="form-control" id="training_date" name="training_date" type="date" value="{{ today.isoformat() }}" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="scenario_id"><strong>Scenario / Event Reference</strong> <span class="text-muted">(optional)</span></label>
+            <input class="form-control" id="scenario_id" name="scenario_id" maxlength="40" placeholder="Example: S003 or Traffic Stop">
+          </div>
+        </div>
+        <div class="row g-2 mb-3">
+          {% for area in rating_areas %}
+          <div class="col-md-6 col-xl-3">
+            <label class="form-label" for="rating_{{ loop.index0 }}"><strong>{{ area }}</strong></label>
+            <select class="form-select" id="rating_{{ loop.index0 }}" name="rating_{{ loop.index0 }}">
+              {% for value, label in rating_choices %}<option value="{{ value }}">{{ label }}</option>{% endfor %}
+            </select>
+          </div>
+          {% endfor %}
+        </div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label" for="strengths"><strong>Observed Strengths</strong></label>
+            <textarea class="form-control" id="strengths" name="strengths" rows="4" placeholder="Document specific observed performance."></textarea>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="development_areas"><strong>Development Areas</strong></label>
+            <textarea class="form-control" id="development_areas" name="development_areas" rows="4" placeholder="Document specific skills or behaviors requiring development."></textarea>
+          </div>
+          <div class="col-12">
+            <label class="form-label" for="comments"><strong>FTO Comments</strong></label>
+            <textarea class="form-control" id="comments" name="comments" rows="5" placeholder="Record direct observations, coaching provided, trainee response, and relevant follow-up."></textarea>
+          </div>
+        </div>
+        <div class="d-flex gap-2 flex-wrap mt-3">
+          <button class="btn btn-outline-primary" type="submit" name="action" value="draft">Save Draft</button>
+          <button class="btn btn-primary" type="submit" name="action" value="finalize">Finalize DOR</button>
+        </div>
+      </form>
+    </section>
+    {% endif %}
+
+    <section class="ops-panel mb-3">
+      <div class="eyebrow">DOR History</div>
+      <h3>Daily Observation Reports</h3>
+      {% if summary.observations %}
+        {% for dor in summary.observations %}
+        <article class="border rounded p-3 mb-3">
+          <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+            <div>
+              <strong>{{ dor.training_date.strftime('%d %b %Y') }} — Week {{ dor.week_number }}</strong>
+              <div class="small text-muted">Evaluator: {{ dor.evaluator.display_name }}{% if dor.scenario_id %} &bull; Ref: {{ dor.scenario_id }}{% endif %}</div>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+              <span class="badge {% if dor.status == 'FINALIZED' %}text-bg-success{% else %}text-bg-secondary{% endif %}">{{ dor.status|title }}</span>
+              {% if dor.overall_rating is not none %}<span class="badge text-bg-dark">Avg {{ '%.2f'|format(dor.overall_rating) }}/5</span>{% endif %}
+            </div>
+          </div>
+          {% if dor.strengths %}<p class="mb-1 mt-3"><strong>Strengths:</strong> {{ dor.strengths }}</p>{% endif %}
+          {% if dor.development_areas %}<p class="mb-1"><strong>Development:</strong> {{ dor.development_areas }}</p>{% endif %}
+          {% if dor.comments %}<p class="mb-1"><strong>Comments:</strong> {{ dor.comments }}</p>{% endif %}
+          <div class="row g-2 mt-2 small">
+            <div class="col-md-6"><strong>Supervisor review:</strong> {{ dor.supervisor_reviewer.display_name if dor.supervisor_reviewed_at and dor.supervisor_reviewer else 'Pending' if dor.status == 'FINALIZED' else 'Not ready' }}{% if dor.supervisor_note %}<div class="text-muted">{{ dor.supervisor_note }}</div>{% endif %}</div>
+            <div class="col-md-6"><strong>Trainee acknowledgment:</strong> {{ dor.trainee_acknowledged_at.strftime('%d %b %Y') if dor.trainee_acknowledged_at else 'Pending' if dor.status == 'FINALIZED' else 'Not ready' }}{% if dor.trainee_acknowledgment_note %}<div class="text-muted">{{ dor.trainee_acknowledgment_note }}</div>{% endif %}</div>
+          </div>
+
+          {% if can_supervise and dor.status == 'FINALIZED' and not dor.supervisor_reviewed_at %}
+          <form class="mt-3" method="post" action="{{ url_for('reports.sentinel.fto_program.supervisor_review', dor_id=dor.id) }}">
+            <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
+            <label class="form-label"><strong>Supervisor Review Note</strong></label>
+            <div class="input-group">
+              <input class="form-control" name="supervisor_note" maxlength="1000" placeholder="Optional review note">
+              <button class="btn btn-outline-primary" type="submit">Record Review</button>
+            </div>
+          </form>
+          {% endif %}
+
+          {% if can_acknowledge and dor.status == 'FINALIZED' and not dor.trainee_acknowledged_at %}
+          <form class="mt-3" method="post" action="{{ url_for('reports.sentinel.fto_program.acknowledge_dor', dor_id=dor.id) }}">
+            <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
+            <label class="form-label"><strong>Trainee Acknowledgment Note</strong> <span class="text-muted">(optional)</span></label>
+            <div class="input-group">
+              <input class="form-control" name="acknowledgment_note" maxlength="500" placeholder="Optional note; acknowledgment does not necessarily indicate agreement">
+              <button class="btn btn-outline-primary" type="submit">Acknowledge Receipt</button>
+            </div>
+          </form>
+          {% endif %}
+        </article>
+        {% endfor %}
+      {% else %}
+      <p class="text-muted mb-0">No DORs have been entered for this program yet.</p>
+      {% endif %}
+    </section>
+
+    <section class="ops-panel mb-3">
+      <div class="eyebrow">Development</div>
+      <h3>Remediation Plans</h3>
+      <p class="text-muted">Remediation remains open until an authorized FTO or supervisor verifies the required performance. Sentinel cannot close remediation.</p>
+
+      {% if summary.remediation %}
+      <div class="row g-3 mb-3">
+        {% for item in summary.remediation %}
+        <div class="col-lg-6">
+          <article class="border rounded p-3 h-100">
+            <div class="d-flex justify-content-between gap-2"><strong>{{ item.area }}</strong><span class="badge {% if item.status == 'CLOSED' %}text-bg-success{% else %}text-bg-warning{% endif %}">{{ item.status|title }}</span></div>
+            <p class="mt-2 mb-1">{{ item.plan }}</p>
+            <div class="small text-muted">Due: {{ item.due_date.strftime('%d %b %Y') if item.due_date else 'No date set' }}</div>
+            {% if item.verification_note %}<div class="small mt-2"><strong>Verification:</strong> {{ item.verification_note }}</div>{% endif %}
+            {% if item.status == 'OPEN' and (can_evaluate or can_supervise) %}
+            <form class="mt-3" method="post" action="{{ url_for('reports.sentinel.fto_program.close_remediation', remediation_id=item.id) }}">
+              <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
+              <label class="form-label"><strong>Verification Note</strong></label>
+              <div class="input-group">
+                <input class="form-control" name="verification_note" maxlength="500" placeholder="What was observed to verify remediation?">
+                <button class="btn btn-outline-success" type="submit">Verify & Close</button>
+              </div>
+            </form>
+            {% endif %}
+          </article>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% if (can_evaluate or can_supervise) and assignment.status != 'COMPLETED' %}
+      <form method="post" action="{{ url_for('reports.sentinel.fto_program.create_remediation', assignment_id=assignment.id) }}" class="row g-3">
+        <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
+        <div class="col-md-4">
+          <label class="form-label"><strong>Development Area</strong></label>
+          <select class="form-select" name="area" required><option value="">Select area</option>{% for area in rating_areas %}<option value="{{ area }}">{{ area }}</option>{% endfor %}</select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label"><strong>Remediation Plan</strong></label>
+          <input class="form-control" name="plan" required placeholder="Specific training, observation, and performance requirement">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label"><strong>Due Date</strong></label>
+          <input class="form-control" name="due_date" type="date">
+        </div>
+        <div class="col-12"><button class="btn btn-outline-primary" type="submit">Add Remediation Plan</button></div>
+      </form>
+      {% endif %}
+    </section>
+
+    {% if can_supervise and assignment.status != 'COMPLETED' %}
+    <section class="ops-panel mb-3">
+      <div class="eyebrow">Supervisor Actions</div>
+      <h3>Program Advancement & Completion</h3>
+      <p class="text-muted">These actions are never performed automatically. Advancement requires a finalized DOR for the current week; completion also requires the final scheduled week and no open remediation.</p>
+      <form method="post" action="{{ url_for('reports.sentinel.fto_program.advance_program', assignment_id=assignment.id) }}">
+        <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
+        <label class="form-label" for="completion_note"><strong>Supervisor Note</strong> <span class="text-muted">(recommended for extension/completion)</span></label>
+        <textarea class="form-control" id="completion_note" name="completion_note" rows="3" placeholder="Document the basis for extension, advancement, or completion when applicable."></textarea>
+        <div class="d-flex gap-2 flex-wrap mt-3">
+          {% if assignment.status == 'PAUSED' %}
+          <button class="btn btn-primary" type="submit" name="action" value="resume">Resume Program</button>
+          {% else %}
+          <button class="btn btn-primary" type="submit" name="action" value="advance">Advance One Week</button>
+          <button class="btn btn-outline-warning" type="submit" name="action" value="pause">Pause Program</button>
+          <button class="btn btn-outline-danger" type="submit" name="action" value="extend">Extend Program</button>
+          <button class="btn btn-success" type="submit" name="action" value="complete">Complete Program</button>
+          {% endif %}
+        </div>
+      </form>
+    </section>
+    {% endif %}
+
+    {% if assignment.status == 'COMPLETED' %}
+    <section class="ops-panel mb-3 border-success">
+      <div class="eyebrow">Program Complete</div>
+      <h3>Supervisor-Completed FTO Program</h3>
+      <p class="mb-1"><strong>Completed:</strong> {{ assignment.completed_at.strftime('%d %b %Y') if assignment.completed_at else 'Recorded' }}</p>
+      {% if assignment.completion_note %}<p class="mb-0"><strong>Completion note:</strong> {{ assignment.completion_note }}</p>{% endif %}
+    </section>
+    {% endif %}
+
+    <div class="alert alert-secondary mb-0">
+      <strong>Control principle:</strong> Sentinel may organize training information and provide scenario coaching, but it cannot pass, fail, advance, extend, discipline, close remediation, or certify a trainee. Those decisions remain with the assigned FTO and supervisory chain under the approved MCPD FTO program.
+    </div>
+  </main>
+</div>
+{% endblock %}
