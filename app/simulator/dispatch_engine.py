@@ -3,6 +3,7 @@ import random
 
 from .world_state import (
     add_known_information,
+    add_timeline,
     ensure_world_state,
     queue_radio_response,
     record_radio,
@@ -111,5 +112,4 @@ def inject_dispatch_update(state, text, metadata=None):
         return
     record_radio(state, 'Dispatch', message, direction='inbound', metadata=metadata)
     add_known_information(state, message, source='dispatch')
-    from .world_state import add_timeline
     add_timeline(state, 'dispatch_update', message, actor='Dispatch', channel='radio', details=metadata or {})
