@@ -1,5 +1,6 @@
 from copy import deepcopy
 
+from .evidence_visuals import initialize_visual_evidence
 from .world_state import add_known_information, add_timeline, ensure_world_state
 
 
@@ -33,6 +34,7 @@ def initialize_truth_and_evidence(state, scenario_id, truth):
             'preserved_at': None,
         }
     world['evidence'] = evidence
+    initialize_visual_evidence(state, scenario_id)
     return world
 
 
@@ -74,6 +76,7 @@ def tick_evidence(state):
 def apply_evidence_actions(state, actions, raw_text):
     """Discover/preserve structured evidence without allowing AI to invent it."""
     world = ensure_world_state(state, state.get('scenario_id', ''))
+    initialize_visual_evidence(state, state.get('scenario_id', ''))
     tick_evidence(state)
     evidence = dict(world.get('evidence') or {})
     types = {str(row.get('action_type') or '').strip().lower() for row in (actions or [])}
