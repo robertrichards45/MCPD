@@ -147,8 +147,8 @@ def test_scenario_lab_uses_separate_simulation_and_evaluator_views():
     response = client.get('/sentinel/fto-center/scenario-lab/?scenario_id=S005')
     html = response.get_data(as_text=True)
     assert response.status_code == 200
-    assert 'Sentinel — Simulation Mode' in html
-    assert 'FTO / Evaluator View' in html
+    assert 'Sentinel — Virtual Patrol' in html
+    assert 'FTO View' in html
     assert 'Scene Risk' not in html
     assert 'Core Phases Cleared' not in html
     assert 'Immediate FTO Feedback' not in html
