@@ -46,15 +46,45 @@ VARIANTS = {
 }
 
 
-def build_run_context(scenario_id, seed=None):
-    if seed is None:
-        seed = secrets.randbelow(900000000) + 100000000
+def _draw_choices(scenario_id, seed):
     rng = random.Random(int(seed))
     options = VARIANTS.get(scenario_id, {})
-    choices = {key: rng.choice(tuple(values)) for key, values in options.items()}
+    return {key: rng.choice(tuple(values)) for key, values in options.items()}
+
+
+def build_run_context(scenario_id, seed=None, previous_choices=None):
+    explicit_seed = seed is not None
+    previous_choices = dict(previous_choices or {})
+
+    if explicit_seed:
+        chosen_seed = int(seed)
+        choices = _draw_choices(scenario_id, chosen_seed)
+    else:
+        chosen_seed = None
+        choices = {}
+        for _ in range(16):
+            candidate_seed = secrets.randbelow(900000000) + 100000000
+            candidate = _draw_choices(scenario_id, candidate_seed)
+            chosen_seed = candidate_seed
+            choices = candidate
+            if not previous_choices or candidate != previous_choices:
+                break
+
+        # There are hundreds of combinations in each scenario family. This
+        # fallback makes immediate variation deterministic even in the extremely
+        # unlikely event that random draws repeat the whole prior fact pattern.
+        if previous_choices and choices == previous_choices and choices:
+            options = VARIANTS.get(scenario_id, {})
+            first_key = next(iter(options))
+            values = tuple(options[first_key])
+            if len(values) > 1:
+                current = choices.get(first_key)
+                index = values.index(current) if current in values else 0
+                choices[first_key] = values[(index + 1) % len(values)]
+
     context = {
-        'seed': int(seed),
-        'run_id': f'{scenario_id}-{int(seed)}',
+        'seed': int(chosen_seed),
+        'run_id': f'{scenario_id}-{int(chosen_seed)}',
         'choices': choices,
         'visual_evidence': [],
     }
