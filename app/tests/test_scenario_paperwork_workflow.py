@@ -43,8 +43,20 @@ def _submit_package(client, narrative='Synthetic training narrative based only o
         'action': 'submit',
         'selected_documents': ['OPNAV 5580 2 Voluntary Statement'],
         'cid_decision': 'screen',
-        'notification_notes': 'Screen with CID and provide the developed facts.',
+        'notification_notes': 'Training screening decision documented.',
         'narrative': narrative,
+    }, follow_redirects=True)
+
+
+def _self_assess(client):
+    return client.post('/sentinel/fto-center/scenario-paperwork/', data={
+        '_csrf_token': 'test-token',
+        'action': 'self_assess',
+        'what_went_well': 'I developed the available facts and kept the event organized.',
+        'what_change': 'I would improve chronology and documentation clarity.',
+        'decision_basis': 'I relied on the facts developed during the synthetic exercise and training procedures.',
+        'notifications_considered': 'I considered the configured training notifications based on the exercise facts.',
+        'training_need': 'Additional documentation practice would be useful.',
     }, follow_redirects=True)
 
 
@@ -70,44 +82,46 @@ def test_active_call_cannot_open_post_call_paperwork():
     assert 'Finish or clear the synthetic call' in response.get_data(as_text=True)
 
 
-def test_completed_call_can_submit_and_preserve_original_package():
+def test_completed_call_can_submit_self_assess_and_preserve_revision_history():
     client = _client()
     _complete_s004(client)
 
-    response = client.get('/sentinel/fto-center/scenario-paperwork/')
-    assert response.status_code == 200
-    html = response.get_data(as_text=True)
-    assert 'Training Package' in html
-    assert 'not part of the trainee paperwork exercise' in html.lower()
-
     response = _submit_package(client)
     assert response.status_code == 200
-    assert 'original submission is preserved' in response.get_data(as_text=True).lower()
+    assert 'complete the self-assessment' in response.get_data(as_text=True).lower()
 
     with client.session_transaction() as s:
         package = s['sentinel_scenario_lab_v2']['training_package']
-        assert package['status'] == 'SUBMITTED'
+        assert package['status'] == 'SELF_ASSESSMENT_REQUIRED'
         assert len(package['submissions']) == 1
         assert package['submissions'][0]['revision'] == 0
-        assert package['submissions'][0]['cid_decision'] == 'screen'
         assert package['submissions'][0]['report_analysis']['mode'] == 'deterministic'
+
+    response = _self_assess(client)
+    assert response.status_code == 200
+    assert 'ready for fto review' in response.get_data(as_text=True).lower()
+
+    with client.session_transaction() as s:
+        package = s['sentinel_scenario_lab_v2']['training_package']
+        assert package['status'] == 'READY_FOR_FTO_REVIEW'
+        assert package['self_assessment']['what_went_well']
+        assert package['self_assessment']['decision_basis']
 
     client.post('/sentinel/fto-center/scenario-paperwork/', data={
         '_csrf_token': 'test-token',
         'action': 'revise',
         'selected_documents': ['OPNAV 5580 2 Voluntary Statement'],
         'cid_decision': 'screen',
-        'notification_notes': 'CID screening documented in the training package.',
+        'notification_notes': 'Updated synthetic training documentation.',
         'narrative': 'Revision one preserves the original and corrects the synthetic narrative.',
     }, follow_redirects=True)
 
     with client.session_transaction() as s:
         package = s['sentinel_scenario_lab_v2']['training_package']
+        assert package['status'] == 'READY_FOR_FTO_REVIEW'
         assert len(package['submissions']) == 2
         assert package['submissions'][0]['revision'] == 0
         assert package['submissions'][1]['revision'] == 1
-        assert 'facts developed' in package['submissions'][0]['narrative']
-        assert 'Revision one' in package['submissions'][1]['narrative']
 
 
 def test_hidden_report_consistency_cues_show_only_in_evaluator_view():
@@ -128,10 +142,10 @@ def test_hidden_report_consistency_cues_show_only_in_evaluator_view():
     assert evaluator_response.status_code == 200
     assert 'Advisory Narrative Consistency' in evaluator_html
     assert 'Narrative is very short' in evaluator_html
-    assert 'not automatic errors' in evaluator_html
+    assert 'FTO disposition locked' in evaluator_html
 
 
-def test_fto_can_return_package_and_trainee_session_receives_review():
+def test_fto_disposition_is_locked_until_self_assessment_then_review_syncs():
     client = _client()
     _complete_s004(client)
     _submit_package(client)
@@ -139,10 +153,22 @@ def test_fto_can_return_package_and_trainee_session_receives_review():
     with client.session_transaction() as s:
         run_id = s['sentinel_scenario_lab_v2']['run_context']['run_id']
 
+    locked = client.post(f'/sentinel/fto-center/scenario-paperwork/run/{run_id}', data={
+        '_csrf_token': 'test-token',
+        'fto_action': 'correction',
+        'fto_comments': 'Review remains locked until the trainee reflection is complete.',
+        'remediation_area': '',
+        'remediation_plan': '',
+    }, follow_redirects=True)
+    assert locked.status_code == 200
+    assert 'self-assessment is still pending' in locked.get_data(as_text=True).lower()
+
+    _self_assess(client)
+
     response = client.post(f'/sentinel/fto-center/scenario-paperwork/run/{run_id}', data={
         '_csrf_token': 'test-token',
         'fto_action': 'correction',
-        'fto_comments': 'Correct the chronology and make the CID screening documentation clearer.',
+        'fto_comments': 'Revise the chronology and clarify the documentation.',
         'remediation_area': '',
         'remediation_plan': '',
     }, follow_redirects=True)
@@ -152,11 +178,11 @@ def test_fto_can_return_package_and_trainee_session_receives_review():
     response = client.get('/sentinel/fto-center/scenario-paperwork/')
     html = response.get_data(as_text=True)
     assert 'Correction Required' in html
-    assert 'Correct the chronology' in html
+    assert 'Revise the chronology' in html
 
     with client.session_transaction() as s:
         package = s['sentinel_scenario_lab_v2']['training_package']
         assert package['status'] == 'CORRECTION_REQUIRED'
         assert len(package['submissions']) == 1
         assert len(package['review_history']) == 1
-        assert package['review_history'][0]['revision_reviewed'] == 0
+        assert package['self_assessment']['notifications_considered']
