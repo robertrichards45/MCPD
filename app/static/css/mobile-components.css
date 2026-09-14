@@ -1,0 +1,375 @@
+/* ================================================================
+   MCPD PORTAL — MOBILE COMPONENT HARDENING
+   Loaded after page-specific head styles so high-use workflows remain
+   usable on narrow screens and in forced Mobile Mode.
+   ================================================================ */
+
+@media (max-width: 767px) {
+  /* ---------- Mobile shell / incident workflow ---------- */
+  .mobile-shell,
+  .mobile-main,
+  .mobile-incident-app,
+  .mfc-shell,
+  .cmd-shell,
+  .spr-shell,
+  .bodycam-shell {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .mobile-header-copy,
+  .mobile-header-main,
+  .mobile-header-topline,
+  .mobile-header-nav {
+    min-width: 0;
+  }
+
+  .mobile-header-copy h1,
+  .mobile-header-note,
+  .mobile-user-chip,
+  .mobile-role-pill {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  /* ---------- Fast Capture ---------- */
+  .mfc-row-2 {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  .mfc-type-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  .mfc-type-btn,
+  .mfc-btn-primary,
+  .mfc-btn-secondary {
+    min-width: 0;
+    min-height: 46px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .mfc-actions {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  /* ---------- Supervisor mobile dashboard ---------- */
+  .cmd-counts-row {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  .cmd-count-card {
+    min-width: 0;
+    padding: 12px 7px !important;
+  }
+
+  .cmd-count-label,
+  .cmd-count-num {
+    overflow-wrap: anywhere;
+  }
+
+  .cmd-link-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  .cmd-link-btn {
+    min-width: 0;
+    min-height: 44px;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+  }
+
+  .cmd-focus-item,
+  .cmd-missing-item,
+  .cmd-officer-block,
+  .cmd-insights-summary {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .cmd-focus-item,
+  .cmd-missing-item {
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .cmd-focus-label,
+  .cmd-missing-field,
+  .cmd-officer-name,
+  .cmd-flag-item {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .cmd-packet-row {
+    position: relative;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    gap: 8px 10px !important;
+    align-items: start !important;
+    min-width: 0;
+  }
+
+  .cmd-packet-main,
+  .cmd-packet-meta {
+    grid-column: 1;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .cmd-packet-arrow {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    align-self: center;
+  }
+
+  .cmd-packet-type,
+  .cmd-packet-officer,
+  .cmd-packet-date,
+  .cmd-packet-loc,
+  .cmd-packet-reviewer {
+    display: block;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    white-space: normal !important;
+  }
+
+  /* ---------- Supervisor packet review ---------- */
+  .spr-status-banner {
+    display: grid !important;
+    grid-template-columns: auto minmax(0, 1fr) !important;
+    gap: 4px 10px !important;
+    align-items: center;
+  }
+
+  .spr-status-sub {
+    grid-column: 2;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .spr-summary-grid,
+  .spr-checklist,
+  .spr-persons-list,
+  .spr-forms-list {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .spr-summary-row {
+    display: grid !important;
+    grid-template-columns: minmax(88px, 0.34fr) minmax(0, 1fr) !important;
+    gap: 10px !important;
+    align-items: start !important;
+  }
+
+  .spr-summary-val,
+  .spr-check-body,
+  .spr-check-detail,
+  .spr-person-name,
+  .spr-form-row,
+  .spr-narrative-text,
+  .spr-notes-text,
+  .spr-training-item {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .spr-check-row,
+  .spr-person-row {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .spr-approval-btns {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  .spr-btn-approve,
+  .spr-btn-correction,
+  .msr-btn-ghost {
+    width: 100%;
+    min-height: 46px;
+    box-sizing: border-box;
+    white-space: normal;
+  }
+
+  /* ---------- Narrative / 5W ---------- */
+  .bodycam-main-grid,
+  .bodycam-quality-grid,
+  .bodycam-supporting-grid,
+  .bodycam-info-quality-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .bodycam-toolbar,
+  .bodycam-control-row,
+  .bodycam-footer-toolbar,
+  .bodycam-actions,
+  .bodycam-output-actions {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    max-width: 100%;
+  }
+
+  .bodycam-toolbar > *,
+  .bodycam-control-row > *,
+  .bodycam-footer-toolbar > *,
+  .bodycam-actions > *,
+  .bodycam-output-actions > * {
+    min-width: 0;
+  }
+
+  .bodycam-shell textarea,
+  .bodycam-shell input,
+  .bodycam-shell select {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .bodycam-output,
+  .bodycam-output-box,
+  .bodycam-conflict-row,
+  .bodycam-quality-card,
+  .bodycam-info-quality-card {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  /* ---------- Accident / reconstruction tools ---------- */
+  .accident-layout,
+  .accident-grid,
+  .accident-tools-grid,
+  .recon-layout,
+  .recon-dashboard-grid,
+  .recon-builder,
+  .diagram-layout,
+  .diagram-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .accident-toolbar,
+  .recon-toolbar,
+  .diagram-toolbar,
+  .canvas-toolbar,
+  .tool-row {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    max-width: 100%;
+  }
+
+  #crash-canvas,
+  #diagram-canvas,
+  .recon-canvas,
+  .accident-canvas,
+  canvas[data-accident-canvas] {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto;
+    touch-action: none;
+  }
+
+  /* ---------- FTO / Sentinel shared pages ---------- */
+  .fto-page,
+  .fto-shell,
+  .fto-card,
+  .sentinel-page,
+  .sentinel-shell,
+  .scenario-shell,
+  .scenario-card,
+  .training-card {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .fto-actions,
+  .sentinel-actions,
+  .scenario-actions,
+  .training-actions,
+  .review-actions {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+
+  .fto-actions > *,
+  .sentinel-actions > *,
+  .scenario-actions > *,
+  .training-actions > *,
+  .review-actions > * {
+    min-width: 0;
+  }
+
+  /* ---------- Generic mobile overflow traps ---------- */
+  .mobile-main [style*="min-width"],
+  .mcpd-command-main [style*="min-width"] {
+    max-width: 100%;
+  }
+
+  .mobile-main a,
+  .mobile-main button,
+  .mobile-main p,
+  .mobile-main span,
+  .mobile-main strong,
+  .mobile-main small {
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 480px) {
+  .cmd-counts-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .cmd-count-card:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+
+  .cmd-link-grid,
+  .mfc-type-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .spr-summary-row {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .spr-summary-key,
+  .spr-summary-val {
+    grid-column: 1;
+  }
+
+  .bodycam-toolbar > *,
+  .bodycam-control-row > *,
+  .bodycam-footer-toolbar > *,
+  .bodycam-actions > *,
+  .bodycam-output-actions > *,
+  .fto-actions > *,
+  .sentinel-actions > *,
+  .scenario-actions > *,
+  .training-actions > *,
+  .review-actions > * {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+}
