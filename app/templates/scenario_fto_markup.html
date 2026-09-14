@@ -24,6 +24,15 @@
         <div class="col-md-4"><div class="border rounded p-3"><div class="eyebrow">Revision Under Review</div><strong>{{ submission.revision }}</strong></div></div>
         <div class="col-md-4"><div class="border rounded p-3"><div class="eyebrow">Annotations</div><strong>{{ annotations|length }}</strong></div></div>
       </div>
+      {% if package.submissions|length > 1 %}
+      <hr>
+      <div class="d-flex gap-2 flex-wrap align-items-center">
+        <strong>Review revision:</strong>
+        {% for item in package.submissions %}
+        <a class="btn btn-sm {% if item.revision == submission.revision %}btn-primary{% else %}btn-outline-secondary{% endif %}" href="{{ url_for('reports.fto_refinements.scenario_paperwork.markup', run_id=run.run_id, revision=item.revision) }}">{{ 'Original' if item.revision == 0 else 'Revision ' ~ item.revision }}</a>
+        {% endfor %}
+      </div>
+      {% endif %}
     </section>
 
     {% if diff_rows %}
