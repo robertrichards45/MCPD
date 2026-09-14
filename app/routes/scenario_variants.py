@@ -1,8 +1,11 @@
 import random
 import secrets
 
+from flask import has_request_context, session
+
 
 NEXT_SCENARIO = {'S001': 'S002', 'S002': 'S003', 'S003': 'S004', 'S004': 'S005', 'S005': 'S006', 'S006': 'S001'}
+SESSION_KEY = 'sentinel_scenario_lab_v2'
 
 
 VARIANTS = {
@@ -52,8 +55,19 @@ def _draw_choices(scenario_id, seed):
     return {key: rng.choice(tuple(values)) for key, values in options.items()}
 
 
+def _current_request_choices(scenario_id):
+    if not has_request_context():
+        return {}
+    state = session.get(SESSION_KEY)
+    if not isinstance(state, dict) or state.get('scenario_id') != scenario_id:
+        return {}
+    return dict(((state.get('run_context') or {}).get('choices')) or {})
+
+
 def build_run_context(scenario_id, seed=None, previous_choices=None):
     explicit_seed = seed is not None
+    if previous_choices is None:
+        previous_choices = _current_request_choices(scenario_id)
     previous_choices = dict(previous_choices or {})
 
     if explicit_seed:
@@ -70,9 +84,9 @@ def build_run_context(scenario_id, seed=None, previous_choices=None):
             if not previous_choices or candidate != previous_choices:
                 break
 
-        # There are hundreds of combinations in each scenario family. This
-        # fallback makes immediate variation deterministic even in the extremely
-        # unlikely event that random draws repeat the whole prior fact pattern.
+        # Each family has hundreds of possible combinations. This fallback makes
+        # immediate variation deterministic even if random draws repeat the
+        # entire prior fact pattern.
         if previous_choices and choices == previous_choices and choices:
             options = VARIANTS.get(scenario_id, {})
             first_key = next(iter(options))
