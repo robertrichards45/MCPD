@@ -86,6 +86,9 @@ jobs:
       - name: Run Virtual Shift and structured truth tests
         run: python -m pytest -q app/tests/test_virtual_shift_truth.py
 
+      - name: Run timed simulator event tests
+        run: python -m pytest -q app/tests/test_simulator_timed_events.py
+
       - name: Run Scenario Lab adaptive state-engine tests
         run: python -m pytest -q app/tests/test_scenario_state_engine.py
 
