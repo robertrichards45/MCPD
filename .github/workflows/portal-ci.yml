@@ -67,6 +67,9 @@ jobs:
       - name: Run Sentinel workflow regression tests
         run: python -m pytest -q app/tests/test_sentinel_integration.py
 
+      - name: Run retired-module regression tests
+        run: python -m pytest -q app/tests/test_retired_modules.py
+
       - name: Run Call Type Paperwork regression tests
         run: python -m pytest -q app/tests/test_call_type_rules_manager.py
 
