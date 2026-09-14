@@ -3,6 +3,8 @@ import re
 from flask import Blueprint, abort, flash, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_required
 
+from ..extensions import db
+from ..fto_models import FTOScenarioEvent
 from ..simulator.action_interpreter import actions_to_semantic_text, interpret_action
 from ..simulator.dispatch_engine import handle_radio_transmission
 from ..simulator.npc_engine import respond as npc_respond
@@ -30,7 +32,6 @@ from .scenario_cast import SCENARIO_META
 from .scenario_lab import (
     PRACTICE_AREAS,
     SCENARIOS,
-    SCENARIO_RUBRICS,
     _apply_action_cues,
     _coaching_summary,
     _evaluate_action,
@@ -41,7 +42,6 @@ from .scenario_legal_context import legal_context_for
 from .scenario_state_engine import (
     actor_available,
     apply_core_decision,
-    current_decision,
     dynamic_facts,
     ensure_engine_state,
     evaluate_branch_event,
@@ -154,13 +154,6 @@ def _released_facts(state, scenario_id, turn):
     return [_normalize(value) for value in facts if _normalize(value)]
 
 
-def _actor_by_id(state, scenario_id, turn, actor_id):
-    for actor in _available_cast(state, scenario_id, turn):
-        if actor.get('id') == actor_id:
-            return actor
-    return None
-
-
 def _resolve_actor(state, scenario_id, turn, actions):
     visible = _available_cast(state, scenario_id, turn)
     targets = [str(row.get('target') or '').strip().lower() for row in (actions or []) if row.get('target')]
@@ -225,14 +218,10 @@ def _append_consequences(state, values):
     state['consequences'] = rows[-20:]
 
 
-def _negative_phrase(low, term):
-    return bool(re.search(rf"\b(?:do not|don't|would not|wouldn't|not going to|will not)\s+(?:\w+\s+){{0,2}}{term}\b", low))
-
-
-def _catastrophic_outcome(scenario_id, turn, response_text):
+def _catastrophic_outcome(scenario_id, turn, response_text, actions):
     low = _normalize(response_text).lower()
-    deadly_patterns = ('shoot', 'fire my weapon', 'fire the weapon', 'shoot him', 'shoot her', 'shoot them')
-    if any(term in low for term in deadly_patterns) and not _negative_phrase(low, 'shoot') and 'do not fire' not in low:
+    action_types = {str(row.get('action_type') or '').lower() for row in (actions or [])}
+    if 'deadly_force' in action_types:
         return {
             'severity': 'critical',
             'title': 'Exercise terminated — deadly-force decision unsupported by presented facts',
@@ -298,7 +287,7 @@ def _hidden_evaluate_and_advance(state, scenario_id, raw_text, actions):
     if turn >= len(stages) and not pending_event(state, scenario_id):
         return
 
-    catastrophic = _catastrophic_outcome(scenario_id, turn, raw_text)
+    catastrophic = _catastrophic_outcome(scenario_id, turn, raw_text, actions)
     if catastrophic:
         _terminate(state, catastrophic)
         return
@@ -329,9 +318,6 @@ def _hidden_evaluate_and_advance(state, scenario_id, raw_text, actions):
     state['last_feedback'] = feedback
     add_timeline(state, 'evaluator_observation', 'Hidden evaluator observation recorded.', actor='Evaluator', channel='hidden', details=feedback, visible_to_trainee=False)
 
-    # The legacy event engine receives canonical semantic intent, never the raw
-    # trainee wording. This preserves deterministic consequences while the
-    # simulator migrates away from stage rubrics.
     _append_consequences(state, apply_core_decision(state, scenario_id, turn, current_semantic, feedback['accepted']))
 
     if feedback['accepted']:
@@ -365,8 +351,7 @@ def _persist_session_state(state):
     try:
         return persist_run(state, current_user.id)
     except Exception:
-        # The simulator remains usable if persistence is temporarily unavailable;
-        # session state is still preserved and CI exercises the DB-backed path.
+        db.session.rollback()
         return None
 
 
@@ -376,6 +361,10 @@ def _evaluator_url(run):
     if can_evaluator_view(current_user, run, can_manage_fn=can_manage):
         return url_for('reports.fto_refinements.scenario_lab.evaluator', run_id=run.run_id)
     return None
+
+
+def _run_events(run):
+    return run.events.order_by(FTOScenarioEvent.sequence.asc(), FTOScenarioEvent.id.asc()).all()
 
 
 @bp.route('/', methods=['GET', 'POST'])
@@ -488,7 +477,6 @@ def evaluator(run_id):
     turn = int(state.get('turn', 0))
     engine = state.get('engine') or {}
     legal_refs = legal_context_for(scenario_id, state.get('run_context') or {}, turn, engine)
-    events = run.events.order_by(run.events.column_descriptions[0]['entity'].sequence.asc()).all()
     return render_template(
         'scenario_lab_evaluator.html',
         user=current_user,
@@ -499,7 +487,7 @@ def evaluator(run_id):
         turn=turn,
         feedback=state.get('last_feedback'),
         legal_refs=legal_refs,
-        events=events,
+        events=_run_events(run),
     )
 
 
@@ -547,7 +535,6 @@ def review(run_id):
     result['actor_interactions'] = int(state.get('actor_interactions', 0))
     result['run_id'] = run.run_id
     legal_refs = legal_context_for(scenario_id, state.get('run_context') or {}, turn, engine)
-    events = run.events.order_by(run.events.column_descriptions[0]['entity'].sequence.asc()).all()
     return render_template(
         'scenario_lab_review.html',
         user=current_user,
@@ -555,6 +542,6 @@ def review(run_id):
         state=state,
         result=result,
         legal_refs=legal_refs,
-        events=events,
+        events=_run_events(run),
         evaluator_access=evaluator_access,
     )
