@@ -59,7 +59,8 @@ def test_hidden_visual_evidence_does_not_leak_and_discovered_visual_is_rendered(
     )
     assert response.status_code == 200
     html = response.get_data(as_text=True)
-    assert 'Synthetic training visual generated from facts already developed in this run.' in html
+    assert 'Synthetic training visual generated' in html
+    assert 'facts developed in this run.' in html
     assert f'/scenario-lab/evidence/{run_id}/property_damage.svg' in html
 
     visible = client.get(
