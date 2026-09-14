@@ -150,14 +150,23 @@ def _remove_details_group(html, label):
 @admin.bp.after_app_request
 def _portal_navigation_and_retirement_layer(response):
     """Keep the portal simple and expose the integrated Sentinel tools."""
-    if not getattr(current_user, 'is_authenticated', False):
-        return response
     if response.direct_passthrough or response.status_code != 200 or response.mimetype != 'text/html':
         return response
 
     try:
         html = response.get_data(as_text=True)
     except (RuntimeError, UnicodeDecodeError):
+        return response
+
+    # Keep public-facing capability copy consistent with the retired internal hub.
+    html = html.replace(
+        'Watch Commander dashboard, BOLO board, shift management,',
+        'Incident command, BOLO board, shift management,',
+    )
+
+    if not getattr(current_user, 'is_authenticated', False):
+        response.set_data(html)
+        response.headers['Content-Length'] = str(len(response.get_data()))
         return response
 
     html = _remove_details_group(html, 'Bodycam')
@@ -190,7 +199,6 @@ def _portal_navigation_and_retirement_layer(response):
         )
     html = html.replace('MCLB Albany — Installation Map', '')
     html = html.replace('MCLB Albany &mdash; Installation Map', '')
-    html = html.replace('Watch Commander dashboard, BOLO board, shift management,', 'Incident command, BOLO board, shift management,')
 
     if 'mcpd-command-sidebar' in html and '/sentinel/report-inspector' not in html:
         narrative_link = '<a href="/tools/narrative"'
