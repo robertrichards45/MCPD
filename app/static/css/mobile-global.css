@@ -1,0 +1,580 @@
+/* ================================================================
+   MCPD PORTAL — MOBILE STABILIZATION LAYER
+   Loaded last so it can normalize legacy/page-specific layouts.
+   Scope: real narrow viewports plus the portal's forced mobile mode.
+   ================================================================ */
+
+/* Baseline safeguards that are safe at every viewport. */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+img,
+video,
+svg,
+canvas,
+iframe {
+  max-width: 100%;
+}
+
+/* Keep grid/flex children from forcing horizontal overflow. */
+.mcpd-command-main > *,
+.page-wrap > *,
+.dashboard > *,
+.mobile-main > *,
+.mobile-shell > *,
+.patrol-shell > *,
+.patrol-workspace > *,
+.patrol-toolbar > * {
+  min-width: 0;
+}
+
+/* The signature canvas is commonly wider than a phone.  JS now scales
+   pointer coordinates to match the CSS-rendered size. */
+#sig-pad,
+.sig-canvas {
+  max-width: 100% !important;
+  touch-action: none;
+}
+
+@media (max-width: 1020px) {
+  html,
+  body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  body:not(.view-desktop) .mcpd-command-header {
+    padding-left: max(10px, env(safe-area-inset-left, 0px));
+    padding-right: max(10px, env(safe-area-inset-right, 0px));
+    gap: 8px;
+  }
+
+  body:not(.view-desktop) .mcpd-header-brand {
+    min-width: 0;
+    gap: 8px;
+  }
+
+  body:not(.view-desktop) .mcpd-header-brand strong {
+    font-size: 0.78rem;
+    letter-spacing: 0.035em;
+    white-space: nowrap;
+  }
+
+  body:not(.view-desktop) .mcpd-header-user {
+    min-width: 0;
+    gap: 6px;
+  }
+
+  body:not(.view-desktop) .mcpd-header-user > div {
+    display: none;
+  }
+
+  body:not(.view-desktop) .mcpd-theme-toggle,
+  body:not(.view-desktop) [data-view-toggle] {
+    min-height: 40px;
+    padding: 0 9px;
+    font-size: 0.7rem;
+  }
+
+  body:not(.view-desktop) .mcpd-command-main,
+  body:not(.view-desktop) .command-center,
+  body:not(.view-desktop) .wc-page-shell {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    overflow-x: clip;
+  }
+
+  body:not(.view-desktop) .mcpd-command-sidebar {
+    width: min(88vw, 320px) !important;
+    max-width: 320px !important;
+    z-index: 1200 !important;
+    box-shadow: 18px 0 44px rgba(2, 6, 23, 0.34);
+  }
+
+  body:not(.view-desktop).nav-mobile-open {
+    overflow: hidden !important;
+    touch-action: none;
+  }
+
+  body:not(.view-desktop).nav-mobile-open::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 1100;
+    background: rgba(2, 6, 23, 0.55);
+    backdrop-filter: blur(1px);
+    -webkit-backdrop-filter: blur(1px);
+  }
+
+  body:not(.view-desktop) .mcpd-command-sidebar.is-open {
+    transform: translateX(0) !important;
+  }
+
+  /* Prevent nested layouts from exceeding the phone width. */
+  body:not(.view-desktop) .page-wrap,
+  body:not(.view-desktop) .dashboard,
+  body:not(.view-desktop) .mcpd-dashboard,
+  body:not(.view-desktop) .forms-library-shell,
+  body:not(.view-desktop) .reports-center-shell,
+  body:not(.view-desktop) .command-center,
+  body:not(.view-desktop) .wc-page-shell {
+    box-sizing: border-box;
+    max-width: 100% !important;
+    overflow-x: clip;
+  }
+
+  /* Common multi-column portal regions collapse before they become cramped. */
+  body:not(.view-desktop) .dashboard-grid,
+  body:not(.view-desktop) .dashboard-panels,
+  body:not(.view-desktop) .mcpd-dashboard-panels,
+  body:not(.view-desktop) .content-grid,
+  body:not(.view-desktop) .workspace-grid,
+  body:not(.view-desktop) .forms-grid,
+  body:not(.view-desktop) .reports-grid,
+  body:not(.view-desktop) .fto-grid,
+  body:not(.view-desktop) .sentinel-grid,
+  body:not(.view-desktop) .accident-grid,
+  body:not(.view-desktop) .recon-layout,
+  body:not(.view-desktop) .recon-dashboard-grid,
+  body:not(.view-desktop) .recon-builder {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+@media (max-width: 767px) {
+  :root {
+    --mcpd-mobile-page-pad: 12px;
+  }
+
+  body:not(.view-desktop) {
+    font-size: 16px;
+  }
+
+  body:not(.view-desktop) .mcpd-demo-toggle-form {
+    display: none;
+  }
+
+  body:not(.view-desktop) .mcpd-header-brand img {
+    width: 30px;
+    height: 30px;
+  }
+
+  /* Flash messages must never hang off a narrow viewport. */
+  .global-flash-stack {
+    left: max(10px, env(safe-area-inset-left, 0px)) !important;
+    right: max(10px, env(safe-area-inset-right, 0px)) !important;
+    top: calc(64px + env(safe-area-inset-top, 0px) + 8px) !important;
+    width: auto !important;
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  .global-flash {
+    width: 100%;
+    box-sizing: border-box;
+    overflow-wrap: anywhere;
+  }
+
+  /* iOS zooms form fields with text smaller than 16px. */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
+  select,
+  textarea {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    font-size: 16px !important;
+  }
+
+  textarea {
+    min-height: 112px;
+  }
+
+  input[type="date"],
+  input[type="time"],
+  input[type="datetime-local"] {
+    min-height: 44px;
+  }
+
+  label,
+  .form-label,
+  .form-text,
+  .help-text,
+  .text-muted {
+    overflow-wrap: anywhere;
+  }
+
+  /* Touch controls. */
+  .btn,
+  button,
+  [role="button"],
+  summary,
+  .nav-link,
+  .list-group-item-action {
+    min-height: 44px;
+  }
+
+  .btn-group,
+  .button-group,
+  .action-row,
+  .actions-row,
+  .form-actions,
+  .form-action-bar,
+  .form-action-footer,
+  .toolbar-actions,
+  .page-actions,
+  .patrol-actions-row,
+  .sim-hero-actions,
+  .cad-control-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    max-width: 100%;
+  }
+
+  /* Long labels/identifiers should wrap instead of widening the page. */
+  .card,
+  .panel,
+  .stat-card,
+  .patrol-card,
+  .mobile-action-card,
+  .mobile-tool-card,
+  .mobile-step-card,
+  .mobile-section-block,
+  td,
+  th,
+  pre,
+  code {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  pre,
+  .code-output-pre,
+  .code-error-pre {
+    white-space: pre-wrap;
+    overflow-x: auto;
+  }
+
+  /* Any table not already inside a responsive wrapper still becomes usable. */
+  .mcpd-command-main table,
+  .page-wrap table,
+  .dashboard table,
+  .mobile-main table {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .table-responsive {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Dialogs and drawers stay inside the visual viewport. */
+  .modal,
+  .modal-dialog,
+  .dialog,
+  [role="dialog"],
+  .ai-panel {
+    max-width: calc(100vw - 20px) !important;
+  }
+
+  .modal-dialog,
+  .dialog,
+  [role="dialog"] {
+    max-height: calc(100dvh - 20px);
+    overflow-y: auto;
+  }
+
+  iframe,
+  .pdf-embed-frame {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Dedicated mobile pages. */
+  body.mobile-foundation,
+  body.mobile-foundation .mcpd-mobile-app,
+  body.mobile-foundation .mobile-shell {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  body.mobile-foundation .mcpd-mobile-home,
+  body.mobile-foundation .mobile-main {
+    width: 100%;
+    max-width: 720px;
+    margin-inline: auto;
+    padding-left: max(var(--mcpd-mobile-page-pad), env(safe-area-inset-left, 0px)) !important;
+    padding-right: max(var(--mcpd-mobile-page-pad), env(safe-area-inset-right, 0px)) !important;
+    padding-bottom: calc(var(--mobile-dock-height, 112px) + env(safe-area-inset-bottom, 0px) + 28px) !important;
+  }
+
+  body.mobile-foundation .mobile-header,
+  body.mobile-foundation .mcpd-mobile-topbar {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  body.mobile-foundation .mobile-header-main,
+  body.mobile-foundation .mobile-header-topline,
+  body.mobile-foundation .mobile-header-nav,
+  body.mobile-foundation .mcpd-mobile-draft-row {
+    min-width: 0;
+    flex-wrap: wrap;
+  }
+
+  body.mobile-foundation .mobile-user-chip,
+  body.mobile-foundation .mobile-role-pill,
+  body.mobile-foundation .mobile-header-note {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  body.mobile-foundation .mobile-more-grid,
+  body.mobile-foundation .mobile-selected-form-actions,
+  body.mobile-foundation .mobile-domestic-field-stack {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  body.mobile-foundation .mobile-tool-card,
+  body.mobile-foundation .mobile-action-card,
+  body.mobile-foundation .mobile-step-card {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* The outer dock stays transparent; the inner strip is the actual dock. */
+  body.mobile-foundation .mobile-tab-bar {
+    background: transparent !important;
+    border-top: 0 !important;
+    box-shadow: none !important;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  body.mobile-foundation .mobile-tab-strip {
+    width: auto;
+    max-width: calc(100vw - 16px);
+    box-sizing: border-box;
+  }
+
+  body.mobile-foundation .mobile-tab {
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  body.mobile-foundation .mobile-tab-label {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Scenario Lab / Virtual Patrol: primary controls come before the long
+     activity feed on a phone. */
+  .patrol-page {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+
+  .patrol-shell,
+  .cad-console,
+  .sim-hero,
+  .patrol-toolbar,
+  .patrol-workspace {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .patrol-toolbar {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .patrol-workspace {
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-areas:
+      "command"
+      "radio"
+      "action"
+      "people"
+      "intel"
+      "activity" !important;
+  }
+
+  .patrol-card {
+    padding: 12px !important;
+  }
+
+  .patrol-scroll {
+    max-height: none !important;
+    overflow: visible !important;
+    padding-right: 0 !important;
+  }
+
+  .cad-statusbar {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .cad-stat,
+  .cad-value,
+  .cad-dispatch-text,
+  .patrol-feed-item,
+  .patrol-person {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  .cad-value {
+    white-space: normal !important;
+  }
+
+  .scenario-launcher,
+  .patrol-scene-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .voice-capture,
+  .cad-control,
+  .sim-btn-dark {
+    min-height: 44px;
+  }
+
+  .patrol-textarea {
+    min-height: 120px;
+  }
+}
+
+@media (max-width: 520px) {
+  body:not(.view-desktop) .mcpd-header-brand strong {
+    display: none;
+  }
+
+  body:not(.view-desktop) .mcpd-theme-toggle,
+  body:not(.view-desktop) [data-view-toggle] {
+    padding-inline: 8px;
+    font-size: 0.68rem;
+  }
+
+  .btn-group > .btn,
+  .button-group > .btn,
+  .form-actions > .btn,
+  .form-action-footer > .btn,
+  .page-actions > .btn,
+  .sim-hero-actions > a,
+  .sim-hero-actions > button,
+  .cad-control-row > button,
+  .cad-control-row > a {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  body.mobile-foundation .mcpd-mobile-stats-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .cad-statusbar {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+@media (max-width: 360px) {
+  body.mobile-foundation .mobile-tab-bar {
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+  }
+
+  body.mobile-foundation .mobile-tab-strip {
+    gap: 1px !important;
+    padding-left: 5px !important;
+    padding-right: 5px !important;
+  }
+
+  body.mobile-foundation .mobile-tab-label {
+    font-size: 9px !important;
+  }
+
+  body.mobile-foundation .mobile-tab-primary .mobile-tab-fab {
+    width: 56px !important;
+    height: 56px !important;
+  }
+}
+
+/* Forced mobile mode on a larger display should behave like the responsive
+   layout, not just hide the sidebar. */
+body.force-mobile-view:not(.mobile-foundation) {
+  overflow-x: hidden;
+}
+
+body.force-mobile-view:not(.mobile-foundation) .mcpd-command-header {
+  grid-template-columns: auto 1fr auto !important;
+  height: 64px !important;
+  padding: 0 10px !important;
+  gap: 8px !important;
+}
+
+body.force-mobile-view:not(.mobile-foundation) .mcpd-header-search,
+body.force-mobile-view:not(.mobile-foundation) .mcpd-header-user > div,
+body.force-mobile-view:not(.mobile-foundation) .mcpd-demo-toggle-form {
+  display: none !important;
+}
+
+body.force-mobile-view:not(.mobile-foundation) .mcpd-mobile-menu {
+  display: inline-flex !important;
+}
+
+body.force-mobile-view:not(.mobile-foundation) .mcpd-command-sidebar {
+  width: min(88vw, 320px) !important;
+  max-width: 320px !important;
+  transform: translateX(-100%) !important;
+  z-index: 1200 !important;
+}
+
+body.force-mobile-view:not(.mobile-foundation) .mcpd-command-sidebar.is-open {
+  transform: translateX(0) !important;
+}
+
+body.force-mobile-view:not(.mobile-foundation) .mcpd-command-main,
+body.force-mobile-view:not(.mobile-foundation) .page-wrap,
+body.force-mobile-view:not(.mobile-foundation) .dashboard,
+body.force-mobile-view:not(.mobile-foundation) .mcpd-dashboard {
+  margin-left: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box;
+}
+
+body.force-mobile-view:not(.mobile-foundation) .dashboard-grid,
+body.force-mobile-view:not(.mobile-foundation) .dashboard-panels,
+body.force-mobile-view:not(.mobile-foundation) .mcpd-dashboard-panels,
+body.force-mobile-view:not(.mobile-foundation) .content-grid,
+body.force-mobile-view:not(.mobile-foundation) .workspace-grid,
+body.force-mobile-view:not(.mobile-foundation) .forms-grid,
+body.force-mobile-view:not(.mobile-foundation) .reports-grid,
+body.force-mobile-view:not(.mobile-foundation) .fto-grid,
+body.force-mobile-view:not(.mobile-foundation) .sentinel-grid,
+body.force-mobile-view:not(.mobile-foundation) .accident-grid,
+body.force-mobile-view:not(.mobile-foundation) .recon-layout,
+body.force-mobile-view:not(.mobile-foundation) .recon-dashboard-grid,
+body.force-mobile-view:not(.mobile-foundation) .recon-builder {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
