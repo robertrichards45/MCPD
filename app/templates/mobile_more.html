@@ -37,11 +37,12 @@
       {{ tool_card('Command Notices', 'Post and review watch announcements.', url_for('announcements.board'), 'reports') }}
       {{ tool_card('BOLO Board', 'Review and manage BOLO information.', url_for('bolo.bolo_board'), 'reports') }}
     {% endif %}
+    {{ tool_card('Incident Workspace', 'Choose the call type and build the guided report packet from the current paperwork rules.', '/reports#incident-workspace', 'reports', True) }}
     {{ tool_card('Fast Capture', 'Log quick field notes now and refine them in Narrative Creator.', url_for('mobile.fast_capture'), 'narrative') }}
-    {{ tool_card('Reports Center', 'Open visible reports, packets, and supervisor review status.', url_for('reports.list_reports'), 'reports') }}
+    {{ tool_card('Reports Center', 'Open visible reports, packets, corrections, and supervisor review status.', url_for('reports.list_reports'), 'reports') }}
     {{ tool_card('Narrative Creator', 'Build a fact-based narrative and identify missing or conflicting details.', url_for('bodycam.mobile_narrative_tool'), 'narrative', True) }}
     {{ tool_card('Report Quality Review', 'Run Sentinel completeness, chronology, articulation, and offense-cue review.', '/sentinel/report-inspector', 'sentinel', True) }}
-    {{ tool_card('FTO Center', 'Scenario Lab, evaluation coaching, and field-training development.', '/sentinel/fto-center', 'sentinel', True) }}
+    {{ tool_card('FTO Center', 'Program roadmap, Scenario Lab, evaluation coaching, DOR development, and remediation support.', '/sentinel/fto-center', 'sentinel', True) }}
     {{ tool_card('5W Builder', 'Organize the core who, what, when, where, why/how, and officer actions.', url_for('bodycam.mobile_five_w_tool'), 'narrative') }}
     {{ tool_card('Forms Library', 'Open official forms and guided paperwork workflows.', url_for('forms.list_forms'), 'library') }}
     {{ tool_card('Accident Tools', 'Open the guided crash documentation and diagram workflow.', url_for('reports.accidents'), 'vehicle') }}
