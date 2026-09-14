@@ -11,34 +11,46 @@
         <div class="ops-head-copy">
           <div class="eyebrow forms-library-eyebrow">Paperwork Center</div>
           <h2 class="mb-1">Forms Library</h2>
-          <p class="mb-0 text-muted">Launch official forms, move from incident guidance into documentation, and keep saved paperwork close at hand.</p>
+          <p class="mb-0 text-muted">Find the right paperwork, complete an official form, or resume saved work without having to know where every form lives.</p>
         </div>
         <div class="ops-head-stats">
-          <article class="ops-stat-pill">
-            <span>Active Forms</span>
-            <strong>{{ forms|length }}</strong>
-          </article>
-          <article class="ops-stat-pill">
-            <span>Categories</span>
-            <strong>{{ categories|length }}</strong>
-          </article>
-          <article class="ops-stat-pill">
-            <span>Saved Drafts</span>
-            <strong>{{ saved_form_count|default(0) }}</strong>
-          </article>
+          <article class="ops-stat-pill"><span>Active Forms</span><strong>{{ forms|length }}</strong></article>
+          <article class="ops-stat-pill"><span>Categories</span><strong>{{ categories|length }}</strong></article>
+          <article class="ops-stat-pill"><span>Saved Drafts</span><strong>{{ saved_form_count|default(0) }}</strong></article>
         </div>
       </div>
-
       <div class="forms-toolbar">
-        <a class="btn btn-primary" href="{{ url_for('forms.saved_forms') }}">Open Saved Work</a>
-        <a class="btn btn-outline-secondary" href="{{ url_for('reference.incident_paperwork_guide') }}">Paperwork Navigator</a>
-        {% if can_manage_form_maintenance %}
-        <a class="btn btn-outline-dark" href="{{ url_for('forms.forms_manager') }}">Manage Forms</a>
-        {% endif %}
-        {% if can_manage_uploads %}
-        <a class="btn btn-outline-dark" href="{{ url_for('forms.upload_form') }}">Add New Form</a>
-        {% endif %}
+        <a class="btn btn-primary" href="{{ url_for('reference.incident_paperwork_guide') }}">Help Me Choose Paperwork</a>
+        <a class="btn btn-outline-secondary" href="{{ url_for('forms.saved_forms') }}">Resume Saved Work</a>
+        {% if can_manage_form_maintenance %}<a class="btn btn-outline-dark" href="{{ url_for('forms.forms_manager') }}">Manage Forms</a>{% endif %}
+        {% if can_manage_uploads %}<a class="btn btn-outline-dark" href="{{ url_for('forms.upload_form') }}">Add New Form</a>{% endif %}
       </div>
+    </section>
+
+    <section class="ops-panel mb-3" aria-label="Forms quick start">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <div class="border rounded p-3 h-100">
+            <strong>I know the form</strong>
+            <p class="small text-muted mt-1 mb-0">Search by title or choose a category below, then select <b>Open Form</b>.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="border rounded p-3 h-100">
+            <strong>I know the call type, not the paperwork</strong>
+            <p class="small text-muted mt-1 mb-2">Use the Paperwork Navigator to see default and conditional paperwork for the incident.</p>
+            <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('reference.incident_paperwork_guide') }}">Open Navigator</a>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="border rounded p-3 h-100">
+            <strong>I already started it</strong>
+            <p class="small text-muted mt-1 mb-2">Open Saved Work instead of creating a duplicate form.</p>
+            <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('forms.saved_forms') }}">Saved Work</a>
+          </div>
+        </div>
+      </div>
+      <div class="alert alert-light border mt-3 mb-0"><strong>Paperwork reminder:</strong> The library helps locate and complete forms. Always verify that the form/version and any conditional paperwork match the current incident and approved guidance.</div>
     </section>
 
     {% if can_manage_uploads or can_manage_form_maintenance %}
@@ -48,10 +60,9 @@
         {% if can_manage_form_maintenance %}
         <a class="btn btn-outline-secondary" href="{{ url_for('forms.forms_maintenance') }}">Form Maintenance</a>
         <a class="btn btn-outline-secondary" href="{{ url_for('forms.forms_manager') }}">Forms Manager</a>
+        <a class="btn btn-outline-secondary" href="{{ url_for('forms.call_type_rules_manager') }}">Call Type Paperwork Manager</a>
         {% endif %}
-        {% if can_manage_uploads %}
-        <a class="btn btn-outline-secondary" href="{{ url_for('forms.upload_form') }}">Upload Form</a>
-        {% endif %}
+        {% if can_manage_uploads %}<a class="btn btn-outline-secondary" href="{{ url_for('forms.upload_form') }}">Upload Form</a>{% endif %}
       </div>
     </details>
     {% endif %}
@@ -59,16 +70,14 @@
     <form class="ops-panel mb-3 search-panel forms-filter-panel" method="get">
       <div class="row g-2">
         <div class="col-md-7">
-          <label class="form-label forms-filter-label" for="forms-search">Search</label>
-          <input class="form-control" id="forms-search" name="q" value="{{ search_term }}" placeholder="Search form title" />
+          <label class="form-label forms-filter-label" for="forms-search">Find a form</label>
+          <input class="form-control" id="forms-search" name="q" value="{{ search_term }}" placeholder="Search by form title or keyword" />
         </div>
         <div class="col-md-3">
           <label class="form-label forms-filter-label" for="forms-category">Category</label>
           <select class="form-control" id="forms-category" name="category">
             <option value="">All categories</option>
-            {% for category in categories %}
-            <option value="{{ category }}" {% if category_filter == category %}selected{% endif %}>{{ category }}</option>
-            {% endfor %}
+            {% for category in categories %}<option value="{{ category }}" {% if category_filter == category %}selected{% endif %}>{{ category }}</option>{% endfor %}
           </select>
         </div>
         <div class="col-md-2 d-flex align-items-end"><button class="btn btn-primary w-100">Search</button></div>
@@ -81,19 +90,13 @@
         <div class="forms-card-topline">
           <div class="forms-card-meta">
             <span class="forms-card-kicker">{{ f.category or 'General' }}</span>
-            {% if f.retention_mode in ['no_pii_retention', 'temporary_pii_only'] %}
-            <span class="badge bg-warning text-dark">No-Retention PII</span>
-            {% endif %}
-            {% if f.version_label %}
-            <span class="badge bg-dark">v{{ f.version_label }}</span>
-            {% endif %}
+            {% if f.retention_mode in ['no_pii_retention', 'temporary_pii_only'] %}<span class="badge bg-warning text-dark">No-Retention PII</span>{% endif %}
+            {% if f.version_label %}<span class="badge bg-dark">v{{ f.version_label }}</span>{% endif %}
           </div>
           <span class="forms-card-date">Uploaded {{ f.uploaded_at.strftime('%Y-%m-%d') }}</span>
         </div>
-        <div class="result-head forms-card-head">
-          <h4>{{ f.title }}</h4>
-        </div>
-        <p class="result-sub forms-card-sub">Launch the fill workflow, scan ID details on mobile when supported, then preview or download the matching PDF output.</p>
+        <div class="result-head forms-card-head"><h4>{{ f.title }}</h4></div>
+        <p class="result-sub forms-card-sub">Open the guided fill workflow, verify the entered data, then preview or download the matching official output.</p>
         <div class="result-actions forms-card-actions">
           <a class="btn btn-sm btn-primary" href="{{ url_for('forms.fill_form', form_id=f.id) }}">Open Form</a>
           <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('forms.blank_form_preview', form_id=f.id) }}">Preview Blank</a>
@@ -101,7 +104,7 @@
         </div>
       </article>
       {% else %}
-      <div class="ops-panel text-muted">No forms found.</div>
+      <div class="ops-panel text-muted">No forms match this search. Try a broader keyword/category or use the Paperwork Navigator.</div>
       {% endfor %}
     </div>
   </div>

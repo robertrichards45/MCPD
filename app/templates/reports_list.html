@@ -8,7 +8,7 @@
         <div class="ops-head-copy">
           <div class="eyebrow forms-library-eyebrow">Reporting Hub</div>
           <h2 class="mb-1">Reports Center</h2>
-          <p class="text-muted mb-0">Standard reports, submitted packets, correction status, and supervisor review queues.</p>
+          <p class="text-muted mb-0">Submitted packets, correction status, supervisor review queues, and report-writing tools.</p>
         </div>
         <div class="ops-head-stats">
           <article class="ops-stat-pill">
@@ -25,9 +25,9 @@
           </article>
         </div>
         <div class="forms-toolbar">
-          <a class="btn btn-primary" href="{{ url_for('reports.new_report') }}">Start New Report</a>
+          <a class="btn btn-primary" href="{{ url_for('bodycam.narrative_tool') }}">Narrative Creator</a>
           <a class="btn btn-outline-secondary" href="{{ url_for('reports.accidents') }}">Accident Tools</a>
-          <a class="btn btn-outline-secondary" href="{{ url_for('cleo_api.cleo_reports_page') }}">CLEOC Reports</a>
+          <a class="btn btn-outline-secondary" href="{{ url_for('forms.list_forms') }}">Forms Library</a>
         </div>
       </div>
     </section>
@@ -36,10 +36,10 @@
       <div class="report-panel-head">
         <div>
           <h3 class="mb-1">Writing Tools</h3>
-          <p class="text-muted mb-0">Use these standalone tools to draft a narrative or extract the 5Ws from one notes box.</p>
+          <p class="text-muted mb-0">Build a narrative from verified facts, run a quality check, or organize the core 5Ws before entering the final report in the authoritative system.</p>
         </div>
         <div class="forms-toolbar">
-          <a class="btn btn-outline-secondary" href="{{ url_for('bodycam.narrative_tool') }}">Narrative Creator</a>
+          <a class="btn btn-primary" href="{{ url_for('bodycam.narrative_tool') }}">Narrative Creator</a>
           <a class="btn btn-outline-secondary" href="{{ url_for('bodycam.five_w_tool') }}">5W Builder</a>
         </div>
       </div>
@@ -49,7 +49,7 @@
       <div class="report-panel-head">
         <div>
           <h3 class="mb-1">Report Operating Picture</h3>
-          <p class="text-muted mb-0">Live packet status, workflow steps, and command actions in one view.</p>
+          <p class="text-muted mb-0">Live packet status, workflow steps, and review actions in one view.</p>
         </div>
         <span class="badge bg-primary">Live Queue</span>
       </div>
@@ -124,7 +124,7 @@
         <div class="report-panel-head">
           <div>
             <h3 class="mb-1">Standard Reports</h3>
-            <p class="text-muted mb-0">Case shells, attachments, involved people, and co-author workflow.</p>
+            <p class="text-muted mb-0">Existing case shells, attachments, involved people, and co-author workflow.</p>
           </div>
           <span class="badge bg-dark">{{ reports|length }}</span>
         </div>
@@ -145,9 +145,7 @@
           {% endfor %}
         </div>
       </section>
-
     </div>
-
   </div>
 </div>
 <script>

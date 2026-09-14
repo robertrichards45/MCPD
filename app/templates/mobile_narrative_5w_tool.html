@@ -4,13 +4,13 @@
   <div class="mobile-section-head">
     {% if tool_mode == '5w' %}
       <h3>5W Builder</h3>
-      <p>Put the incident facts in one box and generate a clean 5W summary for review, text, or email.</p>
+      <p>Organize verified incident facts into the core 5Ws and officer actions.</p>
     {% else %}
       <h3>Narrative Creator</h3>
-      <p>Put the incident facts in one box and generate a draft narrative for officer review.</p>
+      <p>Build a fact-preserving draft and identify missing or unclear details before the final report is completed.</p>
     {% endif %}
   </div>
 </section>
 {% include 'partials/narrative_5w_panel.html' %}
-<script src="{{ url_for('static', filename='js/narrative_5w_tool.js', v='2026-05-05-one-box') }}"></script>
+<script src="{{ url_for('static', filename='js/narrative_5w_tool.js', v='2026-09-13-sentinel-review') }}"></script>
 {% endblock %}

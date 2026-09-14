@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell mcpd-command-app">
+  {% include 'partials/nav.html' %}
+  <main class="page-wrap narrative-tool-page">
+    <section class="ops-head-card mb-3">
+      <div class="ops-head-copy">
+        <div class="eyebrow">MCPD Sentinel</div>
+        <h2 class="mb-1">Report Quality Inspector</h2>
+        <p class="text-muted mb-0">Paste a narrative to check completeness, chronology, articulation, and offense-related language cues. Sentinel never adds missing facts.</p>
+      </div>
+      <div class="ops-head-actions">
+        <a class="btn btn-outline-secondary" href="{{ url_for('bodycam.narrative_tool') }}">Narrative Creator</a>
+      </div>
+    </section>
+
+    <section class="ops-panel mb-3">
+      <form method="post">
+        <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
+        <label class="w-100">
+          <strong>Narrative to inspect</strong>
+          <textarea class="form-control mt-2" name="narrative" rows="16" placeholder="Paste the officer-written narrative here. Do not change facts just to satisfy a software cue." required>{{ narrative }}</textarea>
+        </label>
+        <div class="d-flex gap-2 flex-wrap mt-3">
+          <button class="btn btn-primary" type="submit">Inspect Narrative</button>
+          <a class="btn btn-outline-secondary" href="{{ url_for('reports.sentinel.report_inspector') }}">Clear</a>
+        </div>
+      </form>
+    </section>
+
+    {% if result %}
+    <section class="ops-panel mb-3">
+      <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+        <div>
+          <div class="eyebrow">Review Result</div>
+          <h3 class="mb-1">{{ result.score }}/100</h3>
+          <p class="text-muted mb-0">{{ result.counts.red }} critical cue(s) &bull; {{ result.counts.yellow }} review cue(s)</p>
+        </div>
+        <div class="bodycam-warning" style="max-width:620px;">
+          <strong>Supervisor judgment required</strong>
+          <span>{{ result.notice }}</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="row g-3 mb-3">
+      <div class="col-lg-7">
+        <article class="ops-panel h-100">
+          <h3>Findings</h3>
+          {% for item in result.findings %}
+          <div class="border rounded p-3 mb-2">
+            <div class="d-flex justify-content-between gap-3">
+              <strong>{{ item.title }}</strong>
+              <span class="badge {% if item.level == 'red' %}bg-danger{% else %}bg-warning text-dark{% endif %}">{{ item.level|upper }}</span>
+            </div>
+            <small class="text-muted">{{ item.category }}</small>
+            <p class="mb-0 mt-2">{{ item.detail }}</p>
+          </div>
+          {% else %}
+          <div class="alert alert-success mb-0">No major automated cues were detected. A human review is still required.</div>
+          {% endfor %}
+        </article>
+      </div>
+      <div class="col-lg-5">
+        <article class="ops-panel h-100">
+          <h3>Report Structure</h3>
+          {% for section in result.sections %}
+          <div class="d-flex justify-content-between border-bottom py-2">
+            <span>{{ section.name }}</span>
+            <strong>{{ 'Detected' if section.present else 'Verify' }}</strong>
+          </div>
+          {% endfor %}
+        </article>
+      </div>
+    </section>
+
+    {% if result.elements %}
+    <section class="ops-panel mb-3">
+      <div class="eyebrow">Offense Cue Matrix</div>
+      <h3>{{ result.elements.offense }}</h3>
+      <p class="text-muted">{{ result.elements.authority }}</p>
+      <div class="alert alert-warning">{{ result.elements.warning }}</div>
+      {% for item in result.elements.elements %}
+      <div class="border rounded p-3 mb-2">
+        <strong>{{ item.name }}</strong>
+        <p class="mb-1">{{ item.question }}</p>
+        <small>{{ item.note }}</small>
+        {% if item.evidence_cues %}<div class="mt-2"><span class="badge bg-light text-dark border">Cues: {{ item.evidence_cues|join(', ') }}</span></div>{% endif %}
+      </div>
+      {% endfor %}
+    </section>
+    {% endif %}
+    {% endif %}
+  </main>
+</div>
+{% endblock %}

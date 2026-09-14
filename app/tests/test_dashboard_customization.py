@@ -35,10 +35,13 @@ def test_dashboard_customize_page_loads():
         assert "Customize Dashboard" in html
         assert "Quick Action Cards" in html
         assert "Dashboard Panels" in html
-        assert "Start New Report" in html
+        assert "Start New Report" not in html
+        assert "Body Cam Mode" not in html
         assert "Forms Library" in html
         assert "Narrative Creator" in html
         assert "5W Builder" in html
+        assert "Sentinel Report Inspector" in html
+        assert "AI FTO Instructor" in html
     finally:
         _dispose_app(client.application)
 
@@ -51,7 +54,7 @@ def test_user_can_save_dashboard_card_and_panel_preferences():
             data={
                 "action": "save",
                 "_csrf_token": "test-token",
-                "cards": ["law_lookup", "saved_work"],
+                "cards": ["law_lookup", "saved_work", "sentinel_report_inspector"],
                 "panels": ["saved_work"],
             },
             follow_redirects=False,
@@ -63,11 +66,13 @@ def test_user_can_save_dashboard_card_and_panel_preferences():
         assert dashboard.status_code == 200
         assert "<strong>Law Lookup</strong>" in html
         assert "Saved Work" in html
+        assert "Sentinel Report Inspector" in html
         assert "Training Rosters" not in html
 
         with client.application.app_context():
             user = db.session.get(User, user_id)
             assert "law_lookup" in (user.dashboard_preferences_json or "")
+            assert "sentinel_report_inspector" in (user.dashboard_preferences_json or "")
     finally:
         with client.application.app_context():
             user = db.session.get(User, user_id)

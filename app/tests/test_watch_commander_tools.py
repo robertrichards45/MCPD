@@ -38,7 +38,7 @@ def _client_for(user):
     return app, client
 
 
-def test_watch_commander_dashboard_loads_and_officer_blocked():
+def test_watch_commander_dashboard_is_retired_for_all_authenticated_users():
     app = create_app()
     app.config['TESTING'] = True
     with app.app_context():
@@ -46,26 +46,23 @@ def test_watch_commander_dashboard_loads_and_officer_blocked():
         officer = _user('officer_route_test', ROLE_PATROL_OFFICER)
 
         _app, wc_client = _client_for(wc)
-        response = wc_client.get('/watch-commander/dashboard')
-        assert response.status_code == 200
-        html = response.get_data(as_text=True)
-        assert 'Watch Commander Dashboard' in html
-        assert 'Officers on duty' in html
+        response = wc_client.get('/watch-commander/dashboard', follow_redirects=False)
+        assert response.status_code in {301, 302, 303, 307, 308}
+        assert '/dashboard' in response.headers['Location']
 
         _app, officer_client = _client_for(officer)
-        response = officer_client.get('/watch-commander/dashboard')
-        assert response.status_code == 403
+        response = officer_client.get('/watch-commander/dashboard', follow_redirects=False)
+        assert response.status_code in {301, 302, 303, 307, 308}
+        assert '/dashboard' in response.headers['Location']
 
 
-def test_watch_commander_all_pages_render():
+def test_remaining_watch_workflow_pages_render_for_authorized_user():
     app = create_app()
     app.config['TESTING'] = True
     with app.app_context():
         wc = _user('wc_pages_test', ROLE_WATCH_COMMANDER)
         _app, client = _client_for(wc)
         paths = [
-            '/watch-commander',
-            '/watch-commander/dashboard',
             '/watch-commander/shift',
             '/watch-commander/officers',
             '/watch-commander/reports',

@@ -1,9 +1,5 @@
-from io import BytesIO
-from pathlib import Path
-
 from app import create_app
-from app.extensions import db
-from app.models import BodycamFootage, User
+from app.models import User
 
 
 def _logged_in_client():
@@ -20,85 +16,52 @@ def _logged_in_client():
         return app, client, user.id
 
 
-def test_bodycam_desktop_and_mobile_pages_render():
+def test_bodycam_surfaces_are_retired_but_narrative_tools_remain():
     _app, client, _user_id = _logged_in_client()
 
+    for path in ('/bodycam', '/bodycam/new', '/mobile/bodycam', '/mobile/bodycam/footage', '/bodycam/narrative'):
+        response = client.get(path, follow_redirects=False)
+        assert response.status_code in {301, 302, 303, 307, 308}
+        assert '/tools/narrative' in response.headers['Location']
+
     for path, expected in [
-        ('/bodycam', 'Bodycam Footage'),
-        ('/bodycam/new', 'Body Cam Mode'),
-        ('/mobile/bodycam', 'Body Cam Mode'),
-        ('/mobile/bodycam/footage', 'Bodycam Footage'),
         ('/tools/narrative', 'Narrative Creator'),
         ('/tools/5w', '5W Builder'),
-        ('/bodycam/narrative', 'Narrative Creator'),
-        ('/mobile', 'MCPD'),
         ('/mobile/tools/narrative', 'Narrative Creator'),
         ('/mobile/tools/5w', '5W Builder'),
     ]:
         response = client.get(path)
-        if response.status_code in {301, 302, 303, 308}:
-            response = client.get(response.headers['Location'])
         assert response.status_code == 200
         assert expected in response.get_data(as_text=True)
 
 
-def test_bodycam_upload_stores_video_and_transcript():
-    app, client, user_id = _logged_in_client()
-    response = client.post(
-        '/bodycam/upload',
-        data={
-            'title': 'Test Bodycam',
-            'incident_number': 'INC-1',
-            'location': 'Gate 1',
-            'transcript_text': 'Officer contacted the subject.',
-            'duration_seconds': '5',
-            'video': (BytesIO(b'fake-webm'), 'bodycam.webm'),
-        },
-        content_type='multipart/form-data',
-        headers={'X-CSRFToken': 'test-token'},
-    )
-
-    assert response.status_code == 200
-    payload = response.get_json()
-    assert payload['ok'] is True
-
-    with app.app_context():
-        item = db.session.get(BodycamFootage, payload['id'])
-        assert item is not None
-        saved_path = Path(item.file_path)
-        assert item.officer_user_id == user_id
-        assert item.transcript_text == 'Officer contacted the subject.'
-        assert item.location == 'Gate 1'
-        db.session.delete(item)
-        db.session.commit()
-        if saved_path.exists():
-            saved_path.unlink()
-
-
-def test_mobile_more_exposes_bodycam_and_narrative_tools():
+def test_bodycam_upload_endpoint_is_retired():
     _app, client, _user_id = _logged_in_client()
+    response = client.post('/bodycam/upload', follow_redirects=False)
+    assert response.status_code in {301, 302, 303, 307, 308}
+    assert '/tools/narrative' in response.headers['Location']
 
+
+def test_mobile_more_keeps_narrative_tools_but_hides_bodycam():
+    _app, client, _user_id = _logged_in_client()
     more = client.get('/mobile/more').get_data(as_text=True)
+
     assert 'Narrative Creator' in more
     assert '5W Builder' in more
-    assert 'Body Cam Mode' in more
-    assert 'Bodycam Footage' in more
-    assert '/mobile/bodycam' in more
+    assert 'Body Cam Mode' not in more
+    assert 'Bodycam Footage' not in more
     assert '/mobile/tools/narrative' in more
     assert '/mobile/tools/5w' in more
 
 
-def test_desktop_dashboard_exposes_restored_field_tools():
+def test_desktop_dashboard_exposes_supported_field_tools():
     _app, client, _user_id = _logged_in_client()
-
     html = client.get('/dashboard').get_data(as_text=True)
 
     assert 'Narrative Creator' in html
     assert '5W Builder' in html
     assert 'Accident Tools' in html
-    assert 'Body Cam Mode' in html
-    assert 'Bodycam Footage' in html
+    assert 'Body Cam Mode' not in html
+    assert 'Bodycam Footage' not in html
     assert '/reports/accidents' in html
-    assert '/bodycam/new' in html
-    assert '/tools/narrative' in html
-    assert '/tools/5w' in html
+    assert '/sentinel/report-inspector' in html

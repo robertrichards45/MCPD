@@ -5,7 +5,7 @@
   <main class="page-wrap narrative-tool-page">
     <section class="ops-head-card mb-3">
       <div class="ops-head-copy">
-        <div class="eyebrow">Report Writing</div>
+        <div class="eyebrow">Report Writing / MCPD Sentinel</div>
         {% if tool_mode == '5w' %}
           <h2 class="mb-1">5W Builder</h2>
           <p class="text-muted mb-0">Organize officer notes into Who, What, When, Where, Why/How, and Officer Actions.</p>
@@ -14,14 +14,15 @@
           <p class="text-muted mb-0">Convert your call log into a professionally formatted watch blotter using AI.</p>
         {% else %}
           <h2 class="mb-1">Narrative Creator</h2>
-          <p class="text-muted mb-0">Draft a professional narrative from officer-entered facts. Use Quality Check to score and improve it.</p>
+          <p class="text-muted mb-0">Build a fact-preserving draft, identify missing or unclear information, and run an AI quality review before finalizing the report.</p>
         {% endif %}
       </div>
       <div class="ops-head-actions">
-        {% if tool_mode == 'narrative' or tool_mode == '5w' %}
-          <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('bodycam.five_w_tool') if tool_mode == 'narrative' else url_for('bodycam.narrative_tool') }}">
-            Switch to {{ '5W Builder' if tool_mode == 'narrative' else 'Narrative Creator' }}
-          </a>
+        {% if tool_mode == 'narrative' %}
+          <a class="btn btn-sm btn-primary" href="/sentinel/report-inspector">Open Sentinel Inspector</a>
+          <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('bodycam.five_w_tool') }}">Switch to 5W Builder</a>
+        {% elif tool_mode == '5w' %}
+          <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('bodycam.narrative_tool') }}">Switch to Narrative Creator</a>
         {% elif tool_mode == 'blotter' %}
           <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('bodycam.narrative_tool') }}">Narrative Creator</a>
           <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('bodycam.five_w_tool') }}">5W Builder</a>
@@ -31,5 +32,5 @@
     {% include 'partials/narrative_5w_panel.html' %}
   </main>
 </div>
-<script src="{{ url_for('static', filename='js/narrative_5w_tool.js', v='2026-05-16j') }}"></script>
+<script src="{{ url_for('static', filename='js/narrative_5w_tool.js', v='2026-09-13-sentinel-review') }}"></script>
 {% endblock %}
