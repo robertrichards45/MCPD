@@ -10,6 +10,7 @@ def _client():
         user = User.query.filter_by(username='scenario-gate-ci').first()
         if user is None:
             user = User(username='scenario-gate-ci', name='Scenario Gate CI Controller', role=ROLE_WEBSITE_CONTROLLER, active=True, pending_approval=False)
+            user.set_password('ci-only-password')
             db.session.add(user)
             db.session.commit()
         user_id = user.id
