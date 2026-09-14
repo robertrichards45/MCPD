@@ -1,6 +1,7 @@
 from copy import deepcopy
 
 from .evidence_visuals import initialize_visual_evidence
+from .person_records import obtain_requested_statements, reveal_requested_identities
 from .world_state import add_known_information, add_timeline, ensure_world_state
 
 
@@ -34,6 +35,7 @@ def initialize_truth_and_evidence(state, scenario_id, truth):
             'preserved_at': None,
         }
     world['evidence'] = evidence
+    world.setdefault('statements', [])
     initialize_visual_evidence(state, scenario_id)
     return world
 
@@ -74,17 +76,29 @@ def tick_evidence(state):
 
 
 def apply_evidence_actions(state, actions, raw_text):
-    """Discover/preserve structured evidence without allowing AI to invent it."""
+    """Discover/preserve structured evidence and developed person records.
+
+    Synthetic identity information is revealed only when the trainee actually asks
+    for identification/contact information. Written statements are completed by the
+    simulated declarant and stored as read-only training documents; the officer does
+    not fill out another person's statement.
+    """
     world = ensure_world_state(state, state.get('scenario_id', ''))
     initialize_visual_evidence(state, state.get('scenario_id', ''))
     tick_evidence(state)
+
+    changed = []
+    for actor_id in reveal_requested_identities(state, actions, raw_text):
+        changed.append({'id': actor_id, 'change': 'person_identified'})
+    for statement in obtain_requested_statements(state, actions, raw_text):
+        changed.append({'id': statement.get('id'), 'change': 'statement_received'})
+
     evidence = dict(world.get('evidence') or {})
     types = {str(row.get('action_type') or '').strip().lower() for row in (actions or [])}
     discovery_action = bool(types & {'observe', 'interview', 'identify_person', 'document_evidence', 'preserve_evidence', 'collect_evidence'})
     if not discovery_action:
-        return []
+        return changed
 
-    changed = []
     for evidence_id, row in evidence.items():
         if row.get('status') == 'lost':
             continue
