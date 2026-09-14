@@ -17,9 +17,23 @@ def _manager_client(monkeypatch, tmp_path):
     app = create_app()
     app.config['TESTING'] = True
     with app.app_context():
-        user = User.query.filter(User.username.ilike('robertrichards')).first() or User.query.first()
-        assert user is not None
-        user.role = ROLE_WEBSITE_CONTROLLER
+        user = User.query.filter_by(username='call-type-ci').first()
+        if user is None:
+            user = User(
+                username='call-type-ci',
+                name='Call Type CI Controller',
+                role=ROLE_WEBSITE_CONTROLLER,
+                active=True,
+                pending_approval=False,
+                builder_mode_access=False,
+            )
+            user.set_password('ci-only-password')
+            db.session.add(user)
+        else:
+            user.role = ROLE_WEBSITE_CONTROLLER
+            user.active = True
+            user.pending_approval = False
+
         if not Form.query.filter_by(title='Test Required Form').first():
             db.session.add(
                 Form(
@@ -30,10 +44,13 @@ def _manager_client(monkeypatch, tmp_path):
                 )
             )
         db.session.commit()
+        user_id = user.id
+
         client = app.test_client()
         with client.session_transaction() as session:
-            session['_user_id'] = str(user.id)
+            session['_user_id'] = str(user_id)
             session['_fresh'] = True
+            session['_csrf_token'] = 'test-token'
     return app, client
 
 
@@ -50,6 +67,7 @@ def test_call_type_manager_adds_rules_and_mobile_consumes_them(monkeypatch, tmp_
         response = client.post(
             '/forms/call-types',
             data={
+                '_csrf_token': 'test-token',
                 'title': 'Noise Complaint',
                 'slug': 'noise-complaint',
                 'short_label': 'Noise',
@@ -73,6 +91,8 @@ def test_call_type_manager_adds_rules_and_mobile_consumes_them(monkeypatch, tmp_
         assert rules['noise-complaint']['recommendedForms'] == ['Test Required Form', 'Narrative']
         assert rules['noise-complaint']['optionalForms'] == ['Voluntary Statement']
 
+        # The hidden mobile incident route remains available as packet
+        # infrastructure even though 'Start Report' is not exposed in the UI.
         response = client.get('/mobile/incident/start')
         try:
             body = response.get_data(as_text=True)
