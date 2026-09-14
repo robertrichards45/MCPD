@@ -371,14 +371,16 @@ SEMANTIC_TOKENS = {
     'preserve_evidence': 'preserve video evidence surveillance statement',
     'document_evidence': 'photo photograph document damage evidence',
     'collect_evidence': 'collect preserve evidence property',
-    'use_force': 'force necessary reasonable proportionate resistance threat control',
-    'deadly_force': 'deadly force shoot weapon immediate threat necessary reasonable',
-    'detain': 'detain reasonable suspicion authority facts lawful',
-    'arrest': 'arrest probable cause authority facts lawful',
-    'search': 'search consent warrant probable cause authority lawful',
-    'cite': 'citation enforcement disposition facts',
+    # Performing an enforcement/force action must never manufacture its own
+    # legal justification. Authority/necessity must be separately articulated.
+    'use_force': 'force control',
+    'deadly_force': 'deadly force shoot weapon',
+    'detain': 'detain detention',
+    'arrest': 'arrest custody',
+    'search': 'search frisk',
+    'cite': 'citation enforcement disposition',
     'release': 'release disposition free to leave',
-    'legal_assessment': 'legal basis probable cause reasonable suspicion authority elements facts',
+    'legal_assessment': 'legal basis probable cause reasonable suspicion authority elements facts lawful',
     'deescalate': 'calm professional explain listen de-escalate communication',
     'wait': 'wait position safety',
     'document_report': 'report document ccn blotter statement disposition',
@@ -386,13 +388,28 @@ SEMANTIC_TOKENS = {
     'clear_call': 'dispatch radio clear status disposition',
 }
 
+# AI parser reasons are useful for world-state narration, but they are not
+# evidence that a trainee articulated legal authority, threat, necessity, or
+# proportionality. Those concepts must come through an explicit action cue such
+# as legal_assessment or another independently observed simulator fact.
+SENSITIVE_SEMANTIC_ACTIONS = {
+    'use_force', 'deadly_force', 'detain', 'arrest', 'search', 'cite', 'release',
+}
+
 
 def actions_to_semantic_text(actions, original_text=''):
-    """Produce deterministic semantic cues for legacy rubric compatibility."""
+    """Produce deterministic semantic cues for legacy rubric compatibility.
+
+    The semantic bridge describes what action occurred. It deliberately does
+    not award legal or force-justification language merely because the action
+    itself was selected.
+    """
     parts = []
     for row in actions or []:
-        parts.append(SEMANTIC_TOKENS.get(_clean(row.get('action_type')).lower(), ''))
-        parts.append(_clean(row.get('reason')))
+        action_type = _clean(row.get('action_type')).lower()
+        parts.append(SEMANTIC_TOKENS.get(action_type, ''))
+        if action_type not in SENSITIVE_SEMANTIC_ACTIONS:
+            parts.append(_clean(row.get('reason')))
     if not parts:
         parts.append(_clean(original_text))
     return ' '.join(part for part in parts if part)
