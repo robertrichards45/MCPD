@@ -74,6 +74,23 @@ def ensure_world_state(state, scenario_id):
     return world
 
 
+def replay_snapshot(world):
+    """Capture immutable facts available at one timeline instant without recursion."""
+    return {
+        'clock': int(world.get('clock', 0)),
+        'officer': deepcopy(world.get('officer') or {}),
+        'environment': deepcopy(world.get('environment') or {}),
+        'people': deepcopy(world.get('people') or {}),
+        'resources': deepcopy(world.get('resources') or {}),
+        'evidence': deepcopy(world.get('evidence') or {}),
+        'records': deepcopy(world.get('records') or {}),
+        'known_information': deepcopy(world.get('known_information') or []),
+        'irreversible_events': deepcopy(world.get('irreversible_events') or []),
+        'pending_radio': deepcopy(world.get('pending_radio') or []),
+        'scheduled_events': deepcopy(world.get('scheduled_events') or []),
+    }
+
+
 def add_timeline(state, event_type, summary, actor='', channel='system', details=None, visible_to_trainee=True):
     world = ensure_world_state(state, state.get('scenario_id', ''))
     rows = list(world.get('timeline') or [])
@@ -86,6 +103,7 @@ def add_timeline(state, event_type, summary, actor='', channel='system', details
         'summary': _text(summary)[:2000],
         'details': deepcopy(details) if isinstance(details, (dict, list)) else {},
         'visible_to_trainee': bool(visible_to_trainee),
+        'world_snapshot': replay_snapshot(world),
         'ts': _utc_iso(),
     }
     rows.append(row)
