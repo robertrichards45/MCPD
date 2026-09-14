@@ -68,7 +68,7 @@ def test_mobile_home_keeps_approved_field_actions():
         assert response.status_code == 200
         html = _text_response(response)
         assert 'Law Lookup' in html
-        assert 'Start Report' in html or 'Continue Report' in html
+        assert 'Incident Workspace' in html or 'Continue Incident' in html
         assert 'Forms' in html
         assert 'Orders' in html
         assert 'Training' in html
