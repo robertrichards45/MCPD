@@ -1,13 +1,22 @@
 {% extends 'base.html' %}
 {% block body %}
+{% set condition_defs = [
+  ('reporting_party', 'Reporting party involved', 'Is there a reporting party for this incident?'),
+  ('written_statement', 'Written statement needed', 'Does current guidance call for a written statement?'),
+  ('property_documentation', 'Property documentation', 'Does this incident include property that needs additional documentation?'),
+  ('medical_documentation', 'Medical documentation', 'Does a medical response change the paperwork packet?'),
+  ('external_referral', 'External referral / screening', 'Does current guidance call for an external referral or screening step?'),
+  ('vehicle_documentation', 'Vehicle documentation', 'Does vehicle handling require additional paperwork?'),
+  ('additional_documentation', 'Additional documentation', 'Do the facts trigger any other paperwork?')
+] %}
 <div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
   <div class="page-wrap manager-page-wrap call-types-page">
     <section class="mission-hero manager-hero call-types-hero mb-3">
       <div class="mission-hero-copy">
-        <div class="eyebrow">Paperwork Configuration</div>
+        <div class="eyebrow">Paperwork Rules Engine</div>
         <h1>Call Type Paperwork Manager</h1>
-        <p>Tell officers what paperwork normally belongs with each call type, what is conditional, and what facts they should verify. Keep the language simple enough to use during a shift.</p>
+        <p>Build the officer's packet by call type. Separate the normal starting packet from circumstance-driven paperwork and items that are not normally needed.</p>
       </div>
       <div class="mission-hero-actions">
         <a class="btn btn-outline-secondary" href="{{ url_for('forms.forms_maintenance') }}">Template Maintenance</a>
@@ -17,11 +26,12 @@
 
     <section class="ops-panel mb-3">
       <div class="row g-3">
-        <div class="col-md-4"><div class="border rounded p-3 h-100"><strong>1. Name the call</strong><p class="small text-muted mb-0 mt-1">Use the same plain-language name an officer or dispatcher would recognize.</p></div></div>
-        <div class="col-md-4"><div class="border rounded p-3 h-100"><strong>2. Build the packet</strong><p class="small text-muted mb-0 mt-1">Put routinely required/default paperwork on the left. Put circumstance-dependent paperwork on the right.</p></div></div>
-        <div class="col-md-4"><div class="border rounded p-3 h-100"><strong>3. Add decision prompts</strong><p class="small text-muted mb-0 mt-1">Checklist prompts should tell officers what to verify, not tell them to assume a fact or charge.</p></div></div>
+        <div class="col-md-3"><div class="border rounded p-3 h-100"><strong>1. Name the call</strong><p class="small text-muted mb-0 mt-1">Use the same plain-language call type officers recognize.</p></div></div>
+        <div class="col-md-3"><div class="border rounded p-3 h-100"><strong>2. Set the normal packet</strong><p class="small text-muted mb-0 mt-1">Choose paperwork that normally belongs in the starting packet.</p></div></div>
+        <div class="col-md-3"><div class="border rounded p-3 h-100"><strong>3. Add circumstances</strong><p class="small text-muted mb-0 mt-1">Attach extra paperwork to a question the officer can answer from the facts.</p></div></div>
+        <div class="col-md-3"><div class="border rounded p-3 h-100"><strong>4. Exclude clutter</strong><p class="small text-muted mb-0 mt-1">Mark paperwork that is not normally needed so officers do not complete it by habit.</p></div></div>
       </div>
-      <div class="alert alert-warning mt-3 mb-0"><strong>Authority reminder:</strong> this manager organizes paperwork. It does not make a form legally required merely because it is selected here. Match call-type rules to current approved orders, PDIs, and reporting guidance.</div>
+      <div class="alert alert-warning mt-3 mb-0"><strong>Authority reminder:</strong> this manager organizes paperwork and explains workflow. It does not make a form legally mandatory by itself. Match rules to current approved orders, PDIs, reporting guidance, and supervisor direction.</div>
     </section>
 
     <div class="call-types-layout">
@@ -35,7 +45,7 @@
           <a class="call-type-row {% if edit_slug == slug %}is-active{% endif %}" href="{{ url_for('forms.call_type_rules_manager', edit=slug) }}">
             <span class="call-type-row-main">
               <strong>{{ rule.title }}</strong>
-              <small>{{ rule.recommendedForms|length }} default / {{ rule.optionalForms|length }} conditional</small>
+              <small>{{ rule.recommendedForms|length }} default / {{ rule.conditionalRules|default([])|length }} circumstance rule{{ '' if rule.conditionalRules|default([])|length == 1 else 's' }}</small>
             </span>
             {% if rule.active %}<span class="call-type-status is-live">Active</span>{% else %}<span class="call-type-status is-hidden">Hidden</span>{% endif %}
           </a>
@@ -46,11 +56,14 @@
       <section class="ops-panel call-types-editor">
         <form method="post" id="call-type-editor-form">
           <input type="hidden" name="old_slug" value="{{ edit_rule.slug if edit_rule else '' }}">
+          <textarea name="optional_forms_extra" id="optional-extra-serialized" hidden></textarea>
+          <script id="existing-call-type-rule" type="application/json">{{ (edit_rule or {})|tojson }}</script>
+
           <div class="call-types-editor-head">
             <div>
               <div class="eyebrow">{{ 'Edit Rule' if edit_rule else 'New Rule' }}</div>
               <h2>{{ 'Edit Call Type' if edit_rule else 'Add Call Type' }}</h2>
-              <p>Use officer-facing wording. One clear instruction is better than several policy paragraphs.</p>
+              <p>Use officer-facing wording. The packet should answer “what do I complete, and why?” without making the officer memorize a manual.</p>
             </div>
             <label class="call-type-mobile-toggle"><input type="checkbox" name="active" {% if not edit_rule or edit_rule.active %}checked{% endif %}><span>Show to officers</span></label>
           </div>
@@ -59,60 +72,95 @@
             <label><span>Call type name</span><input class="form-control" id="call-type-title" name="title" required value="{{ edit_rule.title if edit_rule else '' }}" placeholder="Example: Lost / Found Property"></label>
             <label><span>System slug</span><input class="form-control" id="call-type-slug" name="slug" value="{{ edit_rule.slug if edit_rule else '' }}" placeholder="auto-created if blank"></label>
             <label><span>Short mobile label</span><input class="form-control" id="call-type-short-label" name="short_label" value="{{ edit_rule.shortLabel if edit_rule else '' }}" placeholder="Lost/Found"></label>
-            <label class="call-type-field-wide"><span>Officer-facing note</span><input class="form-control" id="call-type-description" name="description" value="{{ edit_rule.description if edit_rule else '' }}" placeholder="Example: Confirm whether there is a reporting party before selecting the stat sheet."></label>
+            <label class="call-type-field-wide"><span>Officer-facing note</span><input class="form-control" id="call-type-description" name="description" value="{{ edit_rule.description if edit_rule else '' }}" placeholder="Explain the normal workflow and the key fact that changes the packet."></label>
           </div>
 
-          <div class="call-type-section-title"><h3>Paperwork Packet</h3><p>Default paperwork is preselected. Conditional paperwork stays visible for the officer to choose when the facts require it.</p></div>
-
+          <div class="call-type-section-title"><h3>Normal Starting Packet</h3><p>These forms are selected when the officer chooses the call type. Put only routinely expected paperwork here.</p></div>
           <div class="call-type-two-col">
             <div class="call-type-panel">
-              <label class="call-type-field-label" for="recommended-forms">Default / normally required paperwork</label>
+              <label class="call-type-field-label" for="recommended-forms">Required / normally expected paperwork</label>
               {% if forms %}
-              <select class="form-select call-type-multi-select" id="recommended-forms" name="recommended_forms" multiple size="8">
+              <select class="form-select call-type-multi-select" id="recommended-forms" name="recommended_forms" multiple size="9">
                 {% for form in forms %}<option value="{{ form.title }}" {% if edit_rule and form.title in edit_rule.recommendedForms %}selected{% endif %}>{{ form.title }}</option>{% endfor %}
               </select>
-              {% else %}<div class="call-type-empty-box">No active library forms are loaded. Use the manual list below until forms are restored.</div>{% endif %}
-              <div class="form-text">These appear selected when the officer opens this call type. Only place a form here when the department normally expects it for the call.</div>
-              <label class="call-type-field-label mt-2" for="recommended-extra">Other default paperwork names</label>
+              {% else %}<div class="call-type-empty-box">No active library forms are loaded. Use the manual list until forms are restored.</div>{% endif %}
+              <div class="form-text">These become the officer's starting packet. Do not add a form merely because it could apply in some situations.</div>
+              <label class="call-type-field-label mt-2" for="recommended-extra">Other normal paperwork names</label>
               <textarea class="form-control" id="recommended-extra" name="recommended_forms_extra" rows="3" placeholder="One per line">{% if edit_rule %}{{ recommended_extra|join('\n') }}{% endif %}</textarea>
             </div>
 
             <div class="call-type-panel">
-              <label class="call-type-field-label" for="optional-forms">Conditional / situation-dependent paperwork</label>
+              <label class="call-type-field-label" for="optional-forms">General conditional paperwork</label>
               {% if forms %}
-              <select class="form-select call-type-multi-select" id="optional-forms" name="optional_forms" multiple size="8">
+              <select class="form-select call-type-multi-select" id="optional-forms" name="optional_forms" multiple size="9">
                 {% for form in forms %}<option value="{{ form.title }}" {% if edit_rule and form.title in edit_rule.optionalForms %}selected{% endif %}>{{ form.title }}</option>{% endfor %}
               </select>
-              {% else %}<div class="call-type-empty-box">No active library forms are loaded. Conditional manual names can still be saved below.</div>{% endif %}
-              <div class="form-text">Use this for paperwork triggered by a reporting party, arrest, evidence, injury, CID screening, property disposition, or another factual condition.</div>
-              <label class="call-type-field-label mt-2" for="optional-extra">Other conditional paperwork names</label>
-              <textarea class="form-control" id="optional-extra" name="optional_forms_extra" rows="3" placeholder="One per line">{% if edit_rule %}{{ optional_extra|join('\n') }}{% endif %}</textarea>
+              {% else %}<div class="call-type-empty-box">No active library forms are loaded. Manual names can still be entered below.</div>{% endif %}
+              <div class="form-text">Use this only when a conditional form cannot yet be tied to one of the factual questions below.</div>
+              <label class="call-type-field-label mt-2" for="optional-manual-extra">Other general conditional paperwork</label>
+              <textarea class="form-control" id="optional-manual-extra" rows="3" placeholder="One per line">{% if edit_rule %}{{ optional_extra|join('\n') }}{% endif %}</textarea>
+            </div>
+          </div>
+          <div id="call-type-overlap-warning" class="alert alert-danger mt-3" style="display:none;"><strong>Fix before saving:</strong> the same form is selected in conflicting categories.</div>
+
+          <div class="call-type-section-title"><h3>Circumstance Rules</h3><p>When the officer answers “yes” to one of these factual questions, the selected paperwork moves into the active packet automatically. Add a short explanation so the officer knows why.</p></div>
+          <div class="row g-3" id="condition-rule-grid">
+            {% for key, label, question in condition_defs %}
+            <div class="col-lg-6">
+              <article class="call-type-panel h-100 condition-rule-card" data-condition-key="{{ key }}">
+                <div class="d-flex justify-content-between gap-2 align-items-start mb-2">
+                  <div><strong>{{ label }}</strong><div class="small text-muted mt-1">{{ question }}</div></div>
+                  <label class="form-check form-switch mb-0"><input class="form-check-input condition-enabled" type="checkbox"><span class="visually-hidden">Enable {{ label }}</span></label>
+                </div>
+                <label class="call-type-field-label">Paperwork triggered by “Yes”</label>
+                {% if forms %}
+                <select class="form-select call-type-multi-select condition-forms" multiple size="5" disabled>
+                  {% for form in forms %}<option value="{{ form.title }}">{{ form.title }}</option>{% endfor %}
+                </select>
+                {% else %}<textarea class="form-control condition-manual-forms" rows="3" disabled placeholder="One form per line"></textarea>{% endif %}
+                <label class="call-type-field-label mt-2">Why it becomes applicable</label>
+                <textarea class="form-control condition-why" rows="2" disabled placeholder="Plain-language reason; reference approved guidance where appropriate."></textarea>
+              </article>
+            </div>
+            {% endfor %}
+          </div>
+
+          <div class="call-type-section-title"><h3>Not Normally Required</h3><p>Use this to prevent unnecessary paperwork. These items remain visible as guidance but are not part of the normal or circumstance-driven packet.</p></div>
+          <div class="call-type-panel">
+            {% if forms %}
+            <label class="call-type-field-label" for="not-normal-forms">Paperwork not normally required for this call type</label>
+            <select class="form-select call-type-multi-select" id="not-normal-forms" multiple size="6">
+              {% for form in forms %}<option value="{{ form.title }}">{{ form.title }}</option>{% endfor %}
+            </select>
+            {% endif %}
+            <div class="row g-2 mt-1">
+              <div class="col-md-6"><label class="w-100"><span class="call-type-field-label">Other paperwork names</span><textarea class="form-control" id="not-normal-extra" rows="3" placeholder="One per line"></textarea></label></div>
+              <div class="col-md-6"><label class="w-100"><span class="call-type-field-label">Why not normally required</span><textarea class="form-control" id="not-normal-why" rows="3" placeholder="Example: Only used when a separate circumstance or supervisor direction applies."></textarea></label></div>
             </div>
           </div>
 
-          <div id="call-type-overlap-warning" class="alert alert-danger mt-3" style="display:none;"><strong>Fix before saving:</strong> the same form is selected as both default and conditional paperwork.</div>
-
-          <div class="call-type-section-title"><h3>Officer Guidance</h3><p>Write prompts as questions or verification steps. Do not write a prompt that assumes guilt, probable cause, intent, or a fact not yet established.</p></div>
+          <div class="call-type-section-title"><h3>Officer Guidance</h3><p>Write prompts as questions or verification steps. Do not write a prompt that assumes a fact or legal conclusion that has not been established.</p></div>
           <div class="call-type-two-col">
             <label class="call-type-panel">
-              <span class="call-type-field-label">Statutes / offense areas to consider</span>
-              <textarea class="form-control" id="statutes" name="statutes" rows="6" placeholder="One per line. Example: Article 108 consideration — verify willful or negligent facts and current applicability.">{% if edit_rule %}{{ edit_rule.statutes|join('\n') }}{% endif %}</textarea>
-              <small class="form-text">Use “consider / verify” language unless current approved authority makes the requirement explicit.</small>
+              <span class="call-type-field-label">Authorities / offense areas to consider</span>
+              <textarea class="form-control" id="statutes" name="statutes" rows="6" placeholder="One per line. Use consider / verify language when applicability depends on facts.">{% if edit_rule %}{{ edit_rule.statutes|join('\n') }}{% endif %}</textarea>
+              <small class="form-text">Link the workflow to current approved references without turning this configuration screen into legal authority.</small>
             </label>
             <label class="call-type-panel">
               <span class="call-type-field-label">Officer checklist / decision prompts</span>
-              <textarea class="form-control" id="checklist-items" name="checklist_items" rows="6" placeholder="One per line. Example: Is there a reporting party? If yes, confirm whether a stat sheet is required.">{% if edit_rule %}{{ edit_rule.checklistItems|join('\n') }}{% endif %}</textarea>
-              <small class="form-text">Good prompts help the officer identify missing information without telling them what the answer should be.</small>
+              <textarea class="form-control" id="checklist-items" name="checklist_items" rows="6" placeholder="One per line. Ask the officer to verify the fact that changes the packet.">{% if edit_rule %}{{ edit_rule.checklistItems|join('\n') }}{% endif %}</textarea>
+              <small class="form-text">Good prompts identify missing information without telling the officer what the answer should be.</small>
             </label>
           </div>
 
           <section class="border rounded p-3 mt-3" aria-live="polite">
             <div class="eyebrow">Officer Preview</div>
             <h4 id="call-type-preview-title" class="mb-1">{{ edit_rule.title if edit_rule else 'New call type' }}</h4>
-            <p id="call-type-preview-note" class="text-muted mb-2">{{ edit_rule.description if edit_rule else 'The officer-facing note will appear here.' }}</p>
-            <div class="row g-2">
-              <div class="col-md-6"><strong>Default packet</strong><div id="call-type-preview-default" class="small text-muted mt-1">Select forms above to preview.</div></div>
-              <div class="col-md-6"><strong>Conditional packet</strong><div id="call-type-preview-conditional" class="small text-muted mt-1">Select forms above to preview.</div></div>
+            <p id="call-type-preview-note" class="text-muted mb-3">{{ edit_rule.description if edit_rule else 'The officer-facing note will appear here.' }}</p>
+            <div class="row g-3">
+              <div class="col-md-4"><strong>Required / default</strong><div id="call-type-preview-default" class="small text-muted mt-1">Select forms above to preview.</div></div>
+              <div class="col-md-4"><strong>Triggered / conditional</strong><div id="call-type-preview-conditional" class="small text-muted mt-1">Enable circumstances above to preview.</div></div>
+              <div class="col-md-4"><strong>Not normally required</strong><div id="call-type-preview-not-normal" class="small text-muted mt-1">None configured.</div></div>
             </div>
           </section>
 
@@ -133,6 +181,9 @@
 </div>
 <script>
 (function () {
+  var existing = {};
+  try { existing = JSON.parse(document.getElementById('existing-call-type-rule').textContent || '{}'); } catch (_error) { existing = {}; }
+
   function selected(id) {
     var el = document.getElementById(id);
     if (!el) return [];
@@ -144,25 +195,109 @@
   }
   function unique(values) {
     var seen = {};
-    return values.filter(function (v) { var k = v.toLowerCase(); if (seen[k]) return false; seen[k] = true; return true; });
+    return (values || []).filter(function (v) { var k = String(v || '').toLowerCase(); if (!v || seen[k]) return false; seen[k] = true; return true; });
   }
+  function setSelected(select, values) {
+    if (!select) return;
+    var wanted = (values || []).map(function (v) { return String(v).toLowerCase(); });
+    Array.prototype.slice.call(select.options).forEach(function (option) { option.selected = wanted.indexOf(option.value.toLowerCase()) >= 0; });
+  }
+  function conditionForms(card) {
+    var select = card.querySelector('.condition-forms');
+    if (select) return Array.prototype.slice.call(select.options).filter(function (o) { return o.selected; }).map(function (o) { return o.value; });
+    var manual = card.querySelector('.condition-manual-forms');
+    return manual ? manual.value.split(/\n+/).map(function (v) { return v.trim(); }).filter(Boolean) : [];
+  }
+  function setCardEnabled(card, enabled) {
+    var toggle = card.querySelector('.condition-enabled');
+    if (toggle) toggle.checked = !!enabled;
+    card.querySelectorAll('.condition-forms,.condition-manual-forms,.condition-why').forEach(function (field) { field.disabled = !enabled; });
+  }
+
+  (existing.conditionalRules || []).forEach(function (rule) {
+    var card = document.querySelector('.condition-rule-card[data-condition-key="' + rule.key + '"]');
+    if (!card) return;
+    setCardEnabled(card, true);
+    setSelected(card.querySelector('.condition-forms'), rule.forms || []);
+    var manual = card.querySelector('.condition-manual-forms');
+    if (manual) manual.value = (rule.forms || []).join('\n');
+    var why = card.querySelector('.condition-why');
+    if (why) why.value = rule.why || '';
+  });
+
+  var notNormal = existing.notNormallyRequiredForms || [];
+  setSelected(document.getElementById('not-normal-forms'), notNormal.map(function (row) { return row.form || row.name || ''; }));
+  var activeLibraryNames = Array.prototype.slice.call((document.getElementById('not-normal-forms') || {}).options || []).map(function (o) { return o.value.toLowerCase(); });
+  var notNormalExtra = notNormal.map(function (row) { return row.form || row.name || ''; }).filter(function (name) { return activeLibraryNames.indexOf(name.toLowerCase()) < 0; });
+  document.getElementById('not-normal-extra').value = notNormalExtra.join('\n');
+  var distinctWhy = unique(notNormal.map(function (row) { return row.why || row.reason || ''; }).filter(Boolean));
+  document.getElementById('not-normal-why').value = distinctWhy.join('\n');
+
+  function buildSerializedExtra() {
+    var tokens = lines('optional-manual-extra');
+    var conditionCount = 0;
+    document.querySelectorAll('.condition-rule-card').forEach(function (card) {
+      var enabled = card.querySelector('.condition-enabled');
+      if (!enabled || !enabled.checked) return;
+      conditionCount += 1;
+      var key = card.getAttribute('data-condition-key');
+      var why = (card.querySelector('.condition-why') || {}).value || '';
+      conditionForms(card).forEach(function (formName) {
+        tokens.push('@when:' + key + '|' + formName + '|' + why.replace(/\|/g, '/'));
+      });
+    });
+    if (!conditionCount) tokens.push('@conditions:none');
+
+    var notNormalForms = unique(selected('not-normal-forms').concat(lines('not-normal-extra')));
+    var notNormalWhy = (document.getElementById('not-normal-why').value || '').replace(/\|/g, '/').trim();
+    notNormalForms.forEach(function (formName) { tokens.push('@notnormally:' + formName + '|' + notNormalWhy); });
+    document.getElementById('optional-extra-serialized').value = tokens.join('\n');
+  }
+
   function updatePreview() {
+    buildSerializedExtra();
     var title = document.getElementById('call-type-title');
     var note = document.getElementById('call-type-description');
     var defaultForms = unique(selected('recommended-forms').concat(lines('recommended-extra')));
-    var optionalForms = unique(selected('optional-forms').concat(lines('optional-extra')));
-    var overlap = defaultForms.filter(function (item) { return optionalForms.map(function (x) { return x.toLowerCase(); }).indexOf(item.toLowerCase()) >= 0; });
+    var generalOptional = unique(selected('optional-forms').concat(lines('optional-manual-extra')));
+    var triggered = [];
+    document.querySelectorAll('.condition-rule-card').forEach(function (card) {
+      var enabled = card.querySelector('.condition-enabled');
+      if (!enabled || !enabled.checked) return;
+      var label = card.querySelector('strong') ? card.querySelector('strong').textContent.trim() : card.getAttribute('data-condition-key');
+      var forms = conditionForms(card);
+      if (forms.length) triggered.push(label + ': ' + forms.join(', '));
+    });
+    if (generalOptional.length) triggered.push('Other conditional: ' + generalOptional.join(', '));
+    var notNormalForms = unique(selected('not-normal-forms').concat(lines('not-normal-extra')));
+
+    var conflictPool = generalOptional.concat(notNormalForms);
+    document.querySelectorAll('.condition-rule-card').forEach(function (card) { conflictPool = conflictPool.concat(conditionForms(card)); });
+    var conflicts = defaultForms.filter(function (item) { return conflictPool.map(function (x) { return x.toLowerCase(); }).indexOf(item.toLowerCase()) >= 0; });
+
     document.getElementById('call-type-preview-title').textContent = title && title.value.trim() ? title.value.trim() : 'New call type';
     document.getElementById('call-type-preview-note').textContent = note && note.value.trim() ? note.value.trim() : 'The officer-facing note will appear here.';
     document.getElementById('call-type-preview-default').textContent = defaultForms.length ? defaultForms.join(' • ') : 'No default paperwork selected.';
-    document.getElementById('call-type-preview-conditional').textContent = optionalForms.length ? optionalForms.join(' • ') : 'No conditional paperwork selected.';
+    document.getElementById('call-type-preview-conditional').textContent = triggered.length ? triggered.join(' • ') : 'No circumstance-driven paperwork configured.';
+    document.getElementById('call-type-preview-not-normal').textContent = notNormalForms.length ? notNormalForms.join(' • ') : 'None configured.';
+
     var warning = document.getElementById('call-type-overlap-warning');
-    if (warning) { warning.style.display = overlap.length ? '' : 'none'; if (overlap.length) warning.innerHTML = '<strong>Fix before saving:</strong> ' + overlap.join(', ') + ' selected in both columns.'; }
-    var save = document.getElementById('call-type-save'); if (save) save.disabled = overlap.length > 0;
+    if (warning) {
+      warning.style.display = conflicts.length ? '' : 'none';
+      if (conflicts.length) warning.innerHTML = '<strong>Fix before saving:</strong> ' + conflicts.join(', ') + ' appears in both the normal packet and another category.';
+    }
+    var save = document.getElementById('call-type-save'); if (save) save.disabled = conflicts.length > 0;
   }
-  ['call-type-title','call-type-description','recommended-forms','optional-forms','recommended-extra','optional-extra'].forEach(function (id) {
-    var el = document.getElementById(id); if (el) { el.addEventListener('input', updatePreview); el.addEventListener('change', updatePreview); }
+
+  document.querySelectorAll('.condition-enabled').forEach(function (toggle) {
+    toggle.addEventListener('change', function () { setCardEnabled(toggle.closest('.condition-rule-card'), toggle.checked); updatePreview(); });
   });
+  document.querySelectorAll('#call-type-editor-form input,#call-type-editor-form select,#call-type-editor-form textarea').forEach(function (el) {
+    if (el.id === 'optional-extra-serialized') return;
+    el.addEventListener('input', updatePreview);
+    el.addEventListener('change', updatePreview);
+  });
+  document.getElementById('call-type-editor-form').addEventListener('submit', buildSerializedExtra);
   updatePreview();
 }());
 </script>
