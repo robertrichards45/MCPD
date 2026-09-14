@@ -14,7 +14,7 @@
     "callType": "general-incident",
     "officerDocuments": [],
     "writtenStatements": [],
-    "notifications": [],
+    "notifications": ["Watch Commander when the access event develops beyond routine denial or becomes command-significant"],
     "cid": {
       "requirement": "conditional",
       "instruction": "CID involvement depends on facts developed beyond a routine access-control response.",
@@ -23,9 +23,9 @@
   },
   "S003": {
     "callType": "general-incident",
-    "officerDocuments": [],
+    "officerDocuments": ["MCPD Stat Sheet"],
     "writtenStatements": ["Written statement when required by the configured MCPD property-damage procedure"],
-    "notifications": [],
+    "notifications": ["Watch Commander / command notification when government-property facts or significance require it"],
     "cid": {
       "requirement": "screen",
       "instruction": "Training configuration requires the officer to recognize and complete CID screening for qualifying installation/government-property incidents.",
@@ -34,9 +34,9 @@
   },
   "S004": {
     "callType": "theft",
-    "officerDocuments": [],
+    "officerDocuments": ["MCPD Stat Sheet", "OPNAV 5580 22Evidence Custody Document"],
     "writtenStatements": ["Written statement from the appropriate firsthand reporting/witness source"],
-    "notifications": [],
+    "notifications": ["CID screening / notification according to developed larceny facts and current MCPD procedure"],
     "cid": {
       "requirement": "screen",
       "instruction": "Training configuration requires the officer to recognize and complete CID screening for the larceny/shoplifting incident.",
@@ -56,13 +56,101 @@
   },
   "S006": {
     "callType": "general-incident",
-    "officerDocuments": [],
-    "writtenStatements": [],
-    "notifications": [],
+    "officerDocuments": ["MCPD Stat Sheet"],
+    "writtenStatements": ["Patient or witness statement when relevant and actually obtained"],
+    "notifications": ["EMS / command notification as required by the medical disposition and any developed incident facts"],
     "cid": {
       "requirement": "conditional",
       "instruction": "CID involvement is not routine for a medical assist unless the developed facts establish an investigative basis requiring screening or notification.",
       "verifiedForTraining": false
+    }
+  },
+  "S007": {
+    "callType": "traffic-accident",
+    "officerDocuments": ["MCPD Stat Sheet", "SF 91 MOTOR VEHICLE ACCIDENT CRASH REPORT", "TA FIELD SKETCH NEW"],
+    "writtenStatements": ["Driver and witness statements when obtained; statement is completed by the declarant, not the trainee officer"],
+    "notifications": ["EMS / fire when injuries or hazards require it", "Watch Commander when the collision becomes command-significant or otherwise requires notification"],
+    "cid": {
+      "requirement": "conditional",
+      "instruction": "CID is not routine for an ordinary crash; reassess if criminal, serious-injury, or other qualifying investigative facts develop.",
+      "verifiedForTraining": true
+    }
+  },
+  "S008": {
+    "callType": "arrest",
+    "officerDocuments": ["MCPD Stat Sheet", "GCIC / NCIC Return", "Warrant / Extradition Confirmation"],
+    "writtenStatements": ["Voluntary or witness statement only when actually obtained"],
+    "notifications": ["Watch Commander / supervisor", "Entering or holding agency confirmation", "Receiving agency or confinement activity when custody is transferred"],
+    "cid": {
+      "requirement": "conditional",
+      "instruction": "CID involvement depends on the underlying warrant/offense and current procedure; the simulator does not assume CID merely because a warrant hit exists.",
+      "verifiedForTraining": true
+    }
+  },
+  "S009": {
+    "callType": "domestic-disturbance",
+    "officerDocuments": ["MCPD Stat Sheet", "NAVMAC 11337 MILITARY POLICE DOMESTIC VIOLENCE SIPPLEMENT REPORT AND CHECKLIST", "DD Form 2701 VWAP"],
+    "writtenStatements": ["Victim / witness statements from the appropriate declarants"],
+    "notifications": ["Watch Commander", "CID according to developed criminal facts and current procedure", "Family Advocacy when applicable", "EMS when injury requires it"],
+    "cid": {
+      "requirement": "screen",
+      "instruction": "Domestic incidents require the trainee to recognize investigative screening/notification requirements while the actual enforcement decision remains fact-specific.",
+      "verifiedForTraining": true
+    }
+  },
+  "S010": {
+    "callType": "traffic-stop",
+    "officerDocuments": ["MCPD Stat Sheet", "DD Form 1920 ALCOHOL INCIDENT REPORT"],
+    "writtenStatements": ["Witness or passenger statement when actually obtained"],
+    "notifications": ["Watch Commander when arrest, significant incident, refusal/processing issue, or other local requirement applies"],
+    "cid": {
+      "requirement": "conditional",
+      "instruction": "CID involvement is not automatically required by a DUI training run; follow current MCPD/installation procedure and developed facts.",
+      "verifiedForTraining": true
+    }
+  },
+  "S011": {
+    "callType": "general-incident",
+    "officerDocuments": ["MCPD Stat Sheet", "UNSECURED BUILDING NOTICE"],
+    "writtenStatements": ["Witness or complainant statement when the call develops into an incident and a statement is obtained"],
+    "notifications": ["Keyholder / facility representative", "Watch Commander or command when forced-entry, damage, security, or other incident facts develop"],
+    "cid": {
+      "requirement": "conditional",
+      "instruction": "A routine unsecured building does not automatically require CID. Reassess if forced entry, theft, damage, or other criminal facts develop.",
+      "verifiedForTraining": true
+    }
+  },
+  "S012": {
+    "callType": "evidence-seizure",
+    "officerDocuments": ["MCPD Stat Sheet", "OPNAV 5580 22Evidence Custody Document"],
+    "writtenStatements": ["Finder / witness voluntary statement when actually obtained"],
+    "notifications": ["Evidence custodian / special command or agency notification when the type of property requires it"],
+    "cid": {
+      "requirement": "conditional",
+      "instruction": "Found property does not automatically require CID; reassess if the property becomes evidence of an offense or requires investigative handling.",
+      "verifiedForTraining": true
+    }
+  },
+  "S013": {
+    "callType": "search-consent",
+    "officerDocuments": ["MCPD Stat Sheet"],
+    "writtenStatements": ["Voluntary statement only when actually obtained from a declarant"],
+    "notifications": ["Watch Commander / CID when the developed controlled-substance, search, seizure, arrest, or command-significant facts require it"],
+    "cid": {
+      "requirement": "conditional",
+      "instruction": "CID depends on what the lawful investigation actually develops; an odor allegation alone does not automatically create the final investigative disposition.",
+      "verifiedForTraining": true
+    }
+  },
+  "S014": {
+    "callType": "general-incident",
+    "officerDocuments": ["MCPD Stat Sheet", "UAS / SITREP Command Report"],
+    "writtenStatements": ["Witness statement when obtained"],
+    "notifications": ["Watch Commander", "Operations / CDO or other command chain under current direction", "OPREP screening when security, safety, or mission impact makes it applicable"],
+    "cid": {
+      "requirement": "conditional",
+      "instruction": "Investigative notification depends on operator conduct and developed facts; command UAS reporting and OPREP screening are separate decisions.",
+      "verifiedForTraining": true
     }
   }
 }
