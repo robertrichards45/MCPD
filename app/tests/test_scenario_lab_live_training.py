@@ -56,6 +56,26 @@ def test_future_actor_is_not_available_early():
     assert 'not available in the current call state' in response.get_data(as_text=True)
 
 
+def test_restart_same_scenario_family_changes_fact_pattern():
+    client = _client()
+    client.get('/sentinel/fto-center/scenario-lab/?scenario_id=S006')
+    with client.session_transaction() as s:
+        first = dict(s['sentinel_scenario_lab_v2']['run_context']['choices'])
+        first_run_id = s['sentinel_scenario_lab_v2']['run_context']['run_id']
+
+    response = client.post('/sentinel/fto-center/scenario-lab/', data={
+        '_csrf_token': 'test-token', 'scenario_id': 'S006', 'action': 'reset'
+    }, follow_redirects=True)
+    assert response.status_code == 200
+
+    with client.session_transaction() as s:
+        second = dict(s['sentinel_scenario_lab_v2']['run_context']['choices'])
+        second_run_id = s['sentinel_scenario_lab_v2']['run_context']['run_id']
+
+    assert second_run_id != first_run_id
+    assert second != first
+
+
 def test_catastrophic_deadly_force_decision_terminates_exercise_and_flags_fto():
     client = _client()
     client.get('/sentinel/fto-center/scenario-lab/?scenario_id=S001')
