@@ -76,12 +76,14 @@ def _package(state):
             'submissions': [],
             'review_history': [],
             'fto_review': None,
+            'self_assessment': None,
         }
         state['training_package'] = package
     package.setdefault('submissions', [])
     package.setdefault('review_history', [])
     package.setdefault('status', 'NOT_STARTED')
     package.setdefault('fto_review', None)
+    package.setdefault('self_assessment', None)
     return package
 
 
@@ -107,6 +109,17 @@ def _submission_from_form(state):
         'cid_decision_label': CID_DECISIONS.get(cid_decision, ''),
         'notification_notes': notification_notes,
         'narrative': narrative,
+    }
+
+
+def _self_assessment_from_form():
+    return {
+        'submitted_at': _utc_iso(),
+        'what_went_well': (request.form.get('what_went_well') or '').strip()[:4000],
+        'what_change': (request.form.get('what_change') or '').strip()[:4000],
+        'decision_basis': (request.form.get('decision_basis') or '').strip()[:4000],
+        'notifications_considered': (request.form.get('notifications_considered') or '').strip()[:3000],
+        'training_need': (request.form.get('training_need') or '').strip()[:3000],
     }
 
 
@@ -224,6 +237,38 @@ def paperwork():
             return redirect(url_for('reports.fto_refinements.scenario_paperwork.paperwork'))
 
         action = _text(request.form.get('action')).lower()
+        if action == 'self_assess':
+            if not package.get('submissions'):
+                flash('Submit the training paperwork before completing the self-assessment.', 'warning')
+                return redirect(url_for('reports.fto_refinements.scenario_paperwork.paperwork'))
+            assessment = _self_assessment_from_form()
+            required = (
+                assessment['what_went_well'],
+                assessment['what_change'],
+                assessment['decision_basis'],
+                assessment['notifications_considered'],
+            )
+            if not all(required):
+                flash('Complete the required self-assessment questions before submitting.', 'warning')
+                return redirect(url_for('reports.fto_refinements.scenario_paperwork.paperwork'))
+            package['self_assessment'] = assessment
+            package['status'] = 'READY_FOR_FTO_REVIEW'
+            state['training_package'] = package
+            add_timeline(
+                state,
+                'trainee_self_assessment',
+                'Trainee completed the post-call self-assessment before FTO disposition.',
+                actor='Trainee',
+                channel='training_review',
+                details={'revision': package.get('latest_revision')},
+                visible_to_trainee=True,
+            )
+            session[SESSION_KEY] = state
+            session.modified = True
+            persist_run(state, current_user.id)
+            flash('Self-assessment submitted. The training package is ready for FTO review.', 'success')
+            return redirect(url_for('reports.fto_refinements.scenario_paperwork.paperwork'))
+
         if action not in {'submit', 'revise'}:
             flash('Unknown training-package action.', 'warning')
             return redirect(url_for('reports.fto_refinements.scenario_paperwork.paperwork'))
@@ -240,9 +285,9 @@ def paperwork():
         submission['revision'] = len(submissions)
         submissions.append(submission)
         package['submissions'] = submissions
-        package['status'] = 'SUBMITTED'
         package['submitted_at'] = submission['submitted_at']
         package['latest_revision'] = submission['revision']
+        package['status'] = 'READY_FOR_FTO_REVIEW' if package.get('self_assessment') else 'SELF_ASSESSMENT_REQUIRED'
         state['training_package'] = package
         submission['report_analysis'] = review_training_narrative(state, submission['narrative'])
         add_timeline(
@@ -262,7 +307,10 @@ def paperwork():
         session[SESSION_KEY] = state
         session.modified = True
         persist_run(state, current_user.id)
-        flash('Training package submitted. The original submission is preserved for FTO review.', 'success')
+        if package.get('self_assessment'):
+            flash('Training package submitted. The original submission is preserved for FTO review.', 'success')
+        else:
+            flash('Training paperwork submitted. Complete the self-assessment before FTO disposition.', 'success')
         return redirect(url_for('reports.fto_refinements.scenario_paperwork.paperwork'))
 
     latest = (package.get('submissions') or [])[-1] if package.get('submissions') else None
@@ -303,6 +351,9 @@ def review_paperwork(run_id):
             abort(403)
         if not latest:
             flash('The trainee has not submitted a training package yet.', 'warning')
+            return redirect(url_for('reports.fto_refinements.scenario_paperwork.review_paperwork', run_id=run.run_id))
+        if not package.get('self_assessment'):
+            flash('The trainee self-assessment is still pending. FTO disposition is locked until it is submitted.', 'warning')
             return redirect(url_for('reports.fto_refinements.scenario_paperwork.review_paperwork', run_id=run.run_id))
         ok, message = _apply_fto_review(run, state, package)
         flash(message, 'success' if ok else 'warning')
