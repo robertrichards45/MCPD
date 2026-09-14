@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [main]
   push:
-    branches: [main]
+    branches: [main, portal-workflow-v2]
 
 permissions:
   contents: read
@@ -53,6 +53,7 @@ jobs:
               'reports.sentinel.portal_search',
               'reports.accidents',
               'bodycam.narrative_tool',
+              'forms.call_type_rules_manager',
           }
           missing = sorted(required - endpoints)
           if missing:
@@ -65,6 +66,9 @@ jobs:
 
       - name: Run Sentinel workflow regression tests
         run: python -m pytest -q app/tests/test_sentinel_integration.py
+
+      - name: Run Call Type Paperwork regression tests
+        run: python -m pytest -q app/tests/test_call_type_rules_manager.py
 
       - name: Run accident workflow regression tests
         run: python -m pytest -q app/tests/test_accident_tools_routing.py
