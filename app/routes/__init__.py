@@ -114,7 +114,7 @@ def _retire_requested_portal_modules():
         return None
 
     path = request.path.rstrip('/') or '/'
-    if path in {'/reports/new', '/mobile/incident/start'}:
+    if path == '/reports/new':
         return redirect('/tools/narrative')
     if path == '/cleo/reports':
         return redirect('/reports')
