@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   {% if config.GOOGLE_SITE_VERIFICATION %}<meta name="google-site-verification" content="{{ config.GOOGLE_SITE_VERIFICATION }}" />{% endif %}
   <title>{{ title if title else 'MCPD Portal' }}</title>
   <meta name="application-name" content="MCPD Portal" />
@@ -19,6 +19,10 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css', v='2026-05-09-live-stability') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app-patch.css', v='2026-05-18-layout-tighten-v1') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/mcpd-unified.css', v='2026-05-19-audit-v1') }}" />
+  {% if 'mobile-foundation' in (body_class|default('')) %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-refresh.css', v='2026-09-14-mobile-audit-v1') }}" />
+  {% endif %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-global.css', v='2026-09-14-mobile-audit-v1') }}" />
   {% block head %}{% endblock %}
 </head>
 <body class="{{ body_class|default('') }}">
@@ -64,7 +68,7 @@
   {% endif %}
   {% block body %}{% endblock %}
   <script src="{{ url_for('static', filename='js/command_readiness.js', v='2026-05-16-command') }}"></script>
-  <script src="{{ url_for('static', filename='js/app.js', v='2026-09-14-scenario-radio-v2') }}"></script>
+  <script src="{{ url_for('static', filename='js/app.js', v='2026-09-14-mobile-audit-v1') }}"></script>
   <script src="{{ url_for('static', filename='js/voice_assistant.js', v='2026-05-09-voice-stability') }}"></script>
   <script src="{{ url_for('static', filename='js/assistant.js', v='2026-05-09-voice-stability') }}"></script>
   <script>
@@ -117,8 +121,13 @@
         button.textContent = theme === 'dark' ? 'Light' : 'Dark';
       });
     }
+    function isResponsiveMobileView() {
+      if (document.body.classList.contains('view-desktop')) return false;
+      if (document.body.classList.contains('force-mobile-view')) return true;
+      return !!(window.matchMedia && window.matchMedia('(max-width: 1020px)').matches);
+    }
     function syncViewLabels() {
-      var mobile = document.body.classList.contains('force-mobile-view');
+      var mobile = isResponsiveMobileView();
       document.querySelectorAll('[data-view-toggle]').forEach(function (btn) {
         btn.textContent = mobile ? 'Desktop Mode' : 'Mobile Mode';
         btn.setAttribute('aria-label', mobile ? 'Switch to desktop mode' : 'Switch to mobile mode');
@@ -129,6 +138,7 @@
       document.body.classList.toggle('force-mobile-view', mobile);
       document.body.classList.toggle('view-mobile', mobile);
       document.body.classList.toggle('view-desktop', !mobile);
+      document.body.classList.remove('nav-mobile-open');
       localStorage.setItem('mcpdViewMode', mobile ? 'mobile' : 'desktop');
       localStorage.setItem('mcpd-view', mobile ? 'mobile' : 'desktop');
       syncViewLabels();
@@ -136,7 +146,7 @@
     document.addEventListener('click', function (event) {
       var viewBtn = event.target.closest('[data-view-toggle]');
       if (viewBtn) {
-        setView(document.body.classList.contains('force-mobile-view') ? 'desktop' : 'mobile');
+        setView(isResponsiveMobileView() ? 'desktop' : 'mobile');
         return;
       }
       var button = event.target.closest('[data-theme-toggle]');
@@ -145,6 +155,7 @@
         setTheme(next);
       }
     });
+    window.addEventListener('resize', syncViewLabels, { passive: true });
     setTheme(document.body.getAttribute('data-theme') || 'light');
     syncViewLabels();
   }());
@@ -194,12 +205,11 @@
         }
       },
       function (err) {
-        if (err.code === 1) { showLocationWarning(); } /* PERMISSION_DENIED */
+        if (err.code === 1) { showLocationWarning(); }
       },
       { timeout: 15000, maximumAge: 0, enableHighAccuracy: true }
     );
 
-    /* Always push on first page load to register position immediately */
     navigator.geolocation.getCurrentPosition(
       function (pos) {
         push(pos.coords.latitude, pos.coords.longitude);
@@ -219,7 +229,6 @@
      Connects to SSE stream for real-time messages, shows Browser
      Notifications, and maintains an unread-count badge in the sidebar.  */
   (function () {
-    /* ── Unread badge helper ── */
     function updateUnreadBadge(count) {
       var badge = document.getElementById('nav-unread-badge');
       if (!badge) return;
@@ -231,12 +240,10 @@
       }
     }
 
-    /* ── Browser Notification permission ── */
     if (window.Notification && Notification.permission === 'default') {
       Notification.requestPermission();
     }
 
-    /* ── Show a browser notification for an incoming command message ── */
     function showDesktopNotification(msg) {
       if (!window.Notification || Notification.permission !== 'granted') return;
       var title = (msg.priority && msg.priority !== 'Normal' ? '[' + msg.priority + '] ' : '') +
@@ -254,7 +261,6 @@
       };
     }
 
-    /* ── SSE connection with auto-reconnect ── */
     var _sseRetry = 2000;
     function connectSSE() {
       var src = new EventSource('/notifications/stream');
@@ -263,7 +269,6 @@
         try {
           var msg = JSON.parse(evt.data);
           showDesktopNotification(msg);
-          /* Refresh badge without a separate poll on this event */
           fetch('/notifications/unread')
             .then(function (r) { return r.json(); })
             .then(function (d) { updateUnreadBadge(d.count); })
@@ -272,18 +277,17 @@
       });
 
       src.addEventListener('connected', function () {
-        _sseRetry = 2000; /* reset backoff on successful connect */
+        _sseRetry = 2000;
       });
 
       src.addEventListener('error', function () {
         src.close();
         setTimeout(connectSSE, _sseRetry);
-        _sseRetry = Math.min(_sseRetry * 2, 30000); /* exponential backoff up to 30s */
+        _sseRetry = Math.min(_sseRetry * 2, 30000);
       });
     }
     connectSSE();
 
-    /* ── Poll unread count every 8 s ── */
     function pollUnread() {
       fetch('/notifications/unread')
         .then(function (r) { return r.json(); })
