@@ -70,9 +70,13 @@ def _portal_navigation_and_retirement_layer(response):
         'Assistant Ops',
         'Watch Dashboard',
         'WC Dashboard',
+        'Watch Commander Hub',
+        'Watch Command',
+        'Command Dashboard',
         'Body Cam Mode',
         'Bodycam Footage',
         'Command Due-Out Tracker',
+        'Installation Map',
     ):
         html = _remove_anchor_by_text(html, label)
 
