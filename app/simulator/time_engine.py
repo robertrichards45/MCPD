@@ -1,4 +1,5 @@
 from .evidence_engine import tick_evidence
+from .event_engine import build_scheduled_events, initialize_scheduled_events, tick_scheduled_events
 from .world_state import add_timeline, ensure_world_state
 
 
@@ -6,6 +7,16 @@ def apply_time_consequences(state):
     """Apply deterministic consequences caused only by elapsed simulation time."""
     world = ensure_world_state(state, state.get('scenario_id', ''))
     clock = int(world.get('clock', 0))
+    if 'scheduled_events' not in world:
+        initialize_scheduled_events(
+            state,
+            build_scheduled_events(
+                state.get('scenario_id', ''),
+                state.get('run_context') or {},
+                truth=world.get('truth') or {},
+            ),
+        )
+    tick_scheduled_events(state)
     tick_evidence(state)
 
     people = dict(world.get('people') or {})
