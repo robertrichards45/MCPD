@@ -26,7 +26,18 @@
       </div>
     </section>
 
-    {% if not evaluator_mode %}
+    {% if package.fto_review %}
+    <section class="ops-panel mb-3 {% if package.status == 'FTO_ACCEPTED' %}border-success{% elif package.status == 'CORRECTION_REQUIRED' %}border-warning{% elif package.status == 'REMEDIATION_REQUIRED' %}border-danger{% endif %}">
+      <div class="eyebrow">Latest FTO Review</div>
+      <h3>{{ package.status|replace('_',' ')|title }}</h3>
+      <p style="white-space:pre-wrap">{{ package.fto_review.comments or 'No additional FTO comments.' }}</p>
+      {% if package.fto_review.remediation_area %}
+      <div class="alert alert-warning mb-0"><strong>Remediation area:</strong> {{ package.fto_review.remediation_area }}<br><strong>Plan:</strong> {{ package.fto_review.remediation_plan }}</div>
+      {% endif %}
+    </section>
+    {% endif %}
+
+    {% if not evaluator_mode and package.status != 'FTO_ACCEPTED' %}
     <section class="ops-panel mb-3">
       <div class="eyebrow">Officer Responsibility</div>
       <h3>{{ 'Submit a Revision' if latest else 'Complete Your Training Paperwork' }}</h3>
@@ -48,18 +59,14 @@
             </div>
             {% endfor %}
           </div>
-          {% else %}
-          <p class="text-muted">No specific form choices are configured for this scenario. The trainee still must complete the narrative and notification decision.</p>
-          {% endif %}
+          {% else %}<p class="text-muted">No specific form choices are configured for this scenario. The trainee still must complete the narrative and notification decision.</p>{% endif %}
         </div>
 
         <div class="mb-3">
           <label class="form-label" for="cid_decision"><strong>CID Decision</strong></label>
           <select class="form-select" id="cid_decision" name="cid_decision" required>
             <option value="">Select what you believe is required...</option>
-            {% for value, label in cid_decisions.items() %}
-            <option value="{{ value }}" {% if latest and latest.cid_decision == value %}selected{% endif %}>{{ label }}</option>
-            {% endfor %}
+            {% for value, label in cid_decisions.items() %}<option value="{{ value }}" {% if latest and latest.cid_decision == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
           </select>
           <div class="form-text">The correct CID screening/notification requirement is intentionally not revealed until human review.</div>
         </div>
@@ -78,6 +85,8 @@
         <button class="btn btn-primary" type="submit">{{ 'Submit Revision ' ~ ((latest.revision or 0) + 1) if latest else 'Submit Training Package to FTO' }}</button>
       </form>
     </section>
+    {% elif not evaluator_mode and package.status == 'FTO_ACCEPTED' %}
+    <div class="alert alert-success"><strong>FTO accepted.</strong> This training package is now read only. The original submission and any revisions remain preserved.</div>
     {% endif %}
 
     {% if latest %}
@@ -88,14 +97,11 @@
         <div class="col-lg-5">
           <strong>Selected documentation</strong>
           {% if latest.selected_documents %}<ul>{% for item in latest.selected_documents %}<li>{{ item }}</li>{% endfor %}</ul>{% else %}<p class="text-muted">No specific documents selected.</p>{% endif %}
-          <strong>CID decision</strong>
-          <p>{{ latest.cid_decision_label }}</p>
-          <strong>Notification notes</strong>
-          <p>{{ latest.notification_notes or 'None entered.' }}</p>
+          <strong>CID decision</strong><p>{{ latest.cid_decision_label }}</p>
+          <strong>Notification notes</strong><p>{{ latest.notification_notes or 'None entered.' }}</p>
         </div>
         <div class="col-lg-7">
-          <strong>Narrative</strong>
-          <div class="border rounded p-3 mt-2" style="white-space:pre-wrap">{{ latest.narrative }}</div>
+          <strong>Narrative</strong><div class="border rounded p-3 mt-2" style="white-space:pre-wrap">{{ latest.narrative }}</div>
         </div>
       </div>
     </section>
@@ -103,8 +109,7 @@
 
     {% if package.submissions|length > 1 %}
     <section class="ops-panel mb-3">
-      <div class="eyebrow">Revision History</div>
-      <h3>Original Submission Preserved</h3>
+      <div class="eyebrow">Revision History</div><h3>Original Submission Preserved</h3>
       <div class="d-grid gap-2">
         {% for submission in package.submissions %}
         <details class="border rounded p-2" {% if loop.first %}open{% endif %}>
@@ -133,15 +138,43 @@
           {% if comparison.additional_documents %}<div class="alert alert-light"><strong>Additional trainee selections:</strong> {{ comparison.additional_documents|join(', ') }}</div>{% endif %}
         </div>
         <div class="col-lg-6">
-          <strong>CID training requirement</strong>
-          <p>{{ comparison.cid_required|replace('_',' ')|title }}</p>
-          <p>{{ comparison.requirements.cid.instruction }}</p>
+          <strong>CID training requirement</strong><p>{{ comparison.cid_required|replace('_',' ')|title }}</p><p>{{ comparison.requirements.cid.instruction }}</p>
           {% if comparison.cid_match is sameas true %}<div class="alert alert-success">Trainee CID decision matches the configured training requirement.</div>{% elif comparison.cid_match is sameas false %}<div class="alert alert-warning">Trainee CID decision may not match the configured training requirement. Human review required.</div>{% else %}<div class="alert alert-secondary">CID requirement is conditional/unconfigured; verify the developed facts and current procedure.</div>{% endif %}
           <div class="small text-muted">Verified for training: {{ 'Yes' if comparison.requirements.cid.verified_for_training else 'No — confirm before using as a formal deficiency.' }}</div>
         </div>
       </div>
       {% else %}<p class="text-muted">The trainee has not submitted a training package yet.</p>{% endif %}
     </section>
+
+    {% if latest %}
+    <section class="ops-panel mb-3">
+      <div class="eyebrow">Human FTO Decision</div>
+      <h3>Review This Submission</h3>
+      <p class="small text-muted">Sentinel provides evidence and comparison cues. You—not the AI—decide whether the trainee's work is acceptable, needs correction, or requires remedial training.</p>
+      <form method="post">
+        <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
+        <div class="mb-3">
+          <label class="form-label" for="fto_action"><strong>Disposition</strong></label>
+          <select class="form-select" id="fto_action" name="fto_action" required>
+            <option value="">Select FTO action...</option>
+            <option value="accept">Accept training package</option>
+            <option value="correction">Return for correction</option>
+            <option value="remediation">Assign remedial training</option>
+          </select>
+        </div>
+        <div class="mb-3"><label class="form-label" for="fto_comments"><strong>FTO Comments</strong></label><textarea class="form-control" id="fto_comments" name="fto_comments" rows="5" maxlength="5000" placeholder="Document strengths, deficiencies, corrections, and coaching provided."></textarea></div>
+        <div class="row g-2">
+          <div class="col-md-4"><label class="form-label" for="remediation_area"><strong>Remediation Area</strong></label><input class="form-control" id="remediation_area" name="remediation_area" maxlength="120" placeholder="Example: Report Writing"></div>
+          <div class="col-md-8"><label class="form-label" for="remediation_plan"><strong>Remediation Plan</strong></label><textarea class="form-control" id="remediation_plan" name="remediation_plan" rows="3" maxlength="8000" placeholder="Required only when assigning remediation."></textarea></div>
+        </div>
+        <button class="btn btn-primary mt-3" type="submit">Save FTO Review</button>
+      </form>
+    </section>
+    {% endif %}
+
+    {% if package.review_history %}
+    <section class="ops-panel mb-3"><div class="eyebrow">FTO Review History</div><h3>Preserved Review Actions</h3><div class="d-grid gap-2">{% for review in package.review_history %}<div class="border rounded p-2"><strong>{{ review.status|replace('_',' ')|title }}</strong> — Revision {{ review.revision_reviewed }}<div class="small text-muted">{{ review.reviewed_at }}</div>{% if review.comments %}<div class="mt-1" style="white-space:pre-wrap">{{ review.comments }}</div>{% endif %}</div>{% endfor %}</div></section>
+    {% endif %}
     {% endif %}
   </main>
 </div>
