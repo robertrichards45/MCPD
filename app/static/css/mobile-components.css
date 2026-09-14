@@ -34,6 +34,87 @@
     overflow-wrap: anywhere;
   }
 
+  /* Permission/status banners must not cover the fixed mobile dock. */
+  body.mobile-foundation #mcpd-loc-warn {
+    left: max(8px, env(safe-area-inset-left, 0px)) !important;
+    right: max(8px, env(safe-area-inset-right, 0px)) !important;
+    bottom: calc(var(--mobile-dock-height, 112px) + env(safe-area-inset-bottom, 0px) + 8px) !important;
+    border-radius: 12px;
+    flex-wrap: wrap;
+    box-shadow: 0 12px 30px rgba(2, 6, 23, 0.28);
+  }
+
+  body.mobile-foundation #mcpd-loc-warn span {
+    flex: 1 1 220px;
+    min-width: 0;
+  }
+
+  /* ---------- Officer approval / assignment ---------- */
+  .mobile-command-summary {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    max-width: 100%;
+  }
+
+  .mobile-command-stat,
+  .mobile-officer-card,
+  .mobile-officer-card-head,
+  .mobile-officer-form,
+  .mobile-officer-fixed {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .mobile-command-stat {
+    padding: 12px 7px !important;
+  }
+
+  .mobile-command-stat span,
+  .mobile-officer-card-head h3,
+  .mobile-officer-card-head p,
+  .mobile-officer-status,
+  .mobile-officer-fixed strong {
+    overflow-wrap: anywhere;
+  }
+
+  .mobile-officer-card-head {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+    align-items: flex-start !important;
+  }
+
+  .mobile-officer-card-head > div {
+    flex: 1 1 190px;
+    min-width: 0;
+  }
+
+  .mobile-officer-form {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 12px !important;
+  }
+
+  .mobile-officer-check {
+    display: grid !important;
+    grid-template-columns: auto minmax(0, 1fr) !important;
+    gap: 10px !important;
+    align-items: start !important;
+  }
+
+  .mobile-officer-check input[type="checkbox"] {
+    width: 22px !important;
+    height: 22px !important;
+    min-height: 22px !important;
+  }
+
+  .mobile-officer-save {
+    width: 100%;
+    min-height: 46px;
+  }
+
   /* ---------- Fast Capture ---------- */
   .mfc-row-2 {
     display: grid !important;
@@ -337,10 +418,12 @@
 }
 
 @media (max-width: 480px) {
+  .mobile-command-summary,
   .cmd-counts-row {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 
+  .mobile-command-stat:last-child:nth-child(odd),
   .cmd-count-card:last-child:nth-child(odd) {
     grid-column: 1 / -1;
   }
