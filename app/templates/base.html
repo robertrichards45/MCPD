@@ -39,6 +39,7 @@
     if (viewMode === 'desktop') document.body.classList.add('view-desktop');
   }());
   </script>
+
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
     <div class="global-flash-stack" role="alert" aria-live="assertive" aria-atomic="true">
@@ -48,6 +49,7 @@
     </div>
     {% endif %}
   {% endwith %}
+
   {% if portal_demo_mode %}
   <div class="demo-mode-banner" role="status">
     <strong>DEMO MODE — SAMPLE DATA ONLY</strong>
@@ -67,11 +69,14 @@
     {% endif %}
   </div>
   {% endif %}
+
   {% block body %}{% endblock %}
+
   <script src="{{ url_for('static', filename='js/command_readiness.js', v='2026-05-16-command') }}"></script>
   <script src="{{ url_for('static', filename='js/app.js', v='2026-09-14-mobile-audit-v1') }}"></script>
   <script src="{{ url_for('static', filename='js/voice_assistant.js', v='2026-05-09-voice-stability') }}"></script>
   <script src="{{ url_for('static', filename='js/assistant.js', v='2026-05-09-voice-stability') }}"></script>
+
   <script>
   (function () {
     var meta = document.querySelector('meta[name="csrf-token"]');
@@ -93,8 +98,8 @@
     };
   }());
   </script>
+
   <script>
-  /* ── CSRF auto-inject for HTML form submissions ─────────────────────── */
   (function () {
     var meta = document.querySelector('meta[name="csrf-token"]');
     if (!meta) return;
@@ -112,6 +117,7 @@
     }, true);
   }());
   </script>
+
   <script>
   (function () {
     function setTheme(theme) {
@@ -161,74 +167,54 @@
     syncViewLabels();
   }());
   </script>
+
   {% block scripts %}{% endblock %}
+
   {% if current_user and current_user.is_authenticated %}
   <script>
-  /* ── Location reporter ──────────────────────────────────────────────────
-     Uses watchPosition so tracking persists across page navigations.
-     Throttled to one push per 60 seconds. enableHighAccuracy forces GPS
-     hardware instead of WiFi/IP fallback (which can be miles off). */
+  /* Location updates remain available when the user grants browser permission.
+     Permission denials are intentionally silent; no persistent warning banner is shown. */
   (function () {
     if (!navigator.geolocation) return;
-    var KEY      = 'mcpd-loc-ts';
+    var KEY = 'mcpd-loc-ts';
     var INTERVAL = 60 * 1000;
-    var csrf     = (document.querySelector('meta[name="csrf-token"]') || {}).content || '';
+    var csrf = (document.querySelector('meta[name="csrf-token"]') || {}).content || '';
+    var lastPush = parseInt(localStorage.getItem(KEY) || '0', 10);
 
     function push(lat, lng) {
       fetch('/watch-commander/api/unit-location', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
-        body: JSON.stringify({ lat: lat, lng: lng }),
+        body: JSON.stringify({ lat: lat, lng: lng })
       }).catch(function () {});
     }
 
-    function showLocationWarning() {
-      if (document.getElementById('mcpd-loc-warn')) return;
-      var bar = document.createElement('div');
-      bar.id = 'mcpd-loc-warn';
-      bar.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#b45309;color:#fff;padding:10px 16px;font-size:.85rem;font-weight:600;display:flex;align-items:center;justify-content:space-between;gap:8px;';
-      bar.innerHTML = '<span>&#9888; Location sharing is OFF &mdash; your position cannot be tracked. Enable location in your browser settings and reload.</span>'
-        + '<button onclick="this.parentNode.remove()" style="background:none;border:1px solid rgba(255,255,255,.5);color:#fff;padding:2px 10px;border-radius:4px;cursor:pointer;font-size:.8rem;">Dismiss</button>';
-      document.body.appendChild(bar);
-    }
-
-    var _lastPush = parseInt(localStorage.getItem(KEY) || '0', 10);
-
     navigator.geolocation.watchPosition(
       function (pos) {
-        var warn = document.getElementById('mcpd-loc-warn');
-        if (warn) warn.remove();
         var now = Date.now();
-        if (now - _lastPush >= INTERVAL) {
+        if (now - lastPush >= INTERVAL) {
           push(pos.coords.latitude, pos.coords.longitude);
-          _lastPush = now;
+          lastPush = now;
           localStorage.setItem(KEY, now);
         }
       },
-      function (err) {
-        if (err.code === 1) { showLocationWarning(); }
-      },
+      function () {},
       { timeout: 15000, maximumAge: 0, enableHighAccuracy: true }
     );
 
     navigator.geolocation.getCurrentPosition(
       function (pos) {
         push(pos.coords.latitude, pos.coords.longitude);
-        _lastPush = Date.now();
-        localStorage.setItem(KEY, _lastPush);
+        lastPush = Date.now();
+        localStorage.setItem(KEY, lastPush);
       },
-      function (err) {
-        if (err.code === 1) { showLocationWarning(); }
-      },
+      function () {},
       { timeout: 15000, maximumAge: 0, enableHighAccuracy: true }
     );
   }());
   </script>
 
   <script>
-  /* ── Command Notification System ────────────────────────────────────────
-     Connects to SSE stream for real-time messages, shows Browser
-     Notifications, and maintains an unread-count badge in the sidebar.  */
   (function () {
     function updateUnreadBadge(count) {
       var badge = document.getElementById('nav-unread-badge');
@@ -247,13 +233,12 @@
 
     function showDesktopNotification(msg) {
       if (!window.Notification || Notification.permission !== 'granted') return;
-      var title = (msg.priority && msg.priority !== 'Normal' ? '[' + msg.priority + '] ' : '') +
-                  (msg.subject || 'Command Message');
+      var title = (msg.priority && msg.priority !== 'Normal' ? '[' + msg.priority + '] ' : '') + (msg.subject || 'Command Message');
       var n = new Notification(title, {
         body: msg.body,
         icon: '/static/icons/mcpd-icon-32.png',
         tag: 'mcpd-msg-' + msg.id,
-        requireInteraction: msg.priority === 'Emergency',
+        requireInteraction: msg.priority === 'Emergency'
       });
       n.onclick = function () {
         window.focus();
@@ -262,10 +247,9 @@
       };
     }
 
-    var _sseRetry = 2000;
+    var retry = 2000;
     function connectSSE() {
       var src = new EventSource('/notifications/stream');
-
       src.addEventListener('command_message', function (evt) {
         try {
           var msg = JSON.parse(evt.data);
@@ -276,15 +260,11 @@
             .catch(function () {});
         } catch (e) {}
       });
-
-      src.addEventListener('connected', function () {
-        _sseRetry = 2000;
-      });
-
+      src.addEventListener('connected', function () { retry = 2000; });
       src.addEventListener('error', function () {
         src.close();
-        setTimeout(connectSSE, _sseRetry);
-        _sseRetry = Math.min(_sseRetry * 2, 30000);
+        setTimeout(connectSSE, retry);
+        retry = Math.min(retry * 2, 30000);
       });
     }
     connectSSE();
