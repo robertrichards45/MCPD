@@ -1,847 +1,218 @@
 {% extends 'base.html' %}
+
 {% macro dash_icon(name) -%}
   {% if name == 'law' %}<svg viewBox="0 0 24 24"><path d="M12 3v18M5 7h14M7 7l-3 7h6L7 7Zm10 0-3 7h6l-3-7ZM9 21h6"/></svg>
   {% elif name == 'report' %}<svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z"/><path d="M14 3v5h5M8 13h8M8 17h6"/></svg>
   {% elif name == 'forms' %}<svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
   {% elif name == 'orders' %}<svg viewBox="0 0 24 24"><path d="M6 4h11a2 2 0 0 1 2 2v14H8a2 2 0 0 1-2-2V4Z"/><path d="M9 8h7M9 12h7M9 16h5"/></svg>
   {% elif name == 'training' %}<svg viewBox="0 0 24 24"><path d="m3 8 9-4 9 4-9 4-9-4Z"/><path d="M7 10v5c0 1.7 2.2 3 5 3s5-1.3 5-3v-5"/></svg>
+  {% elif name == 'users' %}<svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+  {% elif name == 'car' %}<svg viewBox="0 0 24 24"><path d="M5 17h14M6 17l-1-5 2-5h10l2 5-1 5M7 17v2M17 17v2"/><circle cx="8" cy="13" r="1"/><circle cx="16" cy="13" r="1"/></svg>
   {% else %}<svg viewBox="0 0 24 24"><path d="M6 4h12v17l-6-3-6 3V4Z"/></svg>{% endif %}
 {%- endmacro %}
+
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='vendor/leaflet.min.css', v='1.9.4') }}" />
 <style>
-  /* ── Dashboard compact override (beats command-hybrid.css !important) ── */
-  .mcpd-dashboard {
-    gap: 12px !important;
-    padding-top: 18px !important;
-    padding-bottom: 32px !important;
+  .mcpd-dashboard-clean {
+    gap: 18px !important;
+    padding-top: 22px !important;
+    padding-bottom: 42px !important;
   }
-  .mcpd-dashboard-head {
-    padding: 18px 22px !important;
+  .mcpd-dashboard-clean .mcpd-dashboard-head {
+    padding: 22px 24px !important;
   }
-  .mcpd-dashboard-head h1 {
-    font-size: clamp(1.25rem, 1.8vw, 1.75rem) !important;
-    margin-bottom: 4px !important;
+  .mcpd-dashboard-clean .mcpd-dashboard-head h1 {
+    margin: 0 0 4px !important;
+    font-size: clamp(1.35rem, 2vw, 1.9rem) !important;
   }
-  /* Action grid: 4-col compact horizontal chips */
-  .mcpd-action-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-    gap: 8px !important;
+  .mcpd-dashboard-clean .mcpd-dashboard-head p {
     margin: 0 !important;
   }
-  .mcpd-action-card {
-    min-height: unset !important;
-    padding: 10px 14px !important;
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    text-align: left !important;
-    justify-items: unset !important;
-    gap: 11px !important;
-    border-radius: 14px !important;
+  .mcpd-clean-section {
+    background: var(--surface, #fff);
+    border: 1px solid var(--border-color, #dbe3ee);
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, .06);
   }
-  .mcpd-action-card small {
-    display: none !important;
-  }
-  .mcpd-action-icon {
-    width: 36px !important;
-    height: 36px !important;
-    border-radius: 10px !important;
-    flex-shrink: 0 !important;
-    align-items: center !important;
-    justify-content: center !important;
-    display: inline-flex !important;
-  }
-  .mcpd-action-icon svg {
-    width: 20px !important;
-    height: 20px !important;
-  }
-  .mcpd-action-card strong {
-    font-size: 0.87rem !important;
-    line-height: 1.25 !important;
-    white-space: normal !important;
-  }
-  /* Panels tighter */
-  .mcpd-dashboard-panels {
-    gap: 10px !important;
-  }
-  /* Mobile: revert to stacked 2-col */
-  @media (max-width: 767px) {
-    .mcpd-action-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    }
-    .mcpd-action-card {
-      padding: 12px !important;
-      gap: 10px !important;
-    }
-  }
-  @media (min-width: 768px) and (max-width: 1199px) {
-    .mcpd-action-grid {
-      grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    }
-  }
-  /* ── Map layer button ─────────────────────────────────────────── */
-  .mcpd-map-layer-btn {
-    position: absolute;
-    top: 10px;
-    right: 44px;
-    z-index: 1000;
+  .mcpd-clean-section-head {
     display: flex;
-    gap: 2px;
-    background: rgba(255,255,255,0.95);
-    border: 1px solid rgba(0,0,0,0.2);
-    border-radius: 6px;
-    overflow: hidden;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 14px;
   }
-  body[data-theme="dark"] .mcpd-map-layer-btn {
-    background: rgba(15,23,42,0.92);
-    border-color: rgba(255,255,255,0.15);
-  }
-  .mcpd-map-layer-btn button {
-    border: none;
-    background: transparent;
-    font-size: 11px;
-    font-weight: 700;
-    padding: 5px 10px;
-    cursor: pointer;
-    color: #334155;
-    transition: background 0.12s ease, color 0.12s ease;
-    white-space: nowrap;
-  }
-  body[data-theme="dark"] .mcpd-map-layer-btn button { color: #cbd5e1; }
-  .mcpd-map-layer-btn button.is-active {
-    background: #1667c7;
-    color: #fff;
-  }
-  .mcpd-map-legend {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 14px;
-    padding: 8px 18px 10px;
-    border-top: 1px solid var(--border-color, #e2e8f0);
-    font-size: 11px;
+  .mcpd-clean-section-head span {
+    display: block;
+    margin-bottom: 3px;
     color: var(--muted, #64748b);
+    font-size: .72rem;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
   }
-  body[data-theme="dark"] .mcpd-map-legend { border-top-color: rgba(148,163,184,0.13); }
-  .mcpd-map-legend-item {
+  .mcpd-clean-section-head h2 {
+    margin: 0;
+    font-size: 1.05rem;
+  }
+  .mcpd-clean-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .mcpd-clean-card {
+    min-height: 88px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    border: 1px solid var(--border-color, #dbe3ee);
+    border-radius: 14px;
+    background: var(--surface, #fff);
+    color: inherit;
+    text-decoration: none;
+    transition: transform .12s ease, border-color .12s ease, box-shadow .12s ease;
+  }
+  .mcpd-clean-card:hover,
+  .mcpd-clean-card:focus-visible {
+    transform: translateY(-1px);
+    border-color: #8eb6e6;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, .08);
+  }
+  .mcpd-clean-icon {
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    font-weight: 600;
+    justify-content: center;
+    border-radius: 12px;
+    background: rgba(22, 103, 199, .10);
+    color: #1667c7;
   }
-  .mcpd-map-legend-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    flex-shrink: 0;
+  .mcpd-clean-icon svg {
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .mcpd-clean-card strong {
+    display: block;
+    font-size: .92rem;
+    line-height: 1.2;
+  }
+  .mcpd-clean-card small {
+    display: block;
+    margin-top: 4px;
+    color: var(--muted, #64748b);
+    font-size: .76rem;
+    line-height: 1.25;
+  }
+  .mcpd-account-alert {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 18px;
+    border: 1px solid #f2c46d;
+    border-radius: 14px;
+    background: rgba(245, 158, 11, .10);
+  }
+  .mcpd-account-alert strong { display: block; }
+  .mcpd-account-alert span { color: var(--muted, #64748b); font-size: .82rem; }
+  @media (max-width: 1000px) {
+    .mcpd-clean-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 620px) {
+    .mcpd-dashboard-clean { padding-top: 12px !important; gap: 12px !important; }
+    .mcpd-clean-section { padding: 14px; border-radius: 14px; }
+    .mcpd-clean-grid { grid-template-columns: 1fr; gap: 8px; }
+    .mcpd-clean-card { min-height: 74px; }
+    .mcpd-account-alert { align-items: flex-start; flex-direction: column; }
   }
 </style>
 {% endblock %}
+
 {% block body %}
 <div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
-  <main class="dashboard mcpd-dashboard">
+  <main class="dashboard mcpd-dashboard mcpd-dashboard-clean">
     <section class="mcpd-dashboard-head">
       <div>
         <h1>{{ user.display_name }}</h1>
         <p>{{ portal_effective_role_label }}{% if user.section_unit %} &bull; {{ user.section_unit }}{% endif %}</p>
       </div>
-      <div class="mcpd-dashboard-head-actions">
-        <a class="btn btn-outline-secondary" href="{{ url_for('dashboard.customize_dashboard') }}">Customize</a>
-        <div class="mcpd-date-tile">
-          <strong>MCPD</strong>
-          <span>Command Portal</span>
-        </div>
+      <div class="mcpd-date-tile">
+        <strong>MCPD</strong>
+        <span>Command Portal</span>
       </div>
     </section>
 
-    <section class="mcpd-ops-snapshot" aria-label="Operations snapshot">
-      {% for metric in dashboard_metrics %}
-      <article class="mcpd-ops-snapshot-card">
-        <span>{{ metric.label }}</span>
-        <strong>{{ metric.value }}</strong>
-        <small>{{ metric.detail }}</small>
-      </article>
-      {% endfor %}
+    {% if user.can_manage_team() and portal_pending_approvals %}
+    <section class="mcpd-account-alert" aria-label="Pending account approvals">
+      <div>
+        <strong>{{ portal_pending_approvals }} account{% if portal_pending_approvals != 1 %}s{% endif %} awaiting approval</strong>
+        <span>Review the officer information, assign the correct role, and approve or deny access.</span>
+      </div>
+      <a class="btn btn-primary" href="{{ url_for('auth.manage_users') }}">Review Accounts</a>
     </section>
+    {% endif %}
 
-    <section class="mcpd-response-board" aria-label="Live response operating picture">
-      <div class="mcpd-response-head">
+    <section class="mcpd-clean-section" aria-label="MCPD tools">
+      <div class="mcpd-clean-section-head">
         <div>
-          <span>Live Response Board</span>
-          <h2>Operational picture</h2>
-          <p>Incident status, unit posture, map layers, and readiness analytics in one command-grade view.</p>
+          <span>Primary tools</span>
+          <h2>What do you need to work on?</h2>
         </div>
-        {% if dashboard_live_ops.is_command %}
-        <a class="btn btn-outline-secondary" href="{{ url_for('incident_command.dashboard') }}">Open Incident Command</a>
-        {% else %}
-        <a class="btn btn-outline-secondary" href="{{ url_for('reports.list_reports') }}">Open Reports</a>
+      </div>
+      <div class="mcpd-clean-grid">
+        <a class="mcpd-clean-card" href="{{ url_for('legal.legal_home') }}">
+          <span class="mcpd-clean-icon">{{ dash_icon('law') }}</span>
+          <span><strong>Law Lookup</strong><small>Georgia law, federal law, UCMJ, and base references.</small></span>
+        </a>
+        <a class="mcpd-clean-card" href="{{ url_for('bodycam.narrative_tool') }}">
+          <span class="mcpd-clean-icon">{{ dash_icon('report') }}</span>
+          <span><strong>Narrative Creator</strong><small>Build and improve MCPD report narratives.</small></span>
+        </a>
+        <a class="mcpd-clean-card" href="{{ url_for('reports.sentinel.report_inspector') }}">
+          <span class="mcpd-clean-icon">{{ dash_icon('report') }}</span>
+          <span><strong>Report Quality Review</strong><small>Sentinel report review, findings, and correction support.</small></span>
+        </a>
+        <a class="mcpd-clean-card" href="{{ url_for('forms.list_forms') }}">
+          <span class="mcpd-clean-icon">{{ dash_icon('forms') }}</span>
+          <span><strong>Forms Library</strong><small>Open approved MCPD forms and paperwork tools.</small></span>
+        </a>
+        <a class="mcpd-clean-card" href="{{ url_for('reports.accidents') }}">
+          <span class="mcpd-clean-icon">{{ dash_icon('car') }}</span>
+          <span><strong>Accident Tools</strong><small>Crash documentation, diagrams, and reconstruction tools.</small></span>
+        </a>
+        <a class="mcpd-clean-card" href="{{ url_for('training.training_menu') }}">
+          <span class="mcpd-clean-icon">{{ dash_icon('training') }}</span>
+          <span><strong>Training Center</strong><small>Rosters, signatures, qualifications, and training records.</small></span>
+        </a>
+        <a class="mcpd-clean-card" href="{{ url_for('reports.sentinel.fto_center') }}">
+          <span class="mcpd-clean-icon">{{ dash_icon('training') }}</span>
+          <span><strong>FTO Center</strong><small>Sentinel scenarios, trainee progress, DORs, and remedial training.</small></span>
+        </a>
+        <a class="mcpd-clean-card" href="{{ url_for('orders.reference_search') }}">
+          <span class="mcpd-clean-icon">{{ dash_icon('orders') }}</span>
+          <span><strong>Orders &amp; Memos</strong><small>Search current orders, memorandums, and references.</small></span>
+        </a>
+        <a class="mcpd-clean-card" href="{{ url_for('forms.saved_forms') }}">
+          <span class="mcpd-clean-icon">{{ dash_icon('saved') }}</span>
+          <span><strong>Saved Work</strong><small>Resume saved forms and unfinished work.</small></span>
+        </a>
+        {% if user.can_manage_team() %}
+        <a class="mcpd-clean-card" href="{{ url_for('auth.manage_users') }}">
+          <span class="mcpd-clean-icon">{{ dash_icon('users') }}</span>
+          <span><strong>Personnel &amp; Account Approval</strong><small>Create, approve, disable, and manage user access.</small></span>
+        </a>
         {% endif %}
       </div>
-
-      <div class="mcpd-response-alerts">
-        {% for item in dashboard_live_ops.alert_tiles %}
-        <a class="mcpd-response-alert is-{{ item.tone }}" href="{{ url_for(item.endpoint) }}">
-          <span>{{ item.label }}</span>
-          <strong>{{ item.value }}</strong>
-          <small>{{ item.detail }}</small>
-        </a>
-        {% endfor %}
-      </div>
-
-      <div class="mcpd-response-grid">
-        <article class="mcpd-response-panel mcpd-response-panel-large">
-          <div class="mcpd-response-panel-head">
-            <div>
-              <span>Incident Status</span>
-              <h3>{{ dashboard_live_ops.open_shift_label }}</h3>
-            </div>
-            {% if dashboard_live_ops.is_command %}
-            <a href="{{ url_for('watch_commander.dashboard') }}">Watch Dashboard</a>
-            {% else %}
-            <a href="{{ url_for('reports.list_reports') }}">My Reports</a>
-            {% endif %}
-          </div>
-          <div class="mcpd-live-feed">
-            {% for item in dashboard_live_ops.feed %}
-            <a class="mcpd-live-feed-row is-{{ item.tone }}" href="{{ url_for(item.endpoint) }}">
-              <div>
-                <span>{{ item.type }}</span>
-                <strong>{{ item.label }}</strong>
-                <small>{{ item.location }}</small>
-              </div>
-              <b>{{ item.status }}</b>
-            </a>
-            {% else %}
-            <div class="mcpd-empty-state">No active incident feed items yet. Draft reports, submitted packets, BOLOs, and watch notes will appear here.</div>
-            {% endfor %}
-          </div>
-        </article>
-
-        <article class="mcpd-response-panel">
-          <div class="mcpd-response-panel-head">
-            <div>
-              <span>Unit Posture</span>
-              <h3>Personnel / assignments</h3>
-            </div>
-          </div>
-          <div class="mcpd-unit-list">
-            {% for unit in dashboard_live_ops.unit_rows %}
-            <div class="mcpd-unit-row is-{{ unit.tone }}">
-              <div>
-                <strong>{{ unit.name }}</strong>
-                <small>{{ unit.assignment }}</small>
-              </div>
-              <span>{{ unit.status }}</span>
-            </div>
-            {% endfor %}
-          </div>
-        </article>
-
-        <article class="mcpd-response-panel">
-          <div class="mcpd-response-panel-head">
-            <div>
-              <span>Pre-plan / GIS</span>
-              <h3>Operational layers</h3>
-            </div>
-          </div>
-          <div class="mcpd-layer-list">
-            {% for layer in dashboard_live_ops.preplan_layers %}
-            <a href="{{ url_for(layer.endpoint) }}">
-              <strong>{{ layer.label }}</strong>
-              <small>{{ layer.detail }}</small>
-            </a>
-            {% endfor %}
-          </div>
-        </article>
-
-        <article class="mcpd-response-panel">
-          <div class="mcpd-response-panel-head">
-            <div>
-              <span>Analytics</span>
-              <h3>Readiness trend</h3>
-            </div>
-          </div>
-          <div class="mcpd-analytics-list">
-            {% for item in dashboard_live_ops.analytics %}
-            <div class="mcpd-analytics-row">
-              <div>
-                <strong>{{ item.label }}</strong>
-                <small>{{ item.detail }}</small>
-              </div>
-              <b>{{ item.value }}</b>
-            </div>
-            {% endfor %}
-          </div>
-        </article>
-      </div>
-    </section>
-
-    <section class="mcpd-action-grid" aria-label="Quick actions">
-      {% for card in dashboard_cards %}
-      <a class="mcpd-action-card" href="{{ url_for(card.endpoint) }}" title="{{ card.description }}">
-        <span class="mcpd-action-icon" aria-hidden="true">{{ dash_icon(card.icon) }}</span>
-        <strong>{{ card.label }}</strong>
-      </a>
-      {% endfor %}
-    </section>
-
-    <section class="mcpd-readiness-board" aria-label="Command readiness">
-      <div class="mcpd-readiness-main">
-        <div class="mcpd-board-head">
-          <span>Operational Readiness</span>
-          <h2>Command operating picture</h2>
-          <p>First Due-style overview for reports, forms, reference search, training, and supervisor queues.</p>
-        </div>
-        <div class="mcpd-readiness-grid">
-          {% for item in dashboard_readiness_items %}
-          <a class="mcpd-readiness-card is-{{ item.tone }}" href="{{ url_for(item.endpoint) }}">
-            <div>
-              <span>{{ item.label }}</span>
-              <strong>{{ item.status }}</strong>
-            </div>
-            <b>{{ item.value }}</b>
-            <small>{{ item.unit }}</small>
-            <p>{{ item.detail }}</p>
-          </a>
-          {% endfor %}
-        </div>
-      </div>
-      <aside class="mcpd-command-queue">
-        <div class="mcpd-board-head compact">
-          <span>Action Queue</span>
-          <h2>Needs attention</h2>
-        </div>
-        <div class="mcpd-command-queue-list">
-          {% for item in dashboard_queue_items %}
-          <a href="{{ url_for(item.endpoint) }}">
-            <span>{{ item.label }}</span>
-            <strong>{{ item.value }}</strong>
-            <small>{{ item.detail }}</small>
-          </a>
-          {% endfor %}
-        </div>
-      </aside>
-    </section>
-
-    <section class="mcpd-dashboard-panels">
-      {% for panel in dashboard_panels %}
-      <article class="mcpd-panel">
-        <div class="mcpd-panel-head">
-          <h2>{{ panel.title }}</h2>
-          <a href="{{ url_for(panel.view_all_endpoint) }}">View All</a>
-        </div>
-        <div class="mcpd-list">
-          {% for item in panel['items'] %}
-          <a href="{{ url_for(item.endpoint) }}"><strong>{{ item.label }}</strong><span>{{ item.detail }}</span></a>
-          {% endfor %}
-        </div>
-      </article>
-      {% endfor %}
-
-      <article class="mcpd-panel mcpd-map-card">
-        <div class="mcpd-map-card-head">
-          <div class="mcpd-map-card-title-group">
-            <span class="mcpd-map-card-badge">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5" fill="currentColor" stroke="none"/></svg>
-            </span>
-            <div>
-              <h2>MCLB Albany — Installation Map</h2>
-              <p>Marine Corps Logistics Base Albany, Georgia &bull; Satellite &amp; Street view &bull; <em>Click map to expand</em></p>
-            </div>
-          </div>
-          <div class="mcpd-map-card-info">
-            <span>814 Radford Blvd &bull; Albany, GA 31704 &bull; DSN 460-1110</span>
-          </div>
-        </div>
-        <div style="position:relative;">
-          <div class="mcpd-map-canvas-wrap" id="mcpd-dashboard-map" role="img" aria-label="Satellite installation map of Marine Corps Logistics Base Albany, Georgia" title="Click to expand map"></div>
-          <div class="mcpd-map-layer-btn" id="mcpd-layer-toggle" aria-label="Map layer controls"></div>
-        </div>
-        <div class="mcpd-map-legend">
-          <span class="mcpd-map-legend-item"><span class="mcpd-map-legend-dot" style="background:#c53030"></span>PMO / Police</span>
-          <span class="mcpd-map-legend-item"><span class="mcpd-map-legend-dot" style="background:#1667c7"></span>Main Gate</span>
-          <span class="mcpd-map-legend-item"><span class="mcpd-map-legend-dot" style="background:#0f766e"></span>Headquarters</span>
-          <span class="mcpd-map-legend-item"><span class="mcpd-map-legend-dot" style="background:#7c3aed"></span>Key Facility</span>
-          <span class="mcpd-map-legend-item"><span class="mcpd-map-legend-dot" style="background:#d97706"></span>Entry / Gate</span>
-        </div>
-      </article>
     </section>
   </main>
 </div>
-
-<!-- Fullscreen map modal -->
-<div class="mcpd-map-fullscreen-overlay" id="mcpd-fs-overlay" role="dialog" aria-modal="true" aria-label="Expanded installation map">
-  <div class="mcpd-map-fullscreen-inner">
-    <div class="mcpd-map-fullscreen-header">
-      <span class="mcpd-map-fullscreen-title">MCLB Albany — Installation Map (Full View)</span>
-      <div id="mcpd-fs-layer-btn" class="mcpd-map-fullscreen-layer-btn mcpd-fs-toolbar" aria-label="Map layer controls"></div>
-      <button class="mcpd-map-fullscreen-close" id="mcpd-fs-close" aria-label="Close map">&times;</button>
-    </div>
-    <div style="position:relative;flex:1;display:flex;flex-direction:column;">
-      <div class="mcpd-map-fullscreen-canvas" id="mcpd-fs-map" role="img" aria-label="Full-screen satellite map of MCLB Albany"></div>
-    </div>
-  </div>
-</div>
-{% endblock %}
-{% block scripts %}
-{{ super() }}
-<script src="{{ url_for('static', filename='vendor/leaflet.min.js', v='1.9.4') }}"></script>
-<style>
-/* ── Map editor UI ─────────────────────────────────────── */
-.mcpd-fs-toolbar {
-  display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
-  padding: 8px 14px 0;
-}
-.mcpd-fs-toolbar button {
-  padding: 5px 13px; border-radius: 8px; border: 1px solid rgba(148,163,184,0.35);
-  background: rgba(17,27,46,0.85); color: #e2e8f0; font-size: 12px; font-weight: 700;
-  cursor: pointer; letter-spacing: 0.02em; transition: background 0.14s, color 0.14s;
-}
-.mcpd-fs-toolbar button:hover { background: rgba(37,99,235,0.3); color: #fff; }
-.mcpd-fs-toolbar button.is-active { background: #1d4ed8; color: #fff; border-color: #3b82f6; }
-.mcpd-fs-toolbar button.is-danger { background: rgba(185,28,28,0.2); border-color: rgba(239,68,68,0.4); color: #fca5a5; }
-.mcpd-fs-toolbar button.is-danger:hover { background: rgba(185,28,28,0.5); color: #fff; }
-.mcpd-fs-toolbar-sep { width: 1px; height: 22px; background: rgba(148,163,184,0.25); }
-.mcpd-add-pin-form {
-  position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
-  z-index: 1200; background: #0f2033; border: 1px solid rgba(59,130,246,0.45);
-  border-radius: 14px; padding: 16px 18px; min-width: 300px; max-width: 360px;
-  box-shadow: 0 12px 36px rgba(2,6,23,0.65);
-}
-.mcpd-add-pin-form h4 { margin: 0 0 12px; font-size: 13px; font-weight: 800; color: #e2e8f0; letter-spacing: 0.03em; text-transform: uppercase; }
-.mcpd-add-pin-form label { display: block; font-size: 11px; font-weight: 700; color: #97aec4; margin-bottom: 4px; letter-spacing: 0.04em; text-transform: uppercase; }
-.mcpd-add-pin-form input[type=text] { width: 100%; padding: 7px 10px; border-radius: 8px; border: 1px solid rgba(148,163,184,0.3); background: rgba(255,255,255,0.06); color: #e2e8f0; font-size: 13px; box-sizing: border-box; margin-bottom: 10px; }
-.mcpd-add-pin-form input[type=text]:focus { outline: none; border-color: #3b82f6; }
-.mcpd-pin-color-row { display: flex; gap: 8px; margin-bottom: 12px; }
-.mcpd-pin-color-swatch { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: border-color 0.15s; flex-shrink: 0; }
-.mcpd-pin-color-swatch.is-selected { border-color: #fff; }
-.mcpd-add-pin-form .mcpd-form-actions { display: flex; gap: 8px; }
-.mcpd-add-pin-form .mcpd-form-actions button { flex: 1; padding: 8px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; border: none; }
-.mcpd-add-pin-form .btn-save { background: #1d4ed8; color: #fff; }
-.mcpd-add-pin-form .btn-cancel { background: rgba(148,163,184,0.15); color: #97aec4; }
-.mcpd-add-pin-cursor { cursor: crosshair !important; }
-.mcpd-add-pin-cursor .leaflet-interactive { cursor: crosshair !important; }
-.mcpd-edit-hint {
-  position: absolute; top: 58px; left: 50%; transform: translateX(-50%);
-  z-index: 1100; background: rgba(29,78,216,0.92); color: #dbeafe;
-  padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 700;
-  pointer-events: none; white-space: nowrap;
-}
-.mcpd-popup-delete { display: block; margin-top: 8px; padding: 4px 10px; border-radius: 6px; background: rgba(185,28,28,0.2); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); font-size: 11px; cursor: pointer; width: 100%; text-align: center; }
-.mcpd-popup-delete:hover { background: rgba(185,28,28,0.5); color: #fff; }
-</style>
-<script>
-(function () {
-  var PIN_KEY = 'mcpd.map.pins';
-
-  var DEFAULT_LOCATIONS = [
-    { lat: 31.5709, lng: -84.0765, color: '#1667c7', name: 'Main Gate (Gate 1)', detail: 'Radford Blvd primary entry — visitor control, badge check, DBIDS' },
-    { lat: 31.5748, lng: -84.0730, color: '#c53030', name: 'Provost Marshal Office (PMO)', detail: 'MCLB Albany Police — dispatch, reports, public safety operations' },
-    { lat: 31.5770, lng: -84.0640, color: '#0f766e', name: 'Headquarters Building', detail: 'Base Commanding Officer, Executive Officer, and Staff Sections' },
-    { lat: 31.5795, lng: -84.0580, color: '#7c3aed', name: 'Logistics Operations Center', detail: 'Maintenance, supply, and transportation command operations' },
-    { lat: 31.5730, lng: -84.0590, color: '#7c3aed', name: 'Marine Corps Exchange (MCX)', detail: 'Retail, food court, and service facilities' },
-    { lat: 31.5760, lng: -84.0700, color: '#d97706', name: 'Gate 2 — Industrial Access', detail: 'Secondary vehicle and commercial truck entry point' },
-    { lat: 31.5800, lng: -84.0690, color: '#d97706', name: 'Gate 3 — North Entry', detail: 'Northern perimeter access — restricted hours' },
-    { lat: 31.5720, lng: -84.0650, color: '#7c3aed', name: 'Chapel / Community Center', detail: 'Chaplain services, base events, and family support' },
-  ];
-
-  function loadPins() {
-    try {
-      var raw = localStorage.getItem(PIN_KEY);
-      if (raw) {
-        var parsed = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.length) return parsed;
-      }
-    } catch (e) {}
-    return DEFAULT_LOCATIONS.map(function (l) { return Object.assign({}, l); });
-  }
-
-  function savePins(pins) {
-    try { localStorage.setItem(PIN_KEY, JSON.stringify(pins)); } catch (e) {}
-  }
-
-  var LOCATIONS = loadPins();
-
-  var el = document.getElementById('mcpd-dashboard-map');
-  var toggleEl = document.getElementById('mcpd-layer-toggle');
-  if (!el || typeof L === 'undefined') return;
-
-  // MCLB Albany — verified public coordinates
-  var BASE_CENTER = [31.5752, -84.0630];
-  var BASE_BOUNDS = L.latLngBounds([31.558, -84.098], [31.598, -84.035]);
-
-  var map = L.map(el, {
-    center: BASE_CENTER,
-    zoom: 15,
-    minZoom: 13,
-    maxBounds: BASE_BOUNDS,
-    maxBoundsViscosity: 1.0,
-    scrollWheelZoom: false,
-    zoomControl: true,
-    attributionControl: true,
-  });
-
-  // ── Tile layers ──────────────────────────────────────────────────
-  var esriAttrib = 'Tiles &copy; <a href="https://www.esri.com" target="_blank" rel="noopener">Esri</a>, Maxar, Earthstar Geographics';
-  var osmAttrib  = '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>';
-
-  var satelliteLayer = L.tileLayer(
-    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-    { attribution: esriAttrib, maxZoom: 20 }
-  );
-  map.createPane('labelsPane');
-  map.getPane('labelsPane').style.zIndex = 450;
-  map.getPane('labelsPane').style.pointerEvents = 'none';
-  var labelsLayer = L.tileLayer(
-    'https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png',
-    { attribution: osmAttrib, subdomains: 'abcd', maxZoom: 20, pane: 'labelsPane' }
-  );
-  var streetLayer = L.tileLayer(
-    'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-    { attribution: osmAttrib, subdomains: 'abcd', maxZoom: 20 }
-  );
-  var streetDarkLayer = L.tileLayer(
-    'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-    { attribution: osmAttrib, subdomains: 'abcd', maxZoom: 20 }
-  );
-  var isDark = function () { return document.body.getAttribute('data-theme') === 'dark'; };
-  var activeMode = 'satellite';
-
-  satelliteLayer.addTo(map);
-  labelsLayer.addTo(map);
-
-  function renderToggle() {
-    toggleEl.innerHTML =
-      '<button id="btn-sat" class="' + (activeMode === 'satellite' ? 'is-active' : '') + '">Satellite</button>' +
-      '<button id="btn-str" class="' + (activeMode === 'street'    ? 'is-active' : '') + '">Street</button>';
-    document.getElementById('btn-sat').onclick = function () { setLayer('satellite'); };
-    document.getElementById('btn-str').onclick = function () { setLayer('street'); };
-  }
-
-  function setLayer(mode) {
-    map.eachLayer(function (l) { if (l && l.options && l.options.attribution !== undefined) map.removeLayer(l); });
-    activeMode = mode;
-    if (mode === 'satellite') {
-      satelliteLayer.addTo(map);
-      labelsLayer.addTo(map);
-    } else {
-      (isDark() ? streetDarkLayer : streetLayer).addTo(map);
-    }
-    renderMarkersOnTop();
-    renderToggle();
-  }
-
-  // ── Small map markers (display only) ────────────────────────────
-  function pinIcon(color) {
-    return L.divIcon({
-      html: '<div style="width:28px;height:34px;color:' + color + ';filter:drop-shadow(0 2px 3px rgba(0,0,0,0.45))">' +
-            '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>' +
-            '</div>',
-      className: '', iconSize: [28, 34], iconAnchor: [14, 34], popupAnchor: [0, -38],
-    });
-  }
-
-  var markerLayer = [];
-
-  function renderMarkersOnTop() {
-    markerLayer.forEach(function (m) { map.removeLayer(m); });
-    markerLayer = [];
-    LOCATIONS.forEach(function (loc) {
-      var m = L.marker([loc.lat, loc.lng], { icon: pinIcon(loc.color) })
-        .addTo(map)
-        .bindPopup('<div class="mcpd-map-popup"><strong>' + loc.name + '</strong><br>' + (loc.detail || '') + '</div>', { maxWidth: 260 })
-        .bindTooltip(loc.name, { permanent: true, direction: 'top', offset: [0, -28], className: 'mcpd-map-label' });
-      markerLayer.push(m);
-    });
-  }
-
-  renderMarkersOnTop();
-  renderToggle();
-
-  document.addEventListener('click', function (e) {
-    if (!e.target.closest('[data-theme-toggle]')) return;
-    setTimeout(function () {
-      if (activeMode === 'street') setLayer('street');
-      if (fsMap && fsActiveMode === 'street') setFsLayer('street');
-    }, 80);
-  });
-
-  // ── Fullscreen modal ─────────────────────────────────────────────
-  var fsOverlay  = document.getElementById('mcpd-fs-overlay');
-  var fsMapEl    = document.getElementById('mcpd-fs-map');
-  var fsClose    = document.getElementById('mcpd-fs-close');
-  var fsLayerBtn = document.getElementById('mcpd-fs-layer-btn');
-  var fsMap      = null;
-  var fsInitialized = false;
-  var fsActiveMode  = 'satellite';
-  var fsSatLayer, fsLabelsLayer, fsStreetLayer, fsStreetDarkLayer;
-  var fsMarkerLayer = [];
-  var fsEditMode = false;
-  var fsAddMode  = false;
-  var fsAddColor = '#1667c7';
-  var fsAddFormEl = null;
-
-  var PIN_COLORS = [
-    { color: '#1667c7', label: 'Blue — Gate / Entry' },
-    { color: '#c53030', label: 'Red — PMO / Emergency' },
-    { color: '#0f766e', label: 'Teal — HQ / Command' },
-    { color: '#7c3aed', label: 'Purple — Key Facility' },
-    { color: '#d97706', label: 'Amber — Gate / Access' },
-    { color: '#16a34a', label: 'Green — Admin / Support' },
-  ];
-
-  function initFsMap() {
-    if (fsInitialized) return;
-    fsInitialized = true;
-
-    fsSatLayer = L.tileLayer(
-      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-      { attribution: esriAttrib, maxZoom: 20 }
-    );
-    fsMap = L.map(fsMapEl, {
-      center: BASE_CENTER, zoom: 16, minZoom: 13,
-      maxBounds: BASE_BOUNDS, maxBoundsViscosity: 1.0,
-      scrollWheelZoom: true, zoomControl: true, attributionControl: true,
-    });
-    fsMap.createPane('labelsPane');
-    fsMap.getPane('labelsPane').style.zIndex = 450;
-    fsMap.getPane('labelsPane').style.pointerEvents = 'none';
-    fsLabelsLayer = L.tileLayer(
-      'https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png',
-      { attribution: osmAttrib, subdomains: 'abcd', maxZoom: 20, pane: 'labelsPane' }
-    );
-    fsStreetLayer = L.tileLayer(
-      'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-      { attribution: osmAttrib, subdomains: 'abcd', maxZoom: 20 }
-    );
-    fsStreetDarkLayer = L.tileLayer(
-      'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-      { attribution: osmAttrib, subdomains: 'abcd', maxZoom: 20 }
-    );
-    fsSatLayer.addTo(fsMap);
-    fsLabelsLayer.addTo(fsMap);
-
-    fsMap.on('click', function (e) {
-      if (!fsAddMode) return;
-      showAddPinForm(e.latlng);
-    });
-
-    renderFsMarkers();
-    renderFsToolbar();
-  }
-
-  // ── Fullscreen marker rendering (with drag + delete in edit mode) ─
-  function renderFsMarkers() {
-    if (!fsMap) return;
-    fsMarkerLayer.forEach(function (m) { fsMap.removeLayer(m); });
-    fsMarkerLayer = [];
-    LOCATIONS.forEach(function (loc, idx) {
-      var m = L.marker([loc.lat, loc.lng], {
-        icon: pinIcon(loc.color),
-        draggable: fsEditMode,
-      }).addTo(fsMap);
-
-      function buildPopup() {
-        var html = '<div class="mcpd-map-popup"><strong>' + loc.name + '</strong>';
-        if (loc.detail) html += '<br><span style="opacity:0.75">' + loc.detail + '</span>';
-        if (fsEditMode) {
-          html += '<br><button class="mcpd-popup-delete" data-idx="' + idx + '">Remove Pin</button>';
-        }
-        html += '</div>';
-        return html;
-      }
-
-      m.bindPopup(buildPopup(), { maxWidth: 280 });
-      m.bindTooltip(loc.name, { permanent: true, direction: 'top', offset: [0, -28], className: 'mcpd-map-label' });
-
-      m.on('dragend', function (ev) {
-        var ll = ev.target.getLatLng();
-        LOCATIONS[idx].lat = parseFloat(ll.lat.toFixed(6));
-        LOCATIONS[idx].lng = parseFloat(ll.lng.toFixed(6));
-        savePins(LOCATIONS);
-        renderMarkersOnTop();
-        renderFsMarkers();
-      });
-
-      m.on('popupopen', function () {
-        var btn = fsMapEl.querySelector('.mcpd-popup-delete[data-idx="' + idx + '"]');
-        if (btn) btn.addEventListener('click', function () {
-          LOCATIONS.splice(idx, 1);
-          savePins(LOCATIONS);
-          m.closePopup();
-          renderMarkersOnTop();
-          renderFsMarkers();
-        });
-      });
-
-      fsMarkerLayer.push(m);
-    });
-  }
-
-  // ── Add-pin form ─────────────────────────────────────────────────
-  function showAddPinForm(latlng) {
-    removeAddPinForm();
-    fsAddFormEl = document.createElement('div');
-    fsAddFormEl.className = 'mcpd-add-pin-form';
-    fsAddFormEl.innerHTML =
-      '<h4>New Pin</h4>' +
-      '<label>Name</label>' +
-      '<input type="text" id="fs-pin-name" placeholder="e.g. Building 2200" maxlength="60" />' +
-      '<label>Notes (optional)</label>' +
-      '<input type="text" id="fs-pin-detail" placeholder="Short description" maxlength="120" />' +
-      '<label>Color</label>' +
-      '<div class="mcpd-pin-color-row">' +
-        PIN_COLORS.map(function (c) {
-          return '<div class="mcpd-pin-color-swatch' + (c.color === fsAddColor ? ' is-selected' : '') + '" ' +
-                 'style="background:' + c.color + '" title="' + c.label + '" data-color="' + c.color + '"></div>';
-        }).join('') +
-      '</div>' +
-      '<div class="mcpd-form-actions">' +
-        '<button class="btn-save" id="fs-pin-save">Place Pin</button>' +
-        '<button class="btn-cancel" id="fs-pin-cancel">Cancel</button>' +
-      '</div>';
-    fsMapEl.appendChild(fsAddFormEl);
-
-    fsAddFormEl.querySelectorAll('.mcpd-pin-color-swatch').forEach(function (sw) {
-      sw.addEventListener('click', function () {
-        fsAddColor = sw.getAttribute('data-color');
-        fsAddFormEl.querySelectorAll('.mcpd-pin-color-swatch').forEach(function (s) { s.classList.remove('is-selected'); });
-        sw.classList.add('is-selected');
-      });
-    });
-
-    document.getElementById('fs-pin-cancel').addEventListener('click', function () {
-      removeAddPinForm();
-      setAddMode(false);
-    });
-
-    document.getElementById('fs-pin-save').addEventListener('click', function () {
-      var name = (document.getElementById('fs-pin-name').value || '').trim();
-      if (!name) { document.getElementById('fs-pin-name').focus(); return; }
-      var detail = (document.getElementById('fs-pin-detail').value || '').trim();
-      LOCATIONS.push({ lat: parseFloat(latlng.lat.toFixed(6)), lng: parseFloat(latlng.lng.toFixed(6)), color: fsAddColor, name: name, detail: detail });
-      savePins(LOCATIONS);
-      removeAddPinForm();
-      setAddMode(false);
-      renderMarkersOnTop();
-      renderFsMarkers();
-    });
-
-    document.getElementById('fs-pin-name').focus();
-  }
-
-  function removeAddPinForm() {
-    if (fsAddFormEl && fsAddFormEl.parentNode) fsAddFormEl.parentNode.removeChild(fsAddFormEl);
-    fsAddFormEl = null;
-  }
-
-  // ── Edit / Add mode helpers ──────────────────────────────────────
-  function setEditMode(on) {
-    fsEditMode = on;
-    if (fsAddMode && on) setAddMode(false);
-    renderFsMarkers();
-    renderFsToolbar();
-    var hint = document.getElementById('fs-edit-hint');
-    if (on && !hint) {
-      var h = document.createElement('div');
-      h.id = 'fs-edit-hint';
-      h.className = 'mcpd-edit-hint';
-      h.textContent = 'Drag pins to correct positions • Click pin to remove';
-      fsMapEl.appendChild(h);
-    } else if (!on && hint) {
-      hint.parentNode.removeChild(hint);
-    }
-  }
-
-  function setAddMode(on) {
-    fsAddMode = on;
-    if (fsEditMode && on) setEditMode(false);
-    if (!on) removeAddPinForm();
-    fsMapEl.classList.toggle('mcpd-add-pin-cursor', on);
-    renderFsToolbar();
-    var hint = document.getElementById('fs-add-hint');
-    if (on && !hint) {
-      var h = document.createElement('div');
-      h.id = 'fs-add-hint';
-      h.className = 'mcpd-edit-hint';
-      h.textContent = 'Click anywhere on the map to place a new pin';
-      fsMapEl.appendChild(h);
-    } else if (!on && hint) {
-      hint.parentNode.removeChild(hint);
-    }
-  }
-
-  // ── Fullscreen toolbar ───────────────────────────────────────────
-  function renderFsToolbar() {
-    if (!fsLayerBtn) return;
-    fsLayerBtn.innerHTML =
-      '<button id="fs-btn-sat" class="' + (fsActiveMode === 'satellite' ? 'is-active' : '') + '">Satellite</button>' +
-      '<button id="fs-btn-str" class="' + (fsActiveMode === 'street'    ? 'is-active' : '') + '">Street</button>' +
-      '<span class="mcpd-fs-toolbar-sep"></span>' +
-      '<button id="fs-btn-edit" class="' + (fsEditMode ? 'is-active' : '') + '" title="Drag pins to correct positions">Move Pins</button>' +
-      '<button id="fs-btn-add"  class="' + (fsAddMode  ? 'is-active' : '') + '" title="Click map to add a new pin">+ Add Pin</button>' +
-      '<button id="fs-btn-reset" class="is-danger" title="Remove all custom pins and restore defaults">Reset</button>';
-
-    document.getElementById('fs-btn-sat').onclick   = function () { setFsLayer('satellite'); };
-    document.getElementById('fs-btn-str').onclick   = function () { setFsLayer('street'); };
-    document.getElementById('fs-btn-edit').onclick  = function () { setEditMode(!fsEditMode); };
-    document.getElementById('fs-btn-add').onclick   = function () { setAddMode(!fsAddMode); };
-    document.getElementById('fs-btn-reset').onclick = function () {
-      if (!confirm('Reset all pins to default positions? Your custom pin locations will be lost.')) return;
-      LOCATIONS.length = 0;
-      DEFAULT_LOCATIONS.forEach(function (l) { LOCATIONS.push(Object.assign({}, l)); });
-      savePins(LOCATIONS);
-      setEditMode(false);
-      setAddMode(false);
-      renderMarkersOnTop();
-      renderFsMarkers();
-    };
-  }
-
-  function setFsLayer(mode) {
-    if (!fsMap) return;
-    fsMap.eachLayer(function (l) { if (l && l.options && l.options.attribution !== undefined) fsMap.removeLayer(l); });
-    fsActiveMode = mode;
-    if (mode === 'satellite') {
-      fsSatLayer.addTo(fsMap);
-      fsLabelsLayer.addTo(fsMap);
-    } else {
-      (isDark() ? fsStreetDarkLayer : fsStreetLayer).addTo(fsMap);
-    }
-    renderFsMarkers();
-    renderFsToolbar();
-  }
-
-  function openFsModal() {
-    fsOverlay.classList.add('is-open');
-    document.body.style.overflow = 'hidden';
-    setTimeout(function () {
-      initFsMap();
-      if (fsMap) {
-        fsMap.invalidateSize();
-        if (LOCATIONS.length) {
-          fsMap.fitBounds(LOCATIONS.map(function (l) { return [l.lat, l.lng]; }), { padding: [60, 60], maxZoom: 17 });
-        }
-      }
-    }, 80);
-  }
-
-  function closeFsModal() {
-    setEditMode(false);
-    setAddMode(false);
-    fsOverlay.classList.remove('is-open');
-    document.body.style.overflow = '';
-  }
-
-  el.addEventListener('click', function (e) {
-    if (e.target.closest('.leaflet-control') || e.target.closest('.leaflet-popup')) return;
-    openFsModal();
-  });
-  if (fsClose) fsClose.addEventListener('click', closeFsModal);
-  if (fsOverlay) fsOverlay.addEventListener('click', function (e) { if (e.target === fsOverlay) closeFsModal(); });
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeFsModal(); });
-}());
-</script>
 {% endblock %}
