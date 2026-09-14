@@ -1,8 +1,12 @@
+import json
+import os
 import secrets
 
-from flask import Blueprint, redirect, render_template, request, session, url_for
+import requests
+from flask import Blueprint, Response, abort, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_required
 
+from ..services.ai_client import configured_openai_api_key
 from ..simulator.run_store import load_run, load_run_state
 from ..simulator.shift_engine import (
     assign_next_call,
@@ -21,6 +25,12 @@ SHIFT_SESSION_KEY = 'sentinel_virtual_shift_v1'
 SCENARIO_SESSION_KEY = 'sentinel_scenario_lab_v2'
 RANDOM_DECK_KEY = 'sentinel_scenario_random_deck_v1'
 LAUNCH_MODE_KEY = 'sentinel_scenario_launch_mode_v1'
+
+_DISPATCH_AUDIO_CACHE = {}
+_DISPATCH_VOICES = {
+    'alloy', 'ash', 'ballad', 'coral', 'echo', 'fable', 'onyx', 'nova',
+    'sage', 'shimmer', 'verse', 'marin', 'cedar',
+}
 
 
 def _save(shift):
@@ -70,8 +80,6 @@ def _draw_random_scenario():
         deck = list(scenario_ids)
         secrets.SystemRandom().shuffle(deck)
 
-    # A random button should feel random. Never intentionally serve the exact
-    # same scenario family twice in a row when another family is available.
     if len(deck) > 1 and deck[0] == current_id:
         replacement_index = next((idx for idx, sid in enumerate(deck[1:], start=1) if sid != current_id), None)
         if replacement_index is not None:
@@ -81,6 +89,101 @@ def _draw_random_scenario():
     session[RANDOM_DECK_KEY] = deck
     session.modified = True
     return selected
+
+
+def _current_dispatch_text():
+    state = session.get(SCENARIO_SESSION_KEY)
+    if isinstance(state, dict):
+        run_context = state.get('run_context') or {}
+        text = str(run_context.get('dispatch_variant') or '').strip()
+        if text:
+            return text
+        scenario_id = str(state.get('scenario_id') or '').strip()
+        if scenario_id in SCENARIOS:
+            return str(SCENARIOS[scenario_id].get('dispatch') or '').strip()
+
+    shift_state = session.get(SHIFT_SESSION_KEY)
+    if isinstance(shift_state, dict):
+        return str(shift_state.get('active_dispatch_text') or '').strip()
+    return ''
+
+
+def _natural_dispatch_audio(text):
+    """Generate a natural synthetic dispatcher voice; cache successful MP3s only."""
+    api_key = configured_openai_api_key()
+    if not api_key or not text:
+        return None
+
+    model = (
+        os.environ.get('MCPD_DISPATCH_TTS_MODEL', '').strip()
+        or os.environ.get('OPENAI_TTS_MODEL', '').strip()
+        or 'gpt-4o-mini-tts'
+    )
+    voice = os.environ.get('MCPD_DISPATCH_TTS_VOICE', '').strip().lower() or 'marin'
+    if voice not in _DISPATCH_VOICES:
+        voice = 'marin'
+
+    cache_key = (model, voice, text)
+    cached = _DISPATCH_AUDIO_CACHE.get(cache_key)
+    if cached:
+        return cached
+
+    payload = {
+        'model': model,
+        'input': text[:4096],
+        'voice': voice,
+        'response_format': 'mp3',
+        'speed': 1.0,
+    }
+    if model.startswith('gpt-4o-mini-tts'):
+        payload['instructions'] = (
+            'Speak like an experienced U.S. public-safety radio dispatcher. '
+            'Sound natural, calm, concise, and alert rather than theatrical. '
+            'Use authentic dispatch cadence with brief pauses around the unit number, building/location, and call nature. '
+            'Keep the delivery professional and conversational. Do not sound like an announcer or a robot.'
+        )
+
+    try:
+        response = requests.post(
+            'https://api.openai.com/v1/audio/speech',
+            headers={
+                'Authorization': f'Bearer {api_key}',
+                'Content-Type': 'application/json',
+            },
+            data=json.dumps(payload),
+            timeout=30,
+        )
+    except requests.RequestException:
+        return None
+
+    if response.status_code != 200 or not response.content:
+        return None
+
+    audio = bytes(response.content)
+    if len(_DISPATCH_AUDIO_CACHE) >= 64:
+        _DISPATCH_AUDIO_CACHE.pop(next(iter(_DISPATCH_AUDIO_CACHE)))
+    _DISPATCH_AUDIO_CACHE[cache_key] = audio
+    return audio
+
+
+@bp.get('/voice/dispatch')
+@login_required
+def dispatch_voice():
+    """Voice only the active run's dispatch; this is not a general-purpose TTS endpoint."""
+    text = _current_dispatch_text()
+    if not text:
+        abort(404)
+    audio = _natural_dispatch_audio(text)
+    if not audio:
+        return Response(status=503, headers={'X-Sentinel-Voice-Fallback': 'browser'})
+    return Response(
+        audio,
+        mimetype='audio/mpeg',
+        headers={
+            'Cache-Control': 'private, max-age=3600',
+            'X-Sentinel-Synthetic-Voice': 'true',
+        },
+    )
 
 
 @bp.post('/launch')
@@ -96,8 +199,6 @@ def launch_call():
         scenario_id = requested if requested in SCENARIOS else (_scenario_ids()[0] if _scenario_ids() else 'S001')
         launch_mode = 'selected'
 
-    # Force a fresh run even when the instructor deliberately relaunches the
-    # same family. build_run_context will generate a new fact pattern/seed.
     session.pop(SCENARIO_SESSION_KEY, None)
     session.pop(SEED_OVERRIDE_KEY, None)
     session[LAUNCH_MODE_KEY] = {
