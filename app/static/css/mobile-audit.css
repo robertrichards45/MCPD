@@ -1,0 +1,114 @@
+/* MCPD mobile audit — final narrow-screen interaction layer.
+   Keep this small and loaded after the shared mobile component styles. */
+
+.mcpd-mobile-home-link {
+  display: none;
+}
+
+body.mobile-foundation .mobile-header-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+body.mobile-foundation .mobile-header-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-height: 42px;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+body.mobile-foundation .mobile-tab-bar,
+body.mobile-foundation .mcpd-mobile-tab-bar {
+  transition: transform .18s ease, opacity .18s ease;
+}
+
+body.mobile-foundation.mobile-keyboard-open .mobile-tab-bar,
+body.mobile-foundation.mobile-keyboard-open .mcpd-mobile-tab-bar {
+  transform: translateY(calc(115% + env(safe-area-inset-bottom, 0px))) !important;
+  opacity: 0;
+  pointer-events: none;
+}
+
+body.mobile-foundation.mobile-keyboard-open .mobile-main,
+body.mobile-foundation.mobile-keyboard-open .mcpd-mobile-home {
+  padding-bottom: 24px !important;
+}
+
+body.mobile-foundation input:focus,
+body.mobile-foundation textarea:focus,
+body.mobile-foundation select:focus,
+body.mobile-foundation [contenteditable="true"]:focus {
+  scroll-margin-top: 110px;
+  scroll-margin-bottom: 180px;
+}
+
+@media (max-width: 1020px) {
+  body:not(.view-desktop):not(.mobile-foundation) .mcpd-header-search {
+    display: none !important;
+  }
+
+  body:not(.view-desktop):not(.mobile-foundation) .mcpd-mobile-home-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 0 10px;
+    border: 1px solid rgba(147, 175, 202, .26);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .07);
+    color: #f8fafc;
+    font-size: .72rem;
+    font-weight: 800;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+}
+
+body.force-mobile-view:not(.mobile-foundation) .mcpd-header-search {
+  display: none !important;
+}
+
+body.force-mobile-view:not(.mobile-foundation) .mcpd-mobile-home-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px solid rgba(147, 175, 202, .26);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .07);
+  color: #f8fafc;
+  font-size: .72rem;
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+@media (max-width: 520px) {
+  body.mobile-foundation .mobile-header-nav {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  body.mobile-foundation .mobile-header-nav-btn {
+    width: 100%;
+    min-width: 0;
+    padding-inline: 8px;
+  }
+
+  body:not(.view-desktop):not(.mobile-foundation) .mcpd-mobile-home-link {
+    font-size: .68rem;
+    padding-inline: 8px;
+  }
+}
+
+@media (max-width: 360px) {
+  body.mobile-foundation .mobile-header-nav-btn {
+    font-size: .72rem;
+  }
+}
