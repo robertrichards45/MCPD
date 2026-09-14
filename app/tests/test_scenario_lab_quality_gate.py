@@ -50,7 +50,7 @@ def test_separate_natural_actions_accumulate_without_magic_paragraph():
     html = response.get_data(as_text=True)
     assert response.status_code == 200
     assert 'Decision accepted' not in html
-    assert 'Current Scene' in html
+    assert 'Initial / Observable Scene' in html
     with client.session_transaction() as s:
         state = s['sentinel_scenario_lab_v2']
         assert state['turn'] >= 1
@@ -76,8 +76,9 @@ def test_live_simulation_hides_internal_engine_and_legal_research():
     assert response.status_code == 200
     for hidden_label in ('Scene Risk','Core Phases Cleared','Branch Events','Immediate FTO Feedback','Still unresolved','Complaint exposure','Force review','Legal / Policy Research Unlocked','Training Objective'):
         assert hidden_label not in html
-    assert 'CAD / Dispatch' in html
-    assert 'Current Scene' in html
+    assert 'Sentinel Virtual Patrol Simulator' in html
+    assert 'Scene Management' in html
+    assert 'Initial / Observable Scene' in html
     assert 'Radio' in html
     assert 'Officer Action' in html
     assert 'People / Resources' in html
