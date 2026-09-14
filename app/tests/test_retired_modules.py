@@ -132,10 +132,29 @@ def test_retired_navigation_is_not_visible_on_dashboard():
     assert 'CLEOC Reports' not in html
     assert '>Messages' not in html
     assert 'Watch Commander Hub' not in html
+    assert 'Watch Dashboard' not in html
+    assert 'Live Response Board' not in html
     assert 'Command Due-Out Tracker' not in html
     assert 'MCLB Albany — Installation Map' not in html
     assert 'Incident Command' not in html
     assert 'Shift Check-In' not in html
     assert 'Check In' not in html
+    assert 'Location sharing is OFF' not in html
     assert '/sentinel/report-inspector' in html
     assert '/sentinel/fto-center' in html
+    assert 'Narrative Creator' in html
+    assert 'Personnel &amp; Account Approval' in html
+
+
+def test_personnel_page_prioritizes_account_workflow_and_hides_retired_mock_report_controls():
+    client = _client()
+    response = client.get('/admin/users')
+    html = response.get_data(as_text=True)
+
+    assert response.status_code == 200
+    assert 'Personnel &amp; Account Management' in html
+    assert 'New Account Requests' in html
+    assert 'Create Account' in html
+    assert 'Approve &amp; Activate' in html or '0 Pending' in html
+    assert 'Can review mock reports' not in html
+    assert 'Grant mock report review access' not in html
