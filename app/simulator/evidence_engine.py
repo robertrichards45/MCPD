@@ -2,6 +2,7 @@ from copy import deepcopy
 
 from .evidence_visuals import initialize_visual_evidence
 from .person_records import obtain_requested_statements, reveal_requested_identities
+from .statement_truth import enrich_statement_truth
 from .world_state import add_known_information, add_timeline, ensure_world_state
 
 
@@ -11,13 +12,14 @@ def _text(value):
 
 def initialize_truth_and_evidence(state, scenario_id, truth):
     world = ensure_world_state(state, scenario_id)
+    enriched_truth = enrich_statement_truth(truth, scenario_id, state.get('run_context') or {})
     if not world.get('truth'):
-        world['truth'] = deepcopy(truth or {})
-    environment = ((truth or {}).get('environment') or {})
+        world['truth'] = deepcopy(enriched_truth or {})
+    environment = ((enriched_truth or {}).get('environment') or {})
     if environment:
         world['environment'].update(deepcopy(environment))
     evidence = dict(world.get('evidence') or {})
-    for evidence_id, source in ((truth or {}).get('evidence') or {}).items():
+    for evidence_id, source in ((enriched_truth or {}).get('evidence') or {}).items():
         if not source.get('exists'):
             continue
         if evidence_id in evidence:
