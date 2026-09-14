@@ -6,6 +6,7 @@ from flask import has_request_context, session
 
 NEXT_SCENARIO = {'S001': 'S002', 'S002': 'S003', 'S003': 'S004', 'S004': 'S005', 'S005': 'S006', 'S006': 'S001'}
 SESSION_KEY = 'sentinel_scenario_lab_v2'
+SEED_OVERRIDE_KEY = 'sentinel_scenario_seed_override_v1'
 
 
 VARIANTS = {
@@ -64,7 +65,23 @@ def _current_request_choices(scenario_id):
     return dict(((state.get('run_context') or {}).get('choices')) or {})
 
 
+def _consume_seed_override(scenario_id):
+    if not has_request_context():
+        return None
+    override = session.get(SEED_OVERRIDE_KEY)
+    if not isinstance(override, dict) or override.get('scenario_id') != scenario_id:
+        return None
+    session.pop(SEED_OVERRIDE_KEY, None)
+    session.modified = True
+    try:
+        return int(override.get('seed'))
+    except (TypeError, ValueError):
+        return None
+
+
 def build_run_context(scenario_id, seed=None, previous_choices=None):
+    if seed is None:
+        seed = _consume_seed_override(scenario_id)
     explicit_seed = seed is not None
     if previous_choices is None:
         previous_choices = _current_request_choices(scenario_id)
@@ -84,9 +101,6 @@ def build_run_context(scenario_id, seed=None, previous_choices=None):
             if not previous_choices or candidate != previous_choices:
                 break
 
-        # Each family has hundreds of possible combinations. This fallback makes
-        # immediate variation deterministic even if random draws repeat the
-        # entire prior fact pattern.
         if previous_choices and choices == previous_choices and choices:
             options = VARIANTS.get(scenario_id, {})
             first_key = next(iter(options))
