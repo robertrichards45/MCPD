@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell mcpd-command-app">
+  {% include 'partials/nav.html' %}
+  <main class="page-wrap narrative-tool-page">
+    <section class="ops-head-card mb-3">
+      <div class="ops-head-copy">
+        <div class="eyebrow">FTO Center</div>
+        <h2 class="mb-1">Program Dashboard</h2>
+        <p class="text-muted mb-0">Manage standard 8-week and accelerated 4-week field training, DORs, remediation, and progress from one place.</p>
+      </div>
+      <div class="ops-head-actions">
+        <a class="btn btn-outline-secondary" href="{{ url_for('reports.sentinel.fto_center') }}">Scenario Lab & Roadmap</a>
+      </div>
+    </section>
+
+    <div class="alert alert-warning mb-3">
+      <strong>Human-controlled evaluation:</strong> the approved MCPD FTO order/curriculum is the controlling source. Sentinel may support training, but it does not set official ratings, advance a trainee, close remediation, or complete a program.
+    </div>
+
+    {% if can_manage_fto %}
+    <section class="ops-panel mb-3">
+      <div class="eyebrow">Supervisor / Training Manager</div>
+      <h3 class="mb-1">Start an FTO Program</h3>
+      <p class="text-muted">Assign the trainee, primary FTO, supervisor, and approved program path.</p>
+      <form method="post" action="{{ url_for('reports.sentinel.fto_program.create_program') }}" class="row g-3">
+        <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
+        <div class="col-md-6 col-xl-3">
+          <label class="form-label" for="trainee_id"><strong>Trainee</strong></label>
+          <select class="form-select" id="trainee_id" name="trainee_id" required>
+            <option value="">Select trainee</option>
+            {% for item in trainees %}
+            <option value="{{ item.id }}">{{ item.display_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-6 col-xl-3">
+          <label class="form-label" for="assigned_fto_id"><strong>Assigned FTO</strong></label>
+          <select class="form-select" id="assigned_fto_id" name="assigned_fto_id" required>
+            <option value="">Select FTO</option>
+            {% for item in ftos %}
+            <option value="{{ item.id }}">{{ item.display_name }} — {{ item.role_label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-6 col-xl-2">
+          <label class="form-label" for="supervisor_id"><strong>Supervisor</strong></label>
+          <select class="form-select" id="supervisor_id" name="supervisor_id">
+            {% for item in supervisors %}
+            <option value="{{ item.id }}" {% if item.id == user.id %}selected{% endif %}>{{ item.display_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-6 col-xl-2">
+          <label class="form-label" for="program_type"><strong>Program</strong></label>
+          <select class="form-select" id="program_type" name="program_type">
+            <option value="standard">Standard — 8 Weeks</option>
+            <option value="accelerated">Accelerated — 4 Weeks</option>
+          </select>
+        </div>
+        <div class="col-md-6 col-xl-2">
+          <label class="form-label" for="start_date"><strong>Start Date</strong></label>
+          <input class="form-control" id="start_date" name="start_date" type="date" value="{{ today.isoformat() }}" required>
+        </div>
+        <div class="col-12">
+          <button class="btn btn-primary" type="submit">Create FTO Program</button>
+        </div>
+      </form>
+    </section>
+    {% endif %}
+
+    <section class="ops-panel">
+      <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap mb-3">
+        <div>
+          <div class="eyebrow">Programs</div>
+          <h3 class="mb-1">{% if can_manage_fto %}FTO Program Roster{% else %}My FTO Programs{% endif %}</h3>
+          <p class="text-muted mb-0">Open a trainee record to enter DORs, review trends, document remediation, or complete supervisory actions.</p>
+        </div>
+        <span class="badge text-bg-dark">{{ assignments|length }} visible</span>
+      </div>
+
+      {% if assignments %}
+      <div class="row g-3">
+        {% for item in assignments %}
+        <div class="col-lg-6 col-xl-4">
+          <article class="border rounded p-3 h-100">
+            <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+              <div>
+                <div class="small text-muted">Trainee</div>
+                <h4 class="mb-0">{{ item.trainee.display_name }}</h4>
+              </div>
+              <span class="badge {% if item.status == 'COMPLETED' %}text-bg-success{% elif item.status == 'PAUSED' %}text-bg-warning{% elif item.status == 'EXTENDED' %}text-bg-danger{% else %}text-bg-primary{% endif %}">{{ item.status|replace('_', ' ')|title }}</span>
+            </div>
+            <dl class="row small mb-3">
+              <dt class="col-5">Program</dt><dd class="col-7">{{ item.program_type|title }} — {{ 4 if item.program_type == 'accelerated' else 8 }} weeks</dd>
+              <dt class="col-5">Current Week</dt><dd class="col-7">{{ item.current_week }}</dd>
+              <dt class="col-5">Progress</dt><dd class="col-7">{{ item.progress_percent }}%</dd>
+              <dt class="col-5">Assigned FTO</dt><dd class="col-7">{{ item.assigned_fto.display_name }}</dd>
+              <dt class="col-5">Supervisor</dt><dd class="col-7">{{ item.supervisor.display_name if item.supervisor else 'Not assigned' }}</dd>
+              <dt class="col-5">Expected</dt><dd class="col-7">{{ item.expected_completion_date.strftime('%d %b %Y') if item.expected_completion_date else 'Not set' }}</dd>
+            </dl>
+            <div class="progress mb-3" role="progressbar" aria-label="FTO program progress" aria-valuenow="{{ item.progress_percent }}" aria-valuemin="0" aria-valuemax="100">
+              <div class="progress-bar" style="width: {{ item.progress_percent }}%">{{ item.progress_percent }}%</div>
+            </div>
+            <a class="btn btn-primary w-100" href="{{ url_for('reports.sentinel.fto_program.assignment', assignment_id=item.id) }}">Open Trainee Record</a>
+          </article>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="text-center py-5">
+        <h4>No FTO programs are assigned yet.</h4>
+        <p class="text-muted mb-0">{% if can_manage_fto %}Use the form above when an officer begins a standard or accelerated FTO program.{% else %}Your assigned FTO program will appear here when it is created by an authorized supervisor or training manager.{% endif %}</p>
+      </div>
+      {% endif %}
+    </section>
+  </main>
+</div>
+{% endblock %}
