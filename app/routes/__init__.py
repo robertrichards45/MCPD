@@ -11,6 +11,101 @@ from . import credit_simulator, sentinel
 admin.bp.register_blueprint(credit_simulator.bp)
 reports.bp.register_blueprint(sentinel.bp)
 
+# Remove retired cards/panels from the dashboard data source itself so they do
+# not reappear through Customize Dashboard or future template changes.
+_RETIRED_CARD_IDS = {
+    'start_report',
+    'bodycam_mode',
+    'bodycam_footage',
+    'assistant_operations_tracker',
+    'watch_commander_hub',
+}
+_RETIRED_ENDPOINTS = {
+    'reports.new_report',
+    'bodycam.new_recording',
+    'bodycam.library',
+    'assistant_operations.dashboard',
+    'watch_commander.dashboard',
+    'cleo_api.cleo_reports_page',
+    'notifications.inbox',
+}
+
+_original_dashboard_card_catalog = dashboard._dashboard_card_catalog
+_original_dashboard_panel_catalog = dashboard._dashboard_panel_catalog
+_original_dashboard_readiness_items = dashboard._dashboard_readiness_items
+_original_dashboard_queue_items = dashboard._dashboard_queue_items
+_original_dashboard_live_ops = dashboard._dashboard_live_ops
+
+
+def _sentinel_dashboard_card_catalog():
+    cards = [card for card in _original_dashboard_card_catalog() if card.get('id') not in _RETIRED_CARD_IDS]
+    existing = {card.get('id') for card in cards}
+    if 'sentinel_report_inspector' not in existing:
+        cards.append({
+            'id': 'sentinel_report_inspector',
+            'label': 'Sentinel Report Inspector',
+            'description': 'Check narrative completeness, chronology, articulation, and offense-related cues',
+            'icon': 'report',
+            'endpoint': 'reports.sentinel.report_inspector',
+        })
+    if 'sentinel_fto_instructor' not in existing:
+        cards.append({
+            'id': 'sentinel_fto_instructor',
+            'label': 'AI FTO Instructor',
+            'description': 'Scenario-based coaching and FTO evaluation support',
+            'icon': 'training',
+            'endpoint': 'reports.sentinel.fto_instructor',
+        })
+    return cards
+
+
+def _sentinel_dashboard_panel_catalog(snapshot):
+    panels = _original_dashboard_panel_catalog(snapshot)
+    cleaned = []
+    for panel in panels:
+        item = dict(panel)
+        item['items'] = [row for row in panel.get('items', []) if row.get('endpoint') not in _RETIRED_ENDPOINTS]
+        if item.get('id') == 'recent_reports':
+            item['items'].append({
+                'label': 'Sentinel Report Inspector',
+                'detail': 'Run a second-pass quality review without inventing missing facts',
+                'endpoint': 'reports.sentinel.report_inspector',
+            })
+        if item.get('items'):
+            if item.get('view_all_endpoint') in _RETIRED_ENDPOINTS:
+                item['view_all_endpoint'] = 'dashboard.dashboard'
+            cleaned.append(item)
+    return cleaned
+
+
+def _sentinel_dashboard_readiness_items(*args, **kwargs):
+    items = _original_dashboard_readiness_items(*args, **kwargs)
+    return [item for item in items if item.get('endpoint') not in _RETIRED_ENDPOINTS and item.get('label') not in {'Watch Command', 'Command Tasking'}]
+
+
+def _sentinel_dashboard_queue_items(*args, **kwargs):
+    items = _original_dashboard_queue_items(*args, **kwargs)
+    return [item for item in items if item.get('endpoint') not in _RETIRED_ENDPOINTS]
+
+
+def _sentinel_dashboard_live_ops(*args, **kwargs):
+    payload = _original_dashboard_live_ops(*args, **kwargs)
+    payload['preplan_layers'] = [
+        item for item in payload.get('preplan_layers', [])
+        if item.get('label') != 'Installation Map' and item.get('endpoint') not in _RETIRED_ENDPOINTS
+    ]
+    for item in payload.get('feed', []):
+        if item.get('endpoint') in _RETIRED_ENDPOINTS:
+            item['endpoint'] = 'reports.list_reports'
+    return payload
+
+
+dashboard._dashboard_card_catalog = _sentinel_dashboard_card_catalog
+dashboard._dashboard_panel_catalog = _sentinel_dashboard_panel_catalog
+dashboard._dashboard_readiness_items = _sentinel_dashboard_readiness_items
+dashboard._dashboard_queue_items = _sentinel_dashboard_queue_items
+dashboard._dashboard_live_ops = _sentinel_dashboard_live_ops
+
 
 @admin.bp.before_app_request
 def _retire_requested_portal_modules():
@@ -19,7 +114,7 @@ def _retire_requested_portal_modules():
         return None
 
     path = request.path.rstrip('/') or '/'
-    if path == '/reports/new':
+    if path in {'/reports/new', '/mobile/incident/start'}:
         return redirect('/tools/narrative')
     if path == '/cleo/reports':
         return redirect('/reports')
