@@ -83,3 +83,27 @@ class FTORemediation(db.Model):
     assignment = db.relationship('FTOProgramAssignment', backref=db.backref('remediation_items', lazy='dynamic'))
     creator = db.relationship('User', foreign_keys=[created_by])
     verifier = db.relationship('User', foreign_keys=[verified_by])
+
+
+class FTOScenarioAlert(db.Model):
+    """Advisory alert from synthetic Scenario Lab practice; never an official DOR rating."""
+    __tablename__ = 'fto_scenario_alert'
+
+    id = db.Column(db.Integer, primary_key=True)
+    assignment_id = db.Column(db.Integer, db.ForeignKey('fto_program_assignment.id'), nullable=False, index=True)
+    trainee_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    assigned_fto_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    supervisor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
+    scenario_id = db.Column(db.String(40), nullable=False, index=True)
+    severity = db.Column(db.String(20), nullable=False, default='CRITICAL', index=True)
+    outcome_title = db.Column(db.String(255), nullable=False)
+    outcome_summary = db.Column(db.Text, nullable=True)
+    acknowledged_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
+    acknowledged_at = db.Column(db.DateTime, nullable=True, index=True)
+    created_at = db.Column(db.DateTime, nullable=False, default=_utcnow, index=True)
+
+    assignment = db.relationship('FTOProgramAssignment', backref=db.backref('scenario_alerts', lazy='dynamic'))
+    trainee = db.relationship('User', foreign_keys=[trainee_id])
+    assigned_fto = db.relationship('User', foreign_keys=[assigned_fto_id])
+    supervisor = db.relationship('User', foreign_keys=[supervisor_id])
+    acknowledger = db.relationship('User', foreign_keys=[acknowledged_by])
