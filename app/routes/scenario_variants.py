@@ -11,6 +11,7 @@ from ..simulator.location_catalog import (
     PROPERTY_DAMAGE_LOCATIONS,
     RETAIL_LOCATIONS,
     TRAFFIC_LOCATIONS,
+    crash_location_for_seed,
 )
 
 
@@ -193,6 +194,19 @@ def build_run_context(scenario_id, seed=None, previous_choices=None):
             f"{choices['witness_pattern']}."
         )
         context['visual_evidence'] = ['A scene-layout diagram can unlock if crowding, hazards, or EMS access becomes operationally important.']
+    elif scenario_id == 'S007':
+        crash_location = crash_location_for_seed(chosen_seed)
+        context.update(_location_metadata(crash_location))
+        # Roadway calls should keep the named road visible everywhere on the CAD
+        # screen instead of collapsing the scene-board label to a nearby building.
+        context['location_name'] = crash_location
+        context['dispatch_variant'] = (
+            f"Unit 214, respond to {crash_location}, MCLB Albany, for a vehicle crash. "
+            "Injury status and roadway conditions are still being developed."
+        )
+        context['visual_evidence'] = [
+            'A crash-scene / final-rest diagram can unlock as the officer develops the roadway evidence.'
+        ]
     return context
 
 
