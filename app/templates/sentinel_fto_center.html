@@ -23,7 +23,7 @@
       <div class="col-md-6 col-xl-3"><article class="ops-panel h-100"><div class="eyebrow">Program</div><h4>Program Dashboard</h4><p class="text-muted">Open standard 8-week or accelerated 4-week trainee records, assignments, progress, and completion status.</p><a class="btn btn-sm btn-primary" href="{{ url_for('reports.sentinel.fto_program.dashboard') }}">Open Programs</a></article></div>
       <div class="col-md-6 col-xl-3"><article class="ops-panel h-100"><div class="eyebrow">Daily</div><h4>DOR & Progress</h4><p class="text-muted">Enter observed ratings, comments, supervisor reviews, acknowledgments, trends, and remediation from the trainee record.</p><a class="btn btn-sm btn-outline-primary" href="{{ url_for('reports.sentinel.fto_program.dashboard') }}">Open DOR Records</a></article></div>
       <div class="col-md-6 col-xl-3"><article class="ops-panel h-100"><div class="eyebrow">Reference</div><h4>Program Roadmap</h4><p class="text-muted">Review the standard and accelerated framework before opening the official trainee record.</p><a class="btn btn-sm btn-outline-primary" href="#program-roadmap">View Roadmap</a></article></div>
-      <div class="col-md-6 col-xl-3"><article class="ops-panel h-100"><div class="eyebrow">Practice</div><h4>Scenario Lab</h4><p class="text-muted">Work installation-relevant scenarios turn by turn with scripted fact reveals and end-of-scenario coaching.</p><a class="btn btn-sm btn-outline-primary" href="{{ url_for('reports.fto_refinements.scenario_lab.lab') }}">Open Interactive Lab</a></article></div>
+      <div class="col-md-6 col-xl-3"><article class="ops-panel h-100"><div class="eyebrow">Practice</div><h4>Scenario Lab</h4><p class="text-muted">Work installation-relevant PBLE-style scenarios through staged decisions and SEG-aligned coaching.</p><a class="btn btn-sm btn-outline-primary" href="{{ url_for('reports.fto_refinements.scenario_lab.lab') }}">Open Interactive Lab</a></article></div>
     </section>
 
     <section class="ops-panel mb-3 border-primary">
@@ -31,7 +31,7 @@
         <div class="col-lg-8">
           <div class="eyebrow">Interactive Scenario Lab</div>
           <h3>Practice the Call One Decision at a Time</h3>
-          <p class="text-muted mb-0">The Scenario Lab now keeps a turn-by-turn training session, reveals only scripted facts triggered by the trainee's actions, records the practice transcript, and scores the complete exercise only when the trainee finishes.</p>
+          <p class="text-muted mb-0">Scenario Lab uses staged decision points, reveals additional facts as the exercise progresses, and provides SEG-aligned coaching at the end. Raw trainee answers are not retained by Scenario Lab, and the coaching does not create an official DOR score.</p>
         </div>
         <div class="col-lg-4 text-lg-end">
           <a class="btn btn-primary" href="{{ url_for('reports.fto_refinements.scenario_lab.lab') }}">Launch Scenario Lab</a>
