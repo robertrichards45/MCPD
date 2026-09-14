@@ -4,12 +4,13 @@ from flask import redirect, request
 from flask_login import current_user
 
 from . import auth, dashboard, forms, training, stats, annual_ai, admin, cleo_api, reports, reconstruction, officers, ops_modules, legal, orders, reference, announcements, mobile
-from . import credit_simulator, sentinel
+from . import credit_simulator, sentinel, fto_refinements
 
 # Nest add-on tools under blueprints already registered by the app factory so
 # the large central factory does not need to be modified.
 admin.bp.register_blueprint(credit_simulator.bp)
 reports.bp.register_blueprint(sentinel.bp)
+reports.bp.register_blueprint(fto_refinements.bp)
 
 # Retired user-facing tools stay out of the dashboard/navigation while their
 # underlying records remain intact for compatibility and historical access.
@@ -164,6 +165,7 @@ def _sentinel_dashboard_readiness_items(*args, **kwargs):
 def _sentinel_dashboard_queue_items(*args, **kwargs):
     items = _original_dashboard_queue_items(*args, **kwargs)
     cleaned = [item for item in items if item.get('endpoint') not in _RETIRED_ENDPOINTS and item.get('label') != 'Task Tracker']
+    cleaned.extend(fto_refinements.dashboard_attention_items(current_user))
     if current_user.can_manage_team():
         cleaned.extend([
             {
