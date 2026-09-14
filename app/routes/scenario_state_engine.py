@@ -367,6 +367,7 @@ def _maybe_branch_after_decision(state, scenario_id, turn, signals, accepted):
         return consequences
 
     risk = int(engine.get('risk', 0))
+    clock = int(engine.get('clock', 0) or 0)
     choices = dict((state.get('run_context') or {}).get('choices') or {})
 
     if scenario_id == 'S001' and turn >= 1 and (signals.get('antagonistic') or risk >= 68):
@@ -384,7 +385,11 @@ def _maybe_branch_after_decision(state, scenario_id, turn, signals, accepted):
         if _set_pending_event(engine, 'patient_deterioration', message):
             consequences.append(message)
 
-    if scenario_id == 'S008' and turn >= 1 and 'declines extradition' in _low(choices.get('extradition')):
+    # These are world events, not rubric rewards. They are allowed to occur
+    # after enough call activity even if the trainee has not advanced the old
+    # hidden phase gate. That keeps the simulator state-driven instead of
+    # coupling reality to keyword/rubric progression.
+    if scenario_id == 'S008' and clock >= 3 and 'declines extradition' in _low(choices.get('extradition')):
         message = 'Dispatch confirms the warrant, but the entering agency advises it will not extradite from this location.'
         if _set_pending_event(engine, 'warrant_extradition_conflict', message):
             consequences.append(message)
@@ -394,7 +399,7 @@ def _maybe_branch_after_decision(state, scenario_id, turn, signals, accepted):
         if _set_pending_event(engine, 'domestic_interference', message):
             consequences.append(message)
 
-    if scenario_id == 'S013' and turn >= 1 and 'withdrawn' in _low(choices.get('consent')):
+    if scenario_id == 'S013' and clock >= 3 and 'withdrawn' in _low(choices.get('consent')):
         message = 'The person clearly withdraws consent before the consent-based search is complete.'
         if _set_pending_event(engine, 'consent_withdrawn', message):
             consequences.append(message)
