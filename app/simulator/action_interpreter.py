@@ -21,6 +21,12 @@ ALLOWED_ACTION_TYPES = {
     'no_enforcement', 'clear_call', 'unknown',
 }
 
+PERSON_TARGET_ACTIONS = {
+    'move', 'observe', 'speak', 'interview', 'command', 'identify_person',
+    'deescalate', 'detain', 'arrest', 'search', 'cite', 'release',
+    'use_force', 'deadly_force',
+}
+
 
 @dataclass
 class InterpretedAction:
@@ -61,16 +67,71 @@ def _negated(text, verbs):
     return _matches(text, patterns)
 
 
+def _alias_present(text, alias):
+    alias = _clean(alias).lower()
+    if not alias:
+        return False
+    if len(alias) <= 3 and ' ' not in alias:
+        return bool(re.search(rf'\b{re.escape(alias)}\b', text, re.I))
+    return alias in text
+
+
+def _person_aliases(person):
+    """Return natural patrol-language aliases for one visible synthetic person."""
+    pid = _clean(person.get('id')).lower()
+    name = _clean(person.get('name')).lower()
+    role = _clean(person.get('role')).lower()
+    blob = f'{pid} {name} {role}'
+    aliases = {value for value in (pid, name, role) if value}
+
+    if any(term in blob for term in ('subject', 'suspect')):
+        aliases.update({'subject', 'suspect', 'the subject', 'the suspect'})
+    if any(term in blob for term in ('reporting party', 'reporting', 'complainant', 'caller')) or pid in {'staff', 'reporting', 'rp'}:
+        aliases.update({
+            'reporting party', 'complainant', 'complaintant', 'caller', 'rp',
+            'staff member', 'staff', 'reporting employee',
+        })
+    if 'witness' in blob or pid in {'employee2', 'fullwitness', 'coworker1', 'coworker2'}:
+        aliases.update({'witness', 'the witness', 'employee witness', 'second employee', 'coworker'})
+    if 'loss prevention' in blob or pid == 'lp':
+        aliases.update({'loss prevention', 'lp', 'reporting party', 'complainant'})
+    if 'driver' in blob:
+        aliases.update({'driver', 'the driver'})
+    if 'patient' in blob:
+        aliases.update({'patient', 'the patient'})
+    if 'sponsor' in blob:
+        aliases.update({'sponsor', 'the sponsor'})
+    if 'gate' in blob:
+        aliases.update({'gate guard', 'gate personnel', 'gate officer', 'gate'})
+    if 'victim' in blob:
+        aliases.update({'victim', 'the victim'})
+
+    return sorted(aliases, key=len, reverse=True)
+
+
 def _target_from_people(text, visible_people):
+    """Resolve explicit natural-language person references before AI interpretation.
+
+    Returning the synthetic person's stable id is important because downstream NPC
+    routing should never choose a different visible person simply because the trainee
+    used a synonym such as suspect instead of Subject, or complainant instead of
+    Reporting Party.
+    """
     low = _low(text)
+    matches = []
     for person in visible_people or []:
         pid = _clean(person.get('id'))
-        name = _clean(person.get('name'))
-        role = _clean(person.get('role'))
-        for candidate in (name, role, pid):
-            if candidate and candidate.lower() in low:
-                return pid or name or role
-    return ''
+        if not pid:
+            continue
+        hit = next((alias for alias in _person_aliases(person) if _alias_present(low, alias)), '')
+        if hit:
+            matches.append((len(hit), pid))
+    if not matches:
+        return ''
+    matches.sort(reverse=True)
+    best_length = matches[0][0]
+    best = [pid for length, pid in matches if length == best_length]
+    return best[0] if len(set(best)) == 1 else ''
 
 
 def _append(rows, action_type, text, target='', priority='routine', reason='', confidence=0.82):
@@ -129,7 +190,7 @@ def deterministic_interpret(text, channel='scene', visible_people=None):
     )) and not _negated(low, ('run', 'check')):
         _append(rows, 'records_check', text, target='dispatch')
 
-    if _matches(low, (r'\b(park|move|walk|approach|go|position|stand|enter|step)\b',)) and not _negated(low, ('park', 'move', 'walk', 'approach', 'go', 'enter')):
+    if _matches(low, (r'\b(park|move|walk|approach|go|position|stand|enter|step|make contact)\b',)) and not _negated(low, ('park', 'move', 'walk', 'approach', 'go', 'enter', 'contact')):
         _append(rows, 'move', text, target=target)
     if _matches(low, (r'\b(look|observe|check|examine|inspect|scan)\b',)) and not _negated(low, ('look', 'observe', 'check', 'examine', 'inspect', 'scan')):
         _append(rows, 'observe', text, target=target)
@@ -185,7 +246,7 @@ def deterministic_interpret(text, channel='scene', visible_people=None):
         _append(rows, 'direct_backup', text, target='backup_officer')
 
     if not rows:
-        _append(rows, 'unknown', text, confidence=0.35)
+        _append(rows, 'unknown', text, target=target, confidence=0.35)
     return [row.as_dict() for row in rows]
 
 
@@ -233,6 +294,21 @@ def _validate_ai_actions(payload, original_text):
     return clean_rows
 
 
+def _enforce_explicit_person_target(actions, text, visible_people):
+    """A trainee's explicit person reference wins over an AI target guess."""
+    explicit_target = _target_from_people(text, visible_people)
+    if not explicit_target:
+        return actions
+    rows = []
+    for row in actions or []:
+        item = dict(row)
+        if _clean(item.get('action_type')).lower() in PERSON_TARGET_ACTIONS:
+            item['target'] = explicit_target
+            item['source'] = f"{_clean(item.get('source')) or 'parser'}+explicit_target"
+        rows.append(item)
+    return rows
+
+
 def interpret_action(text, channel='scene', visible_people=None, visible_resources=None, use_ai=True):
     """Convert natural-language trainee input into validated canonical actions."""
     text = _clean(text)
@@ -255,6 +331,7 @@ You do NOT decide whether an action is lawful, correct, successful, possible, or
 You do NOT add facts, evidence, weapons, crimes, warrants, injuries, or people.
 You do NOT coach the trainee.
 Pay close attention to negation. A trainee who says they will NOT arrest, search, shoot, use force, detain, release, request a resource, or take another action has not performed that action.
+When the trainee explicitly identifies a visible person by name, role, or ordinary synonym, target that exact visible person's id. Common equivalents include subject/suspect and reporting party/complainant/caller. Never silently substitute a different visible person.
 
 Channel: {channel}
 Currently visible people: {json.dumps(people)}
@@ -270,7 +347,9 @@ Use multiple actions when the trainee clearly performs multiple things. If inten
         return fallback
     parsed = _extract_json(answer)
     ai_rows = _validate_ai_actions(parsed, text)
-    return ai_rows or fallback
+    if not ai_rows:
+        return fallback
+    return _enforce_explicit_person_target(ai_rows, text, visible_people)
 
 
 SEMANTIC_TOKENS = {
