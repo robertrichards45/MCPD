@@ -1,0 +1,68 @@
+{
+  "S001": {
+    "callType": "trespass-after-warning",
+    "officerDocuments": [],
+    "writtenStatements": [],
+    "notifications": [],
+    "cid": {
+      "requirement": "conditional",
+      "instruction": "CID involvement is not automatically revealed. Evaluate the developed facts and applicable MCPD requirements before disposition.",
+      "verifiedForTraining": false
+    }
+  },
+  "S002": {
+    "callType": "general-incident",
+    "officerDocuments": [],
+    "writtenStatements": [],
+    "notifications": [],
+    "cid": {
+      "requirement": "conditional",
+      "instruction": "CID involvement depends on facts developed beyond a routine access-control response.",
+      "verifiedForTraining": false
+    }
+  },
+  "S003": {
+    "callType": "general-incident",
+    "officerDocuments": [],
+    "writtenStatements": ["Written statement when required by the configured MCPD property-damage procedure"],
+    "notifications": [],
+    "cid": {
+      "requirement": "screen",
+      "instruction": "Training configuration requires the officer to recognize and complete CID screening for qualifying installation/government-property incidents.",
+      "verifiedForTraining": true
+    }
+  },
+  "S004": {
+    "callType": "theft",
+    "officerDocuments": [],
+    "writtenStatements": ["Written statement from the appropriate firsthand reporting/witness source"],
+    "notifications": [],
+    "cid": {
+      "requirement": "screen",
+      "instruction": "Training configuration requires the officer to recognize and complete CID screening for the larceny/shoplifting incident.",
+      "verifiedForTraining": true
+    }
+  },
+  "S005": {
+    "callType": "traffic-stop",
+    "officerDocuments": [],
+    "writtenStatements": [],
+    "notifications": [],
+    "cid": {
+      "requirement": "conditional",
+      "instruction": "CID involvement is not routine for the base traffic-stop scenario and must be reassessed if the developed facts materially change.",
+      "verifiedForTraining": false
+    }
+  },
+  "S006": {
+    "callType": "general-incident",
+    "officerDocuments": [],
+    "writtenStatements": [],
+    "notifications": [],
+    "cid": {
+      "requirement": "conditional",
+      "instruction": "CID involvement is not routine for a medical assist unless the developed facts establish an investigative basis requiring screening or notification.",
+      "verifiedForTraining": false
+    }
+  }
+}
