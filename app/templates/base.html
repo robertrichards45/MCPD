@@ -22,8 +22,9 @@
   {% if 'mobile-foundation' in (body_class|default('')) %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-refresh.css', v='2026-09-14-mobile-audit-v1') }}" />
   {% endif %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-global.css', v='2026-09-14-mobile-audit-v1') }}" />
   {% block head %}{% endblock %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-global.css', v='2026-09-14-mobile-audit-v2') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-components.css', v='2026-09-14-mobile-audit-v1') }}" />
 </head>
 <body class="{{ body_class|default('') }}">
   <a class="skip-nav-link" href="#main-content">Skip to main content</a>
