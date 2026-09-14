@@ -17,7 +17,6 @@
         <a href="{{ url_for('dashboard.k9_dashboard') }}" aria-current="page">K-9</a>
         <a href="{{ url_for('dashboard.cvi_dashboard') }}">CVI</a>
         <a href="{{ url_for('dashboard.srt_dashboard') }}">SRT</a>
-        <a href="{{ url_for('incident_command.dashboard') }}">Incident Command</a>
       </nav>
     </header>
 
@@ -50,31 +49,25 @@
         <div class="ops-panel">
           {% for alert in alerts %}
           <div class="command-row">
-            <div>
-              <strong>{{ alert.title }}</strong>
-              <small>{{ alert.detail }}</small>
-            </div>
+            <div><strong>{{ alert.title }}</strong><small>{{ alert.detail }}</small></div>
             <span class="command-pill">{{ alert.priority }}</span>
           </div>
-          {% else %}
-          <p class="wc-row-card">No active alerts.</p>
-          {% endfor %}
+          {% else %}<p class="wc-row-card">No active alerts.</p>{% endfor %}
         </div>
 
         <h2 class="wc-big-number" style="font-size:1rem;font-weight:600;margin:1.5rem 0 .5rem">Quick Actions</h2>
         <div class="wc-action-grid">
-          <a href="{{ url_for('watch_commander.unit_map') }}">Unit Map<span>Live positions for all K-9 teams.</span></a>
+          <a href="{{ url_for('watch_commander.unit_map') }}">Unit Map<span>Live positions for K-9 teams when available.</span></a>
           <a href="{{ url_for('watch_commander.reports') }}">Reports<span>Review K-9 incident and sweep reports.</span></a>
-          <a href="{{ url_for('watch_commander.briefing') }}">Briefing<span>Current BOLOs and shift notices.</span></a>
-          <a href="{{ url_for('notifications.inbox') }}">Messages<span>Command messages and notifications.</span></a>
+          <a href="{{ url_for('bolo.bolo_board') }}">BOLO Board<span>Current BOLO information.</span></a>
+          <a href="{{ url_for('training.training_menu') }}">Training<span>Training and qualification records.</span></a>
         </div>
       </section>
     </div>
     {% else %}
     <div class="ops-panel" style="margin:2rem auto;max-width:600px;text-align:center;padding:2rem;">
-      <strong>Live data requires officer sign-on.</strong>
-      <p style="margin-top:.5rem;color:var(--text-secondary)">K-9 team members must check in via the shift sign-on page to appear here. Enable Demo Mode to see sample data.</p>
-      <a class="command-action-btn" href="{{ url_for('watch_commander.sign_on') }}" style="display:inline-block;margin-top:1rem">Check In</a>
+      <strong>No live K-9 status data is available in this view.</strong>
+      <p style="margin-top:.5rem;color:var(--text-secondary)">Use the unit records, BOLO, reports, and training tools for current operational information. Enable Demo Mode only to view sample dashboard data.</p>
     </div>
     {% endif %}
   </main>
