@@ -7,7 +7,7 @@
       <div class="ops-head-copy">
         <div class="eyebrow">Sentinel — Training Forms</div>
         <h2 class="mb-1">{{ 'FTO Form Review' if read_only else 'Complete Selected Training Forms' }}</h2>
-        <p class="text-muted mb-0">Officer-completed forms use the controlled MCPD form-field registry. Declarant statements are handled separately and remain read-only.</p>
+        <p class="text-muted mb-0">Officer-completed forms use the controlled MCPD form-field registry. Saved training entries can be previewed on the actual source PDF used by the MCPD Forms module. Declarant statements remain read-only.</p>
       </div>
       <div class="ops-head-actions d-flex gap-2 flex-wrap">
         <a class="btn btn-outline-secondary" href="{{ back_url }}">Back to Training Package</a>
@@ -49,7 +49,10 @@
             <h3 class="mb-1">{{ document.document_name }}</h3>
             <div class="small text-muted">Schema source: {{ document.source|replace('_',' ')|title }}{% if document.registry_pattern %} — registry match: {{ document.registry_pattern }}{% endif %}</div>
           </div>
-          <span class="badge text-bg-secondary">Synthetic Only</span>
+          <div class="d-flex gap-2 align-items-center flex-wrap">
+            {% if saved %}<a class="btn btn-sm btn-outline-primary" target="_blank" rel="noopener" href="{{ url_for('reports.fto_refinements.scenario_official_forms.training_form_actual_pdf', document_id=document.document_id) }}">Open Actual Form PDF</a>{% endif %}
+            <span class="badge text-bg-secondary">Synthetic Only</span>
+          </div>
         </div>
         {% if document.mapping_missing %}
           <div class="alert alert-danger"><strong>Official form mapping unavailable.</strong> Sentinel will not substitute a generic form. This form must be mapped to its real MCPD form fields before it can be used in an evaluation.</div>
@@ -85,7 +88,7 @@
       {% if not read_only %}
       <section class="ops-panel mb-3">
         <div class="eyebrow">Preservation Rule</div>
-        <p class="mb-3">Saving creates a new immutable training-form snapshot for this report revision. Earlier form snapshots remain available to the FTO.</p>
+        <p class="mb-3">Saving creates a new immutable training-form snapshot for this report revision. Earlier form snapshots remain available to the FTO. After saving, use <strong>Open Actual Form PDF</strong> to inspect the real source document populated with the synthetic training values.</p>
         <button class="btn btn-primary" type="submit">Save Training Forms</button>
       </section>
       {% endif %}
