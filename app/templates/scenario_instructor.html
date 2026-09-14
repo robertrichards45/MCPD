@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell mcpd-command-app">
+  {% include 'partials/nav.html' %}
+  <main class="page-wrap narrative-tool-page">
+    <section class="ops-head-card mb-3">
+      <div class="ops-head-copy">
+        <div class="eyebrow">Sentinel — FTO Live Control</div>
+        <h2 class="mb-1">Instructor Event Control</h2>
+        <p class="text-muted mb-0">Inject a controlled synthetic event without manually running the entire scenario.</p>
+      </div>
+      <div class="ops-head-actions d-flex gap-2 flex-wrap">
+        <a class="btn btn-outline-primary" href="{{ url_for('reports.fto_refinements.scenario_lab.evaluator', run_id=run.run_id) }}">Evaluator View</a>
+        <a class="btn btn-outline-secondary" href="{{ url_for('reports.sentinel.fto_program.dashboard') }}">FTO Program</a>
+      </div>
+    </section>
+
+    <div class="alert alert-secondary"><strong>Structured overrides only.</strong> The instructor can alter timing, behavior, environment, and already-defined scenario objects. This screen does not create an unconfigured weapon, warrant, record, person, or evidence object.</div>
+
+    <section class="ops-panel mb-3">
+      <div class="row g-3">
+        <div class="col-md-4"><div class="border rounded p-3"><div class="eyebrow">Run</div><strong>{{ run.run_id }}</strong></div></div>
+        <div class="col-md-4"><div class="border rounded p-3"><div class="eyebrow">Family</div><strong>{{ run.scenario_id }}</strong></div></div>
+        <div class="col-md-4"><div class="border rounded p-3"><div class="eyebrow">Simulation Clock</div><strong>T+{{ options.clock }}</strong></div></div>
+      </div>
+    </section>
+
+    {% if run.status not in ['COMPLETED','TERMINATED'] %}
+    <section class="row g-3 mb-3">
+      <div class="col-xl-6">
+        <article class="ops-panel h-100">
+          <div class="eyebrow">Radio / Call Updates</div>
+          <h3>Inject Communication</h3>
+          <form method="post" class="mb-3">
+            <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
+            <input type="hidden" name="event_type" value="caller_update">
+            <label class="form-label"><strong>Caller update relayed by Dispatch</strong></label>
+            <textarea class="form-control" name="event_text" rows="3" maxlength="1200" required placeholder="Example: caller now says the second person walked outside toward the parking area."></textarea>
+            <button class="btn btn-outline-primary mt-2">Inject Caller Update</button>
+          </form>
+          <form method="post">
+            <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
+            <input type="hidden" name="event_type" value="supervisor_request">
+            <label class="form-label"><strong>Supervisor radio request</strong></label>
+            <textarea class="form-control" name="event_text" rows="3" maxlength="1200" required placeholder="Example: 214, advise when you have a preliminary disposition."></textarea>
+            <button class="btn btn-outline-primary mt-2">Inject Supervisor Request</button>
+          </form>
+        </article>
+      </div>
+
+      <div class="col-xl-6">
+        <article class="ops-panel h-100">
+          <div class="eyebrow">Resources / Behavior</div>
+          <h3>Change the Live Situation</h3>
+          <form method="post" class="mb-3">
+            <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
+            <input type="hidden" name="event_type" value="backup_delay">
+            <label class="form-label"><strong>Delay cover unit</strong></label>
+            <div class="input-group">
+              <input class="form-control" type="number" min="1" max="10" name="delay" value="2">
+              <span class="input-group-text">simulation minutes</span>
+            </div>
+            <input class="form-control mt-2" name="event_text" maxlength="1200" placeholder="Optional Dispatch wording">
+            <div class="small text-muted mt-1">Current backup status: {{ options.backup.status or 'not requested' }}</div>
+            <button class="btn btn-outline-warning mt-2">Delay Backup</button>
+          </form>
+          <form method="post">
+            <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
+            <input type="hidden" name="event_type" value="subject_behavior">
+            <label class="form-label"><strong>Observable behavior change</strong></label>
+            <textarea class="form-control" name="event_text" rows="3" maxlength="1200" required placeholder="Describe only behavior the officer can perceive."></textarea>
+            <button class="btn btn-outline-warning mt-2">Inject Behavior Change</button>
+          </form>
+        </article>
+      </div>
+    </section>
+
+    <section class="row g-3 mb-3">
+      <div class="col-xl-6">
+        <article class="ops-panel h-100">
+          <div class="eyebrow">Configured People</div>
+          <h3>Arrival / Departure</h3>
+          {% if options.people %}
+          <form method="post" class="row g-2">
+            <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
+            <div class="col-12">
+              <select class="form-select" name="target_id" required>
+                {% for person in options.people %}<option value="{{ person.id }}">{{ person.label }} — {{ person.status }}</option>{% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6 d-grid"><button class="btn btn-outline-primary" name="event_type" value="person_arrival">Have Person Arrive</button></div>
+            <div class="col-md-6 d-grid"><button class="btn btn-outline-secondary" name="event_type" value="person_departure">Have Person Leave</button></div>
+          </form>
+          {% else %}<p class="text-muted">No configured people are available for instructor control in this run.</p>{% endif %}
+        </article>
+      </div>
+
+      <div class="col-xl-6">
+        <article class="ops-panel h-100">
+          <div class="eyebrow">Structured Evidence</div>
+          <h3>Surface an Existing Opportunity</h3>
+          {% if options.evidence %}
+          <form method="post">
+            <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
+            <input type="hidden" name="event_type" value="evidence_available">
+            <select class="form-select" name="target_id" required>
+              {% for item in options.evidence %}<option value="{{ item.id }}">{{ item.label }} — {{ item.status }}</option>{% endfor %}
+            </select>
+            <input class="form-control mt-2" name="event_text" maxlength="1200" placeholder="Optional scene/caller wording">
+            <button class="btn btn-outline-primary mt-2">Surface Evidence Availability</button>
+          </form>
+          {% else %}<p class="text-muted">This run has no configurable evidence object available for this control.</p>{% endif %}
+        </article>
+      </div>
+    </section>
+
+    <section class="ops-panel mb-3">
+      <div class="eyebrow">Environment</div>
+      <h3>Change Relevant Conditions</h3>
+      <form method="post" class="row g-2">
+        <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
+        <input type="hidden" name="event_type" value="environment_change">
+        <div class="col-md"><input class="form-control" name="weather" placeholder="Weather" value="{{ options.environment.weather or '' }}"></div>
+        <div class="col-md"><input class="form-control" name="lighting" placeholder="Lighting" value="{{ options.environment.lighting or '' }}"></div>
+        <div class="col-md"><input class="form-control" name="noise" placeholder="Noise" value="{{ options.environment.noise or '' }}"></div>
+        <div class="col-md"><input class="form-control" name="visibility" placeholder="Visibility" value="{{ options.environment.visibility or '' }}"></div>
+        <div class="col-md"><input class="form-control" name="crowd" placeholder="Crowd" value="{{ options.environment.crowd or '' }}"></div>
+        <div class="col-12"><input class="form-control" name="event_text" maxlength="1200" placeholder="Optional trainee-visible description of the change"></div>
+        <div class="col-12"><button class="btn btn-outline-primary">Apply Environmental Change</button></div>
+      </form>
+    </section>
+    {% else %}
+    <div class="alert alert-info">This run is complete and remains read-only for replay and review.</div>
+    {% endif %}
+  </main>
+</div>
+{% endblock %}
