@@ -146,6 +146,34 @@
       {% else %}<p class="text-muted">The trainee has not submitted a training package yet.</p>{% endif %}
     </section>
 
+    {% if comparison and comparison.report_analysis %}
+    <section class="ops-panel mb-3">
+      <div class="eyebrow">Sentinel Review Suggestions</div>
+      <h3>Advisory Narrative Consistency</h3>
+      <p class="small text-muted mb-3">Sentinel compares the submitted narrative against the exact synthetic run ledger: developed facts, interviews, evidence state, field notes, and timeline. These are possible issues for an FTO to verify—not automatic errors, DOR findings, legal conclusions, or employment decisions.</p>
+      <div class="d-flex gap-2 flex-wrap mb-3">
+        <span class="badge text-bg-light">Analysis: {{ comparison.report_analysis.mode|replace('_',' ') }}</span>
+        <span class="badge text-bg-light">Suggestions: {{ comparison.report_analysis.suggestions|length }}</span>
+      </div>
+      {% if comparison.report_analysis.suggestions %}
+      <div class="d-grid gap-2">
+        {% for item in comparison.report_analysis.suggestions %}
+        <article class="border rounded p-3">
+          <div class="d-flex justify-content-between gap-2 flex-wrap">
+            <strong>{{ item.category|title }}</strong>
+            <span class="badge text-bg-light">{{ item.confidence|title }} confidence</span>
+          </div>
+          <p class="mb-2 mt-2">{{ item.issue }}</p>
+          {% if item.evidence %}<div class="small text-muted"><strong>Why Sentinel flagged it:</strong> {{ item.evidence }}</div>{% endif %}
+        </article>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="alert alert-secondary mb-0">No reliable consistency issue was identified automatically. The FTO should still conduct a complete human review.</div>
+      {% endif %}
+    </section>
+    {% endif %}
+
     {% if latest %}
     <section class="ops-panel mb-3">
       <div class="eyebrow">Human FTO Decision</div>
