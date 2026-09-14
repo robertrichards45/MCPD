@@ -5,9 +5,9 @@
   <div class="page-wrap manager-page-wrap call-types-page">
     <section class="mission-hero manager-hero call-types-hero mb-3">
       <div class="mission-hero-copy">
-        <div class="eyebrow">Forms Configuration</div>
+        <div class="eyebrow">Paperwork Configuration</div>
         <h1>Call Type Paperwork Manager</h1>
-        <p>Control which forms, statutes, and checklist prompts appear when officers start an incident in the mobile workflow.</p>
+        <p>Tell officers what paperwork normally belongs with each call type, what is conditional, and what facts they should verify. Keep the language simple enough to use during a shift.</p>
       </div>
       <div class="mission-hero-actions">
         <a class="btn btn-outline-secondary" href="{{ url_for('forms.forms_maintenance') }}">Template Maintenance</a>
@@ -15,13 +15,19 @@
       </div>
     </section>
 
+    <section class="ops-panel mb-3">
+      <div class="row g-3">
+        <div class="col-md-4"><div class="border rounded p-3 h-100"><strong>1. Name the call</strong><p class="small text-muted mb-0 mt-1">Use the same plain-language name an officer or dispatcher would recognize.</p></div></div>
+        <div class="col-md-4"><div class="border rounded p-3 h-100"><strong>2. Build the packet</strong><p class="small text-muted mb-0 mt-1">Put routinely required/default paperwork on the left. Put circumstance-dependent paperwork on the right.</p></div></div>
+        <div class="col-md-4"><div class="border rounded p-3 h-100"><strong>3. Add decision prompts</strong><p class="small text-muted mb-0 mt-1">Checklist prompts should tell officers what to verify, not tell them to assume a fact or charge.</p></div></div>
+      </div>
+      <div class="alert alert-warning mt-3 mb-0"><strong>Authority reminder:</strong> this manager organizes paperwork. It does not make a form legally required merely because it is selected here. Match call-type rules to current approved orders, PDIs, and reporting guidance.</div>
+    </section>
+
     <div class="call-types-layout">
       <aside class="ops-panel call-types-sidebar">
         <div class="call-types-sidebar-head">
-          <div>
-            <div class="eyebrow">Mobile Flow</div>
-            <h2>Call Types</h2>
-          </div>
+          <div><div class="eyebrow">Officer Workflow</div><h2>Call Types</h2></div>
           <span class="call-types-count">{{ rules|length }}</span>
         </div>
         <div class="call-types-list">
@@ -29,125 +35,135 @@
           <a class="call-type-row {% if edit_slug == slug %}is-active{% endif %}" href="{{ url_for('forms.call_type_rules_manager', edit=slug) }}">
             <span class="call-type-row-main">
               <strong>{{ rule.title }}</strong>
-              <small>{{ rule.recommendedForms|length }} recommended / {{ rule.optionalForms|length }} optional</small>
+              <small>{{ rule.recommendedForms|length }} default / {{ rule.optionalForms|length }} conditional</small>
             </span>
-            {% if rule.active %}
-            <span class="call-type-status is-live">Active</span>
-            {% else %}
-            <span class="call-type-status is-hidden">Hidden</span>
-            {% endif %}
+            {% if rule.active %}<span class="call-type-status is-live">Active</span>{% else %}<span class="call-type-status is-hidden">Hidden</span>{% endif %}
           </a>
-          {% else %}
-          <div class="call-type-empty">No call types configured yet.</div>
-          {% endfor %}
+          {% else %}<div class="call-type-empty">No call types configured yet.</div>{% endfor %}
         </div>
       </aside>
 
       <section class="ops-panel call-types-editor">
-        <form method="post">
+        <form method="post" id="call-type-editor-form">
           <input type="hidden" name="old_slug" value="{{ edit_rule.slug if edit_rule else '' }}">
           <div class="call-types-editor-head">
             <div>
               <div class="eyebrow">{{ 'Edit Rule' if edit_rule else 'New Rule' }}</div>
               <h2>{{ 'Edit Call Type' if edit_rule else 'Add Call Type' }}</h2>
-              <p>Keep labels short and officer-facing. Use one item per line for extra forms and checklist entries.</p>
+              <p>Use officer-facing wording. One clear instruction is better than several policy paragraphs.</p>
             </div>
-            <label class="call-type-mobile-toggle">
-              <input type="checkbox" name="active" {% if not edit_rule or edit_rule.active %}checked{% endif %}>
-              <span>Show on mobile</span>
-            </label>
+            <label class="call-type-mobile-toggle"><input type="checkbox" name="active" {% if not edit_rule or edit_rule.active %}checked{% endif %}><span>Show to officers</span></label>
           </div>
 
           <div class="call-type-field-grid call-type-field-grid-top">
-            <label>
-              <span>Call type name</span>
-              <input class="form-control" id="call-type-title" name="title" required value="{{ edit_rule.title if edit_rule else '' }}" placeholder="Example: Noise Complaint">
-            </label>
-            <label>
-              <span>Slug</span>
-              <input class="form-control" id="call-type-slug" name="slug" value="{{ edit_rule.slug if edit_rule else '' }}" placeholder="auto-created if blank">
-            </label>
-            <label>
-              <span>Short mobile label</span>
-              <input class="form-control" id="call-type-short-label" name="short_label" value="{{ edit_rule.shortLabel if edit_rule else '' }}" placeholder="Noise">
-            </label>
-            <label class="call-type-field-wide">
-              <span>Mobile note</span>
-              <input class="form-control" id="call-type-description" name="description" value="{{ edit_rule.description if edit_rule else '' }}" placeholder="Short officer-facing reminder">
-            </label>
+            <label><span>Call type name</span><input class="form-control" id="call-type-title" name="title" required value="{{ edit_rule.title if edit_rule else '' }}" placeholder="Example: Lost / Found Property"></label>
+            <label><span>System slug</span><input class="form-control" id="call-type-slug" name="slug" value="{{ edit_rule.slug if edit_rule else '' }}" placeholder="auto-created if blank"></label>
+            <label><span>Short mobile label</span><input class="form-control" id="call-type-short-label" name="short_label" value="{{ edit_rule.shortLabel if edit_rule else '' }}" placeholder="Lost/Found"></label>
+            <label class="call-type-field-wide"><span>Officer-facing note</span><input class="form-control" id="call-type-description" name="description" value="{{ edit_rule.description if edit_rule else '' }}" placeholder="Example: Confirm whether there is a reporting party before selecting the stat sheet."></label>
           </div>
 
-          <div class="call-type-section-title">
-            <h3>Paperwork Selection</h3>
-            <p>Recommended forms auto-select. Optional forms remain visible for officer review.</p>
-          </div>
+          <div class="call-type-section-title"><h3>Paperwork Packet</h3><p>Default paperwork is preselected. Conditional paperwork stays visible for the officer to choose when the facts require it.</p></div>
 
           <div class="call-type-two-col">
             <div class="call-type-panel">
-              <label class="call-type-field-label" for="recommended-forms">Recommended forms</label>
+              <label class="call-type-field-label" for="recommended-forms">Default / normally required paperwork</label>
               {% if forms %}
               <select class="form-select call-type-multi-select" id="recommended-forms" name="recommended_forms" multiple size="8">
-                {% for form in forms %}
-                <option value="{{ form.title }}" {% if edit_rule and form.title in edit_rule.recommendedForms %}selected{% endif %}>{{ form.title }}</option>
-                {% endfor %}
+                {% for form in forms %}<option value="{{ form.title }}" {% if edit_rule and form.title in edit_rule.recommendedForms %}selected{% endif %}>{{ form.title }}</option>{% endfor %}
               </select>
-              {% else %}
-              <div class="call-type-empty-box">No active library forms are loaded. Use the manual list below until forms are restored.</div>
-              {% endif %}
-              <div class="form-text">Auto-selected when the officer chooses this call type.</div>
-              <label class="call-type-field-label mt-2" for="recommended-extra">Other recommended form names</label>
+              {% else %}<div class="call-type-empty-box">No active library forms are loaded. Use the manual list below until forms are restored.</div>{% endif %}
+              <div class="form-text">These appear selected when the officer opens this call type. Only place a form here when the department normally expects it for the call.</div>
+              <label class="call-type-field-label mt-2" for="recommended-extra">Other default paperwork names</label>
               <textarea class="form-control" id="recommended-extra" name="recommended_forms_extra" rows="3" placeholder="One per line">{% if edit_rule %}{{ recommended_extra|join('\n') }}{% endif %}</textarea>
             </div>
 
             <div class="call-type-panel">
-              <label class="call-type-field-label" for="optional-forms">Optional forms</label>
+              <label class="call-type-field-label" for="optional-forms">Conditional / situation-dependent paperwork</label>
               {% if forms %}
               <select class="form-select call-type-multi-select" id="optional-forms" name="optional_forms" multiple size="8">
-                {% for form in forms %}
-                <option value="{{ form.title }}" {% if edit_rule and form.title in edit_rule.optionalForms %}selected{% endif %}>{{ form.title }}</option>
-                {% endfor %}
+                {% for form in forms %}<option value="{{ form.title }}" {% if edit_rule and form.title in edit_rule.optionalForms %}selected{% endif %}>{{ form.title }}</option>{% endfor %}
               </select>
-              {% else %}
-              <div class="call-type-empty-box">No active library forms are loaded. Optional manual names can still be saved below.</div>
-              {% endif %}
-              <div class="form-text">Shown in the packet checklist but not forced.</div>
-              <label class="call-type-field-label mt-2" for="optional-extra">Other optional form names</label>
+              {% else %}<div class="call-type-empty-box">No active library forms are loaded. Conditional manual names can still be saved below.</div>{% endif %}
+              <div class="form-text">Use this for paperwork triggered by a reporting party, arrest, evidence, injury, CID screening, property disposition, or another factual condition.</div>
+              <label class="call-type-field-label mt-2" for="optional-extra">Other conditional paperwork names</label>
               <textarea class="form-control" id="optional-extra" name="optional_forms_extra" rows="3" placeholder="One per line">{% if edit_rule %}{{ optional_extra|join('\n') }}{% endif %}</textarea>
             </div>
           </div>
 
-          <div class="call-type-section-title">
-            <h3>Officer Guidance</h3>
-            <p>These prompts appear as quick reminders during incident intake.</p>
-          </div>
+          <div id="call-type-overlap-warning" class="alert alert-danger mt-3" style="display:none;"><strong>Fix before saving:</strong> the same form is selected as both default and conditional paperwork.</div>
 
+          <div class="call-type-section-title"><h3>Officer Guidance</h3><p>Write prompts as questions or verification steps. Do not write a prompt that assumes guilt, probable cause, intent, or a fact not yet established.</p></div>
           <div class="call-type-two-col">
             <label class="call-type-panel">
-              <span class="call-type-field-label">Statutes / offense areas</span>
-              <textarea class="form-control" id="statutes" name="statutes" rows="5" placeholder="One per line">{% if edit_rule %}{{ edit_rule.statutes|join('\n') }}{% endif %}</textarea>
+              <span class="call-type-field-label">Statutes / offense areas to consider</span>
+              <textarea class="form-control" id="statutes" name="statutes" rows="6" placeholder="One per line. Example: Article 108 consideration — verify willful or negligent facts and current applicability.">{% if edit_rule %}{{ edit_rule.statutes|join('\n') }}{% endif %}</textarea>
+              <small class="form-text">Use “consider / verify” language unless current approved authority makes the requirement explicit.</small>
             </label>
             <label class="call-type-panel">
-              <span class="call-type-field-label">Checklist items</span>
-              <textarea class="form-control" id="checklist-items" name="checklist_items" rows="5" placeholder="One per line">{% if edit_rule %}{{ edit_rule.checklistItems|join('\n') }}{% endif %}</textarea>
+              <span class="call-type-field-label">Officer checklist / decision prompts</span>
+              <textarea class="form-control" id="checklist-items" name="checklist_items" rows="6" placeholder="One per line. Example: Is there a reporting party? If yes, confirm whether a stat sheet is required.">{% if edit_rule %}{{ edit_rule.checklistItems|join('\n') }}{% endif %}</textarea>
+              <small class="form-text">Good prompts help the officer identify missing information without telling them what the answer should be.</small>
             </label>
           </div>
 
+          <section class="border rounded p-3 mt-3" aria-live="polite">
+            <div class="eyebrow">Officer Preview</div>
+            <h4 id="call-type-preview-title" class="mb-1">{{ edit_rule.title if edit_rule else 'New call type' }}</h4>
+            <p id="call-type-preview-note" class="text-muted mb-2">{{ edit_rule.description if edit_rule else 'The officer-facing note will appear here.' }}</p>
+            <div class="row g-2">
+              <div class="col-md-6"><strong>Default packet</strong><div id="call-type-preview-default" class="small text-muted mt-1">Select forms above to preview.</div></div>
+              <div class="col-md-6"><strong>Conditional packet</strong><div id="call-type-preview-conditional" class="small text-muted mt-1">Select forms above to preview.</div></div>
+            </div>
+          </section>
+
           <div class="call-type-actions">
-            {% if edit_rule %}
-            <button class="btn btn-outline-danger" form="delete-call-type-form" type="submit">Remove Call Type</button>
-            {% endif %}
-            <button class="btn btn-primary" type="submit" name="action" value="save">Save Call Type</button>
+            {% if edit_rule %}<button class="btn btn-outline-danger" form="delete-call-type-form" type="submit">Remove Call Type</button>{% endif %}
+            <button class="btn btn-primary" id="call-type-save" type="submit" name="action" value="save">Save Call Type</button>
           </div>
         </form>
 
         {% if edit_rule %}
-        <form id="delete-call-type-form" method="post" onsubmit="return confirm('Remove this call type from the mobile flow?');">
-          <input type="hidden" name="old_slug" value="{{ edit_rule.slug }}">
-          <input type="hidden" name="action" value="delete">
+        <form id="delete-call-type-form" method="post" onsubmit="return confirm('Remove this call type from the officer workflow?');">
+          <input type="hidden" name="old_slug" value="{{ edit_rule.slug }}"><input type="hidden" name="action" value="delete">
         </form>
         {% endif %}
       </section>
     </div>
   </div>
 </div>
+<script>
+(function () {
+  function selected(id) {
+    var el = document.getElementById(id);
+    if (!el) return [];
+    return Array.prototype.slice.call(el.options).filter(function (o) { return o.selected; }).map(function (o) { return o.value; });
+  }
+  function lines(id) {
+    var el = document.getElementById(id);
+    return el ? el.value.split(/\n+/).map(function (v) { return v.trim(); }).filter(Boolean) : [];
+  }
+  function unique(values) {
+    var seen = {};
+    return values.filter(function (v) { var k = v.toLowerCase(); if (seen[k]) return false; seen[k] = true; return true; });
+  }
+  function updatePreview() {
+    var title = document.getElementById('call-type-title');
+    var note = document.getElementById('call-type-description');
+    var defaultForms = unique(selected('recommended-forms').concat(lines('recommended-extra')));
+    var optionalForms = unique(selected('optional-forms').concat(lines('optional-extra')));
+    var overlap = defaultForms.filter(function (item) { return optionalForms.map(function (x) { return x.toLowerCase(); }).indexOf(item.toLowerCase()) >= 0; });
+    document.getElementById('call-type-preview-title').textContent = title && title.value.trim() ? title.value.trim() : 'New call type';
+    document.getElementById('call-type-preview-note').textContent = note && note.value.trim() ? note.value.trim() : 'The officer-facing note will appear here.';
+    document.getElementById('call-type-preview-default').textContent = defaultForms.length ? defaultForms.join(' • ') : 'No default paperwork selected.';
+    document.getElementById('call-type-preview-conditional').textContent = optionalForms.length ? optionalForms.join(' • ') : 'No conditional paperwork selected.';
+    var warning = document.getElementById('call-type-overlap-warning');
+    if (warning) { warning.style.display = overlap.length ? '' : 'none'; if (overlap.length) warning.innerHTML = '<strong>Fix before saving:</strong> ' + overlap.join(', ') + ' selected in both columns.'; }
+    var save = document.getElementById('call-type-save'); if (save) save.disabled = overlap.length > 0;
+  }
+  ['call-type-title','call-type-description','recommended-forms','optional-forms','recommended-extra','optional-extra'].forEach(function (id) {
+    var el = document.getElementById(id); if (el) { el.addEventListener('input', updatePreview); el.addEventListener('change', updatePreview); }
+  });
+  updatePreview();
+}());
+</script>
 {% endblock %}
