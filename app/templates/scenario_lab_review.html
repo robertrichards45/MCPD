@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell mcpd-command-app">
+  {% include 'partials/nav.html' %}
+  <main class="page-wrap narrative-tool-page">
+    <section class="ops-head-card mb-3">
+      <div class="ops-head-copy">
+        <div class="eyebrow">Sentinel — After-Action Review</div>
+        <h2 class="mb-1">Virtual Patrol Debrief</h2>
+        <p class="text-muted mb-0">Review what happened in order, what information was available at each decision point, and what should be discussed with the FTO.</p>
+      </div>
+      <div class="ops-head-actions d-flex gap-2 flex-wrap">
+        {% if evaluator_access %}<a class="btn btn-outline-secondary" href="{{ url_for('reports.fto_refinements.scenario_lab.evaluator', run_id=run.run_id) }}">Evaluator Replay</a>{% endif %}
+        <a class="btn btn-outline-secondary" href="{{ url_for('reports.fto_refinements.scenario_lab.lab', scenario_id=run.scenario_id) }}">Scenario Lab</a>
+      </div>
+    </section>
+
+    <div class="alert alert-secondary mb-3"><strong>TRAINING / SYNTHETIC.</strong> This review provides training evidence and discussion cues. It is not an automatic DOR rating, disciplinary finding, criminal conclusion, or advancement decision.</div>
+
+    {% if state.terminal_outcome %}
+    <section class="ops-panel mb-3 border-danger">
+      <div class="eyebrow text-danger">Terminal Outcome</div>
+      <h3>{{ state.terminal_outcome.title }}</h3>
+      <p>{{ state.terminal_outcome.public_outcome }}</p>
+      <p>{{ state.terminal_outcome.officer_outcome }}</p>
+      <p class="text-muted mb-0">{{ state.terminal_outcome.legal_outcome }}</p>
+    </section>
+    {% endif %}
+
+    <section class="row g-3 mb-3">
+      <div class="col-xl-7">
+        <article class="ops-panel h-100">
+          <div class="eyebrow">Call Timeline</div>
+          <h3>What Happened, In Order</h3>
+          <p class="small text-muted">Hidden evaluator observations are shown only after the live call. World snapshots preserve what was known at the time instead of judging earlier decisions with later facts.</p>
+          {% if events %}
+          <div class="d-grid gap-2">
+            {% for event in events %}
+            <details class="border rounded p-2" {% if loop.index <= 4 %}open{% endif %}>
+              <summary>
+                <strong>#{{ event.sequence }} — {{ event.event_type|replace('_',' ')|title }}</strong>
+                {% if event.actor %} — {{ event.actor }}{% endif %}
+              </summary>
+              {% if event.summary %}<p class="mt-2 mb-2">{{ event.summary }}</p>{% endif %}
+              {% if evaluator_access %}
+              <div class="small text-muted mb-1">World state captured at this moment:</div>
+              <pre class="small mb-0" style="white-space:pre-wrap">{{ event.world_snapshot_json }}</pre>
+              {% endif %}
+            </details>
+            {% endfor %}
+          </div>
+          {% else %}<p class="text-muted">No replay events were persisted for this run.</p>{% endif %}
+        </article>
+      </div>
+
+      <div class="col-xl-5">
+        <article class="ops-panel h-100">
+          <div class="eyebrow">Run Summary</div>
+          <h3>{{ result.practice_outcome }}</h3>
+          <div class="row g-2">
+            <div class="col-6"><div class="border rounded p-2 h-100"><small>Run</small><div><strong>{{ run.run_id }}</strong></div></div></div>
+            <div class="col-6"><div class="border rounded p-2 h-100"><small>Status</small><div><strong>{{ run.status }}</strong></div></div></div>
+            <div class="col-6"><div class="border rounded p-2 h-100"><small>Committed actions</small><div><strong>{{ result.attempts }}</strong></div></div></div>
+            <div class="col-6"><div class="border rounded p-2 h-100"><small>Live contacts</small><div><strong>{{ result.actor_interactions }}</strong></div></div></div>
+          </div>
+          <hr>
+          <p class="small text-muted mb-0">No single number decides whether the call was handled well. The FTO should use the timeline, facts available at the moment, consequences, and observed performance evidence together.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="ops-panel mb-3">
+      <div class="eyebrow">Performance Evidence</div>
+      <h3>Discussion Areas</h3>
+      <div class="row g-2">
+        {% for item in result.areas %}
+        <div class="col-md-6 col-xl-4">
+          <div class="border rounded p-3 h-100">
+            <strong>{{ item.area }}</strong>
+            <div class="small text-muted mt-1">{{ item.status }}</div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% if result.discussion %}
+      <hr>
+      <strong>Areas worth FTO discussion</strong>
+      <ul class="mb-0">{% for item in result.discussion %}<li>{{ item }}</li>{% endfor %}</ul>
+      {% endif %}
+    </section>
+
+    {% if state.consequences %}
+    <section class="ops-panel mb-3">
+      <div class="eyebrow">Consequences</div>
+      <h3>What Earlier Decisions Changed</h3>
+      <ul class="mb-0">{% for item in state.consequences %}<li>{{ item }}</li>{% endfor %}</ul>
+    </section>
+    {% endif %}
+
+    {% if legal_refs %}
+    <section class="ops-panel mb-3">
+      <div class="eyebrow">Legal / Policy Research Cues</div>
+      <h3>Research After the Call</h3>
+      <p class="small text-muted">These are advisory references made relevant by the synthetic facts. Verify jurisdiction, current text, installation orders, policy, and legal guidance before relying on any authority.</p>
+      <div class="row g-2">
+        {% for item in legal_refs %}
+        <div class="col-md-6">
+          <div class="border rounded p-3 h-100">
+            <strong>{{ item.citation }} — {{ item.title }}</strong>
+            <div class="small text-muted">{{ item.jurisdiction }}</div>
+            <p class="mb-0 mt-2">{{ item.why }}</p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    <section class="ops-panel mb-3">
+      <div class="eyebrow">FTO Discussion</div>
+      <h3>Questions for Review</h3>
+      <ul class="mb-0">
+        <li>What information did you have when you made your most consequential decision?</li>
+        <li>Which facts did you verify, and which facts remained assumptions?</li>
+        <li>Did time, witness availability, evidence, or resources change because of an earlier choice?</li>
+        <li>What other lawful and reasonable disposition could have fit the facts?</li>
+        <li>If you ran this call again, what would you prioritize differently and why?</li>
+      </ul>
+    </section>
+  </main>
+</div>
+{% endblock %}
