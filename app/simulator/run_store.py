@@ -44,7 +44,13 @@ def _status_for_state(state):
 
 
 def persist_run(state, trainee_id):
-    """Persist the exact synthetic run and any new timeline snapshots."""
+    """Persist the exact synthetic run and any new timeline snapshots.
+
+    Read-only renders call this helper too. If the serialized run, mode, and
+    status are unchanged, return the existing row without doing another event
+    scan or database commit. This keeps routine radio/scene actions responsive
+    after their redirect while preserving exact replay for real state changes.
+    """
     if not isinstance(state, dict) or not trainee_id:
         return None
     run_context = state.get('run_context') or {}
@@ -52,9 +58,14 @@ def persist_run(state, trainee_id):
     if not run_id:
         return None
 
-    assignment = active_assignment_for(trainee_id)
+    desired_mode = 'COACHING' if (state.get('world') or {}).get('coaching_mode') else 'EVALUATION'
+    desired_status = _status_for_state(state)
+    serialized_state = _json(state)
+
     row = FTOScenarioRun.query.filter_by(run_id=run_id).first()
+    is_new = row is None
     if row is None:
+        assignment = active_assignment_for(trainee_id)
         row = FTOScenarioRun(
             run_id=run_id,
             scenario_id=str(state.get('scenario_id') or 'UNKNOWN'),
@@ -63,29 +74,38 @@ def persist_run(state, trainee_id):
             assignment_id=assignment.id if assignment else None,
             assigned_fto_id=assignment.assigned_fto_id if assignment else None,
             supervisor_id=assignment.supervisor_id if assignment else None,
-            mode='COACHING' if (state.get('world') or {}).get('coaching_mode') else 'EVALUATION',
-            status=_status_for_state(state),
+            mode=desired_mode,
+            status=desired_status,
             state_json='{}',
         )
         db.session.add(row)
         db.session.flush()
+    elif (
+        row.trainee_id == trainee_id
+        and row.mode == desired_mode
+        and row.status == desired_status
+        and row.state_json == serialized_state
+    ):
+        return row
 
     row.scenario_id = str(state.get('scenario_id') or row.scenario_id)
-    row.mode = 'COACHING' if (state.get('world') or {}).get('coaching_mode') else 'EVALUATION'
-    row.status = _status_for_state(state)
-    row.state_json = _json(state)
+    row.mode = desired_mode
+    row.status = desired_status
+    row.state_json = serialized_state
     row.updated_at = datetime.utcnow()
     if row.status in {'COMPLETED', 'TERMINATED'} and row.completed_at is None:
         row.completed_at = datetime.utcnow()
 
     world = state.get('world') or {}
     timeline = list(world.get('timeline') or [])
-    existing_max = (
-        db.session.query(db.func.max(FTOScenarioEvent.sequence))
-        .filter(FTOScenarioEvent.scenario_run_id == row.id)
-        .scalar()
-        or 0
-    )
+    existing_max = 0
+    if not is_new:
+        existing_max = (
+            db.session.query(db.func.max(FTOScenarioEvent.sequence))
+            .filter(FTOScenarioEvent.scenario_run_id == row.id)
+            .scalar()
+            or 0
+        )
     for item in timeline:
         sequence = int(item.get('seq') or 0)
         if sequence <= existing_max:
