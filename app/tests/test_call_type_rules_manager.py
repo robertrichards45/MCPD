@@ -4,6 +4,7 @@ from app import create_app
 from app.extensions import db
 from app.models import ROLE_WEBSITE_CONTROLLER, Form, User
 from app.services.call_type_rules import load_call_type_rules
+from app.services.call_type_rules_v2 import evaluate_call_type_rule
 
 
 def _dispose_app(app):
@@ -34,15 +35,16 @@ def _manager_client(monkeypatch, tmp_path):
             user.active = True
             user.pending_approval = False
 
-        if not Form.query.filter_by(title='Test Required Form').first():
-            db.session.add(
-                Form(
-                    title='Test Required Form',
-                    category='Test',
-                    file_path='data/uploads/forms/test-required-form.pdf',
-                    is_active=True,
+        for title in ('Test Required Form', 'Test Triggered Form', 'Test Legacy Form'):
+            if not Form.query.filter_by(title=title).first():
+                db.session.add(
+                    Form(
+                        title=title,
+                        category='Test',
+                        file_path='data/uploads/forms/' + title.lower().replace(' ', '-') + '.pdf',
+                        is_active=True,
+                    )
                 )
-            )
         db.session.commit()
         user_id = user.id
 
@@ -59,8 +61,11 @@ def test_call_type_manager_adds_rules_and_mobile_consumes_them(monkeypatch, tmp_
     try:
         response = client.get('/forms/call-types')
         try:
+            body = response.get_data(as_text=True)
             assert response.status_code == 200
-            assert 'Call Type Paperwork Manager' in response.get_data(as_text=True)
+            assert 'Call Type Paperwork Manager' in body
+            assert 'Circumstance Rules' in body
+            assert 'Not Normally Required' in body
         finally:
             response.close()
 
@@ -74,7 +79,11 @@ def test_call_type_manager_adds_rules_and_mobile_consumes_them(monkeypatch, tmp_
                 'description': 'Quiet-hours or nuisance call.',
                 'recommended_forms': ['Test Required Form'],
                 'recommended_forms_extra': 'Narrative',
-                'optional_forms_extra': 'Voluntary Statement',
+                'optional_forms_extra': (
+                    'Voluntary Statement\n'
+                    '@when:written_statement|Test Triggered Form|Use when the configured circumstance applies.\n'
+                    '@notnormally:Test Legacy Form|Not part of the normal packet.'
+                ),
                 'statutes': 'Quiet hours\nDisorderly conduct review',
                 'checklist_items': 'Identify reporting party\nDocument warning or citation',
                 'active': 'on',
@@ -88,11 +97,23 @@ def test_call_type_manager_adds_rules_and_mobile_consumes_them(monkeypatch, tmp_
             response.close()
 
         rules = load_call_type_rules(include_inactive=True)
-        assert rules['noise-complaint']['recommendedForms'] == ['Test Required Form', 'Narrative']
-        assert rules['noise-complaint']['optionalForms'] == ['Voluntary Statement']
+        rule = rules['noise-complaint']
+        assert rule['recommendedForms'] == ['Test Required Form', 'Narrative']
+        assert rule['optionalForms'] == ['Voluntary Statement']
+        assert rule['conditionalRules'][0]['key'] == 'written_statement'
+        assert rule['conditionalRules'][0]['forms'] == ['Test Triggered Form']
+        assert rule['notNormallyRequiredForms'] == [
+            {'form': 'Test Legacy Form', 'why': 'Not part of the normal packet.'}
+        ]
 
-        # The hidden mobile incident route remains available as packet
-        # infrastructure even though 'Start Report' is not exposed in the UI.
+        inactive_packet = evaluate_call_type_rule(rule, {'written_statement': False})
+        assert 'Test Triggered Form' not in inactive_packet['requiredForms']
+        assert inactive_packet['remainingConditions'][0]['key'] == 'written_statement'
+
+        active_packet = evaluate_call_type_rule(rule, {'written_statement': True})
+        assert 'Test Triggered Form' in active_packet['requiredForms']
+        assert active_packet['triggeredConditions'][0]['key'] == 'written_statement'
+
         response = client.get('/mobile/incident/start')
         try:
             body = response.get_data(as_text=True)
@@ -103,6 +124,19 @@ def test_call_type_manager_adds_rules_and_mobile_consumes_them(monkeypatch, tmp_
             raw = raw.split('</script>', 1)[0]
             parsed = json.loads(raw)
             assert parsed['noise-complaint']['recommendedForms'] == ['Test Required Form', 'Narrative']
+            assert parsed['noise-complaint']['conditionalRules'][0]['key'] == 'written_statement'
+            assert parsed['noise-complaint']['notNormallyRequiredForms'][0]['form'] == 'Test Legacy Form'
+        finally:
+            response.close()
+
+        response = client.get('/reports')
+        try:
+            body = response.get_data(as_text=True)
+            assert response.status_code == 200
+            assert 'Paperwork Packet Builder' in body
+            assert 'Call Type Rules Engine' in body
+            assert 'conditionalRules' in body
+            assert 'notNormallyRequiredForms' in body
         finally:
             response.close()
     finally:
