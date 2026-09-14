@@ -7,6 +7,7 @@ from ..simulator.shift_engine import assign_next_call, complete_active_call, end
 
 bp = Blueprint('scenario_shift', __name__, url_prefix='/scenario-lab/shift')
 SHIFT_SESSION_KEY = 'sentinel_virtual_shift_v1'
+SCENARIO_SESSION_KEY = 'sentinel_scenario_lab_v2'
 
 
 def _save(shift):
@@ -44,6 +45,7 @@ def shift():
             unit_id = str(request.form.get('unit_id') or '214').strip()[:20] or '214'
             shift_state = new_shift(unit_id=unit_id)
             _ensure_assignment(shift_state)
+            session.pop(SCENARIO_SESSION_KEY, None)
             _save(shift_state)
             return redirect(url_for('reports.fto_refinements.scenario_shift.shift'))
         if action == 'end' and isinstance(shift_state, dict):
@@ -52,6 +54,10 @@ def shift():
             _save(shift_state)
             return redirect(url_for('reports.fto_refinements.scenario_shift.shift'))
         if action == 'respond' and isinstance(shift_state, dict) and shift_state.get('active_scenario_id'):
+            # A newly assigned CAD call must get a fresh run. If the call already
+            # has a run id, leave the session alone so the trainee resumes it.
+            if not shift_state.get('active_run_id'):
+                session.pop(SCENARIO_SESSION_KEY, None)
             _save(shift_state)
             return redirect(url_for(
                 'reports.fto_refinements.scenario_lab.lab',
