@@ -91,6 +91,9 @@ jobs:
       - name: Run Scenario Lab visual evidence tests
         run: python -m pytest -q app/tests/test_scenario_visual_evidence.py
 
+      - name: Run anti-keyword-gaming action semantic tests
+        run: python -m pytest -q app/tests/test_action_semantics.py
+
       - name: Run Scenario Lab simulator platform tests
         run: python -m pytest -q app/tests/test_scenario_lab_simulator_platform.py
 
