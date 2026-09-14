@@ -122,6 +122,8 @@ def test_interactive_scenario_lab_reveals_scripted_facts_turn_by_turn():
     assert 'light pole is bent near its base' in html
     assert 'Turn 1' in html
     assert 'I will interview the witness' in html
+    assert 'Scene update:' in html
+    assert '<built-in method update of dict object' not in html
 
     response = client.post(
         '/sentinel/fto-center/scenario-lab/',
@@ -137,6 +139,7 @@ def test_interactive_scenario_lab_reveals_scripted_facts_turn_by_turn():
     assert 'contractor driver acknowledges the vehicle contacted the pole' in html
     assert 'Turn 2' in html
     assert 'I will interview the witness' in html
+    assert '<built-in method update of dict object' not in html
 
 
 def test_interactive_scenario_lab_finish_scores_complete_session_and_switch_resets():
