@@ -10,6 +10,7 @@
         <p class="text-muted mb-0">Hidden simulator state for human training review. Nothing on this screen is an automatic DOR rating or employment decision.</p>
       </div>
       <div class="ops-head-actions d-flex gap-2 flex-wrap">
+        <a class="btn btn-outline-primary" href="{{ url_for('reports.fto_refinements.scenario_paperwork.review_paperwork', run_id=run.run_id) }}">Training Package</a>
         <a class="btn btn-outline-primary" href="{{ url_for('reports.fto_refinements.scenario_notebook.review_notebook', run_id=run.run_id) }}">Field Notebook</a>
         <a class="btn btn-outline-secondary" href="{{ url_for('reports.fto_refinements.scenario_lab.lab', scenario_id=run.scenario_id) }}">Simulation Mode</a>
         <a class="btn btn-outline-secondary" href="{{ url_for('reports.sentinel.fto_program.dashboard') }}">FTO Program</a>
