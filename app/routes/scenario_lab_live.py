@@ -8,6 +8,7 @@ from ..services.ai_client import (
     configured_openai_api_key,
     is_ai_unavailable_message,
 )
+from .scenario_cast import SCENARIO_META
 from .scenario_lab import (
     PRACTICE_AREAS,
     SCENARIOS,
@@ -18,6 +19,20 @@ from .scenario_lab import (
     _normalize,
     _valid_scenario,
 )
+from .scenario_legal_context import legal_context_for
+from .scenario_state_engine import (
+    actor_available,
+    apply_core_decision,
+    current_decision,
+    dynamic_facts,
+    ensure_engine_state,
+    evaluate_branch_event,
+    pending_event,
+    record_actor_interaction,
+    resolve_branch_event,
+    scene_status,
+)
+from .scenario_variants import NEXT_SCENARIO, actor_variant_fact, build_run_context
 
 bp = Blueprint('scenario_lab', __name__, url_prefix='/scenario-lab')
 SESSION_KEY = 'sentinel_scenario_lab_v2'
@@ -25,144 +40,9 @@ SESSION_KEY = 'sentinel_scenario_lab_v2'
 # Scenario Lab is synthetic practice. It never creates an official DOR score or
 # makes a real criminal/legal finding. Consequences below are exercise outcomes.
 
-SCENARIO_META = {
-    'S001': {
-        'scene': 'Facility entrance / interior disturbance',
-        'visual': ['Staff member outside', 'Subject reported inside', 'Public-facing facility', 'No weapon reported'],
-        'cast': [
-            {'id': 'dispatch', 'name': 'Dispatch', 'role': 'Radio', 'from': 0, 'facts': [
-                ('weapon|armed|gun|knife', 'No weapon has been reported.'),
-                ('backup|unit|other officer', 'No additional unit has been assigned yet. Advise if you need one.'),
-                ('location|building|where', 'The call is at Building 7130.'),
-            ]},
-            {'id': 'staff', 'name': 'Staff Member', 'role': 'Reporting Party', 'from': 0, 'facts': [
-                ('what happened|why|problem|call', 'He became disruptive inside and we told him to leave more than once.'),
-                ('weapon|armed|threat', 'I have not seen a weapon. He is yelling and arguing.'),
-                ('leave|told|revoked|invited', 'He had been invited earlier, but we told him the invitation was over after the disturbance started.'),
-            ]},
-            {'id': 'subject', 'name': 'Subject', 'role': 'Subject', 'from': 1, 'facts': [
-                ('why|what happened|side|story', 'I was invited here. They got mad when I argued with them, and now they are trying to throw me out.'),
-                ('leave|told|order', 'They told me to leave, but I did not think they could change their mind after inviting me.'),
-                ('weapon|armed', 'I do not have a weapon.'),
-            ]},
-            {'id': 'employee2', 'name': 'Second Employee', 'role': 'Witness', 'from': 2, 'facts': [
-                ('see|hear|witness|leave', 'I personally heard staff tell him to leave.'),
-                ('video|camera', 'The facility cameras should have recorded the area.'),
-            ]},
-        ],
-    },
-    'S002': {
-        'scene': 'Main Gate inspection area',
-        'visual': ['Vehicle stopped in inspection area', 'Gate personnel present', 'Driver has state license', 'No valid installation credential'],
-        'cast': [
-            {'id': 'dispatch', 'name': 'Dispatch', 'role': 'Radio', 'from': 0, 'facts': [
-                ('status|location|gate', 'Main Gate has the vehicle stopped in the inspection area.'),
-                ('wanted|records|check', 'No records check has been requested yet.'),
-            ]},
-            {'id': 'gate', 'name': 'Gate Officer', 'role': 'Gate Personnel', 'from': 0, 'facts': [
-                ('credential|access|why stopped', 'The driver cannot produce a valid installation access credential.'),
-                ('behavior|argument|threat', 'He is argumentative, but no threat or weapon has been reported.'),
-            ]},
-            {'id': 'driver', 'name': 'Driver', 'role': 'Driver', 'from': 0, 'facts': [
-                ('why|purpose|meeting|contractor', 'I am here to meet a contractor. I thought they already knew I was coming.'),
-                ('license|id|identity', 'I have my state driver license.'),
-                ('credential|pass|access', 'I do not have an installation credential.'),
-            ]},
-            {'id': 'contractor', 'name': 'Contractor', 'role': 'Phone Contact', 'from': 2, 'facts': [
-                ('meeting|expect|confirm', 'Yes, I am expecting the driver for a meeting.'),
-                ('preclear|pre-clear|access|sponsor', 'He was not pre-cleared for installation access.'),
-            ]},
-        ],
-    },
-    'S003': {
-        'scene': 'Facility parking area / damaged government property',
-        'visual': ['Damaged light pole', 'White contractor pickup nearby', 'No injuries reported', 'Scene still available to document'],
-        'cast': [
-            {'id': 'dispatch', 'name': 'Dispatch', 'role': 'Radio', 'from': 0, 'facts': [
-                ('injury|injured|medical', 'No injuries have been reported.'),
-                ('vehicle|truck', 'The reported vehicle is a contractor pickup near the facility.'),
-            ]},
-            {'id': 'reporting', 'name': 'Facility Employee', 'role': 'Reporting Party', 'from': 0, 'facts': [
-                ('see|witness|collision|hit', 'I did not see the collision. Another worker told me the truck hit the pole.'),
-                ('when|time', 'I learned about it after the collision had already happened.'),
-            ]},
-            {'id': 'witness', 'name': 'Worker', 'role': 'Witness', 'from': 2, 'facts': [
-                ('see|witness|what happened', 'I saw the truck back into the pole.'),
-                ('driver|who', 'The driver is still available nearby.'),
-            ]},
-            {'id': 'driver', 'name': 'Driver', 'role': 'Driver', 'from': 2, 'facts': [
-                ('hit|contact|know|realize', 'I did not realize I made contact with the pole.'),
-                ('intent|purpose|damage', 'I did not intentionally hit it.'),
-            ]},
-        ],
-    },
-    'S004': {
-        'scene': 'Retail / exchange facility office',
-        'visual': ['Subject waiting with staff', 'Recovered merchandise on table', 'Loss-prevention witness', 'Video may be available'],
-        'cast': [
-            {'id': 'lp', 'name': 'Loss Prevention', 'role': 'Witness', 'from': 0, 'facts': [
-                ('see|observe|what happened|conceal', 'I observed the subject place the item into a bag.'),
-                ('statement|written', 'I can provide a written statement.'),
-                ('video|camera', 'There is video of the incident.'),
-                ('value|price', 'The merchandise has a documented retail price.'),
-            ]},
-            {'id': 'subject', 'name': 'Subject', 'role': 'Subject', 'from': 1, 'facts': [
-                ('why|intent|steal|bag', 'I was carrying other things and put the item in the bag. I was not trying to steal it.'),
-                ('leave|exit', 'The merchandise was recovered before I left the facility.'),
-            ]},
-            {'id': 'dispatch', 'name': 'Dispatch', 'role': 'Radio', 'from': 0, 'facts': [
-                ('backup|unit', 'No additional unit has been requested.'),
-                ('records|wanted|check', 'No records check has been requested yet.'),
-            ]},
-        ],
-    },
-    'S005': {
-        'scene': 'Roadside traffic stop',
-        'visual': ['Stopped vehicle ahead', 'Driver remains seated', 'Traffic exposure present', 'Driver becoming argumentative'],
-        'cast': [
-            {'id': 'dispatch', 'name': 'Dispatch', 'role': 'Radio', 'from': 0, 'facts': [
-                ('backup|unit', 'No backup unit has been requested.'),
-                ('records|wanted|license|plate', 'A records check can be run when you provide the information.'),
-            ]},
-            {'id': 'driver', 'name': 'Driver', 'role': 'Driver', 'from': 1, 'facts': [
-                ('why|stop|reason', 'Why are you stopping me? I do not think I did anything wrong.'),
-                ('license|registration', 'Here is my license and registration.'),
-                ('console|reach|hands', 'I was reaching for my paperwork.'),
-                ('weapon|gun|armed', 'I am not telling you I have a weapon. You have not seen one.'),
-            ]},
-        ],
-    },
-    'S006': {
-        'scene': 'Workplace medical assist',
-        'visual': ['Patient conscious but confused', 'EMS en route', 'Coworkers disagree about what happened', 'No known assault'],
-        'cast': [
-            {'id': 'dispatch', 'name': 'Dispatch', 'role': 'Radio', 'from': 0, 'facts': [
-                ('ems|medical', 'EMS is en route.'),
-                ('assault|fight|weapon', 'No assault or weapon has been reported.'),
-            ]},
-            {'id': 'coworker1', 'name': 'Coworker One', 'role': 'Witness', 'from': 0, 'facts': [
-                ('see|what happened|fall', 'I saw him on the floor, but I did not actually see how it started.'),
-                ('hit|assault', 'I did not see anyone strike him.'),
-            ]},
-            {'id': 'coworker2', 'name': 'Coworker Two', 'role': 'Witness', 'from': 0, 'facts': [
-                ('see|what happened|sit', 'I thought he sat down before becoming ill, but I did not see the whole event.'),
-            ]},
-            {'id': 'patient', 'name': 'Patient', 'role': 'Patient', 'from': 0, 'facts': [
-                ('what happened|feel|condition', 'I feel dizzy and I am having trouble remembering exactly what happened.'),
-                ('hit|assault', 'No one hit me.'),
-            ]},
-            {'id': 'fullwitness', 'name': 'Full-Event Witness', 'role': 'Witness', 'from': 2, 'facts': [
-                ('see|what happened|full|beginning', 'I saw the whole thing. He became dizzy, sat down, and then slid to the floor.'),
-            ]},
-        ],
-    },
-}
-
-NEXT_SCENARIO = {'S001': 'S002', 'S002': 'S003', 'S003': 'S004', 'S004': 'S005', 'S005': 'S006', 'S006': 'S001'}
-
 
 def _new_state(scenario_id):
-    return {
+    state = {
         'scenario_id': scenario_id,
         'turn': 0,
         'complete': False,
@@ -181,7 +61,10 @@ def _new_state(scenario_id):
         'last_feedback': None,
         'dialogue': [],
         'consequences': [],
+        'run_context': build_run_context(scenario_id),
     }
+    ensure_engine_state(state, scenario_id)
+    return state
 
 
 def _state_for(scenario_id):
@@ -192,78 +75,88 @@ def _state_for(scenario_id):
         session.modified = True
         return state
 
-    # Backward-compatible upgrade for sessions created by the previous lab.
     defaults = _new_state(scenario_id)
     for key, value in defaults.items():
         if key not in state:
             state[key] = value
+    ensure_engine_state(state, scenario_id)
     session[SESSION_KEY] = state
     session.modified = True
     return state
 
 
-def _available_cast(scenario_id, turn):
+def _available_cast(state, scenario_id, turn):
     rows = []
     for actor in SCENARIO_META.get(scenario_id, {}).get('cast', []):
-        if int(actor.get('from', 0)) <= turn:
+        if int(actor.get('from', 0)) <= turn and actor_available(state, scenario_id, actor['id']):
             rows.append(actor)
     return rows
 
 
-def _actor_for(scenario_id, turn, actor_id):
-    for actor in _available_cast(scenario_id, turn):
+def _actor_for(state, scenario_id, turn, actor_id):
+    for actor in _available_cast(state, scenario_id, turn):
         if actor['id'] == actor_id:
             return actor
     return None
 
 
-def _released_facts(scenario_id, turn):
+def _released_facts(state, scenario_id, turn):
     scenario = SCENARIOS[scenario_id]
-    facts = [f"Dispatch: {scenario['dispatch']}"]
+    run_context = state.get('run_context') or {}
+    facts = [f"Dispatch: {run_context.get('dispatch_variant') or scenario['dispatch']}"]
     for index in range(min(turn, len(scenario['stages']))):
         facts.append(scenario['stages'][index]['reveal'])
+    facts.extend(dynamic_facts(state, scenario_id))
     return facts
 
 
-def _fallback_actor_reply(actor, question):
+def _fallback_actor_reply(state, scenario_id, actor, question):
+    variant = actor_variant_fact(state.get('run_context') or {}, actor['id'], question)
+    if variant:
+        return variant
     low = _normalize(question).lower()
     for pattern, reply in actor.get('facts', []):
         if re.search(pattern, low):
             return reply
     role = actor.get('role', 'person')
     if role == 'Radio':
-        return 'Dispatch copies. Be more specific about what information or resource you are requesting.'
+        return 'Dispatch copies. Be more specific about the information or resource you are requesting.'
     if role == 'Subject':
         return 'What exactly are you asking me?'
     if role == 'Patient':
-        return 'I am not sure. I am having trouble remembering everything clearly.'
+        return 'I am not sure. Ask me one specific thing at a time.'
     return 'I can answer what I personally know, but I need a more specific question.'
 
 
-def _roleplay_reply(scenario_id, turn, actor, question):
-    fallback = _fallback_actor_reply(actor, question)
+def _roleplay_reply(state, scenario_id, turn, actor, question):
+    fallback = _fallback_actor_reply(state, scenario_id, actor, question)
     api_key = configured_openai_api_key()
     if not api_key:
         return fallback, 'scripted'
 
-    actor_facts = '\n'.join(f'- {reply}' for _pattern, reply in actor.get('facts', [])) or '- No additional facts.'
-    released = '\n'.join(f'- {fact}' for fact in _released_facts(scenario_id, turn))
+    variant_fact = actor_variant_fact(state.get('run_context') or {}, actor['id'], question)
+    actor_facts = [reply for _pattern, reply in actor.get('facts', [])]
+    if variant_fact:
+        actor_facts.append(variant_fact)
+    allowed = '\n'.join(f'- {fact}' for fact in actor_facts) or '- No additional facts.'
+    released = '\n'.join(f'- {fact}' for fact in _released_facts(state, scenario_id, turn))
     system_prompt = f"""You are role-playing one person in a synthetic police field-training scenario.
 Character: {actor['name']} ({actor['role']}).
 Scenario: {SCENARIOS[scenario_id]['title']}.
+Run ID: {(state.get('run_context') or {}).get('run_id', 'synthetic')}.
 
 Facts already available in the exercise:
 {released}
 
 Facts this character is allowed to know or state:
-{actor_facts}
+{allowed}
 
 Rules:
 - Stay in character and answer only the trainee officer's question.
 - Use 1-3 short natural sentences.
 - Never coach the officer, never say what the officer should do, and never reveal evaluation criteria.
-- Never invent a weapon, crime, injury, confession, probable cause, policy requirement, or future fact.
-- Never reveal facts from a later stage.
+- Never invent a weapon, crime, injury, confession, legal authority, policy requirement, or future fact.
+- Never reveal facts from a later phase or unreleased branch.
 - If the question asks for something this character would not know, say you do not know.
 - If the question is vague, ask the officer to be more specific.
 - Do not praise or grade the trainee.
@@ -281,9 +174,18 @@ def _append_dialogue(state, actor, answer, mode):
         'role': actor['role'],
         'answer': _normalize(answer)[:700],
         'mode': mode,
-        'stage': int(state.get('turn', 0)),
+        'phase': int(state.get('turn', 0)),
     })
-    state['dialogue'] = rows[-10:]
+    state['dialogue'] = rows[-12:]
+
+
+def _append_consequences(state, values):
+    rows = list(state.get('consequences') or [])
+    for value in values or []:
+        value = _normalize(value)
+        if value and value not in rows:
+            rows.append(value)
+    state['consequences'] = rows[-12:]
 
 
 def _negative_phrase(low, term):
@@ -292,14 +194,13 @@ def _negative_phrase(low, term):
 
 def _catastrophic_outcome(scenario_id, turn, response_text):
     low = _normalize(response_text).lower()
-
     deadly_patterns = ('shoot', 'fire my weapon', 'fire the weapon', 'shoot him', 'shoot her', 'shoot them')
     if any(term in low for term in deadly_patterns) and not _negative_phrase(low, 'shoot') and 'do not fire' not in low:
         return {
             'severity': 'critical',
             'title': 'Exercise terminated — unjustified deadly-force decision',
-            'public_outcome': 'Training simulation: the person is shot and may be seriously injured or killed.',
-            'officer_outcome': 'The officer is removed from the scenario and from simulated duty. A criminal and administrative investigation is initiated in the exercise.',
+            'public_outcome': 'Training simulation: a person is shot and may be seriously injured or killed.',
+            'officer_outcome': 'The officer is removed from the scenario and simulated duty. A criminal and administrative investigation begins in the exercise.',
             'legal_outcome': 'Training storyline: arrest or criminal charging of the officer is a possible consequence because the presented facts did not establish a deadly threat. This is a training outcome, not a real legal finding.',
             'fto': 'Immediate FTO alert required. The exercise cannot continue as though the decision were acceptable.',
         }
@@ -315,16 +216,15 @@ def _catastrophic_outcome(scenario_id, turn, response_text):
                 'fto': 'Immediate FTO alert required for officer-safety remediation.',
             }
 
-    if scenario_id == 'S006':
-        if any(term in low for term in ('leave the patient', 'ignore the patient', 'cancel ems', 'send ems away')):
-            return {
-                'severity': 'critical',
-                'title': 'Exercise terminated — medical-duty failure',
-                'public_outcome': 'Training simulation: the patient deteriorates after medical care is disregarded or sent away.',
-                'officer_outcome': 'The officer is removed from the scenario for mandatory remediation and supervisory review.',
-                'legal_outcome': 'The exercise flags potential administrative/civil exposure; actual legal conclusions would depend on real facts and law.',
-                'fto': 'Immediate FTO alert required.',
-            }
+    if scenario_id == 'S006' and any(term in low for term in ('leave the patient', 'ignore the patient', 'cancel ems', 'send ems away')):
+        return {
+            'severity': 'critical',
+            'title': 'Exercise terminated — medical-duty failure',
+            'public_outcome': 'Training simulation: the patient deteriorates after medical care is disregarded or sent away.',
+            'officer_outcome': 'The officer is removed from the scenario for mandatory remediation and supervisory review.',
+            'legal_outcome': 'The exercise flags potential administrative/civil exposure; actual legal conclusions would depend on real facts and law.',
+            'fto': 'Immediate FTO alert required.',
+        }
     return None
 
 
@@ -333,11 +233,11 @@ def _nonterminal_consequence(scenario_id, turn, response_text, feedback):
     if feedback.get('accepted'):
         return None
     if any(term in low for term in ('tase', 'taser', 'pepper spray', 'oc spray', 'go hands on', 'use force')):
-        return 'Your force decision increases risk and triggers an FTO stop. The scenario remains paused until you articulate necessity, proportionality, and the facts supporting the action.'
+        return 'Your control decision increases risk and triggers an FTO stop. The call remains paused until the necessity and supporting facts are articulated.'
     if scenario_id == 'S005' and turn >= 1 and 'backup' not in low and any(term in low for term in ('reaching', 'console', 'hands')):
-        return 'Risk remains elevated. Your next decision must account for the repeated reaching behavior and available resources.'
+        return 'Risk remains elevated. Later events may now be harder because additional resources were not requested.'
     if scenario_id == 'S004' and any(term in low for term in ('arrest', 'citation')) and not any(term in low for term in ('video', 'evidence', 'facts', 'probable cause')):
-        return 'The enforcement decision is premature in the exercise because material evidence or legal articulation is still unresolved.'
+        return 'The enforcement decision is premature in the exercise because material evidence or legal articulation remains unresolved.'
     return None
 
 
@@ -347,25 +247,32 @@ def _terminate(state, outcome):
     state['fto_alert'] = True
     state['terminal_outcome'] = outcome
     state['intervention_count'] = int(state.get('intervention_count', 0)) + 1
-    rows = list(state.get('consequences') or [])
-    rows.append(outcome['title'])
-    state['consequences'] = rows[-8:]
+    _append_consequences(state, [outcome['title']])
 
 
-def _stage_key(turn):
-    return str(int(turn))
+def _decision_key(state, turn):
+    event = pending_event(state, state['scenario_id'])
+    return f"event:{event['id']}" if event else str(int(turn))
+
+
+def _decision_rubric(state, scenario_id, turn):
+    decision = current_decision(state, scenario_id, turn, SCENARIOS[scenario_id]['stages'][turn] if turn < len(SCENARIOS[scenario_id]['stages']) else None)
+    if decision and decision.get('rubric'):
+        return decision['rubric']
+    if turn < len(SCENARIO_RUBRICS[scenario_id]):
+        return SCENARIO_RUBRICS[scenario_id][turn]
+    return {'minimum': 0, 'criteria': []}
 
 
 def _hint_status(state, turn):
-    key = _stage_key(turn)
+    key = _decision_key(state, turn)
     attempts = int((state.get('stage_attempts') or {}).get(key, 0))
     interactions = int((state.get('stage_interactions') or {}).get(key, 0))
     used = int((state.get('stage_hints') or {}).get(key, 0))
     required_attempts = 3 + (used * 2)
     required_interactions = 5 + (used * 3)
-    unlocked = attempts >= required_attempts or interactions >= required_interactions
     return {
-        'unlocked': unlocked,
+        'unlocked': attempts >= required_attempts or interactions >= required_interactions,
         'attempts': attempts,
         'interactions': interactions,
         'used': used,
@@ -374,25 +281,31 @@ def _hint_status(state, turn):
     }
 
 
-def _socratic_hint(scenario_id, turn, state):
-    rubric = SCENARIO_RUBRICS[scenario_id][turn]
+def _socratic_hint(state, scenario_id, turn):
+    rubric = _decision_rubric(state, scenario_id, turn)
     previous_gaps = list((state.get('last_feedback') or {}).get('gaps') or [])
-    labels = previous_gaps or [row[0] for row in rubric['criteria']]
-    index = int((state.get('stage_hints') or {}).get(_stage_key(turn), 0))
+    labels = previous_gaps or [row[0] for row in rubric.get('criteria', [])]
+    key = _decision_key(state, turn)
+    index = int((state.get('stage_hints') or {}).get(key, 0))
     focus = labels[index % len(labels)] if labels else 'your decision-making process'
     prompts = [
-        f'Reassess the situation through the lens of “{focus}.” What have you not yet established?',
-        f'Before taking the next step, what fact or risk connected to “{focus}” still needs to be addressed?',
-        f'Explain your reasoning for “{focus}” as if your FTO asked, “What fact made that action appropriate?”',
+        f'Reassess the call through the lens of “{focus}.” What fact, risk, or resource have you not resolved?',
+        f'What changed in the scene, and how does “{focus}” affect what you do next?',
+        f'If your FTO asked, “What fact made that action appropriate?”, how would you explain “{focus}” without guessing?',
     ]
     return prompts[min(index, len(prompts) - 1)]
 
 
 def _summary(state):
     result = _coaching_summary(state)
+    engine = state.get('engine') or {}
     result['actor_interactions'] = int(state.get('actor_interactions', 0))
     result['consequences'] = list(state.get('consequences') or [])
     result['fto_alert'] = bool(state.get('fto_alert'))
+    result['branch_count'] = int(engine.get('branch_count', 0))
+    result['run_id'] = (state.get('run_context') or {}).get('run_id', '')
+    result['complaint_risk'] = bool(engine.get('complaint_risk'))
+    result['use_of_force_review'] = bool(engine.get('use_of_force_review'))
     return result
 
 
@@ -420,6 +333,7 @@ def lab():
             return redirect(url_for('reports.fto_refinements.scenario_lab.lab', scenario_id=next_id))
 
         turn = int(state.get('turn', 0))
+        active_event = pending_event(state, scenario_id)
 
         if action == 'ask_actor':
             if state.get('complete'):
@@ -427,52 +341,51 @@ def lab():
                 return redirect(url_for('reports.fto_refinements.scenario_lab.lab', scenario_id=scenario_id))
             actor_id = _normalize(request.form.get('actor_id'))
             question = _normalize(request.form.get('question_text'))[:800]
-            actor = _actor_for(scenario_id, turn, actor_id)
+            actor = _actor_for(state, scenario_id, turn, actor_id)
             if not actor:
-                flash('That person is not available at this point in the scenario.', 'warning')
+                flash('That person is not available in the current call state.', 'warning')
             elif not question:
                 flash('Ask a specific question before contacting the person.', 'warning')
             else:
-                answer, mode = _roleplay_reply(scenario_id, turn, actor, question)
+                answer, mode = _roleplay_reply(state, scenario_id, turn, actor, question)
                 _append_dialogue(state, actor, answer, mode)
-                key = _stage_key(turn)
+                key = _decision_key(state, turn)
                 counts = dict(state.get('stage_interactions') or {})
                 counts[key] = int(counts.get(key, 0)) + 1
                 state['stage_interactions'] = counts
                 state['actor_interactions'] = int(state.get('actor_interactions', 0)) + 1
+                _append_consequences(state, record_actor_interaction(state, scenario_id, turn, actor_id, question))
                 session[SESSION_KEY] = state
                 session.modified = True
             return redirect(url_for('reports.fto_refinements.scenario_lab.lab', scenario_id=scenario_id))
 
         if action == 'hint':
-            if state.get('complete') or turn >= len(stages):
-                flash('No hint is available at this point.', 'info')
+            if state.get('complete'):
+                flash('No coaching is available after the exercise ends.', 'info')
             else:
                 status = _hint_status(state, turn)
                 if not status['unlocked']:
                     flash(
-                        f"Coaching is still locked. Work the problem first: {status['attempts']}/{status['required_attempts']} decision attempts or {status['interactions']}/{status['required_interactions']} live contacts.",
+                        f"Coaching is still locked. Keep working the call first: {status['attempts']}/{status['required_attempts']} decisions or {status['interactions']}/{status['required_interactions']} live contacts in the current problem.",
                         'warning',
                     )
                 else:
-                    key = _stage_key(turn)
+                    key = _decision_key(state, turn)
                     used = dict(state.get('stage_hints') or {})
-                    hint_text = _socratic_hint(scenario_id, turn, state)
+                    hint_text = _socratic_hint(state, scenario_id, turn)
                     used[key] = int(used.get(key, 0)) + 1
                     state['stage_hints'] = used
                     state['hint_count'] = int(state.get('hint_count', 0)) + 1
+                    rubric = _decision_rubric(state, scenario_id, turn)
                     state['last_feedback'] = {
                         'status': 'hint',
                         'accepted': False,
-                        'headline': 'FTO coaching question — scenario not advanced',
+                        'headline': 'FTO coaching question — call not advanced',
                         'consequence': hint_text,
-                        'strengths': [],
-                        'gaps': [],
-                        'hints': [],
-                        'issues': [],
+                        'strengths': [], 'gaps': [], 'hints': [], 'issues': [],
                         'met_count': 0,
-                        'required_count': int(SCENARIO_RUBRICS[scenario_id][turn]['minimum']),
-                        'criteria_count': len(SCENARIO_RUBRICS[scenario_id][turn]['criteria']),
+                        'required_count': int(rubric.get('minimum', 0)),
+                        'criteria_count': len(rubric.get('criteria', [])),
                     }
                     session[SESSION_KEY] = state
                     session.modified = True
@@ -481,8 +394,10 @@ def lab():
         if action == 'finish':
             if state.get('terminated'):
                 flash('This exercise ended with a terminal training outcome. Review it, then continue to the next scenario.', 'warning')
+            elif pending_event(state, scenario_id):
+                flash('A live event is still unresolved. Work the call before finishing.', 'warning')
             elif turn < len(stages):
-                flash('Complete every decision point before finishing the coaching review.', 'warning')
+                flash('The call is still active. Resolve the remaining incident phases before ending the run.', 'warning')
             else:
                 state['complete'] = True
                 session[SESSION_KEY] = state
@@ -493,8 +408,8 @@ def lab():
             if state.get('complete'):
                 flash('This exercise is complete. Start the next scenario or restart this one.', 'warning')
                 return redirect(url_for('reports.fto_refinements.scenario_lab.lab', scenario_id=scenario_id))
-            if turn >= len(stages):
-                flash('All decision points are complete. Finish the scenario for the coaching review.', 'info')
+            if turn >= len(stages) and not active_event:
+                flash('The incident is ready to close. Finish the run for the coaching review.', 'info')
                 return redirect(url_for('reports.fto_refinements.scenario_lab.lab', scenario_id=scenario_id))
 
             response_text = _normalize(request.form.get('response_text'))[:2500]
@@ -502,8 +417,8 @@ def lab():
                 flash('Describe what you would actually do before continuing.', 'warning')
                 return redirect(url_for('reports.fto_refinements.scenario_lab.lab', scenario_id=scenario_id))
 
+            key = _decision_key(state, turn)
             attempts = dict(state.get('stage_attempts') or {})
-            key = _stage_key(turn)
             attempts[key] = int(attempts.get(key, 0)) + 1
             state['stage_attempts'] = attempts
             state['total_attempts'] = int(state.get('total_attempts', 0)) + 1
@@ -515,15 +430,30 @@ def lab():
                 session.modified = True
                 return redirect(url_for('reports.fto_refinements.scenario_lab.lab', scenario_id=scenario_id))
 
+            active_event = pending_event(state, scenario_id)
+            if active_event:
+                feedback = evaluate_branch_event(active_event['id'], response_text)
+                feedback['attempt'] = attempts[key]
+                state['last_feedback'] = feedback
+                if feedback['accepted']:
+                    _apply_action_cues(state, response_text)
+                    _append_consequences(state, resolve_branch_event(state, scenario_id, active_event['id'], response_text))
+                else:
+                    state['revision_count'] = int(state.get('revision_count', 0)) + 1
+                session[SESSION_KEY] = state
+                session.modified = True
+                return redirect(url_for('reports.fto_refinements.scenario_lab.lab', scenario_id=scenario_id))
+
             feedback = _evaluate_action(scenario_id, turn, response_text)
             feedback['attempt'] = attempts[key]
             state['last_feedback'] = feedback
-
             consequence = _nonterminal_consequence(scenario_id, turn, response_text, feedback)
             if consequence:
-                rows = list(state.get('consequences') or [])
-                rows.append(consequence)
-                state['consequences'] = rows[-8:]
+                _append_consequences(state, [consequence])
+
+            # Every committed decision changes time/risk/resources, even if it does not
+            # satisfy the training standard. Poor decisions therefore have downstream cost.
+            _append_consequences(state, apply_core_decision(state, scenario_id, turn, response_text, feedback['accepted']))
 
             if feedback['accepted']:
                 _apply_action_cues(state, response_text)
@@ -538,11 +468,14 @@ def lab():
             return redirect(url_for('reports.fto_refinements.scenario_lab.lab', scenario_id=scenario_id))
 
     turn = int(state.get('turn', 0))
-    current_stage = stages[turn] if turn < len(stages) else None
+    core_stage = stages[turn] if turn < len(stages) else None
+    decision = current_decision(state, scenario_id, turn, core_stage)
     latest_reveal = stages[turn - 1]['reveal'] if turn > 0 else None
-    ready_to_finish = turn >= len(stages) and not state.get('terminated')
-    hint_status = _hint_status(state, turn) if current_stage else None
+    ready_to_finish = turn >= len(stages) and not pending_event(state, scenario_id) and not state.get('terminated')
+    hint_status = _hint_status(state, turn) if decision and not state.get('complete') else None
     result = _summary(state) if state.get('complete') and not state.get('terminated') else None
+    engine = state.get('engine') or {}
+    legal_refs = legal_context_for(scenario_id, state.get('run_context') or {}, turn, engine)
 
     return render_template(
         'scenario_lab_live.html',
@@ -551,9 +484,11 @@ def lab():
         scenario_id=scenario_id,
         scenario=scenario,
         scene_meta=SCENARIO_META.get(scenario_id, {}),
+        run_context=state.get('run_context') or {},
+        scene_status=scene_status(state, scenario_id),
         turn=turn,
-        total_turns=len(stages),
-        current_stage=current_stage,
+        core_phases_cleared=turn,
+        current_stage=decision,
         latest_reveal=latest_reveal,
         ready_to_finish=ready_to_finish,
         complete=bool(state.get('complete')),
@@ -563,9 +498,10 @@ def lab():
         feedback=state.get('last_feedback'),
         dialogue=list(state.get('dialogue') or []),
         consequences=list(state.get('consequences') or []),
-        available_cast=_available_cast(scenario_id, turn),
+        available_cast=_available_cast(state, scenario_id, turn),
         hint_status=hint_status,
         result=result,
         practice_areas=[label for label, _terms in PRACTICE_AREAS],
         next_scenario_id=NEXT_SCENARIO.get(scenario_id, 'S001'),
+        legal_refs=legal_refs,
     )
