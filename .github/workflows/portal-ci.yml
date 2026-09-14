@@ -59,6 +59,7 @@ jobs:
               'reports.fto_refinements.scenario_shift.shift',
               'reports.fto_refinements.scenario_analytics.dashboard',
               'reports.fto_refinements.scenario_instructor.control',
+              'reports.fto_refinements.scenario_paperwork.paperwork',
               'reports.sentinel.portal_search',
               'reports.accidents',
               'bodycam.narrative_tool',
@@ -102,6 +103,9 @@ jobs:
 
       - name: Run exact replay snapshot tests
         run: python -m pytest -q app/tests/test_simulator_replay_snapshots.py
+
+      - name: Run Scenario Lab paperwork/debrief lifecycle tests
+        run: python -m pytest -q app/tests/test_scenario_paperwork_workflow.py
 
       - name: Run Scenario Lab adaptive state-engine tests
         run: python -m pytest -q app/tests/test_scenario_state_engine.py
