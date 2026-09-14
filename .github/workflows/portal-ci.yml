@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [main]
   push:
-    branches: [main, portal-workflow-v2, fto-center-v2]
+    branches: [main, "fto-center-*"]
 
 permissions:
   contents: read
@@ -52,6 +52,7 @@ jobs:
               'reports.sentinel.fto_center',
               'reports.sentinel.fto_program.dashboard',
               'reports.sentinel.fto_program.assignment',
+              'reports.fto_refinements.edit_dor',
               'reports.sentinel.portal_search',
               'reports.accidents',
               'bodycam.narrative_tool',

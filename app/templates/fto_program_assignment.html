@@ -136,9 +136,10 @@
               <strong>{{ dor.training_date.strftime('%d %b %Y') }} — Week {{ dor.week_number }}</strong>
               <div class="small text-muted">Evaluator: {{ dor.evaluator.display_name }}{% if dor.scenario_id %} &bull; Ref: {{ dor.scenario_id }}{% endif %}</div>
             </div>
-            <div class="d-flex gap-2 flex-wrap">
+            <div class="d-flex gap-2 flex-wrap align-items-center">
               <span class="badge {% if dor.status == 'FINALIZED' %}text-bg-success{% else %}text-bg-secondary{% endif %}">{{ dor.status|title }}</span>
               {% if dor.overall_rating is not none %}<span class="badge text-bg-dark">Avg {{ '%.2f'|format(dor.overall_rating) }}/5</span>{% endif %}
+              {% if can_evaluate and dor.status == 'DRAFT' %}<a class="btn btn-sm btn-outline-primary" href="{{ url_for('reports.fto_refinements.edit_dor', dor_id=dor.id) }}">Edit Draft</a>{% endif %}
             </div>
           </div>
           {% if dor.strengths %}<p class="mb-1 mt-3"><strong>Strengths:</strong> {{ dor.strengths }}</p>{% endif %}
