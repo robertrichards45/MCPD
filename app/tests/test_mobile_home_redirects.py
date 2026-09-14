@@ -76,9 +76,9 @@ def test_mobile_home_has_primary_field_actions():
     assert 'Law Lookup' in html
     assert 'Incident Workspace' in html or 'Continue Incident' in html
     assert 'Forms' in html
-    assert 'Officer Stats' in html
-    assert 'Contact Info' in html
-    assert 'Edit' in html
+    assert '<span>Stats</span>' in html
+    assert '<span>Profile</span>' in html
+    assert '<strong>Edit</strong>' in html
     assert '/mobile/stats' in html
     assert '/mobile/contact' in html
     assert 'Operations Board' not in html
