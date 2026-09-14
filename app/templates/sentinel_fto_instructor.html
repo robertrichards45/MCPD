@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell mcpd-command-app">
+  {% include 'partials/nav.html' %}
+  <main class="page-wrap narrative-tool-page">
+    <section class="ops-head-card mb-3">
+      <div class="ops-head-copy">
+        <div class="eyebrow">MCPD Sentinel</div>
+        <h2 class="mb-1">AI FTO Instructor & Evaluator</h2>
+        <p class="text-muted mb-0">Scenario-based coaching for radio communication, officer safety, investigation, legal articulation, and documentation. The FTO remains the final evaluator.</p>
+      </div>
+    </section>
+
+    <section class="row g-3">
+      <div class="col-lg-5">
+        <article class="ops-panel h-100">
+          <form method="post">
+            <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
+            <label class="w-100 mb-3">
+              <strong>Training scenario</strong>
+              <select class="form-select mt-2" name="scenario_id" onchange="this.form.submit()">
+                {% for sid, item in scenarios.items() %}
+                <option value="{{ sid }}" {% if sid == scenario_id %}selected{% endif %}>{{ item.title }} — {{ item.difficulty }}</option>
+                {% endfor %}
+              </select>
+            </label>
+            <div class="border rounded p-3 mb-3">
+              <div class="eyebrow">Dispatch</div>
+              <p class="mb-0"><strong>{{ scenario.dispatch }}</strong></p>
+            </div>
+            <label class="w-100">
+              <strong>What do you do next?</strong>
+              <textarea class="form-control mt-2" name="response_text" rows="12" placeholder="Explain your radio traffic, approach, safety plan, investigative steps, legal authority, and what you would document.">{{ response_text }}</textarea>
+            </label>
+            <div class="d-flex gap-2 flex-wrap mt-3">
+              <button class="btn btn-primary" type="submit">Evaluate Response</button>
+              <a class="btn btn-outline-secondary" href="{{ url_for('reports.sentinel.fto_instructor') }}">Reset</a>
+            </div>
+          </form>
+        </article>
+      </div>
+      <div class="col-lg-7">
+        <article class="ops-panel h-100">
+          <h3>FTO Evaluation</h3>
+          {% if result %}
+          <div class="d-flex justify-content-between align-items-center border rounded p-3 mb-3">
+            <div>
+              <small class="text-muted">Automated training score</small>
+              <div style="font-size:2rem;font-weight:800;">{{ result.score }}%</div>
+            </div>
+            <div class="bodycam-warning" style="max-width:430px;">
+              <strong>Instructor review required</strong>
+              <span>{{ result.notice }}</span>
+            </div>
+          </div>
+          {% for area in result.areas %}
+          <div class="border rounded p-3 mb-2">
+            <div class="d-flex justify-content-between gap-2"><strong>{{ area.area }}</strong><span>{{ area.score }}/{{ area.max }}</span></div>
+            <small class="text-muted">{{ area.status|replace('-', ' ')|title }}{% if area.hits %} &bull; Cues: {{ area.hits|join(', ') }}{% endif %}</small>
+          </div>
+          {% endfor %}
+          <h4 class="mt-4">Follow-up coaching questions</h4>
+          <ol>
+            {% for item in result.followups %}<li class="mb-2">{{ item }}</li>{% endfor %}
+          </ol>
+          {% else %}
+          <p class="text-muted">Select a scenario and explain your response. Sentinel will identify training cues, but it will not replace the FTO's judgment or create facts that were not in the scenario.</p>
+          {% endif %}
+        </article>
+      </div>
+    </section>
+  </main>
+</div>
+{% endblock %}
