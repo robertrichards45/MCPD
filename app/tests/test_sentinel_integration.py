@@ -52,7 +52,7 @@ def test_report_inspector_detects_missing_disposition_and_offense_cues():
     assert 'Report Quality Inspector' in html
     assert 'Damage to Government Property' in html
     assert 'Disposition may be missing' in html
-    assert 'Do not add facts merely to satisfy this check' in html
+    assert 'do not add facts merely to satisfy this check' in html.lower()
 
 
 def test_fto_center_returns_expanded_category_scoring_and_followup():
@@ -116,7 +116,8 @@ def test_dashboard_hides_retired_tools_and_exposes_new_workflows():
     response = client.get('/dashboard')
     html = response.get_data(as_text=True)
     assert response.status_code == 200
-    assert 'Needs My Attention' in html
+    assert 'Needs attention' in html
+    assert 'Reports Awaiting Review' in html
     assert 'FTO Center' in html
     assert 'Incident Command' not in html
     assert 'Shift Check-In' not in html
