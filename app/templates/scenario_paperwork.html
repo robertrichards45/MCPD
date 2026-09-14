@@ -11,7 +11,7 @@
       <div class="ops-head-copy">
         <div class="eyebrow">Sentinel — Post-Call Documentation</div>
         <h2 class="mb-1">Training Package</h2>
-        <p class="text-muted mb-0">Use only information actually developed during the synthetic call. Third-party statements are completed by the simulated declarant, not by the trainee officer.</p>
+        <p class="text-muted mb-0">Choose the paperwork you believe this call requires, complete the officer-owned forms, and use only information actually developed during the synthetic call.</p>
       </div>
       <div class="ops-head-actions d-flex gap-2 flex-wrap">
         {% if evaluator_mode and run %}<a class="btn btn-outline-secondary" href="{{ url_for('reports.fto_refinements.scenario_lab.evaluator', run_id=run.run_id) }}">Evaluator View</a>{% endif %}
@@ -68,7 +68,7 @@
     <section class="ops-panel mb-3">
       <div class="eyebrow">Third-Party Documentation</div>
       <h3>Written Statements Received</h3>
-      <p class="small text-muted">A witness, complainant, victim, subject, or other declarant completes their own statement. The officer obtains and documents it. These statements are read-only and cannot be authored or changed by the trainee.</p>
+      <p class="small text-muted">The trainee decides whether a statement is needed, but the simulated declarant completes the actual statement. The trainee cannot author or change another person's statement.</p>
       {% if statements %}
       <div class="d-grid gap-3">
         {% for statement in statements %}
@@ -88,16 +88,16 @@
             <div class="mt-2 small"><strong>Declarant signature:</strong> {{ statement.get('signature') }}</div>
             {% if statement.get('form_fields') %}
             <details class="border rounded p-3 mt-3">
-              <summary><strong>View Completed OPNAV Training Form Fields</strong></summary>
+              <summary><strong>View Completed {{ statement.get('form_document_name') or 'Statement Form' }}</strong></summary>
               <div class="table-responsive mt-3">
                 <table class="table table-sm align-middle mb-0">
-                  <thead><tr><th>Field</th><th>Completed Value</th><th>Completed By</th></tr></thead>
+                  <thead><tr><th>Official Form Field</th><th>Completed Value</th><th>Completed By</th></tr></thead>
                   <tbody>
                     {% for field in statement.get('form_fields') %}
                     <tr>
                       <td>{{ field.get('label') or field.get('name') }}{% if field.get('required') %} <span class="text-danger">*</span>{% endif %}</td>
                       <td style="white-space:pre-wrap">{{ field.get('value') or '—' }}</td>
-                      <td>{% if field.get('officer_only') %}<span class="badge text-bg-light border">Officer-only — intentionally blank</span>{% else %}<span class="badge text-bg-secondary">Declarant</span>{% endif %}</td>
+                      <td>{% if field.get('officer_only') %}<span class="badge text-bg-light border">Officer/Admin Field</span>{% else %}<span class="badge text-bg-secondary">Declarant</span>{% endif %}</td>
                     </tr>
                     {% endfor %}
                   </tbody>
@@ -105,12 +105,12 @@
               </div>
             </details>
             {% endif %}
-            <div class="small text-muted mt-2">Synthetic training statement generated from the controlled MCPD form-field registry. Declarant fields are locked; the trainee cannot rewrite the statement.</div>
+            <div class="small text-muted mt-2">This is a synthetic training copy using the controlled official MCPD form-field mapping. Declarant-entered content is locked.</div>
           </article>
           {% endif %}
         {% endfor %}
       </div>
-      {% else %}<div class="alert alert-light border mb-0">No written statement was obtained during this run. If one should have been obtained, that remains a training issue for FTO review; the officer cannot create the other person's statement after the call.</div>{% endif %}
+      {% else %}<div class="alert alert-light border mb-0">No written statement was obtained during this run. If the trainee decides a statement was required, selecting the statement form below does not manufacture one after the call; the missing statement remains visible to the FTO.</div>{% endif %}
     </section>
 
     {% if package.fto_review %}
@@ -131,11 +131,37 @@
 
     {% if not evaluator_mode and package.status != 'FTO_ACCEPTED' %}
     <section class="ops-panel mb-3">
-      <div class="eyebrow">Officer-Completed Documentation</div><h3>{{ 'Submit a Revision' if latest else 'Complete Your Training Paperwork' }}</h3>
-      <p class="small text-muted">Select only documentation the responding officer personally completes. Voluntary/witness statements are intentionally excluded because the declarant completes those forms.</p>
+      <div class="eyebrow">Paperwork Decision</div>
+      <h3>{{ 'Submit a Revision' if latest else 'Choose the Paperwork Required for This Call' }}</h3>
+      <p class="small text-muted mb-3"><strong>All active MCPD forms are available.</strong> Sentinel does not narrow the list or tell you which ones are correct. Choosing the appropriate forms is part of the FTO exercise. A statement form may be selected when you believe a written statement is required, but the declarant—not the officer—completes the statement content.</p>
       <form method="post">
         <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}"><input type="hidden" name="action" value="{{ 'revise' if latest else 'submit' }}">
-        <div class="mb-3"><label class="form-label"><strong>Officer Paperwork</strong></label>{% if document_choices %}<div class="row g-2">{% for item in document_choices %}<div class="col-md-6"><label class="border rounded p-3 d-flex gap-2 align-items-start h-100"><input class="form-check-input mt-1" type="checkbox" name="selected_documents" value="{{ item }}" {% if latest and item in latest.selected_documents %}checked{% endif %}><span>{{ item }}</span></label></div>{% endfor %}</div>{% else %}<p class="text-muted">No additional officer-completed form is configured for this scenario. Complete the narrative and notification decision.</p>{% endif %}</div>
+
+        <div class="border rounded p-3 mb-3">
+          <div class="d-flex justify-content-between align-items-end gap-3 flex-wrap mb-3">
+            <div>
+              <label class="form-label mb-1" for="form-library-search"><strong>Active MCPD Form Library</strong></label>
+              <div class="small text-muted">{{ document_choices|length }} active form{{ '' if document_choices|length == 1 else 's' }} available for training selection.</div>
+            </div>
+            <div style="min-width:min(100%,360px)"><input class="form-control" id="form-library-search" type="search" placeholder="Search forms — statement, evidence, crash, rights, vehicle..."></div>
+          </div>
+          {% if document_choices %}
+          <div class="row g-2" id="training-form-library">
+            {% for item in document_choices %}
+            {% set low = item|lower %}
+            {% set declarant_form = ('voluntary statement' in low or 'witness statement' in low or 'declarant statement' in low) and ('force use' not in low and 'use of detention' not in low) %}
+            <div class="col-xl-4 col-md-6 training-form-choice" data-form-title="{{ item|lower }}">
+              <label class="border rounded p-3 d-flex gap-2 align-items-start h-100">
+                <input class="form-check-input mt-1" type="checkbox" name="selected_documents" value="{{ item }}" {% if latest and item in latest.selected_documents %}checked{% endif %}>
+                <span class="flex-grow-1"><strong>{{ item }}</strong>{% if declarant_form %}<br><span class="badge text-bg-info mt-1">Declarant-completed / read-only</span>{% else %}<br><span class="small text-muted">Officer / agency form</span>{% endif %}</span>
+              </label>
+            </div>
+            {% endfor %}
+          </div>
+          <div class="alert alert-light border mt-3 mb-0 d-none" id="no-form-results">No forms match that search.</div>
+          {% else %}<div class="alert alert-warning mb-0">The active MCPD forms library could not be loaded. Do not guess at paperwork; notify the FTO coordinator.</div>{% endif %}
+        </div>
+
         <div class="mb-3"><label class="form-label" for="cid_decision"><strong>CID Decision</strong></label><select class="form-select" id="cid_decision" name="cid_decision" required><option value="">Select what you believe is required...</option>{% for value, label in cid_decisions.items() %}<option value="{{ value }}" {% if latest and latest.cid_decision == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select><div class="form-text">The configured answer remains hidden until FTO review.</div></div>
         <div class="mb-3"><label class="form-label" for="notification_notes"><strong>Notifications / Screening Notes</strong></label><textarea class="form-control" id="notification_notes" name="notification_notes" rows="4" maxlength="3000">{{ latest.notification_notes if latest else '' }}</textarea></div>
         <div class="mb-3"><label class="form-label" for="narrative"><strong>Training Narrative</strong></label><textarea class="form-control" id="narrative" name="narrative" rows="14" maxlength="12000" required placeholder="Write the narrative from the facts and identifying information actually developed during the call.">{{ latest.narrative if latest else '' }}</textarea><div class="form-text">Narrative Creator assistance is disabled in evaluation mode.</div></div>
@@ -146,18 +172,42 @@
 
     {% if latest %}
     <section class="ops-panel mb-3">
-      <div class="d-flex justify-content-between gap-3 align-items-start flex-wrap"><div><div class="eyebrow">Preserved Submission</div><h3>Latest Trainee Submission — Revision {{ latest.revision }}</h3></div>{% if latest.selected_documents and not latest.forms_complete %}<a class="btn btn-primary" href="{{ url_for('reports.fto_refinements.scenario_paperwork.training_forms_page') }}">Complete Selected Officer Forms</a>{% elif latest.selected_documents %}<a class="btn btn-outline-primary" href="{{ url_for('reports.fto_refinements.scenario_paperwork.training_forms_page') }}">Review Officer Forms</a>{% endif %}</div>
-      <div class="row g-3"><div class="col-lg-5"><strong>Selected officer documentation</strong>{% if latest.selected_documents %}<ul>{% for item in latest.selected_documents %}<li>{{ item }}</li>{% endfor %}</ul>{% else %}<p class="text-muted">No additional officer forms selected.</p>{% endif %}<strong>CID decision</strong><p>{{ latest.cid_decision_label }}</p><strong>Notification notes</strong><p>{{ latest.notification_notes or 'None entered.' }}</p></div><div class="col-lg-7"><strong>Narrative</strong><div class="border rounded p-3 mt-2" style="white-space:pre-wrap">{{ latest.narrative }}</div></div></div>
+      <div class="d-flex justify-content-between gap-3 align-items-start flex-wrap">
+        <div><div class="eyebrow">Preserved Submission</div><h3>Latest Trainee Submission — Revision {{ latest.revision }}</h3></div>
+        {% if latest.selected_documents and not latest.forms_complete %}<a class="btn btn-primary" href="{{ url_for('reports.fto_refinements.scenario_paperwork.training_forms_page') }}">Open Selected Forms</a>{% elif latest.selected_documents %}<a class="btn btn-outline-primary" href="{{ url_for('reports.fto_refinements.scenario_paperwork.training_forms_page') }}">Review Selected Forms</a>{% endif %}
+      </div>
+      <div class="row g-3"><div class="col-lg-5"><strong>Selected documentation</strong>{% if latest.selected_documents %}<ul>{% for item in latest.selected_documents %}<li>{{ item }}</li>{% endfor %}</ul>{% else %}<p class="text-muted">No additional forms selected.</p>{% endif %}<strong>CID decision</strong><p>{{ latest.cid_decision_label }}</p><strong>Notification notes</strong><p>{{ latest.notification_notes or 'None entered.' }}</p></div><div class="col-lg-7"><strong>Narrative</strong><div class="border rounded p-3 mt-2" style="white-space:pre-wrap">{{ latest.narrative }}</div></div></div>
     </section>
     {% endif %}
 
     {% if not evaluator_mode and latest and not package.self_assessment and package.status != 'FTO_ACCEPTED' %}
-    <section class="ops-panel mb-3 border-primary"><div class="eyebrow">Required Before FTO Disposition</div><h3>Trainee Self-Assessment</h3><form method="post"><input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}"><input type="hidden" name="action" value="self_assess"><div class="mb-3"><label class="form-label" for="what_went_well"><strong>What do you believe you handled well?</strong></label><textarea class="form-control" id="what_went_well" name="what_went_well" rows="4" maxlength="4000" required></textarea></div><div class="mb-3"><label class="form-label" for="what_change"><strong>What would you do differently?</strong></label><textarea class="form-control" id="what_change" name="what_change" rows="4" maxlength="4000" required></textarea></div><div class="mb-3"><label class="form-label" for="decision_basis"><strong>What facts, authority, policy, or procedure did you rely on?</strong></label><textarea class="form-control" id="decision_basis" name="decision_basis" rows="4" maxlength="4000" required></textarea></div><div class="mb-3"><label class="form-label" for="notifications_considered"><strong>What notifications or screenings did you consider, and why?</strong></label><textarea class="form-control" id="notifications_considered" name="notifications_considered" rows="4" maxlength="3000" required></textarea></div><div class="mb-3"><label class="form-label" for="training_need"><strong>Is there any area you want more training on?</strong></label><textarea class="form-control" id="training_need" name="training_need" rows="3" maxlength="3000"></textarea></div><button class="btn btn-primary" type="submit">Submit Self-Assessment</button></form></section>
+    <section class="ops-panel mb-3 border-primary">
+      <div class="eyebrow">Required Before FTO Disposition</div><h3>Trainee Self-Assessment</h3>
+      <form method="post"><input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}"><input type="hidden" name="action" value="self_assess"><div class="mb-3"><label class="form-label" for="what_went_well"><strong>What do you believe you handled well?</strong></label><textarea class="form-control" id="what_went_well" name="what_went_well" rows="4" maxlength="4000" required></textarea></div><div class="mb-3"><label class="form-label" for="what_change"><strong>What would you do differently?</strong></label><textarea class="form-control" id="what_change" name="what_change" rows="4" maxlength="4000" required></textarea></div><div class="mb-3"><label class="form-label" for="decision_basis"><strong>What facts, authority, policy, or procedure did you rely on?</strong></label><textarea class="form-control" id="decision_basis" name="decision_basis" rows="4" maxlength="4000" required></textarea></div><div class="mb-3"><label class="form-label" for="notifications_considered"><strong>What notifications or screenings did you consider, and why?</strong></label><textarea class="form-control" id="notifications_considered" name="notifications_considered" rows="4" maxlength="3000" required></textarea></div><div class="mb-3"><label class="form-label" for="training_need"><strong>Is there any area you want more training on?</strong></label><textarea class="form-control" id="training_need" name="training_need" rows="3" maxlength="3000"></textarea></div><button class="btn btn-primary" type="submit">Submit Self-Assessment</button></form>
+    </section>
     {% endif %}
 
     {% if package.self_assessment %}<section class="ops-panel mb-3"><div class="d-flex justify-content-between gap-3 align-items-start flex-wrap"><div><div class="eyebrow">Trainee Reflection</div><h3>Self-Assessment</h3></div>{% if not evaluator_mode and run_id %}<a class="btn btn-outline-primary" href="{{ url_for('reports.fto_refinements.scenario_lab.review', run_id=run_id) }}">Open After-Action Debrief</a>{% endif %}</div><div class="row g-3"><div class="col-lg-6"><strong>What went well</strong><p style="white-space:pre-wrap">{{ package.self_assessment.what_went_well }}</p></div><div class="col-lg-6"><strong>What would change</strong><p style="white-space:pre-wrap">{{ package.self_assessment.what_change }}</p></div><div class="col-lg-6"><strong>Decision / policy basis</strong><p style="white-space:pre-wrap">{{ package.self_assessment.decision_basis }}</p></div><div class="col-lg-6"><strong>Notifications considered</strong><p style="white-space:pre-wrap">{{ package.self_assessment.notifications_considered }}</p></div></div></section>{% endif %}
 
-    {% if package.submissions|length > 1 %}<section class="ops-panel mb-3"><div class="eyebrow">Revision History</div><h3>Original Submission Preserved</h3><div class="d-grid gap-2">{% for submission in package.submissions %}<details class="border rounded p-2" {% if loop.first %}open{% endif %}><summary><strong>Revision {{ submission.revision }}</strong> — {{ submission.submitted_at }}</summary><div class="mt-2"><strong>CID:</strong> {{ submission.cid_decision_label }}</div><div><strong>Officer forms:</strong> {{ submission.selected_documents|join(', ') if submission.selected_documents else 'None selected' }}</div><div class="mt-2" style="white-space:pre-wrap">{{ submission.narrative }}</div></details>{% endfor %}</div></section>{% endif %}
+    {% if package.submissions|length > 1 %}<section class="ops-panel mb-3"><div class="eyebrow">Revision History</div><h3>Original Submission Preserved</h3><div class="d-grid gap-2">{% for submission in package.submissions %}<details class="border rounded p-2" {% if loop.first %}open{% endif %}><summary><strong>Revision {{ submission.revision }}</strong> — {{ submission.submitted_at }}</summary><div class="mt-2"><strong>CID:</strong> {{ submission.cid_decision_label }}</div><div><strong>Selected documentation:</strong> {{ submission.selected_documents|join(', ') if submission.selected_documents else 'None selected' }}</div><div class="mt-2" style="white-space:pre-wrap">{{ submission.narrative }}</div></details>{% endfor %}</div></section>{% endif %}
   </main>
 </div>
+<script>
+(function(){
+  const input = document.getElementById('form-library-search');
+  const rows = Array.from(document.querySelectorAll('.training-form-choice'));
+  const empty = document.getElementById('no-form-results');
+  if (!input || !rows.length) return;
+  input.addEventListener('input', function(){
+    const query = (input.value || '').trim().toLowerCase();
+    let shown = 0;
+    rows.forEach(function(row){
+      const match = !query || (row.dataset.formTitle || '').includes(query);
+      row.classList.toggle('d-none', !match);
+      if (match) shown += 1;
+    });
+    if (empty) empty.classList.toggle('d-none', shown !== 0);
+  });
+})();
+</script>
 {% endblock %}
