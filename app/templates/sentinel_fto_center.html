@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell mcpd-command-app">
+  {% include 'partials/nav.html' %}
+  <main class="page-wrap narrative-tool-page">
+    <section class="ops-head-card mb-3">
+      <div class="ops-head-copy">
+        <div class="eyebrow">Training & Development</div>
+        <h2 class="mb-1">FTO Center</h2>
+        <p class="text-muted mb-0">Field training, scenario practice, evaluation coaching, and trainee development in one workspace. Sentinel supports the process; the FTO remains the evaluator.</p>
+      </div>
+    </section>
+
+    <section class="row g-3 mb-3">
+      <div class="col-md-6 col-xl-3">
+        <article class="ops-panel h-100">
+          <div class="eyebrow">Program</div>
+          <h4>My FTO Program</h4>
+          <p class="text-muted mb-2">Standard 8-week and accelerated 4-week program tracking will live here.</p>
+          <span class="badge text-bg-secondary">Program tracking foundation</span>
+        </article>
+      </div>
+      <div class="col-md-6 col-xl-3">
+        <article class="ops-panel h-100">
+          <div class="eyebrow">Today</div>
+          <h4>Daily Evaluation</h4>
+          <p class="text-muted mb-2">Officer safety, communication, investigations, legal authority, documentation, judgment, and professionalism.</p>
+          <span class="badge text-bg-primary">FTO review required</span>
+        </article>
+      </div>
+      <div class="col-md-6 col-xl-3">
+        <article class="ops-panel h-100">
+          <div class="eyebrow">Records</div>
+          <h4>DOR & Progress</h4>
+          <p class="text-muted mb-2">Daily Observation Reports, skill trends, acknowledgements, and remediation will be connected here.</p>
+          <span class="badge text-bg-secondary">Development record</span>
+        </article>
+      </div>
+      <div class="col-md-6 col-xl-3">
+        <article class="ops-panel h-100">
+          <div class="eyebrow">Practice</div>
+          <h4>Scenario Lab</h4>
+          <p class="text-muted mb-2">Practice installation-relevant calls and receive structured coaching without turning AI into the final evaluator.</p>
+          <a class="btn btn-sm btn-outline-primary" href="#scenario-lab">Open Scenario Lab</a>
+        </article>
+      </div>
+    </section>
+
+    <section id="scenario-lab" class="row g-3">
+      <div class="col-xl-5">
+        <article class="ops-panel h-100">
+          <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+            <div>
+              <div class="eyebrow">Scenario Lab</div>
+              <h3 class="mb-1">Practice Decision Making</h3>
+              <p class="text-muted mb-0">Explain what you would actually do. Do not add facts that are not in the scenario.</p>
+            </div>
+            <span class="badge text-bg-dark">Training only</span>
+          </div>
+          <form method="post">
+            <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
+            <label class="w-100 mb-3">
+              <strong>Training scenario</strong>
+              <select class="form-select mt-2" name="scenario_id" onchange="this.form.submit()">
+                {% for sid, item in scenarios.items() %}
+                <option value="{{ sid }}" {% if sid == scenario_id %}selected{% endif %}>{{ item.title }} — {{ item.difficulty }}</option>
+                {% endfor %}
+              </select>
+            </label>
+
+            <div class="border rounded p-3 mb-3">
+              <div class="d-flex justify-content-between gap-2 flex-wrap mb-2">
+                <span class="badge text-bg-light">{{ scenario.category }}</span>
+                <span class="badge text-bg-light">{{ scenario.difficulty }}</span>
+              </div>
+              <div class="eyebrow">Dispatch</div>
+              <p class="mb-2"><strong>{{ scenario.dispatch }}</strong></p>
+              <div class="eyebrow mt-3">Training objective</div>
+              <p class="mb-0 text-muted">{{ scenario.objective }}</p>
+            </div>
+
+            <label class="w-100">
+              <strong>What do you do next?</strong>
+              <textarea class="form-control mt-2" name="response_text" rows="12" placeholder="Describe your radio traffic, approach, officer-safety plan, investigative steps, legal authority, decision making, documentation, and disposition.">{{ response_text }}</textarea>
+            </label>
+            <div class="d-flex gap-2 flex-wrap mt-3">
+              <button class="btn btn-primary" type="submit">Evaluate Training Response</button>
+              <a class="btn btn-outline-secondary" href="{{ url_for('reports.sentinel.fto_center') }}">Reset</a>
+            </div>
+          </form>
+        </article>
+      </div>
+
+      <div class="col-xl-7">
+        <article class="ops-panel h-100">
+          <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap mb-3">
+            <div>
+              <div class="eyebrow">Sentinel Coaching</div>
+              <h3 class="mb-1">FTO Evaluation Support</h3>
+              <p class="text-muted mb-0">Every automated observation is a coaching cue, not a final rating.</p>
+            </div>
+            {% if result %}<div style="font-size:2rem;font-weight:800;">{{ result.score }}%</div>{% endif %}
+          </div>
+
+          {% if result %}
+          <div class="bodycam-warning mb-3">
+            <strong>Instructor review required</strong>
+            <span>{{ result.notice }}</span>
+          </div>
+
+          <div class="row g-2 mb-3">
+            {% for area in result.areas %}
+            <div class="col-md-6">
+              <div class="border rounded p-3 h-100">
+                <div class="d-flex justify-content-between gap-2"><strong>{{ area.area }}</strong><span>{{ area.score }}/{{ area.max }}</span></div>
+                <small class="text-muted">{{ area.status|replace('-', ' ')|title }}{% if area.hits %} &bull; Cues: {{ area.hits|join(', ') }}{% endif %}</small>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <div class="border rounded p-3 h-100">
+                <h5>Observed strengths</h5>
+                {% if result.strengths %}
+                <ul class="mb-0">{% for item in result.strengths %}<li>{{ item }}</li>{% endfor %}</ul>
+                {% else %}<p class="text-muted mb-0">No category reached the strong-cue threshold. FTO review is still required.</p>{% endif %}
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="border rounded p-3 h-100">
+                <h5>Development areas</h5>
+                {% if result.development %}
+                <ul class="mb-0">{% for item in result.development %}<li>{{ item }}</li>{% endfor %}</ul>
+                {% else %}<p class="text-muted mb-0">No additional development cues identified by this automated pass.</p>{% endif %}
+              </div>
+            </div>
+          </div>
+
+          <h4>Follow-up coaching questions</h4>
+          <ol>
+            {% for item in result.followups %}<li class="mb-2">{{ item }}</li>{% endfor %}
+          </ol>
+          {% else %}
+          <p class="text-muted">Select a scenario and explain your response. FTO Center will review the response across the core development areas below.</p>
+          <div class="row g-2 mt-1">
+            {% for area in fto_areas %}
+            <div class="col-md-6"><div class="border rounded p-3">{{ area }}</div></div>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </article>
+      </div>
+    </section>
+
+    <section class="ops-panel mt-3">
+      <div class="eyebrow">Next FTO Center Layer</div>
+      <h3>Program Management</h3>
+      <p class="text-muted">The next integration layer will connect the Scenario Lab to trainee assignments, the 8-week standard curriculum, the 4-week accelerated curriculum, Daily Observation Reports, skill trends, remediation plans, trainee acknowledgement, and supervisor advancement decisions.</p>
+      <div class="alert alert-warning mb-0"><strong>Control principle:</strong> Sentinel may organize observations and identify patterns, but it will not automatically pass, fail, advance, or discipline a trainee. Those decisions remain with the assigned FTO and supervisory chain.</div>
+    </section>
+  </main>
+</div>
+{% endblock %}
