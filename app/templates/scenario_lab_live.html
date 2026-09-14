@@ -40,10 +40,9 @@
       <h3>{{ terminal_outcome.title }}</h3>
       <p>{{ terminal_outcome.public_outcome }}</p>
       <p>{{ terminal_outcome.officer_outcome }}</p>
-      <p class="text-muted mb-3">This is a synthetic training outcome. The decision remains part of the run and cannot be rewritten.</p>
+      <p class="text-muted mb-3">This is a synthetic training outcome. The decision remains part of the run and cannot be rewritten. Complete the post-call documentation and self-assessment before debrief.</p>
       <div class="d-flex gap-2 flex-wrap">
-        <a class="btn btn-primary" href="{{ url_for('reports.fto_refinements.scenario_paperwork.paperwork') }}">Complete Training Paperwork</a>
-        {% if review_url %}<a class="btn btn-outline-secondary" href="{{ review_url }}">After-Action Review</a>{% endif %}
+        <a class="btn btn-primary" href="{{ url_for('reports.fto_refinements.scenario_paperwork.paperwork') }}">Complete Training Package</a>
         <a class="btn btn-outline-primary" href="{{ url_for('reports.fto_refinements.scenario_notebook.notebook') }}">Review Field Notes</a>
         {% if shift_mode %}<a class="btn btn-outline-secondary" href="{{ url_for('reports.fto_refinements.scenario_shift.shift') }}">Return to Shift</a>{% endif %}
       </div>
@@ -54,11 +53,10 @@
     <section class="ops-panel mb-3 border-success">
       <div class="eyebrow">Call Cleared</div>
       <h3>Complete the post-call work</h3>
-      <p class="text-muted">The live scene is over. Complete the officer paperwork and notification decisions before the FTO reviews the training event.</p>
+      <p class="text-muted">The live scene is over. Complete the officer paperwork, notification decisions, and self-assessment before opening the debrief.</p>
       <div class="d-flex gap-2 flex-wrap">
-        <a class="btn btn-success" href="{{ url_for('reports.fto_refinements.scenario_paperwork.paperwork') }}">Complete Training Paperwork</a>
+        <a class="btn btn-success" href="{{ url_for('reports.fto_refinements.scenario_paperwork.paperwork') }}">Complete Training Package</a>
         <a class="btn btn-outline-primary" href="{{ url_for('reports.fto_refinements.scenario_notebook.notebook') }}">Review Field Notes</a>
-        {% if review_url %}<a class="btn btn-outline-secondary" href="{{ review_url }}">After-Action Review</a>{% endif %}
         {% if shift_mode %}<a class="btn btn-outline-secondary" href="{{ url_for('reports.fto_refinements.scenario_shift.shift') }}">Return to Shift</a>{% endif %}
       </div>
     </section>
