@@ -66,102 +66,241 @@
   'use strict';
   var STORAGE_KEY = 'mcpd.mobile.incident.state';
   var selectedSlug = null;
+  var autosaveTimer = null;
+  var baseState = readExistingState();
+  var initialSnapshot = '';
 
-  /* Pre-fill the user's local date and current time. Using toISOString()
-     here can select the prior/next calendar date near local midnight. */
-  var now = new Date();
-  var localDate = [
-    now.getFullYear(),
-    String(now.getMonth() + 1).padStart(2, '0'),
-    String(now.getDate()).padStart(2, '0')
-  ].join('-');
-  document.getElementById('mfc-date').value = localDate;
-  document.getElementById('mfc-time').value = now.toTimeString().slice(0, 5);
+  function clone(value) {
+    try { return JSON.parse(JSON.stringify(value || {})); }
+    catch (e) { return {}; }
+  }
 
-  /* Call type selection */
-  document.querySelectorAll('.mfc-type-btn').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      document.querySelectorAll('.mfc-type-btn').forEach(function (b) { b.classList.remove('is-sel'); });
-      btn.classList.add('is-sel');
-      selectedSlug = btn.getAttribute('data-slug');
-    });
-  });
+  function readExistingState() {
+    try {
+      var raw = sessionStorage.getItem(STORAGE_KEY);
+      var parsed = raw ? JSON.parse(raw) : {};
+      return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch (e) { return {}; }
+  }
 
-  function buildState() {
-    var slug = selectedSlug || 'other';
-    var allRules = {};
-    try { allRules = JSON.parse(document.getElementById('fc-rules-data').textContent); } catch (e) {}
-    var rule = allRules[slug] || null;
-    var baseList = rule ? JSON.parse(JSON.stringify(rule.recommendedForms || [])) : [];
-    var selectedForms = ['MCPD Stat Sheet'].concat(
-      baseList.filter(function (f) { return f !== 'MCPD Stat Sheet'; })
-    );
-    var checklist = rule ? rule.checklistItems.map(function (label, i) {
-      return { id: slug + '-check-' + (i + 1), label: label, completed: false };
-    }) : [];
+  function factValue(state, id) {
+    var list = Array.isArray(state.facts) ? state.facts : [];
+    var match = list.find(function (item) { return item && item.id === id; });
+    return match ? String(match.value || '') : '';
+  }
 
-    var date     = document.getElementById('mfc-date').value;
-    var time     = document.getElementById('mfc-time').value;
-    var location = (document.getElementById('mfc-location').value || '').trim();
-    var person   = (document.getElementById('mfc-person').value || '').trim();
-    var facts    = (document.getElementById('mfc-facts').value || '').trim();
-    var action   = (document.getElementById('mfc-action').value || '').trim();
-    var disp     = (document.getElementById('mfc-disposition').value || '').trim();
-    var vehicle  = (document.getElementById('mfc-vehicle').value || '').trim();
+  function localDateString(date) {
+    return [
+      date.getFullYear(),
+      String(date.getMonth() + 1).padStart(2, '0'),
+      String(date.getDate()).padStart(2, '0')
+    ].join('-');
+  }
 
-    var factsList = [];
-    function pushFact(id, label, val) {
-      if (val) factsList.push({ id: id, label: label, value: val });
-    }
-    pushFact('what_happened',   'Brief Facts',             facts);
-    pushFact('officer_actions', 'Officer Actions',         action);
-    pushFact('disposition',     'Disposition',             disp);
-    pushFact('vehicle_info',    'Vehicle / Property Notes', vehicle);
+  function hydrate() {
+    var basics = baseState.incidentBasics && typeof baseState.incidentBasics === 'object' ? baseState.incidentBasics : {};
+    var now = new Date();
+    selectedSlug = baseState.callType || null;
 
-    var persons = [];
-    if (person) {
-      persons.push({ id: 'fc-person-1', name: person, role: 'Subject', source: 'fast_capture' });
+    document.getElementById('mfc-date').value = basics.occurredDate || localDateString(now);
+    document.getElementById('mfc-time').value = basics.occurredTime || now.toTimeString().slice(0, 5);
+    document.getElementById('mfc-location').value = basics.location || '';
+    document.getElementById('mfc-facts').value = factValue(baseState, 'what_happened') || basics.summary || '';
+    document.getElementById('mfc-action').value = factValue(baseState, 'officer_actions');
+    document.getElementById('mfc-disposition').value = factValue(baseState, 'disposition');
+    document.getElementById('mfc-vehicle').value = factValue(baseState, 'vehicle_info');
+
+    var people = Array.isArray(baseState.persons) ? baseState.persons : [];
+    var fastPerson = people.find(function (person) { return person && person.source === 'fast_capture'; });
+    if (!fastPerson && people.length === 1) fastPerson = people[0];
+    document.getElementById('mfc-person').value = fastPerson ? String(fastPerson.name || '') : '';
+
+    if (selectedSlug) {
+      var selected = document.querySelector('.mfc-type-btn[data-slug="' + CSS.escape(String(selectedSlug)) + '"]');
+      if (!selected && selectedSlug === 'general-incident') selected = document.querySelector('.mfc-type-btn[data-slug="other"]');
+      if (selected) selected.classList.add('is-sel');
     }
 
+    initialSnapshot = JSON.stringify(captureFastFields());
+    if (baseState.callType || basics.location || basics.summary || people.length) {
+      showFeedback('Existing incident draft loaded. New notes will be merged, not replace the rest of the packet.');
+    }
+  }
+
+  function captureFastFields() {
     return {
-      callType:        slug,
-      incidentBasics:  { occurredDate: date, occurredTime: time, location: location, summary: facts },
-      selectedForms:   selectedForms,
-      checklist:       checklist,
-      statutes:        rule ? JSON.parse(JSON.stringify(rule.statutes || [])) : [],
-      facts:           factsList,
-      persons:         persons,
-      narrative:       '',
-      narrativeApproved: false,
-      statements:      [],
-      formDrafts:      {},
-      packetStatus:    'draft',
+      slug: selectedSlug || 'other',
+      date: document.getElementById('mfc-date').value,
+      time: document.getElementById('mfc-time').value,
+      location: (document.getElementById('mfc-location').value || '').trim(),
+      person: (document.getElementById('mfc-person').value || '').trim(),
+      facts: (document.getElementById('mfc-facts').value || '').trim(),
+      action: (document.getElementById('mfc-action').value || '').trim(),
+      disposition: (document.getElementById('mfc-disposition').value || '').trim(),
+      vehicle: (document.getElementById('mfc-vehicle').value || '').trim()
     };
   }
 
-  function save() {
-    try {
-      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(buildState()));
+  function mergeFacts(existing, replacements) {
+    var replacementIds = replacements.map(function (item) { return item.id; });
+    var merged = (Array.isArray(existing) ? existing : []).filter(function (item) {
+      return item && replacementIds.indexOf(item.id) === -1;
+    });
+    replacements.forEach(function (item) {
+      if (item.value) merged.push(item);
+    });
+    return merged;
+  }
+
+  function mergeUnique(first, second) {
+    var seen = {};
+    return (first || []).concat(second || []).filter(function (item) {
+      var key = String(item || '').trim();
+      if (!key || seen[key]) return false;
+      seen[key] = true;
       return true;
-    } catch (e) { return false; }
+    });
+  }
+
+  function buildState() {
+    var fields = captureFastFields();
+    var slug = fields.slug;
+    var allRules = {};
+    try { allRules = JSON.parse(document.getElementById('fc-rules-data').textContent); } catch (e) {}
+    var rule = allRules[slug] || null;
+    var next = clone(baseState);
+    var priorSlug = next.callType || null;
+    var baseList = rule ? clone(rule.recommendedForms || []) : [];
+    var recommendedForms = ['MCPD Stat Sheet'].concat(baseList.filter(function (f) { return f !== 'MCPD Stat Sheet'; }));
+
+    next.callType = slug;
+    next.incidentBasics = Object.assign({}, next.incidentBasics || {}, {
+      occurredDate: fields.date,
+      occurredTime: fields.time,
+      location: fields.location,
+      summary: fields.facts
+    });
+    next.selectedForms = mergeUnique(next.selectedForms, recommendedForms);
+    next.statutes = rule ? clone(rule.statutes || []) : (Array.isArray(next.statutes) ? next.statutes : []);
+
+    if (priorSlug !== slug || !Array.isArray(next.checklist) || !next.checklist.length) {
+      next.checklist = rule ? rule.checklistItems.map(function (label, i) {
+        return { id: slug + '-check-' + (i + 1), label: label, completed: false };
+      }) : [];
+    }
+
+    next.facts = mergeFacts(next.facts, [
+      { id: 'what_happened', label: 'Brief Facts', value: fields.facts },
+      { id: 'officer_actions', label: 'Officer Actions', value: fields.action },
+      { id: 'disposition', label: 'Disposition', value: fields.disposition },
+      { id: 'vehicle_info', label: 'Vehicle / Property Notes', value: fields.vehicle }
+    ]);
+
+    var people = (Array.isArray(next.persons) ? next.persons : []).filter(function (person) {
+      return !(person && person.source === 'fast_capture');
+    });
+    if (fields.person) {
+      people.push({ id: 'fc-person-1', name: fields.person, role: 'Subject', source: 'fast_capture' });
+    }
+    next.persons = people;
+
+    if (!Array.isArray(next.statements)) next.statements = [];
+    if (!next.formDrafts || typeof next.formDrafts !== 'object') next.formDrafts = {};
+    if (typeof next.narrative !== 'string') next.narrative = '';
+    if (JSON.stringify(fields) !== initialSnapshot) next.narrativeApproved = false;
+    else if (typeof next.narrativeApproved !== 'boolean') next.narrativeApproved = false;
+    next.packetStatus = 'draft';
+    return next;
+  }
+
+  function saveLocal() {
+    var state = buildState();
+    try {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      baseState = state;
+      return state;
+    } catch (e) { return null; }
+  }
+
+  function persistRemote(state) {
+    if (!state) return Promise.reject(new Error('Local storage unavailable'));
+    var csrf = (document.querySelector('meta[name="csrf-token"]') || {}).content || '';
+    return fetch('/mobile/api/incident/draft', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+      body: JSON.stringify({ incident: state })
+    }).then(function (response) {
+      if (!response.ok) throw new Error('Draft save failed');
+      return response.json();
+    });
+  }
+
+  function scheduleAutosave() {
+    window.clearTimeout(autosaveTimer);
+    autosaveTimer = window.setTimeout(function () {
+      saveLocal();
+    }, 250);
   }
 
   function showFeedback(msg) {
     var el = document.getElementById('mfc-feedback');
     el.textContent = msg;
     el.classList.add('is-visible');
-    setTimeout(function () { el.classList.remove('is-visible'); }, 2800);
+    window.clearTimeout(showFeedback.timer);
+    showFeedback.timer = window.setTimeout(function () { el.classList.remove('is-visible'); }, 3200);
   }
 
+  document.querySelectorAll('.mfc-type-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.mfc-type-btn').forEach(function (b) { b.classList.remove('is-sel'); });
+      btn.classList.add('is-sel');
+      selectedSlug = btn.getAttribute('data-slug');
+      scheduleAutosave();
+    });
+  });
+
+  document.querySelectorAll('.mfc-input').forEach(function (field) {
+    field.addEventListener('input', scheduleAutosave);
+    field.addEventListener('change', scheduleAutosave);
+  });
+
   document.getElementById('mfc-continue').addEventListener('click', function () {
-    save();
-    window.location.href = '{{ url_for("mobile.incident_checklist") }}';
+    var button = this;
+    var state = saveLocal();
+    if (!state) {
+      showFeedback('Could not save locally. Keep this page open and try again.');
+      return;
+    }
+    button.disabled = true;
+    button.textContent = 'Saving…';
+    persistRemote(state).catch(function () {
+      /* The local copy is still safe and the full incident runtime will retry
+         server synchronization on the next page. */
+    }).finally(function () {
+      window.location.href = '{{ url_for("mobile.incident_checklist") }}';
+    });
   });
 
   document.getElementById('mfc-save').addEventListener('click', function () {
-    if (save()) { showFeedback('Notes saved to incident draft.'); }
-    else        { showFeedback('Could not save — storage unavailable.'); }
+    var button = this;
+    var state = saveLocal();
+    if (!state) {
+      showFeedback('Could not save — local storage is unavailable.');
+      return;
+    }
+    button.disabled = true;
+    button.textContent = 'Saving…';
+    persistRemote(state).then(function () {
+      showFeedback('Quick notes saved to your portal incident draft.');
+    }).catch(function () {
+      showFeedback('Saved on this device. Server sync will retry when you continue the incident.');
+    }).finally(function () {
+      button.disabled = false;
+      button.textContent = 'Save Quick Notes Only';
+    });
   });
+
+  hydrate();
 }());
 </script>
 {% endblock %}
