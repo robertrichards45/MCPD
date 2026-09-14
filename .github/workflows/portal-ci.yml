@@ -21,6 +21,7 @@ jobs:
       LEGAL_AI_EXPANSION_ENABLED: "0"
       ORDERS_AI_ASSIST_ENABLED: "0"
       LEGAL_QUERY_LOG_ENABLED: "0"
+      PYTHONPATH: .
     steps:
       - name: Check out source
         uses: actions/checkout@v4
@@ -61,7 +62,7 @@ jobs:
 
       - name: Run workflow regression tests
         run: |
-          pytest -q \
+          python -m pytest -q \
             app/tests/test_sentinel_integration.py \
             app/tests/test_accident_tools_routing.py \
             app/tests/test_production_database_guard.py
