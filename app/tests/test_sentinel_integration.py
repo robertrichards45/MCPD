@@ -103,9 +103,9 @@ def test_virtual_patrol_develops_facts_through_separate_actions_and_preserves_re
     response = client.get('/sentinel/fto-center/scenario-lab/?scenario_id=S003')
     html = response.get_data(as_text=True)
     assert response.status_code == 200
-    assert 'Virtual Patrol' in html
-    assert 'CAD / Dispatch' in html
-    assert 'Current Scene' in html
+    assert 'Sentinel Virtual Patrol Simulator' in html
+    assert 'Scene Management' in html
+    assert 'Initial / Observable Scene' in html
     assert 'Scene Risk' not in html
     assert 'A small government-owned light pole is visibly damaged.' not in html
 
@@ -147,7 +147,7 @@ def test_scenario_lab_uses_separate_simulation_and_evaluator_views():
     response = client.get('/sentinel/fto-center/scenario-lab/?scenario_id=S005')
     html = response.get_data(as_text=True)
     assert response.status_code == 200
-    assert 'Sentinel — Virtual Patrol' in html
+    assert 'Sentinel Virtual Patrol Simulator' in html
     assert 'FTO View' in html
     assert 'Scene Risk' not in html
     assert 'Core Phases Cleared' not in html
