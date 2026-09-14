@@ -10,6 +10,7 @@
         <p class="text-muted mb-0">Hidden simulator state for human training review. Nothing on this screen is an automatic DOR rating or employment decision.</p>
       </div>
       <div class="ops-head-actions d-flex gap-2 flex-wrap">
+        <a class="btn btn-outline-primary" href="{{ url_for('reports.fto_refinements.scenario_notebook.review_notebook', run_id=run.run_id) }}">Field Notebook</a>
         <a class="btn btn-outline-secondary" href="{{ url_for('reports.fto_refinements.scenario_lab.lab', scenario_id=run.scenario_id) }}">Simulation Mode</a>
         <a class="btn btn-outline-secondary" href="{{ url_for('reports.sentinel.fto_program.dashboard') }}">FTO Program</a>
       </div>
@@ -114,6 +115,23 @@
           <pre class="small mb-0" style="white-space:pre-wrap">{{ world.records|tojson(indent=2) }}</pre>
         </article>
       </div>
+    </section>
+
+    <section class="ops-panel mb-3">
+      <div class="d-flex justify-content-between gap-3 align-items-start flex-wrap">
+        <div>
+          <div class="eyebrow">Trainee Field Notebook</div>
+          <h3 class="mb-1">Notes Preserved With This Run</h3>
+          <p class="text-muted mb-0">Original entries and revisions remain attached to the exact scenario record for later comparison with the trainee's paperwork.</p>
+        </div>
+        <a class="btn btn-outline-primary" href="{{ url_for('reports.fto_refinements.scenario_notebook.review_notebook', run_id=run.run_id) }}">Open Notebook</a>
+      </div>
+      {% if world.field_notes %}
+      <div class="row g-2 mt-2">
+        <div class="col-md-4"><div class="border rounded p-3"><div class="small text-muted">Entries / revisions</div><strong>{{ world.field_notes|length }}</strong></div></div>
+        <div class="col-md-8"><div class="border rounded p-3"><div class="small text-muted">Latest entry</div><strong>{{ world.field_notes[-1].text }}</strong></div></div>
+      </div>
+      {% else %}<p class="text-muted mt-3 mb-0">No field notes have been recorded in this run.</p>{% endif %}
     </section>
 
     {% if legal_refs %}
