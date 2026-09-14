@@ -56,6 +56,7 @@ jobs:
               'reports.fto_refinements.scenario_lab.lab',
               'reports.fto_refinements.scenario_lab.evaluator',
               'reports.fto_refinements.scenario_lab.review',
+              'reports.fto_refinements.scenario_shift.shift',
               'reports.sentinel.portal_search',
               'reports.accidents',
               'bodycam.narrative_tool',
@@ -81,6 +82,9 @@ jobs:
 
       - name: Run Scenario Lab simulator platform tests
         run: python -m pytest -q app/tests/test_scenario_lab_simulator_platform.py
+
+      - name: Run Virtual Shift and structured truth tests
+        run: python -m pytest -q app/tests/test_virtual_shift_truth.py
 
       - name: Run Scenario Lab adaptive state-engine tests
         run: python -m pytest -q app/tests/test_scenario_state_engine.py
