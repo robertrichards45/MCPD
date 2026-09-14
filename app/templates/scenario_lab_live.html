@@ -127,7 +127,6 @@
           <div class="eyebrow">Live Contacts</div>
           <h3>Question People in the Scenario</h3>
           <p class="small text-muted">Ask specific questions. Contacts will answer only what they reasonably know at this point. Talking to them does not automatically advance the scenario.</p>
-
           <form method="post">
             <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
             <input type="hidden" name="scenario_id" value="{{ scenario_id }}">
@@ -178,7 +177,6 @@
               <button class="btn btn-outline-secondary" type="submit" name="action" value="reset" formnovalidate>Restart Scenario</button>
             </div>
           </form>
-
           {% if hint_status and not hint_status.unlocked %}
           <p class="small text-muted mt-2 mb-0">Coaching stays locked until the trainee has genuinely worked the problem. Current stage: {{ hint_status.attempts }}/{{ hint_status.required_attempts }} decision attempts or {{ hint_status.interactions }}/{{ hint_status.required_interactions }} live contacts.</p>
           {% endif %}
@@ -192,7 +190,6 @@
       <div class="eyebrow">Immediate FTO Feedback</div>
       <h3>{{ feedback.headline }}</h3>
       <p>{{ feedback.consequence }}</p>
-
       {% if feedback.status != 'hint' %}
       <div class="row g-3">
         <div class="col-md-6">
@@ -239,7 +236,8 @@
     {% if result %}
     <section class="ops-panel mb-3">
       <div class="eyebrow">FTO Coaching Review</div>
-      <h3>{{ result.practice_outcome }}</h3>
+      <h3>SEG-Aligned Practice Cues</h3>
+      <h4>{{ result.practice_outcome }}</h4>
       <div class="alert alert-secondary"><strong>Important:</strong> {{ result.notice }}</div>
       <div class="row g-3 mb-3">
         <div class="col-md-3"><div class="border rounded p-3 h-100"><div class="eyebrow">Attempts</div><strong class="fs-4">{{ result.attempts }}</strong></div></div>
