@@ -121,9 +121,10 @@ def test_reports_center_contains_call_type_driven_incident_workspace():
     html = response.get_data(as_text=True)
     assert response.status_code == 200
     assert 'Incident Workspace' in html
-    assert 'Choose the Call Type First' in html
-    assert 'Default paperwork' in html
-    assert 'Conditional paperwork' in html
+    assert 'Paperwork Packet Builder' in html
+    assert 'Required / Normal' in html
+    assert 'Review If Applicable' in html
+    assert 'Not Normally Required' in html
     assert 'Narrative Creator + Sentinel' in html
     assert 'Traffic Accident' in html
 
