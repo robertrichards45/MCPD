@@ -6,7 +6,7 @@
     <section class="ops-head-card mb-3">
       <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
         <div>
-          <h2 class="mb-1">Edit Officer</h2>
+          <h2 class="mb-1">Edit Officer Account</h2>
           <p class="text-muted mb-0">Update profile details, installation, shift, supervisor, role, and account status.</p>
         </div>
         <a class="btn btn-outline-secondary" href="{{ url_for('auth.manage_users') }}">Back to Personnel</a>
@@ -66,7 +66,7 @@
             <input type="hidden" name="installation" value="{{ target_user.installation or user.installation or '' }}">
           {% endif %}
         </label>
-        <label>Supervisor / Watch Commander
+        <label>Supervisor
           <select class="form-control" name="supervisor_id">
             <option value="">Unassigned</option>
             {% for supervisor in supervisors %}
@@ -86,10 +86,6 @@
             <option value="1" {% if target_user.active %}selected{% endif %}>Active</option>
             <option value="0" {% if not target_user.active %}selected{% endif %}>Disabled</option>
           </select>
-        </label>
-        <label class="personnel-edit-check">
-          <input type="checkbox" name="can_grade_cleoc_reports" value="1" {% if target_user.can_grade_cleoc_reports %}checked{% endif %}>
-          Can review mock reports
         </label>
       </div>
 
@@ -123,7 +119,7 @@
 
       <div class="personnel-edit-actions">
         <a class="btn btn-outline-secondary" href="{{ url_for('auth.manage_users') }}">Cancel</a>
-        <button class="btn btn-primary">Save Officer</button>
+        <button class="btn btn-primary">Save Account</button>
       </div>
     </form>
 
