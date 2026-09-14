@@ -377,8 +377,10 @@ from . import scenario_shift as _scenario_shift
 from . import scenario_notebook as _scenario_notebook
 from . import scenario_paperwork as _scenario_paperwork
 from . import scenario_analytics as _scenario_analytics
+from . import scenario_instructor as _scenario_instructor
 bp.register_blueprint(_scenario_lab.bp)
 bp.register_blueprint(_scenario_shift.bp)
 bp.register_blueprint(_scenario_notebook.bp)
 bp.register_blueprint(_scenario_paperwork.bp)
 bp.register_blueprint(_scenario_analytics.bp)
+bp.register_blueprint(_scenario_instructor.bp)
