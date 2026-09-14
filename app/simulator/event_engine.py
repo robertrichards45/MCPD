@@ -1,6 +1,79 @@
 from copy import deepcopy
+import hashlib
+import random
 
 from .world_state import add_known_information, add_timeline, ensure_world_state, record_radio
+
+
+def _rng(run_context, salt='scheduled-events'):
+    seed = int((run_context or {}).get('seed') or 1)
+    digest = hashlib.sha256(f'{seed}|{salt}'.encode('utf-8')).hexdigest()
+    return random.Random(int(digest[:16], 16))
+
+
+def build_scheduled_events(scenario_id, run_context, truth=None):
+    """Create reproducible updates based only on structured run facts."""
+    choices = dict((run_context or {}).get('choices') or {})
+    rng = _rng(run_context)
+    events = []
+
+    # Not every call gets a later update. The absence of an update is itself
+    # normal patrol uncertainty and keeps the trainee from gaming the clock.
+    if rng.randrange(100) >= 58:
+        return events
+
+    due = rng.randint(2, 4)
+    if scenario_id == 'S001':
+        demeanor = choices.get('demeanor', 'continuing to argue')
+        events.append({
+            'id': 'caller-update-1',
+            'due_clock': due,
+            'event_type': 'caller_update',
+            'speaker': 'Dispatch',
+            'channel': 'radio',
+            'text': f'Caller update: the involved person is now described as {demeanor}. No confirmed weapon information has been added.',
+        })
+    elif scenario_id == 'S002':
+        issue = choices.get('credential_issue', 'an unresolved credential issue')
+        events.append({
+            'id': 'gate-update-1',
+            'due_clock': due,
+            'event_type': 'gate_update',
+            'speaker': 'Dispatch',
+            'channel': 'radio',
+            'text': f'Gate update: the vehicle remains in the inspection area while personnel work through {issue}.',
+        })
+    elif scenario_id == 'S003':
+        property_name = choices.get('property', 'government property')
+        events.append({
+            'id': 'property-update-1',
+            'due_clock': due,
+            'event_type': 'caller_update',
+            'speaker': 'Dispatch',
+            'channel': 'radio',
+            'text': f'Additional caller information: personnel believe the involved vehicle may still be nearby the damaged {property_name}. The caller did not personally see the contact.',
+        })
+    elif scenario_id == 'S004':
+        events.append({
+            'id': 'retail-update-1',
+            'due_clock': due,
+            'event_type': 'caller_update',
+            'speaker': 'Dispatch',
+            'channel': 'radio',
+            'text': 'Loss prevention updates that the involved person is becoming impatient and wants to leave. No enforcement status has been established by Dispatch.',
+        })
+    elif scenario_id == 'S006':
+        patient_state = choices.get('patient_state', 'still being evaluated')
+        events.append({
+            'id': 'medical-update-1',
+            'due_clock': due,
+            'event_type': 'caller_update',
+            'speaker': 'Dispatch',
+            'channel': 'radio',
+            'text': f'Caller update: the patient is reported as {patient_state}. EMS is continuing the response.',
+        })
+
+    return events
 
 
 def initialize_scheduled_events(state, events):
