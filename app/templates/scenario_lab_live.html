@@ -103,11 +103,21 @@
       <div class="col-xl-4">
         <article class="ops-panel h-100">
           <div class="eyebrow">People / Resources Present</div>
-          <h3>What You Currently Have</h3>
+          <h3>Who Is Here</h3>
           {% if observable.people %}
           <div class="d-grid gap-2 mb-3">
-            {% for person in observable.people %}<div class="border rounded p-2"><strong>{{ person.name }}</strong><div class="small text-muted">{{ person.role }}{% if person.location %} — {{ person.location }}{% endif %}</div></div>{% endfor %}
+            {% for person in observable.people %}
+            <div class="border rounded p-2">
+              <div class="d-flex justify-content-between gap-2 align-items-start flex-wrap">
+                <strong>{{ person.name }}</strong>
+                <span class="badge text-bg-light border">{{ person.role }}</span>
+              </div>
+              {% if person.location %}<div class="small text-muted">Location: {{ person.location }}</div>{% endif %}
+              <div class="small mt-1"><strong>Contact label:</strong> {{ person.role or person.name }}</div>
+            </div>
+            {% endfor %}
           </div>
+          <p class="small text-muted">You can address people naturally by role or common wording—for example, “subject” or “suspect,” and “reporting party,” “complainant,” or “caller.”</p>
           {% else %}<p class="text-muted">No person has been identified or encountered yet.</p>{% endif %}
           {% if observable.resources %}<hr>{% for resource in observable.resources %}<div class="mb-1"><strong>{{ resource.id|replace('_',' ')|title }}:</strong> {{ resource.status|replace('_',' ') }}</div>{% endfor %}{% endif %}
         </article>
@@ -125,8 +135,23 @@
       <div class="col-xl-4">
         <article class="ops-panel h-100">
           <div class="eyebrow">Recent Scene Activity</div>
-          <h3>What Has Happened</h3>
-          {% if observable.timeline %}<div class="d-grid gap-2">{% for item in observable.timeline[-8:]|reverse %}<div class="border rounded p-2"><span class="small text-muted">T+{{ item.clock }}</span> {{ item.summary }}</div>{% endfor %}</div>{% else %}<p class="text-muted">The call has just begun.</p>{% endif %}
+          <h3>Who Said / Did What</h3>
+          {% if observable.timeline %}
+          <div class="d-grid gap-2">
+            {% for item in observable.timeline[-10:]|reverse %}
+            <div class="border rounded p-2 {% if item.channel == 'face_to_face' %}border-primary{% endif %}">
+              <div class="d-flex justify-content-between gap-2 align-items-center flex-wrap mb-1">
+                <div>
+                  {% if item.actor %}<strong>{{ item.actor }}</strong>{% else %}<strong>Scene</strong>{% endif %}
+                  {% if item.channel == 'face_to_face' %}<span class="badge text-bg-primary ms-1">Face-to-Face</span>{% elif item.channel == 'radio' %}<span class="badge text-bg-light border ms-1">Radio</span>{% elif item.channel == 'scene' %}<span class="badge text-bg-light border ms-1">Scene</span>{% endif %}
+                </div>
+                <span class="small text-muted">T+{{ item.clock }}</span>
+              </div>
+              <div>{{ item.summary }}</div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}<p class="text-muted">The call has just begun.</p>{% endif %}
         </article>
       </div>
     </section>
@@ -142,8 +167,8 @@
       <div class="col-xl-7">
         <article class="ops-panel h-100">
           <div class="eyebrow">Officer Action</div><h3>What do you do?</h3>
-          <p class="small text-muted">State what you actually do, say, observe, ask, move toward, preserve, check, or decide. There are no action-menu answers.</p>
-          <form method="post"><input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}"><input type="hidden" name="scenario_id" value="{{ scenario_id }}"><input type="hidden" name="action" value="officer_action"><textarea class="form-control" name="command_text" rows="8" maxlength="2500" required placeholder="Example: I want to talk to the reporting party first. Ma'am, tell me exactly what happened."></textarea><button class="btn btn-primary mt-2" type="submit" {% if observable.paused %}disabled{% endif %}>Do / Say This</button></form>
+          <p class="small text-muted">State what you actually do, say, observe, ask, move toward, preserve, check, or decide. When more than one person is present, identify who you are addressing. Sentinel will resolve ordinary role synonyms and should never silently substitute a different person.</p>
+          <form method="post"><input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}"><input type="hidden" name="scenario_id" value="{{ scenario_id }}"><input type="hidden" name="action" value="officer_action"><textarea class="form-control" name="command_text" rows="8" maxlength="2500" required placeholder="Example: I make contact with the subject and ask, ‘Tell me what happened from your side.’"></textarea><button class="btn btn-primary mt-2" type="submit" {% if observable.paused %}disabled{% endif %}>Do / Say This</button></form>
         </article>
       </div>
     </section>
