@@ -73,8 +73,8 @@ def test_mobile_home_keeps_approved_field_actions():
         assert 'Orders' in html
         assert 'Training' in html
         assert 'Saved' in html
-        assert 'Officer Stats' in html
-        assert 'Contact Info' in html
+        assert '<span>Stats</span>' in html
+        assert '<span>Profile</span>' in html
         assert 'Voluntary Statement' not in html
         assert 'Open Statements' not in html
     finally:
