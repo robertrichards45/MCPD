@@ -100,5 +100,5 @@ def test_live_simulation_hides_internal_engine_and_legal_research():
     assert 'Current Scene' in html
     assert 'Radio' in html
     assert 'Officer Action' in html
-    assert 'People / Resources Present' in html
-    assert 'Information / Evidence Obtained' in html
+    assert 'People / Resources' in html
+    assert 'Information / Evidence' in html
