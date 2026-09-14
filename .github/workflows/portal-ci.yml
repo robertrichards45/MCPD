@@ -74,6 +74,9 @@ jobs:
       - name: Run Scenario Lab quality-gate tests
         run: python -m pytest -q app/tests/test_scenario_lab_quality_gate.py
 
+      - name: Run Scenario Lab live branching tests
+        run: python -m pytest -q app/tests/test_scenario_lab_live_training.py
+
       - name: Run retired-module regression tests
         run: python -m pytest -q app/tests/test_retired_modules.py
 
