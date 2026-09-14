@@ -37,7 +37,7 @@
       {{ tool_card('Command Notices', 'Post and review watch announcements.', url_for('announcements.board'), 'reports') }}
       {{ tool_card('BOLO Board', 'Review and manage BOLO information.', url_for('bolo.bolo_board'), 'reports') }}
     {% endif %}
-    {{ tool_card('Incident Workspace', 'Choose the call type and build the guided report packet from the current paperwork rules.', '/reports#incident-workspace', 'reports', True) }}
+    {{ tool_card('Incident Workspace', 'Choose the call type and build the guided report packet from the current paperwork rules.', url_for('mobile.incident_start'), 'reports', True) }}
     {{ tool_card('Fast Capture', 'Log quick field notes now and refine them in Narrative Creator.', url_for('mobile.fast_capture'), 'narrative') }}
     {{ tool_card('Reports Center', 'Open visible reports, packets, corrections, and supervisor review status.', url_for('reports.list_reports'), 'reports') }}
     {{ tool_card('Narrative Creator', 'Build a fact-based narrative and identify missing or conflicting details.', url_for('bodycam.mobile_narrative_tool'), 'narrative', True) }}
