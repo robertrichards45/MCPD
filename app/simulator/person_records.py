@@ -71,13 +71,61 @@ def _identity_truth(state, actor_id, role='Person'):
     return identity
 
 
-def _targets(actions):
+def _person_aliases(actor_id, person):
+    role = _text(person.get('role')).lower()
+    name = _text(person.get('name')).lower()
+    pid = _text(actor_id).lower()
+    blob = f'{pid} {role} {name}'
+    aliases = {value for value in (pid, role, name) if value}
+    if any(term in blob for term in ('subject', 'suspect')):
+        aliases.update({'subject', 'suspect', 'the subject', 'the suspect'})
+    if any(term in blob for term in ('reporting party', 'reporting', 'complainant', 'caller', 'staff')):
+        aliases.update({'reporting party', 'complainant', 'complaintant', 'caller', 'staff member', 'staff', 'rp'})
+    if 'loss prevention' in blob or pid == 'lp':
+        aliases.update({'loss prevention', 'lp', 'witness', 'reporting party'})
+    if 'witness' in blob or any(term in pid for term in ('witness', 'coworker', 'employee2')):
+        aliases.update({'witness', 'the witness', 'employee witness', 'coworker', 'employee'})
+    if 'driver' in blob:
+        aliases.update({'driver', 'the driver'})
+    if 'patient' in blob:
+        aliases.update({'patient', 'the patient'})
+    if 'sponsor' in blob:
+        aliases.update({'sponsor', 'destination contact'})
+    if 'gate' in blob:
+        aliases.update({'gate officer', 'gate guard', 'gate personnel'})
+    return sorted(aliases, key=len, reverse=True)
+
+
+def _targets(actions, state=None, raw_text=''):
     rows = []
+    excluded = {'dispatch', 'patrol_unit', 'ems', 'fire', 'supervisor', 'investigations', 'witnesses', 'backup_officer'}
     for action in actions or []:
         target = _text((action or {}).get('target'))
-        if target and target not in {'dispatch', 'patrol_unit', 'ems', 'fire', 'supervisor', 'investigations', 'witnesses', 'backup_officer'}:
-            if target not in rows:
-                rows.append(target)
+        if target and target not in excluded and target not in rows:
+            rows.append(target)
+    if rows or state is None or not _text(raw_text):
+        return rows
+
+    world = ensure_world_state(state, state.get('scenario_id', ''))
+    low = _text(raw_text).lower()
+    matches = []
+    for actor_id, person in (world.get('people') or {}).items():
+        if not person.get('discovered') or person.get('status') == 'departed':
+            continue
+        hit = ''
+        for alias in _person_aliases(actor_id, person):
+            if alias and re.search(rf'(?<!\w){re.escape(alias)}(?!\w)', low, re.I):
+                hit = alias
+                break
+        if hit:
+            matches.append((len(hit), actor_id))
+    if not matches:
+        return rows
+    matches.sort(reverse=True)
+    best_len = matches[0][0]
+    best = [actor_id for length, actor_id in matches if length == best_len]
+    if len(set(best)) == 1:
+        rows.append(best[0])
     return rows
 
 
@@ -96,7 +144,7 @@ def reveal_requested_identities(state, actions, raw_text):
     world = ensure_world_state(state, state.get('scenario_id', ''))
     people = dict(world.get('people') or {})
     changed = []
-    for actor_id in _targets(actions):
+    for actor_id in _targets(actions, state=state, raw_text=raw_text):
         person = dict(people.get(actor_id) or {})
         if not person or person.get('status') == 'departed':
             continue
@@ -193,7 +241,7 @@ def obtain_requested_statements(state, actions, raw_text):
     created = []
     clock = int(world.get('clock', 0))
 
-    for actor_id in _targets(actions):
+    for actor_id in _targets(actions, state=state, raw_text=raw_text):
         person = dict(people.get(actor_id) or {})
         if not person or person.get('status') == 'departed':
             continue
