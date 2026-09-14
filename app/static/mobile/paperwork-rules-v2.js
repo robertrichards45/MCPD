@@ -72,6 +72,15 @@
     return unique(forms);
   }
 
+  function paperworkGuidance(rule) {
+    return rule ? {
+      recommendedForms: clone(rule.recommendedForms || []),
+      conditionalRules: clone(rule.conditionalRules || []),
+      optionalForms: clone(rule.optionalForms || []),
+      notNormallyRequiredForms: clone(rule.notNormallyRequiredForms || [])
+    } : {};
+  }
+
   function recomputePacket(state) {
     var next = clone(state || {}) || {};
     var rule = ruleFor(next);
@@ -97,11 +106,7 @@
     next.paperworkManualForms = manual;
     next.paperworkSuppressedForms = suppressed;
     next.paperworkCircumstances = circumstances;
-    next.paperworkGuidance = {
-      conditionalRules: clone(rule.conditionalRules || []),
-      optionalForms: clone(rule.optionalForms || []),
-      notNormallyRequiredForms: clone(rule.notNormallyRequiredForms || [])
-    };
+    next.paperworkGuidance = paperworkGuidance(rule);
     return next;
   }
 
@@ -133,11 +138,7 @@
       paperworkCircumstances: {},
       paperworkManualForms: [],
       paperworkSuppressedForms: [],
-      paperworkGuidance: rule ? {
-        conditionalRules: clone(rule.conditionalRules || []),
-        optionalForms: clone(rule.optionalForms || []),
-        notNormallyRequiredForms: clone(rule.notNormallyRequiredForms || [])
-      } : {},
+      paperworkGuidance: paperworkGuidance(rule),
       packetStatus: 'draft'
     });
     return writeState(next);
