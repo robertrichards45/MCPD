@@ -55,8 +55,8 @@ jobs:
             app/tests/test_mobile_packet_pages.py \
             app/tests/test_mobile_statement_pages.py
 
-      - name: Run high-risk mobile packet regression checks
-        run: python -m pytest -q app/tests/test_mobile_high_risk_features.py
+      - name: Run mobile field-work safety checks
+        run: python -m pytest -q app/tests/test_mobile_field_safety.py
 
       - name: Verify application routes load
         run: |
