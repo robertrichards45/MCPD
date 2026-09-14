@@ -120,6 +120,8 @@ def test_mobile_officer_flow_pages_include_updated_mobile_assets():
         assert 'Paperwork Navigator' not in home
         assert 'Admin / Desktop Tools' not in home
         assert 'data-mobile-incident-page="selected-forms"' in forms
+        assert 'paperwork-rules-v2-root' in forms
+        assert 'paperwork-rules-v2.js' in forms
         assert '2026-05-04-draft-sync-1' in domestic
         assert '/static/vendor/zxing-browser.min.js' in domestic
         assert 'mobile-domestic-schema-data' in domestic
@@ -152,5 +154,28 @@ def test_mobile_runtime_uses_guided_statement_and_domestic_flows():
         assert 'data-id-live-video' in runtime
         assert 'Open Live ID Scanner' in runtime
         assert 'openCaptureFallback' in runtime
+    finally:
+        _dispose_app(client.application)
+
+
+def test_mobile_paperwork_v2_removes_unconditional_stat_sheet_behavior():
+    client = _logged_in_client()
+    try:
+        forms = _text_response(client.get('/mobile/incident/recommended-forms'))
+        fast_capture = _text_response(client.get('/mobile/fast-capture'))
+        wrapper = _text_response(client.get('/static/mobile/paperwork-rules-v2.js?v=2026-09-14-paperwork-v2'))
+
+        assert 'paperwork-rules-v2-root' in forms
+        assert 'Call Type Paperwork' in wrapper
+        assert 'paperworkCircumstances' in wrapper
+        assert 'recommendedForms: clone(rule.recommendedForms || [])' in wrapper
+        assert "selectedForms: rule ? unique(rule.recommendedForms || []) : []" in wrapper
+        assert "forms.unshift('MCPD Stat Sheet')" not in wrapper
+        assert "if (formName === 'MCPD Stat Sheet')" not in wrapper
+
+        assert "var selectedForms = rule ? JSON.parse(JSON.stringify(rule.recommendedForms || [])) : [];" in fast_capture
+        assert "['MCPD Stat Sheet'].concat" not in fast_capture
+        assert 'paperworkGuidance' in fast_capture
+        assert 'recommendedForms:' in fast_capture
     finally:
         _dispose_app(client.application)
