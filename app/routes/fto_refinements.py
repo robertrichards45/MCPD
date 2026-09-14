@@ -301,6 +301,8 @@ def edit_dor(dor_id):
 from . import scenario_lab_live as _scenario_lab
 from . import scenario_shift as _scenario_shift
 from . import scenario_notebook as _scenario_notebook
+from . import scenario_paperwork as _scenario_paperwork
 bp.register_blueprint(_scenario_lab.bp)
 bp.register_blueprint(_scenario_shift.bp)
 bp.register_blueprint(_scenario_notebook.bp)
+bp.register_blueprint(_scenario_paperwork.bp)
