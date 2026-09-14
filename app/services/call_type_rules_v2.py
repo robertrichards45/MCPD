@@ -19,6 +19,11 @@ CONDITION_DEFINITIONS = [
 CONDITION_MAP = {item['key']: item for item in CONDITION_DEFINITIONS}
 
 
+def _plain_text(value):
+    """Keep stored workflow explanations as plain text for dynamic UI use."""
+    return re.sub(r'[<>]', '', str(value or '')).strip()
+
+
 def _dedupe(items):
     output = []
     seen = set()
@@ -61,10 +66,10 @@ def _condition_rule(raw):
     definition = CONDITION_MAP.get(key, {})
     return {
         'key': key,
-        'label': str(data.get('label') or definition.get('label') or key.replace('_', ' ').title()).strip(),
-        'question': str(data.get('question') or definition.get('question') or '').strip(),
+        'label': _plain_text(data.get('label') or definition.get('label') or key.replace('_', ' ').title()),
+        'question': _plain_text(data.get('question') or definition.get('question') or ''),
         'forms': forms,
-        'why': str(data.get('why') or data.get('reason') or '').strip(),
+        'why': _plain_text(data.get('why') or data.get('reason') or ''),
         'active': bool(data.get('active', True)),
     }
 
@@ -95,7 +100,7 @@ def _parse_tokens(entries):
             parts = text[len('@notnormally:'):].split('|', 1)
             form_name = parts[0].strip()
             if form_name:
-                not_normal.append({'form': form_name, 'why': parts[1].strip() if len(parts) > 1 else ''})
+                not_normal.append({'form': form_name, 'why': _plain_text(parts[1]) if len(parts) > 1 else ''})
             continue
         normal.append(text)
     return normal, conditions, not_normal, explicit_none
@@ -127,7 +132,7 @@ def _normalize_not_normal(rows):
     for raw in rows or []:
         if isinstance(raw, dict):
             form_name = str(raw.get('form') or raw.get('name') or '').strip()
-            why = str(raw.get('why') or raw.get('reason') or '').strip()
+            why = _plain_text(raw.get('why') or raw.get('reason') or '')
         else:
             form_name = str(raw or '').strip()
             why = ''
