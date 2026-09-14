@@ -5,6 +5,7 @@
     <nav class="mobile-header-nav" aria-label="Mobile page navigation">
       <a class="mobile-header-nav-btn" href="{{ url_for('mobile.home') }}">Home</a>
       <a class="mobile-header-nav-btn" href="{{ url_for('mobile.more') }}">Menu</a>
+      <button class="mobile-header-nav-btn" type="button" data-theme-toggle>Dark</button>
     </nav>
     <div class="mobile-header-topline">
       <span class="mobile-header-kicker">{{ mobile_header_kicker or 'MCPD Mobile' }}</span>
@@ -39,21 +40,50 @@
   <script>
   (function () {
     var STORAGE_KEY = 'mcpd.mobile.incident.state';
+    var internalNavigation = false;
+
     function hasActiveIncident() {
       try {
         var raw = sessionStorage.getItem(STORAGE_KEY);
         if (!raw) return false;
         var state = JSON.parse(raw);
-        return !!(state && (state.callType || (state.incidentBasics && Object.keys(state.incidentBasics).length > 0)));
+        var basics = state && state.incidentBasics && typeof state.incidentBasics === 'object' ? state.incidentBasics : {};
+        return !!(
+          state && (
+            state.callType ||
+            basics.location ||
+            basics.summary ||
+            (Array.isArray(state.facts) && state.facts.length) ||
+            (Array.isArray(state.persons) && state.persons.length)
+          )
+        );
       } catch (e) { return false; }
     }
-    window.addEventListener('beforeunload', function (e) {
-      if (hasActiveIncident()) {
-        var msg = 'You have an active incident in progress. Leaving this page may cause unsaved data to be lost.';
-        e.preventDefault();
-        e.returnValue = msg;
-        return msg;
-      }
+
+    /* Internal portal navigation is safe: the incident state already lives in
+       sessionStorage and the incident runtime syncs meaningful drafts to the
+       server. Only warn for an actual tab/window exit or external navigation. */
+    document.addEventListener('click', function (event) {
+      var link = event.target.closest('a[href]');
+      if (!link || link.target === '_blank' || link.hasAttribute('download')) return;
+      try {
+        var target = new URL(link.href, window.location.href);
+        if (target.origin === window.location.origin) internalNavigation = true;
+      } catch (e) {}
+    }, true);
+
+    document.addEventListener('submit', function () {
+      internalNavigation = true;
+    }, true);
+
+    window.addEventListener('pageshow', function () {
+      internalNavigation = false;
+    });
+
+    window.addEventListener('beforeunload', function (event) {
+      if (internalNavigation || !hasActiveIncident()) return;
+      event.preventDefault();
+      event.returnValue = '';
     });
   }());
   </script>
