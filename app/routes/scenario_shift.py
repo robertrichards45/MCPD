@@ -10,7 +10,7 @@ from ..simulator.shift_engine import (
     new_shift,
     set_dispatch_details,
 )
-from .scenario_variants import build_run_context
+from .scenario_variants import SEED_OVERRIDE_KEY, build_run_context
 
 
 bp = Blueprint('scenario_shift', __name__, url_prefix='/scenario-lab/shift')
@@ -53,10 +53,13 @@ def _start_assigned_run(shift_state):
     if shift_state.get('active_run_id'):
         return shift_state.get('active_run_id')
 
-    # Imported here to avoid a blueprint import cycle during application startup.
     from .scenario_lab_live import _new_state
 
-    state = _new_state(scenario_id, seed=shift_state.get('active_call_seed'))
+    session[SEED_OVERRIDE_KEY] = {
+        'scenario_id': scenario_id,
+        'seed': shift_state.get('active_call_seed'),
+    }
+    state = _new_state(scenario_id)
     state['shift_context'] = {
         'shift_id': shift_state.get('shift_id'),
         'call_number': shift_state.get('call_index'),
