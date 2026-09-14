@@ -12,7 +12,7 @@ permissions:
 jobs:
   portal-checks:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     env:
       APP_ENV: dev
       REQUIRE_PERSISTENT_DATABASE: "0"
@@ -42,10 +42,21 @@ jobs:
         run: python -m compileall -q app
 
       - name: Check browser JavaScript syntax
-        run: node --check app/static/js/app.js
+        run: |
+          node --check app/static/js/app.js
+          node --check app/static/js/mobile-audit.js
 
-      - name: Run mobile layout regression checks
-        run: python -m pytest -q app/tests/test_mobile_layout_contract.py
+      - name: Run mobile layout and field-workflow regression checks
+        run: |
+          python -m pytest -q \
+            app/tests/test_mobile_layout_contract.py \
+            app/tests/test_mobile_home_redirects.py \
+            app/tests/test_mobile_officer_flow.py \
+            app/tests/test_mobile_packet_pages.py \
+            app/tests/test_mobile_statement_pages.py
+
+      - name: Run high-risk mobile packet regression checks
+        run: python -m pytest -q app/tests/test_mobile_high_risk_features.py
 
       - name: Verify application routes load
         run: |
