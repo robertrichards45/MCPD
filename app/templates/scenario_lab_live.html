@@ -13,6 +13,7 @@
       </div>
       <div class="ops-head-actions d-flex gap-2 flex-wrap">
         {% if shift_mode %}<a class="btn btn-outline-primary" href="{{ url_for('reports.fto_refinements.scenario_shift.shift') }}">Shift CAD</a>{% endif %}
+        <a class="btn btn-outline-primary" href="{{ url_for('reports.fto_refinements.scenario_notebook.notebook') }}">Field Notebook</a>
         {% if evaluator_url %}<a class="btn btn-outline-secondary" href="{{ evaluator_url }}">FTO / Evaluator View</a>{% endif %}
         <a class="btn btn-outline-secondary" href="{{ url_for('reports.sentinel.fto_center') }}">FTO Center</a>
       </div>
@@ -42,6 +43,7 @@
       <p class="text-muted mb-3">This is a synthetic training outcome. The decision remains part of the run and cannot be rewritten.</p>
       <div class="d-flex gap-2 flex-wrap">
         {% if review_url %}<a class="btn btn-primary" href="{{ review_url }}">After-Action Review</a>{% endif %}
+        <a class="btn btn-outline-primary" href="{{ url_for('reports.fto_refinements.scenario_notebook.notebook') }}">Review Field Notes</a>
         {% if shift_mode %}
         <a class="btn btn-outline-secondary" href="{{ url_for('reports.fto_refinements.scenario_shift.shift') }}">Return to Shift</a>
         {% else %}
@@ -62,6 +64,7 @@
       <p class="text-muted">The live simulation is over. Instruction and evaluation now move to after-action review.</p>
       <div class="d-flex gap-2 flex-wrap">
         {% if review_url %}<a class="btn btn-success" href="{{ review_url }}">Open After-Action Review</a>{% endif %}
+        <a class="btn btn-outline-primary" href="{{ url_for('reports.fto_refinements.scenario_notebook.notebook') }}">Review Field Notes</a>
         {% if shift_mode %}
         <a class="btn btn-outline-secondary" href="{{ url_for('reports.fto_refinements.scenario_shift.shift') }}">Return to Shift</a>
         {% else %}
@@ -157,6 +160,8 @@
           </div>
           {% endif %}
           {% if not observable.known_information and not observable.evidence %}<p class="text-muted">Nothing beyond the initial call information has been developed yet.</p>{% endif %}
+          <hr>
+          <a class="btn btn-sm btn-outline-primary" href="{{ url_for('reports.fto_refinements.scenario_notebook.notebook') }}">Open Field Notebook</a>
         </article>
       </div>
 
