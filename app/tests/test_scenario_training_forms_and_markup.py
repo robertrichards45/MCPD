@@ -4,6 +4,9 @@ from app.models import Form, ROLE_WEBSITE_CONTROLLER, SavedForm, User
 from app.simulator.training_forms import training_form_definition, training_form_definitions
 
 
+OFFICER_TEST_FORM = 'OPNAV 5580 22Evidence Custody Document'
+
+
 def _client():
     app = create_app()
     app.config['TESTING'] = True
@@ -41,7 +44,7 @@ def _submit_revision(client, action='submit', narrative='The trainee documented 
     return client.post('/sentinel/fto-center/scenario-paperwork/', data={
         '_csrf_token': 'test-token',
         'action': action,
-        'selected_documents': ['OPNAV 5580 2 Voluntary Statement'],
+        'selected_documents': [OFFICER_TEST_FORM],
         'cid_decision': 'screen',
         'notification_notes': 'Synthetic screening decision recorded for training.',
         'narrative': narrative,
@@ -88,7 +91,7 @@ def test_training_form_completion_does_not_create_operational_form_records():
 
     response = client.post(
         '/sentinel/fto-center/scenario-paperwork/training-forms',
-        data=_training_form_payload('OPNAV 5580 2 Voluntary Statement'),
+        data=_training_form_payload(OFFICER_TEST_FORM),
         follow_redirects=True,
     )
     assert response.status_code == 200
@@ -102,6 +105,7 @@ def test_training_form_completion_does_not_create_operational_form_records():
         submission = s['sentinel_scenario_lab_v2']['training_package']['submissions'][-1]
         assert submission['forms_complete'] is True
         assert len(submission['training_forms']) == 1
+        assert submission['training_forms'][0]['document_name'] == OFFICER_TEST_FORM
         assert len(submission['training_form_history']) == 1
 
 
@@ -112,7 +116,7 @@ def test_fto_markup_preserves_original_submission_and_resolution_history():
     _submit_revision(client, narrative=original)
     client.post(
         '/sentinel/fto-center/scenario-paperwork/training-forms',
-        data=_training_form_payload('OPNAV 5580 2 Voluntary Statement'),
+        data=_training_form_payload(OFFICER_TEST_FORM),
         follow_redirects=True,
     )
     client.post('/sentinel/fto-center/scenario-paperwork/', data={
