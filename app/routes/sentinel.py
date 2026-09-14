@@ -1,6 +1,9 @@
 import re
 from flask import Blueprint, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
+from sqlalchemy import or_
+
+from ..models import Form, Report, TrainingRoster
 
 bp = Blueprint('sentinel', __name__, url_prefix='/sentinel')
 
@@ -235,6 +238,60 @@ def _evaluate_fto(text):
         'development': development,
         'notice': 'Sentinel is a training aid. The assigned FTO/instructor owns the final rating, comments, remediation, and advancement recommendation.',
     }
+
+
+def _portal_search_results(query):
+    """Search safe portal metadata without exposing report content."""
+    q = _normalize(query)
+    if not q:
+        return []
+    pattern = f'%{q}%'
+    results = []
+
+    report_query = Report.query
+    if not current_user.can_manage_team():
+        report_query = report_query.filter_by(owner_id=current_user.id)
+    for item in report_query.filter(Report.title.ilike(pattern)).order_by(Report.updated_at.desc()).limit(8).all():
+        results.append({
+            'group': 'Reports',
+            'title': item.title,
+            'detail': f'Status: {item.status or "Draft"}. Open Reports Center to view only records you are authorized to access.',
+            'href': url_for('reports.list_reports', q=q),
+        })
+
+    for item in Form.query.filter(Form.is_active.is_(True)).filter(or_(Form.title.ilike(pattern), Form.category.ilike(pattern))).order_by(Form.title.asc()).limit(8).all():
+        results.append({
+            'group': 'Forms',
+            'title': item.title,
+            'detail': item.category or 'Official form',
+            'href': url_for('forms.list_forms', q=q),
+        })
+
+    for item in TrainingRoster.query.filter(or_(TrainingRoster.title.ilike(pattern), TrainingRoster.description.ilike(pattern))).order_by(TrainingRoster.uploaded_at.desc()).limit(8).all():
+        results.append({
+            'group': 'Training',
+            'title': item.title,
+            'detail': (item.description or 'Training roster')[:180],
+            'href': url_for('training.training_menu', q=q),
+        })
+
+    return results
+
+
+@bp.route('/search')
+@login_required
+def portal_search():
+    query = _normalize(request.args.get('q'))
+    results = _portal_search_results(query) if query else []
+    shortcuts = [
+        {'title': 'Law & Legal Search', 'detail': 'Georgia law, UCMJ, USC, and legal references', 'href': url_for('legal.legal_lookup', q=query, source='ALL', state='GA') if query else url_for('legal.legal_home')},
+        {'title': 'Orders & Memos', 'detail': 'Base orders, PDIs/SOPs, memorandums, and references', 'href': url_for('orders.reference_search', q=query) if query else url_for('orders.reference_search')},
+        {'title': 'Narrative Creator', 'detail': 'Build and quality-check a fact-based report narrative', 'href': url_for('bodycam.narrative_tool')},
+        {'title': 'Forms / Paperwork', 'detail': 'Official forms and call-type paperwork guidance', 'href': url_for('forms.list_forms', q=query) if query else url_for('forms.list_forms')},
+        {'title': 'FTO Center', 'detail': 'Field training, Scenario Lab, and evaluation coaching', 'href': url_for('reports.sentinel.fto_center')},
+        {'title': 'Accident Tools', 'detail': 'Guided crash documentation and diagrams', 'href': url_for('reports.accidents')},
+    ]
+    return render_template('sentinel_portal_search.html', user=current_user, query=query, results=results, shortcuts=shortcuts)
 
 
 @bp.route('/report-inspector', methods=['GET', 'POST'])
