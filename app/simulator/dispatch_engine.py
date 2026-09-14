@@ -3,7 +3,6 @@ import random
 
 from .world_state import (
     add_known_information,
-    add_timeline,
     ensure_world_state,
     queue_radio_response,
     record_radio,
@@ -68,12 +67,16 @@ def _synthetic_records_result(state, run_context, raw_text):
 
 
 def handle_radio_transmission(state, actions, raw_text, run_context=None):
-    """Process trainee radio traffic without giving Dispatch hidden knowledge."""
+    """Process trainee radio traffic without giving Dispatch hidden knowledge.
+
+    The trainee transmission is written to the radio log here. The visible call
+    timeline entry is owned by ``apply_interpreted_actions`` so one radio
+    transmission produces exactly one trainee timeline card.
+    """
     world = ensure_world_state(state, state.get('scenario_id', ''))
     run_context = run_context or state.get('run_context') or {}
     text = _text(raw_text)
     record_radio(state, 'Trainee', text, direction='outbound', metadata={'actions': actions or []})
-    add_timeline(state, 'radio_transmission', text, actor='Trainee', channel='radio', details={'actions': actions or []})
 
     action_types = {str(row.get('action_type') or '').strip().lower() for row in (actions or [])}
     clock = int(world.get('clock', 0))
@@ -108,4 +111,5 @@ def inject_dispatch_update(state, text, metadata=None):
         return
     record_radio(state, 'Dispatch', message, direction='inbound', metadata=metadata)
     add_known_information(state, message, source='dispatch')
+    from .world_state import add_timeline
     add_timeline(state, 'dispatch_update', message, actor='Dispatch', channel='radio', details=metadata or {})
