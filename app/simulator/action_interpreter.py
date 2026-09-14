@@ -16,6 +16,7 @@ ALLOWED_ACTION_TYPES = {
     'identify_person', 'separate_witnesses', 'direct_backup',
     'preserve_evidence', 'document_evidence', 'collect_evidence',
     'detain', 'arrest', 'search', 'cite', 'release',
+    'use_force', 'deadly_force',
     'legal_assessment', 'deescalate', 'wait', 'document_report',
     'no_enforcement', 'clear_call', 'unknown',
 }
@@ -49,6 +50,17 @@ def _matches(text, patterns):
     return any(re.search(pattern, text, re.I) for pattern in patterns)
 
 
+def _negated(text, verbs):
+    """Catch common statements that discuss an action without taking it."""
+    terms = '|'.join(re.escape(term) for term in verbs)
+    patterns = (
+        rf"\b(?:do not|don't|would not|wouldn't|will not|won't|am not going to|not going to|should not|shouldn't|cannot|can't)\s+(?:\w+\s+){{0,3}}(?:{terms})\b",
+        rf"\b(?:no|without)\s+(?:lawful\s+)?(?:basis|authority|cause|reason)\s+(?:to|for)\s+(?:\w+\s+){{0,2}}(?:{terms})\b",
+        rf"\b(?:not enough|insufficient)\s+(?:facts|evidence|cause)\s+(?:to|for)\s+(?:\w+\s+){{0,2}}(?:{terms})\b",
+    )
+    return _matches(text, patterns)
+
+
 def _target_from_people(text, visible_people):
     low = _low(text)
     for person in visible_people or []:
@@ -78,20 +90,18 @@ def _append(rows, action_type, text, target='', priority='routine', reason='', c
 
 
 def deterministic_interpret(text, channel='scene', visible_people=None):
-    """Interpret common patrol language without requiring exact wording.
-
-    This is the fail-safe path. It intentionally recognizes multiple natural
-    phrasings for the same intent and never changes scenario truth itself.
-    """
+    """Interpret common patrol language without requiring exact wording."""
     text = _clean(text)
     low = text.lower()
     rows = []
     target = _target_from_people(text, visible_people)
 
-    if _matches(low, (
+    backup_language = _matches(low, (
         r'\b(send|start|get|request|need|want)\b.{0,35}\b(another|cover|second|additional)\b.{0,12}\b(unit|officer)\b',
         r'\bwait\b.{0,25}\bbackup\b', r'\bcover unit\b', r'\banother unit\b',
-    )):
+        r'\bstart somebody else (?:this|my) way\b',
+    ))
+    if backup_language and not _negated(low, ('backup', 'unit', 'officer')):
         _append(rows, 'request_backup', text, target='patrol_unit', reason='officer_safety')
 
     if channel == 'radio' or _matches(low, (r'\bdispatch\b', r'^\d{2,4}[a-z]?\b')):
@@ -104,33 +114,33 @@ def deterministic_interpret(text, channel='scene', visible_people=None):
         elif not rows:
             _append(rows, 'radio_status', text, target='dispatch', reason='general_transmission', confidence=0.68)
 
-    if _matches(low, (r'\b(start|send|request|call|get)\b.{0,25}\b(ems|ambulance|paramedic|medical)\b',)):
+    if _matches(low, (r'\b(start|send|request|call|get)\b.{0,25}\b(ems|ambulance|paramedic|medical)\b',)) and not _negated(low, ('ems', 'ambulance', 'medical')):
         _append(rows, 'request_ems', text, target='ems')
-    if _matches(low, (r'\b(start|send|request|call|get)\b.{0,25}\bfire\b',)):
+    if _matches(low, (r'\b(start|send|request|call|get)\b.{0,25}\bfire\b',)) and not _negated(low, ('fire',)):
         _append(rows, 'request_fire', text, target='fire')
-    if _matches(low, (r'\b(notify|call|advise|get)\b.{0,30}\b(watch commander|supervisor|sergeant|sgt)\b',)):
+    if _matches(low, (r'\b(notify|call|advise|get)\b.{0,30}\b(watch commander|supervisor|sergeant|sgt)\b',)) and not _negated(low, ('notify', 'call', 'advise')):
         _append(rows, 'notify_supervisor', text, target='supervisor')
-    if _matches(low, (r'\b(notify|call|request|screen)\b.{0,30}\b(cid|investigator|investigations)\b',)):
+    if _matches(low, (r'\b(notify|call|request|screen)\b.{0,30}\b(cid|investigator|investigations)\b',)) and not _negated(low, ('notify', 'call', 'request', 'screen')):
         _append(rows, 'request_investigator', text, target='investigations')
 
     if _matches(low, (
         r'\b(run|check)\b.{0,20}\b(oln|license|driver|plate|tag|registration|wanted|warrant|ncic|gcic|records)\b',
         r'\b(wanted|warrant|records) check\b',
-    )):
+    )) and not _negated(low, ('run', 'check')):
         _append(rows, 'records_check', text, target='dispatch')
 
-    if _matches(low, (r'\b(park|move|walk|approach|go|position|stand|enter|step)\b',)):
+    if _matches(low, (r'\b(park|move|walk|approach|go|position|stand|enter|step)\b',)) and not _negated(low, ('park', 'move', 'walk', 'approach', 'go', 'enter')):
         _append(rows, 'move', text, target=target)
-    if _matches(low, (r'\b(look|observe|check|examine|inspect|scan)\b',)):
+    if _matches(low, (r'\b(look|observe|check|examine|inspect|scan)\b',)) and not _negated(low, ('look', 'observe', 'check', 'examine', 'inspect', 'scan')):
         _append(rows, 'observe', text, target=target)
 
-    if _matches(low, (r'\b(separate|keep apart|split up)\b.{0,30}\b(witness|people|parties|employees)\b',)):
+    if _matches(low, (r'\b(separate|keep apart|split up)\b.{0,30}\b(witness|people|parties|employees)\b',)) and not _negated(low, ('separate',)):
         _append(rows, 'separate_witnesses', text, target='witnesses')
     if _matches(low, (r'\b(identify|get.*name|get.*id|who is|who are)\b',)):
         _append(rows, 'identify_person', text, target=target)
 
     quoted_or_question = '?' in text or _matches(low, (r'\b(ask|talk to|speak to|interview|tell me|explain to me|what happened|who saw)\b',))
-    if quoted_or_question:
+    if quoted_or_question and not _negated(low, ('ask', 'talk', 'speak', 'interview')):
         kind = 'interview' if _matches(low, (r'\b(interview|what happened|who saw|tell me exactly|statement)\b',)) else 'speak'
         _append(rows, kind, text, target=target)
 
@@ -140,29 +150,34 @@ def deterministic_interpret(text, channel='scene', visible_people=None):
     if _matches(low, (r'\b(de-escalat|lower my voice|calm him|calm her|build rapport|explain calmly|speak calmly)\b',)):
         _append(rows, 'deescalate', text, target=target)
 
-    if _matches(low, (r'\b(preserve|save|secure|copy)\b.{0,30}\b(video|footage|evidence|photo|receipt|statement|item)\b',)):
+    if _matches(low, (r'\b(preserve|save|secure|copy)\b.{0,30}\b(video|footage|evidence|photo|receipt|statement|item)\b',)) and not _negated(low, ('preserve', 'save', 'secure', 'copy')):
         _append(rows, 'preserve_evidence', text)
-    if _matches(low, (r'\b(photo|photograph|document|measure)\b.{0,30}\b(damage|scene|evidence|vehicle|item)\b',)):
+    if _matches(low, (r'\b(photo|photograph|document|measure)\b.{0,30}\b(damage|scene|evidence|vehicle|item)\b',)) and not _negated(low, ('photo', 'photograph', 'document', 'measure')):
         _append(rows, 'document_evidence', text)
-    if _matches(low, (r'\b(collect|package|bag|seize)\b.{0,25}\b(evidence|item|property)\b',)):
+    if _matches(low, (r'\b(collect|package|bag|seize)\b.{0,25}\b(evidence|item|property)\b',)) and not _negated(low, ('collect', 'package', 'bag', 'seize')):
         _append(rows, 'collect_evidence', text)
 
-    if _matches(low, (r'\bdetain\b', r'\btemporary detention\b')):
+    if _matches(low, (r'\b(shoot|fire (?:my|the) weapon|deadly force)\b',)) and not _negated(low, ('shoot', 'fire', 'deadly force')):
+        _append(rows, 'deadly_force', text, target=target, priority='urgent', reason='force_decision', confidence=0.93)
+    elif _matches(low, (r'\b(tase|taser|pepper spray|oc spray|strike|go hands on|use force|physical force)\b',)) and not _negated(low, ('tase', 'taser', 'spray', 'strike', 'use force')):
+        _append(rows, 'use_force', text, target=target, priority='urgent', reason='control_decision', confidence=0.9)
+
+    if _matches(low, (r'\bdetain\b', r'\btemporary detention\b')) and not _negated(low, ('detain',)):
         _append(rows, 'detain', text, target=target)
-    if _matches(low, (r'\barrest\b', r'\btake .* into custody\b')):
+    if _matches(low, (r'\barrest\b', r'\btake .* into custody\b')) and not _negated(low, ('arrest', 'custody')):
         _append(rows, 'arrest', text, target=target)
-    if _matches(low, (r'\bsearch\b', r'\bfrisk\b')):
+    if _matches(low, (r'\bsearch\b', r'\bfrisk\b')) and not _negated(low, ('search', 'frisk')):
         _append(rows, 'search', text, target=target)
-    if _matches(low, (r'\b(cite|citation|ticket)\b',)):
+    if _matches(low, (r'\b(cite|citation|ticket)\b',)) and not _negated(low, ('cite', 'citation', 'ticket')):
         _append(rows, 'cite', text, target=target)
-    if _matches(low, (r'\b(release|free to leave|let .* go)\b',)):
+    if _matches(low, (r'\b(release|free to leave|let .* go)\b',)) and not _negated(low, ('release',)):
         _append(rows, 'release', text, target=target)
 
     if _matches(low, (r'\b(probable cause|reasonable suspicion|legal basis|authority|elements|lawful basis)\b',)):
         _append(rows, 'legal_assessment', text)
-    if _matches(low, (r'\b(no crime|insufficient facts|not enough evidence|civil matter|no enforcement|warning only|documentation only)\b',)):
-        _append(rows, 'no_enforcement', text)
-    if _matches(low, (r'\b(report|ccn|blotter|document the call|complete.*paperwork|write.*narrative)\b',)):
+    if _matches(low, (r'\b(no crime|insufficient facts|not enough evidence|civil matter|no enforcement|warning only|documentation only|do not have probable cause|don.t have probable cause)\b',)):
+        _append(rows, 'no_enforcement', text, reason='insufficient_or_non_enforcement_disposition')
+    if _matches(low, (r'\b(report|ccn|blotter|document the call|complete.*paperwork|write.*narrative)\b',)) and not _negated(low, ('report', 'document', 'write')):
         _append(rows, 'document_report', text)
     if _matches(low, (r'\b(wait|hold position|stand by)\b',)) and not any(r.action_type == 'request_backup' for r in rows):
         _append(rows, 'wait', text)
@@ -219,11 +234,7 @@ def _validate_ai_actions(payload, original_text):
 
 
 def interpret_action(text, channel='scene', visible_people=None, visible_resources=None, use_ai=True):
-    """Convert natural-language trainee input into validated canonical actions.
-
-    The interpreter may classify intent. It is never given hidden scenario facts
-    and is never allowed to directly mutate the simulation.
-    """
+    """Convert natural-language trainee input into validated canonical actions."""
     text = _clean(text)
     if not text:
         return []
@@ -243,6 +254,7 @@ Your only job is to translate the trainee's words into structured action intent.
 You do NOT decide whether an action is lawful, correct, successful, possible, or safe.
 You do NOT add facts, evidence, weapons, crimes, warrants, injuries, or people.
 You do NOT coach the trainee.
+Pay close attention to negation. A trainee who says they will NOT arrest, search, shoot, use force, detain, release, request a resource, or take another action has not performed that action.
 
 Channel: {channel}
 Currently visible people: {json.dumps(people)}
@@ -280,6 +292,8 @@ SEMANTIC_TOKENS = {
     'preserve_evidence': 'preserve video evidence surveillance statement',
     'document_evidence': 'photo photograph document damage evidence',
     'collect_evidence': 'collect preserve evidence property',
+    'use_force': 'force necessary reasonable proportionate resistance threat control',
+    'deadly_force': 'deadly force shoot weapon immediate threat necessary reasonable',
     'detain': 'detain reasonable suspicion authority facts lawful',
     'arrest': 'arrest probable cause authority facts lawful',
     'search': 'search consent warrant probable cause authority lawful',
@@ -295,11 +309,7 @@ SEMANTIC_TOKENS = {
 
 
 def actions_to_semantic_text(actions, original_text=''):
-    """Produce deterministic semantic cues for legacy rubric compatibility.
-
-    This bridge can be removed as scenario families migrate from stage rubrics to
-    world-state objectives. It prevents trainees from needing exact magic words.
-    """
+    """Produce deterministic semantic cues for legacy rubric compatibility."""
     parts = []
     for row in actions or []:
         parts.append(SEMANTIC_TOKENS.get(_clean(row.get('action_type')).lower(), ''))
