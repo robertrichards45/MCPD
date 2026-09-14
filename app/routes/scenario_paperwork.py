@@ -77,6 +77,7 @@ def _package(state):
             'review_history': [],
             'fto_review': None,
             'self_assessment': None,
+            'trainee_acknowledgement': None,
         }
         state['training_package'] = package
     package.setdefault('submissions', [])
@@ -84,6 +85,7 @@ def _package(state):
     package.setdefault('status', 'NOT_STARTED')
     package.setdefault('fto_review', None)
     package.setdefault('self_assessment', None)
+    package.setdefault('trainee_acknowledgement', None)
     return package
 
 
@@ -194,6 +196,7 @@ def _apply_fto_review(run, state, package):
     history.append(review)
     package['review_history'] = history
     package['fto_review'] = review
+    package['trainee_acknowledgement'] = None
     package['status'] = FTO_ACTIONS[action]
     state['training_package'] = package
     add_timeline(
@@ -232,11 +235,46 @@ def paperwork():
     scenario_id = _text(state.get('scenario_id')).upper()
     package = _package(state)
     if request.method == 'POST':
+        action = _text(request.form.get('action')).lower()
+
+        if action == 'acknowledge':
+            if not package.get('fto_review'):
+                flash('There is no FTO review to acknowledge yet.', 'warning')
+                return redirect(url_for('reports.fto_refinements.scenario_paperwork.paperwork'))
+            if package.get('trainee_acknowledgement'):
+                flash('This FTO review has already been acknowledged.', 'warning')
+                return redirect(url_for('reports.fto_refinements.scenario_paperwork.paperwork'))
+            if _text(request.form.get('acknowledge_review')).lower() != 'yes':
+                flash('Confirm that the FTO review was presented to you before acknowledging it.', 'warning')
+                return redirect(url_for('reports.fto_refinements.scenario_paperwork.paperwork'))
+            acknowledgement = {
+                'acknowledged_at': _utc_iso(),
+                'acknowledged_by': current_user.id,
+                'reviewed_revision': package.get('fto_review', {}).get('revision_reviewed'),
+                'trainee_comments': (request.form.get('trainee_comments') or '').strip()[:5000],
+                'meaning': 'Acknowledgement confirms review/receipt and does not indicate agreement with every finding.',
+            }
+            package['trainee_acknowledgement'] = acknowledgement
+            state['training_package'] = package
+            add_timeline(
+                state,
+                'trainee_review_acknowledgement',
+                'Trainee acknowledged receipt/review of the FTO feedback.',
+                actor='Trainee',
+                channel='training_review',
+                details={'revision': acknowledgement['reviewed_revision']},
+                visible_to_trainee=True,
+            )
+            session[SESSION_KEY] = state
+            session.modified = True
+            persist_run(state, current_user.id)
+            flash('FTO review acknowledged. Acknowledgement confirms review, not agreement.', 'success')
+            return redirect(url_for('reports.fto_refinements.scenario_paperwork.paperwork'))
+
         if package.get('status') == 'FTO_ACCEPTED':
             flash('This package has been accepted by the FTO and is read only.', 'warning')
             return redirect(url_for('reports.fto_refinements.scenario_paperwork.paperwork'))
 
-        action = _text(request.form.get('action')).lower()
         if action == 'self_assess':
             if not package.get('submissions'):
                 flash('Submit the training paperwork before completing the self-assessment.', 'warning')
@@ -287,6 +325,9 @@ def paperwork():
         package['submissions'] = submissions
         package['submitted_at'] = submission['submitted_at']
         package['latest_revision'] = submission['revision']
+        if action == 'revise':
+            package['fto_review'] = None
+            package['trainee_acknowledgement'] = None
         package['status'] = 'READY_FOR_FTO_REVIEW' if package.get('self_assessment') else 'SELF_ASSESSMENT_REQUIRED'
         state['training_package'] = package
         submission['report_analysis'] = review_training_narrative(state, submission['narrative'])
