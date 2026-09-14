@@ -44,6 +44,9 @@ jobs:
       - name: Check browser JavaScript syntax
         run: node --check app/static/js/app.js
 
+      - name: Run mobile layout regression checks
+        run: python -m pytest -q app/tests/test_mobile_layout_contract.py
+
       - name: Verify application routes load
         run: |
           python - <<'PY'
