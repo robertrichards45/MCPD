@@ -17,7 +17,6 @@
         <a href="{{ url_for('dashboard.k9_dashboard') }}">K-9</a>
         <a href="{{ url_for('dashboard.cvi_dashboard') }}">CVI</a>
         <a href="{{ url_for('dashboard.srt_dashboard') }}" aria-current="page">SRT</a>
-        <a href="{{ url_for('incident_command.dashboard') }}">Incident Command</a>
       </nav>
     </header>
 
@@ -53,9 +52,7 @@
             <span style="font-size:1.1rem;flex-shrink:0">
               {% if item.ok == True %}✅{% elif item.ok == False %}❌{% else %}🔄{% endif %}
             </span>
-            <div style="flex:1">
-              <strong>{{ item.item }}</strong>
-            </div>
+            <div style="flex:1"><strong>{{ item.item }}</strong></div>
             <span class="command-pill {% if item.ok == True %}{% elif item.ok == False %}alert{% else %}busy{% endif %}">{{ item.status }}</span>
           </div>
           {% endfor %}
@@ -63,18 +60,17 @@
 
         <h2 class="wc-big-number" style="font-size:1rem;font-weight:600;margin:1.5rem 0 .5rem">Quick Actions</h2>
         <div class="wc-action-grid">
-          <a href="{{ url_for('watch_commander.unit_map') }}">Unit Map<span>Current SRT team positions.</span></a>
-          <a href="{{ url_for('watch_commander.briefing') }}">Briefing<span>Current threat picture and notices.</span></a>
+          <a href="{{ url_for('watch_commander.unit_map') }}">Unit Map<span>Current SRT team positions when available.</span></a>
+          <a href="{{ url_for('bolo.bolo_board') }}">BOLO Board<span>Current threat and BOLO information.</span></a>
           <a href="{{ url_for('training.training_menu') }}">Training<span>SRT qualification and training records.</span></a>
-          <a href="{{ url_for('notifications.inbox') }}">Messages<span>Command messages and activation alerts.</span></a>
+          <a href="{{ url_for('qual_tracker.tracker_readiness') }}">Readiness<span>Qualification and readiness tracking.</span></a>
         </div>
       </section>
     </div>
     {% else %}
     <div class="ops-panel" style="margin:2rem auto;max-width:600px;text-align:center;padding:2rem;">
-      <strong>Live readiness data requires officer sign-on.</strong>
-      <p style="margin-top:.5rem;color:var(--text-secondary)">SRT members must check in to appear here. Enable Demo Mode to see sample readiness data.</p>
-      <a class="command-action-btn" href="{{ url_for('watch_commander.sign_on') }}" style="display:inline-block;margin-top:1rem">Check In</a>
+      <strong>No live SRT readiness data is available in this view.</strong>
+      <p style="margin-top:.5rem;color:var(--text-secondary)">Use the readiness, training, BOLO, and unit tools for current information. Enable Demo Mode only to view sample dashboard data.</p>
     </div>
     {% endif %}
   </main>
