@@ -57,6 +57,7 @@ jobs:
               'reports.fto_refinements.scenario_lab.evaluator',
               'reports.fto_refinements.scenario_lab.review',
               'reports.fto_refinements.scenario_shift.shift',
+              'reports.fto_refinements.scenario_analytics.dashboard',
               'reports.sentinel.portal_search',
               'reports.accidents',
               'bodycam.narrative_tool',
@@ -91,6 +92,9 @@ jobs:
 
       - name: Run timed simulator event tests
         run: python -m pytest -q app/tests/test_simulator_timed_events.py
+
+      - name: Run simulator analytics tests
+        run: python -m pytest -q app/tests/test_simulator_analytics.py
 
       - name: Run Scenario Lab adaptive state-engine tests
         run: python -m pytest -q app/tests/test_scenario_state_engine.py
