@@ -82,13 +82,15 @@ def test_active_call_cannot_open_post_call_paperwork():
     assert 'Finish or clear the synthetic call' in response.get_data(as_text=True)
 
 
-def test_completed_call_can_submit_self_assess_and_preserve_revision_history():
+def test_completed_call_can_submit_self_assess_unlock_debrief_and_preserve_revision_history():
     client = _client()
     _complete_s004(client)
 
     response = _submit_package(client)
     assert response.status_code == 200
-    assert 'complete the self-assessment' in response.get_data(as_text=True).lower()
+    html = response.get_data(as_text=True)
+    assert 'complete the self-assessment' in html.lower()
+    assert 'Open After-Action Debrief' not in html
 
     with client.session_transaction() as s:
         package = s['sentinel_scenario_lab_v2']['training_package']
@@ -99,7 +101,9 @@ def test_completed_call_can_submit_self_assess_and_preserve_revision_history():
 
     response = _self_assess(client)
     assert response.status_code == 200
-    assert 'ready for fto review' in response.get_data(as_text=True).lower()
+    html = response.get_data(as_text=True)
+    assert 'ready for fto review' in html.lower()
+    assert 'Open After-Action Debrief' in html
 
     with client.session_transaction() as s:
         package = s['sentinel_scenario_lab_v2']['training_package']
@@ -145,7 +149,7 @@ def test_hidden_report_consistency_cues_show_only_in_evaluator_view():
     assert 'FTO disposition locked' in evaluator_html
 
 
-def test_fto_disposition_is_locked_until_self_assessment_then_review_syncs():
+def test_fto_disposition_is_locked_until_self_assessment_then_review_syncs_and_can_be_acknowledged():
     client = _client()
     _complete_s004(client)
     _submit_package(client)
@@ -179,10 +183,26 @@ def test_fto_disposition_is_locked_until_self_assessment_then_review_syncs():
     html = response.get_data(as_text=True)
     assert 'Correction Required' in html
     assert 'Revise the chronology' in html
+    assert 'Acknowledge FTO Feedback' in html
+
+    response = client.post('/sentinel/fto-center/scenario-paperwork/', data={
+        '_csrf_token': 'test-token',
+        'action': 'acknowledge',
+        'acknowledge_review': 'yes',
+        'trainee_comments': 'I reviewed the feedback and understand what must be corrected.',
+    }, follow_redirects=True)
+    html = response.get_data(as_text=True)
+    assert response.status_code == 200
+    assert 'Trainee Acknowledged Review' in html
+    assert 'review, not agreement' in html.lower()
 
     with client.session_transaction() as s:
-        package = s['sentinel_scenario_lab_v2']['training_package']
+        state = s['sentinel_scenario_lab_v2']
+        package = state['training_package']
         assert package['status'] == 'CORRECTION_REQUIRED'
         assert len(package['submissions']) == 1
         assert len(package['review_history']) == 1
         assert package['self_assessment']['notifications_considered']
+        assert package['trainee_acknowledgement']['reviewed_revision'] == 0
+        assert 'understand what must be corrected' in package['trainee_acknowledgement']['trainee_comments']
+        assert any(item['event_type'] == 'trainee_review_acknowledgement' for item in state['world']['timeline'])
