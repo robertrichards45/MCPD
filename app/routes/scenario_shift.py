@@ -1,8 +1,9 @@
 from flask import Blueprint, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_required
 
-from ..simulator.run_store import load_run
-from ..simulator.shift_engine import assign_next_call, complete_active_call, end_shift, new_shift
+from ..simulator.run_store import load_run, load_run_state
+from ..simulator.shift_engine import assign_next_call, complete_active_call, end_shift, new_shift, set_dispatch_details
+from .scenario_variants import build_run_context
 
 
 bp = Blueprint('scenario_shift', __name__, url_prefix='/scenario-lab/shift')
@@ -22,15 +23,19 @@ def _refresh_completed_call(shift):
     run = load_run(run_id)
     if run is None or run.status not in {'COMPLETED', 'TERMINATED'}:
         return shift
+    state = load_run_state(run)
+    duration = int(((state.get('world') or {}).get('clock')) or 0)
     outcome = 'TERMINATED' if run.status == 'TERMINATED' else 'CLEARED'
-    complete_active_call(shift, run_id, outcome=outcome)
+    complete_active_call(shift, run_id, outcome=outcome, duration_minutes=max(1, duration))
     return shift
 
 
 def _ensure_assignment(shift):
     if shift.get('status') != 'ACTIVE' or shift.get('active_scenario_id'):
         return shift
-    assign_next_call(shift)
+    scenario_id, _idle = assign_next_call(shift)
+    run_context = build_run_context(scenario_id, seed=shift.get('active_call_seed'))
+    set_dispatch_details(shift, run_context.get('dispatch_variant') or '')
     return shift
 
 
@@ -54,23 +59,14 @@ def shift():
             _save(shift_state)
             return redirect(url_for('reports.fto_refinements.scenario_shift.shift'))
         if action == 'respond' and isinstance(shift_state, dict) and shift_state.get('active_scenario_id'):
-            # A newly assigned CAD call must get a fresh run. If the call already
-            # has a run id, leave the session alone so the trainee resumes it.
             if not shift_state.get('active_run_id'):
                 session.pop(SCENARIO_SESSION_KEY, None)
             _save(shift_state)
-            return redirect(url_for(
-                'reports.fto_refinements.scenario_lab.lab',
-                scenario_id=shift_state['active_scenario_id'],
-            ))
+            return redirect(url_for('reports.fto_refinements.scenario_lab.lab', scenario_id=shift_state['active_scenario_id'], shift='1'))
 
     if isinstance(shift_state, dict):
         _refresh_completed_call(shift_state)
         _ensure_assignment(shift_state)
         _save(shift_state)
 
-    return render_template(
-        'scenario_shift.html',
-        user=current_user,
-        shift=shift_state if isinstance(shift_state, dict) else None,
-    )
+    return render_template('scenario_shift.html', user=current_user, shift=shift_state if isinstance(shift_state, dict) else None)
