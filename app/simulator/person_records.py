@@ -2,6 +2,7 @@ import hashlib
 import random
 import re
 from copy import deepcopy
+from datetime import date, timedelta
 
 from .world_state import add_known_information, add_timeline, ensure_world_state
 
@@ -21,6 +22,7 @@ _STREETS = (
     'Woodland Ct', 'Meadow Park Ln', 'Cedar Grove Rd', 'Riverside Dr', 'Hillcrest Ave',
 )
 _CITIES = ('Albany', 'Leesburg', 'Sylvester', 'Dawson', 'Camilla')
+_STATEMENT_FORM = 'OPNAV 5580 2 Voluntary Statement'
 
 
 def _text(value):
@@ -227,6 +229,93 @@ def _statement_body(state, actor_id, person):
     return 'I am providing this written statement regarding the incident I discussed with the responding officer.'
 
 
+def _initials(full_name):
+    return ''.join(part[0].upper() for part in _text(full_name).split() if part)[:4]
+
+
+def _synthetic_statement_date(state):
+    """Return a reproducible training date tied to the run seed."""
+    seed = int(((state.get('run_context') or {}).get('seed')) or 1)
+    base = date(2026, 1, 1)
+    return (base + timedelta(days=seed % 365)).isoformat()
+
+
+def _statement_form_snapshot(state, identity, statement_text, clock):
+    """Build a read-only OPNAV 5580-2 training form from the controlled field registry."""
+    from .training_forms import training_form_definition
+
+    definition = training_form_definition(_STATEMENT_FORM)
+    values = {}
+    fields = []
+    run_id = _text(((state.get('run_context') or {}).get('run_id')))
+    statement_date = _synthetic_statement_date(state)
+    statement_time = f'T+{int(clock or 0)}'
+    location = 'MCLB Albany, GA — Synthetic Training'
+    initials = _initials(identity.get('full_name'))
+
+    for field in definition.get('fields') or []:
+        name = _text(field.get('name'))
+        label = _text(field.get('label'))
+        low = f'{name} {label}'.lower()
+        field_type = _text(field.get('type')).lower()
+        sig_role = _text(field.get('sig_role')).lower()
+        officer_only = bool(field.get('officer_only'))
+        person_field = bool(field.get('person_field'))
+        value = ''
+
+        if officer_only:
+            value = ''
+        elif field_type == 'signature' and sig_role in {'subject', 'victim', 'witness', 'declarant'}:
+            value = f"TRAINING SIGNATURE — {identity.get('full_name')}"
+        elif field_type == 'initial' and sig_role in {'subject', 'victim', 'witness', 'declarant'}:
+            value = initials
+        elif 'statement' in low and field_type in {'textarea', 'text'}:
+            value = statement_text
+        elif person_field and any(term in low for term in ('name', 'vicname', 'declarant')):
+            value = identity.get('full_name')
+        elif 'date' in low:
+            value = statement_date
+        elif 'time' in low or 'resptime' in low:
+            value = statement_time
+        elif 'location' in low or 'place' in low:
+            value = location
+        elif 'ccn' in low or 'case number' in low or 'reference' in low:
+            value = f'TRN-{run_id}' if run_id else 'TRAINING'
+        elif 'ssn' in low:
+            value = ''
+        elif person_field and 'address' in low:
+            value = identity.get('address')
+        elif person_field and ('phone' in low or 'telephone' in low):
+            value = identity.get('phone')
+        elif person_field and ('dob' in low or 'birth' in low):
+            value = identity.get('dob')
+
+        values[name] = value
+        fields.append({
+            'name': name,
+            'label': label or name,
+            'type': field_type or 'text',
+            'required': bool(field.get('required')),
+            'officer_only': officer_only,
+            'person_field': person_field,
+            'sig_role': sig_role,
+            'mapping_status': field.get('mapping_status'),
+            'value': value,
+            'locked': True,
+        })
+
+    return {
+        'document_name': definition.get('document_name') or _STATEMENT_FORM,
+        'document_id': definition.get('document_id'),
+        'source': definition.get('source'),
+        'registry_pattern': definition.get('registry_pattern'),
+        'fields': fields,
+        'values': values,
+        'read_only': True,
+        'completed_by': 'simulated_declarant',
+    }
+
+
 def obtain_requested_statements(state, actions, raw_text):
     """Create a declarant-completed synthetic statement when one is actually obtained.
 
@@ -260,6 +349,8 @@ def obtain_requested_statements(state, actions, raw_text):
                 source='written_statement',
             )
 
+        statement_text = _statement_body(state, actor_id, person)
+        form_snapshot = _statement_form_snapshot(state, identity, statement_text, clock)
         statement = {
             'id': f"STMT-{len(statements) + 1:03d}",
             'declarant_id': actor_id,
@@ -268,15 +359,21 @@ def obtain_requested_statements(state, actions, raw_text):
             'dob': identity['dob'],
             'address': identity['address'],
             'phone': identity['phone'],
-            'statement_date': 'TRAINING DATE',
+            'statement_date': _synthetic_statement_date(state),
             'statement_time': f'T+{clock}',
-            'statement_location': 'Synthetic incident location',
-            'statement_text': _statement_body(state, actor_id, person),
+            'statement_location': 'MCLB Albany, GA — Synthetic Training',
+            'statement_text': statement_text,
             'signature': f"TRAINING SIGNATURE — {identity['full_name']}",
             'status': 'received',
             'completed_by': 'simulated_declarant',
             'officer_editable': False,
             'synthetic': True,
+            'form_document_name': form_snapshot.get('document_name'),
+            'form_document_id': form_snapshot.get('document_id'),
+            'form_source': form_snapshot.get('source'),
+            'form_fields': form_snapshot.get('fields') or [],
+            'form_values': form_snapshot.get('values') or {},
+            'form_read_only': True,
         }
         statements.append(statement)
         created.append(statement)
@@ -291,7 +388,7 @@ def obtain_requested_statements(state, actions, raw_text):
             f"Written statement received from {identity['full_name']} ({person.get('role') or 'Person'}).",
             actor=identity['full_name'],
             channel='paperwork',
-            details={'statement_id': statement['id'], 'declarant_id': actor_id},
+            details={'statement_id': statement['id'], 'declarant_id': actor_id, 'form': form_snapshot.get('document_name')},
             visible_to_trainee=True,
         )
 
