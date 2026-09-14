@@ -16,7 +16,7 @@ The simulator package includes a semantic action-interpreter foundation with det
 
 ### Persistent synthetic runs
 
-Scenario runs are persisted and can be reopened for evaluator review. The run record is used to connect scenario state, replay events, notes, and post-call training work.
+Scenario runs are persisted and can be reopened for evaluator review. The run record is used to connect scenario state, replay events, notes, post-call forms, annotations, and FTO review.
 
 ### Virtual shift foundation
 
@@ -68,17 +68,37 @@ After the synthetic call is complete, the trainee can:
 2. make the CID screening/notification decision;
 3. document notification/screening notes;
 4. write the training narrative independently;
-5. submit the package to the FTO.
+5. complete the selected synthetic form replicas;
+6. complete self-assessment;
+7. submit the complete package for FTO review.
 
 Narrative Creator assistance is intentionally absent from this evaluation workflow.
+
+### Registry-backed synthetic training form replicas
+
+Implemented in:
+
+- `app/simulator/training_forms.py`
+- `app/templates/scenario_training_forms.html`
+- `app/routes/scenario_paperwork.py`
+
+Selected documents now render as synthetic training replicas using the existing controlled MCPD form-field registry. This means the training workflow reuses mapped field definitions for forms such as OPNAV 5580-2, OPNAV 5580-22, SF-91, NAVMC 11130, DD Form 1920, and other registered forms rather than inventing unrelated substitute fields.
+
+If a selected training document does not yet have a registry entry, Sentinel uses an explicitly labeled training fallback schema rather than writing to an operational form.
+
+The training-form path does **not** create or update operational `Form` or `SavedForm` records. Form values remain inside the synthetic scenario run.
+
+Each form save creates a preserved snapshot. A later save does not silently erase the earlier training-form snapshot.
 
 ### Original submission and revision preservation
 
 Every submitted package is retained by revision number. A correction creates a new revision; it does not overwrite the trainee's original work.
 
+Training-form snapshots are also versioned inside the associated report revision.
+
 ### Trainee self-assessment before FTO disposition
 
-After the paperwork is submitted, the trainee must complete a self-assessment covering:
+After the paperwork and selected training forms are completed, the trainee must complete a self-assessment covering:
 
 - what they believe went well;
 - what they would change;
@@ -86,7 +106,44 @@ After the paperwork is submitted, the trainee must complete a self-assessment co
 - notifications or screenings they considered;
 - areas where they want additional training.
 
-The FTO's final package disposition is locked until this reflection is submitted.
+The FTO's final package disposition is locked until the selected training forms and this reflection are complete.
+
+### Dedicated FTO documentation review workspace
+
+Implemented in:
+
+- `app/templates/scenario_fto_document_review.html`
+- `app/templates/scenario_fto_markup.html`
+- `app/routes/scenario_paperwork.py`
+
+The FTO now gets a documentation-focused workspace separate from the trainee page. It combines:
+
+- trainee narrative;
+- paperwork selection;
+- CID decision and notification notes;
+- training-form completion state;
+- configured requirements comparison;
+- Sentinel consistency cues;
+- trainee self-assessment;
+- preserved FTO annotations;
+- final human disposition controls.
+
+### Line-by-line narrative and form-field FTO markup
+
+The FTO can attach a preserved annotation to:
+
+- a specific narrative line/sentence; or
+- a specific field in a completed synthetic training form.
+
+Annotation categories include factual accuracy, chronology, source attribution, completeness, policy/procedure, form-field issues, clarity, and other.
+
+The annotation stores the exact text/value snapshot that existed when the FTO made the comment. The trainee's original narrative or form value is never changed by the annotation.
+
+Annotations may later be marked resolved, but resolution is stored as a separate history action; the original FTO comment remains preserved.
+
+### Original-versus-revision comparison
+
+The FTO markup workspace can switch among Original, Revision 1, Revision 2, and later submissions. Non-original revisions are compared back to the original narrative so additions/removals remain visible during coaching and remediation review.
 
 ### Human FTO package review
 
@@ -105,6 +162,10 @@ The software does not automatically create a DOR rating or employment decision.
 ### FTO review sync back to trainee
 
 FTO review state is stored with the persistent simulator run. When the trainee reopens the training package, returned-for-correction, remediation, or acceptance state is synchronized into the trainee session rather than remaining stranded in the evaluator's browser session.
+
+### Trainee acknowledgement/comments
+
+The trainee can acknowledge that the FTO review was presented and may add comments or disagreement. The acknowledgement explicitly states that acknowledgement means receipt/review and does not mean agreement with every finding.
 
 ### Advisory scenario-to-report consistency analysis
 
@@ -139,19 +200,21 @@ The trainee does not see these hidden consistency suggestions in the normal trai
 
 ### Evaluator navigation
 
-The evaluator screen links directly to:
+The evaluator documentation workspace links directly to:
 
-- the trainee Field Notebook;
-- the submitted Training Package;
-- the persistent scenario/evaluator record.
+- evaluator replay;
+- trainee Field Notebook;
+- completed synthetic training forms;
+- line-by-line markup;
+- persistent training package.
 
 ### Post-call flow
 
-The normal live-call screen now directs a trainee from a completed/terminated scenario into the Training Package instead of advertising the debrief immediately.
+The normal live-call screen directs a trainee from a completed/terminated scenario into the Training Package instead of advertising the debrief immediately.
 
-Target sequence:
+Current target sequence:
 
-**Call → Field Notes → Required Paperwork/Notifications → Submission → Self-Assessment → FTO Review/Debrief → Correction or Remediation when needed**
+**Call → Field Notes → Paperwork/Notification Selection → Narrative → Synthetic Training Forms → Self-Assessment → FTO Document Review/Markup → FTO Disposition → Correction or Remediation when needed → Trainee Acknowledgement**
 
 ## Automated Tests Added
 
@@ -168,27 +231,29 @@ Current build work includes tests for:
 - report-consistency cues remaining hidden from the trainee view;
 - report-consistency cues appearing in the evaluator view;
 - FTO disposition remaining locked until self-assessment;
-- FTO correction state synchronizing back into the trainee session.
+- FTO correction state synchronizing back into the trainee session;
+- registry-backed training replicas using the controlled form-field registry;
+- training-form completion not creating operational `Form` or `SavedForm` records;
+- training-form snapshot preservation;
+- FTO markup not changing the original trainee narrative;
+- annotation resolution preserving the original FTO annotation.
 
-Relevant test files:
+Relevant test files include:
 
 - `app/tests/test_scenario_field_notebook.py`
 - `app/tests/test_scenario_paperwork_workflow.py`
 - `app/tests/test_scenario_report_consistency.py`
+- `app/tests/test_scenario_training_forms_and_markup.py`
 
 ## Still Partial / Next Priority
 
 ### Complete debrief gate
 
-The normal UI flow now routes the trainee through paperwork/self-assessment first, but the historical review route should also enforce the same gate server-side so a manually entered review URL cannot bypass the intended sequence.
+The normal UI flow routes the trainee through paperwork/forms/self-assessment first, but the historical review route should also enforce the same gate server-side so a manually entered review URL cannot bypass the intended sequence.
 
-### Actual training form replicas
+### Trainee-facing granular correction view
 
-The current package tests paperwork selection and narrative submission. The next major step is training-only replicas/state for the actual applicable forms without writing anything to official `SavedForm` or operational records.
-
-### Line-by-line narrative FTO markup
-
-Add highlights/comments tied to specific text ranges, preserve each marked revision, and support side-by-side original/corrected review.
+General FTO correction/remediation comments sync back to the trainee. The next refinement is a trainee read-only markup view that exposes the human FTO's line/field annotations after review without exposing hidden Sentinel consistency cues.
 
 ### Supervisor / Watch Commander notification matrix
 
@@ -197,6 +262,10 @@ Extend the requirements overlay beyond CID so supervisory notification can be in
 ### CID interaction during the live scenario
 
 The current workflow tests recognition/documentation. Future scenarios should support a simulated CID contact when the scenario requires actual screening/coordination and when doing so adds training value.
+
+### Form-PDF visual fidelity
+
+The training replicas use the exact controlled field registry and mapping metadata, but they are web training replicas rather than rendered official-looking training PDFs. A later visual-fidelity layer may render clearly watermarked synthetic training versions where doing so improves instruction without creating an operational record.
 
 ### Deficiency/strength history and trend analytics
 
