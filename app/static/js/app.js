@@ -38,9 +38,15 @@ function draw(e) {
 function getPos(e) {
   const canvas = getCanvas();
   const rect = canvas.getBoundingClientRect();
-  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-  return { x: clientX - rect.left, y: clientY - rect.top };
+  const touch = e.touches && e.touches.length ? e.touches[0] : (e.changedTouches && e.changedTouches.length ? e.changedTouches[0] : null);
+  const clientX = touch ? touch.clientX : e.clientX;
+  const clientY = touch ? touch.clientY : e.clientY;
+  const scaleX = rect.width ? canvas.width / rect.width : 1;
+  const scaleY = rect.height ? canvas.height / rect.height : 1;
+  return {
+    x: (clientX - rect.left) * scaleX,
+    y: (clientY - rect.top) * scaleY,
+  };
 }
 
 function clearSig() {
@@ -306,39 +312,59 @@ window.addEventListener('load', () => {
     canvas.addEventListener('mouseup', endDraw);
     canvas.addEventListener('mousemove', draw);
     canvas.addEventListener('mouseleave', endDraw);
-    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDraw(e); });
-    canvas.addEventListener('touchend', (e) => { e.preventDefault(); endDraw(); });
-    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e); });
+    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDraw(e); }, { passive: false });
+    canvas.addEventListener('touchend', (e) => { e.preventDefault(); endDraw(); }, { passive: false });
+    canvas.addEventListener('touchcancel', (e) => { e.preventDefault(); endDraw(); }, { passive: false });
+    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e); }, { passive: false });
   }
 
   const nav = document.querySelector('.top-nav');
   const navToggle = document.querySelector('[data-nav-toggle]');
   const sidebar = document.querySelector('.mcpd-command-sidebar[data-nav-menu]');
 
-  // Current sidebar nav (mcpd-command-sidebar)
+  function setMobileNavOpen(open) {
+    if (!sidebar || !navToggle) return;
+    sidebar.classList.toggle('is-open', open);
+    document.body.classList.toggle('nav-mobile-open', open);
+    navToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    navToggle.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation');
+    if (open) {
+      const firstLink = sidebar.querySelector('a, summary, button');
+      if (firstLink) window.setTimeout(() => firstLink.focus({ preventScroll: true }), 0);
+    }
+  }
+
   if (sidebar && navToggle) {
+    navToggle.setAttribute('aria-expanded', 'false');
     navToggle.addEventListener('click', () => {
-      const isOpen = sidebar.classList.toggle('is-open');
-      navToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      setMobileNavOpen(!sidebar.classList.contains('is-open'));
     });
     sidebar.querySelectorAll('a').forEach((link) => {
-      link.addEventListener('click', () => {
-        sidebar.classList.remove('is-open');
-        navToggle.setAttribute('aria-expanded', 'false');
-      });
+      link.addEventListener('click', () => setMobileNavOpen(false));
     });
     document.addEventListener('click', (event) => {
       if (!sidebar.classList.contains('is-open')) return;
       if (sidebar.contains(event.target) || navToggle.contains(event.target)) return;
-      sidebar.classList.remove('is-open');
-      navToggle.setAttribute('aria-expanded', 'false');
+      setMobileNavOpen(false);
     });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && sidebar.classList.contains('is-open')) {
+        setMobileNavOpen(false);
+        navToggle.focus({ preventScroll: true });
+      }
+    });
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 1020 && sidebar.classList.contains('is-open')) {
+        setMobileNavOpen(false);
+      }
+    }, { passive: true });
   }
 
   // Legacy top-nav (kept for any pages still using it)
-  if (nav && navToggle) {
+  if (nav && navToggle && !sidebar) {
     navToggle.addEventListener('click', () => {
       const isOpen = nav.classList.toggle('nav-open');
+      document.body.classList.toggle('nav-mobile-open', isOpen);
       navToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
     });
 
@@ -346,6 +372,7 @@ window.addEventListener('load', () => {
     navLinks.forEach((link) => {
       link.addEventListener('click', () => {
         nav.classList.remove('nav-open');
+        document.body.classList.remove('nav-mobile-open');
         navToggle.setAttribute('aria-expanded', 'false');
       });
     });
@@ -355,7 +382,16 @@ window.addEventListener('load', () => {
       if (!nav.classList.contains('nav-open')) return;
       if (nav.contains(event.target)) return;
       nav.classList.remove('nav-open');
+      document.body.classList.remove('nav-mobile-open');
       navToggle.setAttribute('aria-expanded', 'false');
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape' || !nav.classList.contains('nav-open')) return;
+      nav.classList.remove('nav-open');
+      document.body.classList.remove('nav-mobile-open');
+      navToggle.setAttribute('aria-expanded', 'false');
+      navToggle.focus({ preventScroll: true });
     });
   }
 
