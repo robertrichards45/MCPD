@@ -22,76 +22,83 @@ def _client():
     return client
 
 
-def test_weak_answer_does_not_clear_call_phase():
+def test_weak_action_does_not_advance_but_evaluator_result_stays_hidden():
     client = _client()
     client.get('/sentinel/fto-center/scenario-lab/?scenario_id=S001')
     response = client.post('/sentinel/fto-center/scenario-lab/', data={
-        '_csrf_token': 'test-token', 'scenario_id': 'S001', 'action': 'act',
-        'response_text': 'I just handle it and move on.'
+        '_csrf_token': 'test-token', 'scenario_id': 'S001', 'action': 'officer_action',
+        'command_text': 'I just handle it and move on.'
     }, follow_redirects=True)
     html = response.get_data(as_text=True)
     assert response.status_code == 200
-    assert 'Arrival' in html
-    assert 'Decision held' in html or 'FTO intervention' in html
-    assert 'A staff member meets you outside' not in html
+    assert 'Virtual Patrol' in html
+    assert 'Decision held' not in html
+    assert 'FTO intervention' not in html
+    assert 'Demonstrated' not in html
+    assert 'Still unresolved' not in html
     with client.session_transaction() as s:
         state = s['sentinel_scenario_lab_v2']
         assert state['turn'] == 0
-        assert state['revision_count'] == 1
-        assert state['engine']['clock'] >= 1
+        assert state['revision_count'] >= 1
+        assert state['last_feedback']['accepted'] is False
+        assert state['world']['clock'] >= 1
 
 
-def test_stage_specific_answer_clears_phase_and_releases_facts():
+def test_separate_natural_actions_accumulate_without_magic_paragraph():
     client = _client()
     client.get('/sentinel/fto-center/scenario-lab/?scenario_id=S001')
-    response = client.post('/sentinel/fto-center/scenario-lab/', data={
-        '_csrf_token': 'test-token', 'scenario_id': 'S001', 'action': 'act',
-        'response_text': 'I advise dispatch I am on scene, maintain safe distance and positioning, contact the reporting staff member for initial facts, and request another unit if the risk warrants it.'
+
+    client.post('/sentinel/fto-center/scenario-lab/', data={
+        '_csrf_token': 'test-token', 'scenario_id': 'S001', 'action': 'radio',
+        'radio_text': '214, show me on scene.'
     }, follow_redirects=True)
+    client.post('/sentinel/fto-center/scenario-lab/', data={
+        '_csrf_token': 'test-token', 'scenario_id': 'S001', 'action': 'officer_action',
+        'command_text': 'I position where I can see the entrance and keep some distance.'
+    }, follow_redirects=True)
+    response = client.post('/sentinel/fto-center/scenario-lab/', data={
+        '_csrf_token': 'test-token', 'scenario_id': 'S001', 'action': 'officer_action',
+        'command_text': "I want to talk to the Staff Member first. Ma'am, tell me exactly what happened."
+    }, follow_redirects=True)
+
     html = response.get_data(as_text=True)
-    assert 'Decision accepted' in html
-    assert 'Initial Contact' in html
-    assert 'A staff member meets you outside' in html
+    assert response.status_code == 200
+    assert 'Decision accepted' not in html
+    assert 'Current Scene' in html
     with client.session_transaction() as s:
-        assert s['sentinel_scenario_lab_v2']['turn'] == 1
+        state = s['sentinel_scenario_lab_v2']
+        assert state['turn'] >= 1
+        assert state['semantic_actions']['0']
 
 
-def test_coaching_is_locked_until_sustained_effort():
+def test_normal_evaluation_has_no_automated_hint_path():
     client = _client()
     client.get('/sentinel/fto-center/scenario-lab/?scenario_id=S003')
     response = client.post('/sentinel/fto-center/scenario-lab/', data={
         '_csrf_token': 'test-token', 'scenario_id': 'S003', 'action': 'hint'
     }, follow_redirects=True)
     html = response.get_data(as_text=True)
-    assert 'Coaching is still locked' in html
+    assert 'Evaluation runs do not provide automated hints' in html
+    assert 'FTO Coaching Locked' not in html
     with client.session_transaction() as s:
         assert s['sentinel_scenario_lab_v2']['hint_count'] == 0
-
-    for _ in range(3):
-        client.post('/sentinel/fto-center/scenario-lab/', data={
-            '_csrf_token': 'test-token', 'scenario_id': 'S003', 'action': 'act',
-            'response_text': 'I am not sure what to do here, so I would deal with it somehow.'
-        }, follow_redirects=True)
-
-    response = client.post('/sentinel/fto-center/scenario-lab/', data={
-        '_csrf_token': 'test-token', 'scenario_id': 'S003', 'action': 'hint'
-    }, follow_redirects=True)
-    html = response.get_data(as_text=True)
-    assert 'FTO coaching question' in html
-    assert 'Scene' in html
-    with client.session_transaction() as s:
-        state = s['sentinel_scenario_lab_v2']
-        assert state['turn'] == 0
-        assert state['hint_count'] == 1
+        assert s['sentinel_scenario_lab_v2']['world']['coaching_mode'] is False
 
 
-def test_finish_cannot_bypass_active_call():
+def test_live_simulation_hides_internal_engine_and_legal_research():
     client = _client()
-    client.get('/sentinel/fto-center/scenario-lab/?scenario_id=S006')
-    response = client.post('/sentinel/fto-center/scenario-lab/', data={
-        '_csrf_token': 'test-token', 'scenario_id': 'S006', 'action': 'finish'
-    }, follow_redirects=True)
+    response = client.get('/sentinel/fto-center/scenario-lab/?scenario_id=S005')
     html = response.get_data(as_text=True)
-    assert 'The call is still active' in html
-    assert 'Arrival' in html
-    assert 'FTO Coaching Review' not in html
+    assert response.status_code == 200
+    for hidden_label in (
+        'Scene Risk', 'Core Phases Cleared', 'Branch Events', 'Immediate FTO Feedback',
+        'Still unresolved', 'Complaint exposure', 'Force review', 'Legal / Policy Research Unlocked',
+        'Training Objective',
+    ):
+        assert hidden_label not in html
+    assert 'CAD / Dispatch' in html
+    assert 'Current Scene' in html
+    assert 'Radio' in html
+    assert 'Officer Action' in html
+    assert 'People / Resources Present' in html
+    assert 'Information / Evidence Obtained' in html
