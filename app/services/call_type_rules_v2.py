@@ -4,6 +4,9 @@ import re
 from . import call_type_rules as legacy
 
 
+_legacy_normalize_call_type_rule = legacy.normalize_call_type_rule
+_legacy_load_call_type_rules = legacy.load_call_type_rules
+
 CONDITION_DEFINITIONS = [
     {'key': 'reporting_party', 'label': 'Reporting party involved', 'question': 'Is there a reporting party for this incident?'},
     {'key': 'written_statement', 'label': 'Written statement needed', 'question': 'Does current guidance call for a written statement?'},
@@ -137,7 +140,7 @@ def _normalize_not_normal(rows):
 
 def normalize_call_type_rule(raw):
     data = dict(raw or {})
-    base = legacy.normalize_call_type_rule(data)
+    base = _legacy_normalize_call_type_rule(data)
     optional_raw = split_multivalue(data.get('optionalForms') or data.get('optional_forms') or base.get('optionalForms'))
     optional_forms, token_conditions, token_not_normal, explicit_none = _parse_tokens(optional_raw)
 
@@ -156,7 +159,7 @@ def normalize_call_type_rule(raw):
 
 
 def load_call_type_rules(include_inactive=False):
-    rules = legacy.load_call_type_rules(include_inactive=True)
+    rules = _legacy_load_call_type_rules(include_inactive=True)
     output = {}
     for slug, raw in rules.items():
         rule = normalize_call_type_rule(raw)
@@ -207,3 +210,11 @@ def evaluate_call_type_rule(rule, circumstances=None):
         'statutes': list(normalized.get('statutes') or []),
         'checklistItems': list(normalized.get('checklistItems') or []),
     }
+
+
+def activate():
+    """Install the v2 adapter behind the legacy public service API."""
+    legacy.normalize_call_type_rule = normalize_call_type_rule
+    legacy.load_call_type_rules = load_call_type_rules
+    legacy.save_call_type_rules = save_call_type_rules
+    legacy.split_multivalue = split_multivalue
