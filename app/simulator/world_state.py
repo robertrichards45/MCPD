@@ -55,6 +55,7 @@ def new_world_state(scenario_id, run_context=None):
         'irreversible_events': [],
         'last_actions': [],
         'pending_radio': [],
+        'scheduled_events': [],
         'coaching_mode': False,
         'fto_message': '',
         'paused': False,
@@ -69,6 +70,7 @@ def ensure_world_state(state, scenario_id):
         state['world'] = world
     world['scenario_id'] = scenario_id
     world['run_id'] = _text(run_context.get('run_id')) or world.get('run_id', '')
+    world.setdefault('scheduled_events', [])
     return world
 
 
@@ -271,6 +273,15 @@ def apply_interpreted_actions(state, actions, raw_text='', channel='scene'):
     return clean_actions
 
 
+def _evidence_visible_to_trainee(row):
+    status = str(row.get('status') or '').strip().lower()
+    if status in {'hidden', 'unknown'}:
+        return False
+    if status == 'lost' and row.get('discovered_at') is None:
+        return False
+    return True
+
+
 def observable_world(state):
     """Return only information an officer could reasonably see/receive."""
     world = ensure_world_state(state, state.get('scenario_id', ''))
@@ -287,7 +298,7 @@ def observable_world(state):
     evidence = [
         {'id': row.get('id'), 'label': row.get('label'), 'status': row.get('status'), 'source': row.get('source')}
         for row in (world.get('evidence') or {}).values()
-        if row.get('status') not in {'hidden', 'unknown'}
+        if _evidence_visible_to_trainee(row)
     ]
     resources = []
     for key, row in (world.get('resources') or {}).items():
