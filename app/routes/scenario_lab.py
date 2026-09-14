@@ -1,54 +1,129 @@
 from flask import Blueprint, flash, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_required
 
-from .sentinel import SCENARIOS, _evaluate_fto, _normalize
-
 bp = Blueprint('scenario_lab', __name__, url_prefix='/scenario-lab')
-SESSION_KEY = 'sentinel_scenario_lab'
-MAX_TURNS = 12
+SESSION_KEY = 'sentinel_scenario_lab_v2'
 
-SCRIPTED_FACTS = {
-    'S001': [
-        {'id': 'staff', 'triggers': ['staff', 'complainant', 'witness', 'employee', 'interview', 'ask'], 'text': 'A staff member states the individual was told twice to leave after yelling at employees. The staff member did not observe a weapon or hear a specific threat.'},
-        {'id': 'subject', 'triggers': ['subject', 'individual', 'contact', 'speak', 'identify'], 'text': 'The individual says he is waiting for a ride and does not believe staff can make him leave. He is argumentative, keeps his hands visible, and does not attempt to leave.'},
-        {'id': 'manager', 'triggers': ['manager', 'authority', 'trespass', 'leave', 'property representative'], 'text': 'The facility manager confirms the individual was clearly directed to leave the facility and surrounding controlled area and is still refusing.'},
-        {'id': 'backup', 'triggers': ['backup', 'cover', 'additional unit', 'second unit'], 'text': 'A second patrol unit arrives and is available to assist.'},
-    ],
-    'S002': [
-        {'id': 'gate', 'triggers': ['gate', 'guard', 'staff', 'interview', 'ask'], 'text': 'Gate personnel state the driver presented an expired credential and could not produce another document authorizing installation access.'},
-        {'id': 'driver', 'triggers': ['driver', 'contact', 'speak', 'identify', 'license'], 'text': 'The driver provides a valid state driver license, says he previously had base access, and becomes verbally frustrated when told entry may be denied.'},
-        {'id': 'vehicle', 'triggers': ['vehicle', 'registration', 'plate', 'records', 'check'], 'text': 'The vehicle registration matches the driver. No additional scripted alert is returned from the training records check.'},
-        {'id': 'supervisor', 'triggers': ['supervisor', 'access control', 'sponsor', 'verify'], 'text': 'The listed sponsor cannot immediately confirm a current access requirement for the driver.'},
-    ],
-    'S003': [
-        {'id': 'witness', 'triggers': ['witness', 'complainant', 'staff', 'interview', 'ask'], 'text': 'A witness states a contractor pickup backed into the light pole while maneuvering in the parking area. The witness describes the impact as low speed.'},
-        {'id': 'driver', 'triggers': ['driver', 'contractor', 'contact', 'speak', 'identify'], 'text': 'The contractor driver acknowledges the vehicle contacted the pole and says he did not see it while backing.'},
-        {'id': 'damage', 'triggers': ['damage', 'inspect', 'property', 'pole', 'photo', 'photograph'], 'text': 'The light pole is bent near its base. The vehicle has minor rear-bumper scuffing. No injury is reported in the scripted scenario.'},
-        {'id': 'documentation', 'triggers': ['statement', 'evidence', 'report', 'ccn', 'notify'], 'text': 'Facility personnel can provide the property point of contact and request documentation of the damage for follow-up.'},
-    ],
-    'S004': [
-        {'id': 'staff', 'triggers': ['staff', 'employee', 'complainant', 'interview', 'ask'], 'text': 'Store staff state they observed the subject conceal merchandise and pass the last point of sale without paying.'},
-        {'id': 'property', 'triggers': ['property', 'merchandise', 'item', 'value', 'recover'], 'text': 'The recovered merchandise is intact and staff provide a documented retail value for the training scenario.'},
-        {'id': 'video', 'triggers': ['video', 'camera', 'cctv', 'evidence', 'review'], 'text': 'Store video is available and appears to show the subject selecting, concealing, and carrying the merchandise past the registers.'},
-        {'id': 'subject', 'triggers': ['subject', 'suspect', 'contact', 'interview', 'statement'], 'text': 'The subject identifies himself and says he intended to pay but forgot after receiving a phone call. He does not provide additional scripted facts.'},
-    ],
-    'S005': [
-        {'id': 'initial', 'triggers': ['radio', 'dispatch', 'plate', 'location', 'stop'], 'text': 'Dispatch acknowledges the stop location and vehicle description. No additional scripted alert is returned.'},
-        {'id': 'driver', 'triggers': ['driver', 'contact', 'license', 'registration', 'insurance'], 'text': 'The driver provides the requested documents but repeatedly asks why he was stopped and speaks in an increasingly loud tone.'},
-        {'id': 'safety', 'triggers': ['hands', 'weapon', 'safety', 'position', 'observe'], 'text': 'The driver keeps both hands visible. No weapon or furtive movement is observed in the scripted scenario.'},
-        {'id': 'backup', 'triggers': ['backup', 'cover', 'second unit', 'additional unit'], 'text': 'A second unit arrives and takes a cover position.'},
-    ],
-    'S006': [
-        {'id': 'patient', 'triggers': ['patient', 'contact', 'medical', 'assessment', 'speak'], 'text': 'The patient is conscious but appears weak and says he became dizzy shortly before sitting down.'},
-        {'id': 'witness1', 'triggers': ['witness', 'coworker', 'interview', 'ask', 'separate'], 'text': 'One coworker says the patient briefly stumbled but did not fall or strike his head.'},
-        {'id': 'witness2', 'triggers': ['second witness', 'another coworker', 'conflicting', 'separate'], 'text': 'A second coworker believes the patient may have lowered himself to one knee but did not see a head strike.'},
-        {'id': 'ems', 'triggers': ['ems', 'ambulance', 'medical personnel', 'turn over'], 'text': 'EMS arrives, assumes patient care, and begins its medical assessment.'},
-    ],
+# Scenario Lab is synthetic training only. It does not write official DOR
+# ratings, make advancement decisions, or certify trainee performance.
+SCENARIOS = {
+    'S001': {
+        'title': 'Disorderly Person Refusing to Leave',
+        'difficulty': 'Intermediate',
+        'category': 'Calls for Service',
+        'phase': 'Phase II / III practice',
+        'dispatch': 'Unit 214, respond to Building 7130 for a disorderly individual refusing to leave.',
+        'objective': 'Practice scene approach, de-escalation, investigation, legal articulation, and disposition.',
+        'stages': [
+            {'name': 'Arrival', 'prompt': 'You are arriving at Building 7130. What do you do first?', 'reveal': 'A staff member meets you outside and says the subject is still inside, is yelling, and has refused multiple requests to leave. No weapon has been reported.'},
+            {'name': 'Initial Contact', 'prompt': 'You now have the staff member’s initial information. How do you approach and handle first contact?', 'reveal': 'The subject is argumentative but keeps his hands visible. He says he has a right to remain because he was invited earlier. Staff says the invitation was revoked after the disturbance began.'},
+            {'name': 'Investigation', 'prompt': 'What facts do you need to establish before deciding what action is appropriate?', 'reveal': 'A second employee says they personally heard the subject being told to leave. Video is available. The subject begins to calm down and says he will leave if the officer explains what happens next.'},
+            {'name': 'Disposition', 'prompt': 'Describe your disposition, notifications, and documentation based only on the facts developed.', 'reveal': 'Scenario complete. The instructor should review whether the trainee developed the facts, used appropriate communication and safety practices, and clearly articulated the final disposition.'},
+        ],
+    },
+    'S002': {
+        'title': 'Suspicious Vehicle at Main Gate',
+        'difficulty': 'Basic',
+        'category': 'Access Control',
+        'phase': 'Phase I / II practice',
+        'dispatch': 'Main Gate requests patrol assistance with a driver who cannot provide valid installation access credentials and is becoming argumentative.',
+        'objective': 'Practice officer safety, identification, access-control decision making, communication, and documentation.',
+        'stages': [
+            {'name': 'Response', 'prompt': 'What information and safety considerations do you address before and upon arrival?', 'reveal': 'Gate personnel advise the vehicle is stopped in the inspection area. The driver has a state license but no valid installation credential and says he is meeting a contractor.'},
+            {'name': 'Contact', 'prompt': 'How do you conduct the contact and what do you need to verify?', 'reveal': 'The driver becomes calmer when the process is explained. The named contractor exists, but no sponsor is immediately available at the gate.'},
+            {'name': 'Verification', 'prompt': 'What additional checks, coordination, or questions are appropriate before deciding access?', 'reveal': 'The contractor confirms the meeting but advises the driver was not pre-cleared for access. No other suspicious indicators are developed.'},
+            {'name': 'Disposition', 'prompt': 'What is your final action and what do you document?', 'reveal': 'Scenario complete. Review access-control procedure, communication, officer safety, and documentation decisions with the FTO.'},
+        ],
+    },
+    'S003': {
+        'title': 'Damage to Government Property',
+        'difficulty': 'Intermediate',
+        'category': 'Investigation',
+        'phase': 'Phase II / III practice',
+        'dispatch': 'Respond to a report of a contractor vehicle striking government property near a facility parking area.',
+        'objective': 'Practice witness development, damage documentation, evidence collection, and articulation of willful, negligent, or accidental facts without guessing.',
+        'stages': [
+            {'name': 'Scene', 'prompt': 'What do you do on arrival and what do you preserve or document first?', 'reveal': 'A small government-owned light pole is visibly damaged. A white contractor pickup is nearby. No one is injured.'},
+            {'name': 'Witnesses', 'prompt': 'Who do you identify or interview, and what facts are you trying to establish?', 'reveal': 'A facility employee says another worker told her the truck struck the pole earlier. She did not witness the collision herself.'},
+            {'name': 'Evidence', 'prompt': 'What evidence or corroboration do you seek before drawing conclusions?', 'reveal': 'The pickup has fresh damage consistent with contact. A worker says he saw the truck back into the pole. The driver is available and says he did not realize contact occurred.'},
+            {'name': 'Disposition', 'prompt': 'Explain how you document the incident and distinguish observed facts from conclusions.', 'reveal': 'Scenario complete. The FTO should review investigative steps, evidence handling, articulation, reporting, and whether the trainee avoided unsupported conclusions.'},
+        ],
+    },
+    'S004': {
+        'title': 'Larceny / Shoplifting Report',
+        'difficulty': 'Intermediate',
+        'category': 'Investigation',
+        'phase': 'Phase II / III practice',
+        'dispatch': 'Respond to a reported theft where staff have identified a possible subject and recovered property may be involved.',
+        'objective': 'Practice interviews, statements, property/value documentation, evidence handling, and screening/notification considerations.',
+        'stages': [
+            {'name': 'Initial Response', 'prompt': 'What do you do first and who do you separate or identify?', 'reveal': 'Store staff has a subject waiting in an office. Merchandise is on a table. A loss-prevention employee says they observed concealment.'},
+            {'name': 'Investigation', 'prompt': 'What questions and evidence are important before deciding enforcement action?', 'reveal': 'Loss prevention can provide a written statement and video. The merchandise has a documented retail value and was recovered before leaving the facility.'},
+            {'name': 'Legal / Policy Review', 'prompt': 'What facts, notifications, and policy requirements do you verify before disposition?', 'reveal': 'The subject denies intent to steal and says the item was placed in a bag while carrying other property. Video must be reviewed to resolve important factual details.'},
+            {'name': 'Disposition', 'prompt': 'Describe your disposition and complete report/paperwork considerations without assuming facts not established.', 'reveal': 'Scenario complete. Review fact development, statements, evidence, legal articulation, paperwork, and required screening with the FTO.'},
+        ],
+    },
+    'S005': {
+        'title': 'Traffic Stop - Escalating Driver',
+        'difficulty': 'Advanced',
+        'category': 'Traffic Enforcement',
+        'phase': 'Phase II / III practice',
+        'dispatch': 'Conduct a traffic stop after observing a moving violation. The driver becomes increasingly argumentative after contact.',
+        'objective': 'Practice radio procedures, positioning, officer safety, legal authority, communication, enforcement decision making, and report articulation.',
+        'stages': [
+            {'name': 'Initiation', 'prompt': 'Describe how you initiate the stop and what information you communicate.', 'reveal': 'The vehicle stops in a safe location. The driver remains seated but immediately begins yelling that the stop is unlawful.'},
+            {'name': 'Contact', 'prompt': 'How do you manage officer safety and communication while obtaining required information?', 'reveal': 'The driver provides a license and registration but repeatedly reaches toward the center console after being asked to keep hands visible.'},
+            {'name': 'Decision Point', 'prompt': 'What do you do next, and what facts support your decisions?', 'reveal': 'The driver complies after a clear direction. No weapon or contraband is observed. Records checks return without a wanted status.'},
+            {'name': 'Disposition', 'prompt': 'Describe the enforcement decision, communication, and documentation.', 'reveal': 'Scenario complete. The FTO should review radio procedure, safety, conflict control, legal articulation, judgment, and professionalism.'},
+        ],
+    },
+    'S006': {
+        'title': 'Medical Assist with Conflicting Information',
+        'difficulty': 'Basic',
+        'category': 'Calls for Service',
+        'phase': 'Phase I / II practice',
+        'dispatch': 'Respond to a workplace medical assist. Coworkers provide conflicting information about what happened before the patient became ill.',
+        'objective': 'Practice scene organization, witness separation, fact collection, medical-assist documentation, and disposition.',
+        'stages': [
+            {'name': 'Arrival', 'prompt': 'What are your immediate priorities on arrival?', 'reveal': 'EMS is en route. The patient is conscious but confused. One coworker says the patient fell; another says the patient sat down before becoming ill.'},
+            {'name': 'Scene Organization', 'prompt': 'How do you organize the scene and gather reliable information without interfering with medical care?', 'reveal': 'The patient denies being struck. One coworker admits they did not actually see the beginning of the incident.'},
+            {'name': 'Clarification', 'prompt': 'What facts still need clarification and what documentation do you obtain?', 'reveal': 'A witness who saw the full event says the patient became dizzy, sat down, and then slid to the floor. No assault or workplace accident hazard is identified.'},
+            {'name': 'Disposition', 'prompt': 'Describe your final documentation and disposition.', 'reveal': 'Scenario complete. Review witness assessment, scene organization, documentation, and disposition with the FTO.'},
+        ],
+    },
 }
+
+# Coaching areas are aligned to concepts in the Standard Evaluation Guidelines.
+# The application intentionally does not auto-assign the official 1/4/7 DOR values.
+PRACTICE_AREAS = [
+    ('Investigative Skills', ['identify', 'interview', 'witness', 'statement', 'evidence', 'video', 'photo', 'photograph', 'ask', 'verify']),
+    ('Interview / Interrogation Skills', ['ask', 'question', 'interview', 'separate', 'statement', 'rapport', 'clarify']),
+    ('Officer Safety: General', ['cover', 'distance', 'hands', 'position', 'backup', 'weapon', 'approach', 'visibility']),
+    ('Problem Solving / Decision Making', ['assess', 'plan', 'priority', 'risk', 'options', 'de-escalat', 'supervisor', 'decide']),
+    ('Radio / Communications', ['radio', 'dispatch', 'status', 'location', 'backup', 'traffic', 'transmit', 'clear']),
+    ('With Citizens: General', ['calm', 'explain', 'professional', 'respect', 'listen', 'de-escalat', 'courteous']),
+    ('Legal / Policy Articulation', ['reasonable suspicion', 'probable cause', 'authority', 'consent', 'detain', 'arrest', 'citation', 'policy', 'procedure', 'order']),
+    ('Report Writing / Documentation', ['report', 'document', 'ccn', 'blotter', 'photograph', 'evidence', 'statement', 'disposition']),
+]
+
+
+def _normalize(value):
+    return ' '.join(str(value or '').split()).strip()
+
+
+def _valid_scenario(value):
+    return value if value in SCENARIOS else 'S001'
 
 
 def _new_state(scenario_id):
-    return {'scenario_id': scenario_id, 'turns': [], 'revealed': []}
+    return {
+        'scenario_id': scenario_id,
+        'turn': 0,
+        'complete': False,
+        # Only derived cue counts are retained in the signed session cookie.
+        # Raw trainee responses are not persisted by Scenario Lab.
+        'area_counts': {label: 0 for label, _terms in PRACTICE_AREAS},
+    }
 
 
 def _state_for(scenario_id):
@@ -56,81 +131,121 @@ def _state_for(scenario_id):
     if not isinstance(state, dict) or state.get('scenario_id') != scenario_id:
         state = _new_state(scenario_id)
         session[SESSION_KEY] = state
+        session.modified = True
     return state
 
 
-def _reveal_for_action(scenario_id, action_text, already_revealed):
-    low = _normalize(action_text).lower()
-    newly_revealed = []
-    for fact in SCRIPTED_FACTS.get(scenario_id, []):
-        if fact['id'] in already_revealed:
-            continue
-        if any(trigger in low for trigger in fact['triggers']):
-            newly_revealed.append(fact)
-        if len(newly_revealed) >= 2:
-            break
-    if newly_revealed:
-        return newly_revealed, ' '.join(fact['text'] for fact in newly_revealed)
-    return [], 'No additional scripted facts are revealed from that action. Continue using only the facts currently known.'
+def _apply_action_cues(state, response_text):
+    low = _normalize(response_text).lower()
+    counts = dict(state.get('area_counts') or {})
+    for label, terms in PRACTICE_AREAS:
+        hits = sum(1 for term in terms if term in low)
+        if hits:
+            counts[label] = min(9, int(counts.get(label, 0)) + min(3, hits))
+    state['area_counts'] = counts
 
 
-def _known_facts(scenario_id, revealed_ids):
-    return [fact for fact in SCRIPTED_FACTS.get(scenario_id, []) if fact['id'] in revealed_ids]
+def _coaching_summary(state):
+    rows = []
+    for label, _terms in PRACTICE_AREAS:
+        count = int((state.get('area_counts') or {}).get(label, 0))
+        if count >= 4:
+            status = 'Demonstrated repeatedly'
+            level = 'good'
+        elif count >= 1:
+            status = 'Some cues demonstrated'
+            level = 'partial'
+        else:
+            status = 'Not yet demonstrated in written actions'
+            level = 'needs-work'
+        rows.append({'area': label, 'status': status, 'level': level})
+    return {
+        'areas': rows,
+        'discussion': [row['area'] for row in rows if row['level'] == 'needs-work'][:5],
+        'notice': (
+            'These are text-based practice cues only, not SEG/DOR ratings. '
+            'The assigned FTO must evaluate actual behavior against the approved FTP standards.'
+        ),
+    }
 
 
 @bp.route('/', methods=['GET', 'POST'])
 @login_required
 def lab():
-    scenario_id = request.args.get('scenario_id') or request.form.get('scenario_id') or 'S001'
-    if scenario_id not in SCENARIOS:
-        scenario_id = 'S001'
-    scenario = SCENARIOS[scenario_id]
-    state = _state_for(scenario_id)
-    result = None
+    requested_id = _valid_scenario(request.values.get('scenario_id') or 'S001')
+    state = _state_for(requested_id)
+    scenario = SCENARIOS[state['scenario_id']]
+    stages = scenario['stages']
 
     if request.method == 'POST':
         action = _normalize(request.form.get('action')).lower()
-        if action == 'reset':
-            session[SESSION_KEY] = _new_state(scenario_id)
-            session.modified = True
-            return redirect(url_for('reports.fto_refinements.scenario_lab.lab', scenario_id=scenario_id))
 
-        response_text = (request.form.get('response_text') or '').strip()
-        if response_text:
-            if len(state['turns']) >= MAX_TURNS:
-                flash('This practice scenario has reached the 12-turn limit. Finish and evaluate, or reset it.', 'warning')
-            else:
-                facts, scene_update = _reveal_for_action(scenario_id, response_text, set(state.get('revealed', [])))
-                for fact in facts:
-                    if fact['id'] not in state['revealed']:
-                        state['revealed'].append(fact['id'])
-                state['turns'].append({
-                    'number': len(state['turns']) + 1,
-                    'trainee': response_text[:2000],
-                    'update': scene_update,
-                })
-                session[SESSION_KEY] = state
-                session.modified = True
-        elif action != 'finish':
-            flash('Enter what you would do next before submitting the action.', 'warning')
+        if action == 'reset':
+            session[SESSION_KEY] = _new_state(requested_id)
+            session.modified = True
+            return redirect(url_for('reports.fto_refinements.scenario_lab.lab', scenario_id=requested_id))
+
+        if action == 'switch':
+            session[SESSION_KEY] = _new_state(requested_id)
+            session.modified = True
+            return redirect(url_for('reports.fto_refinements.scenario_lab.lab', scenario_id=requested_id))
 
         if action == 'finish':
-            if not state['turns']:
-                flash('Complete at least one scenario action before finishing.', 'warning')
+            if int(state.get('turn', 0)) < 1:
+                flash('Complete at least one scenario decision before finishing.', 'warning')
             else:
-                combined = '\n'.join(turn['trainee'] for turn in state['turns'])
-                result = _evaluate_fto(combined)
-                result['turn_count'] = len(state['turns'])
-                result['revealed_count'] = len(state['revealed'])
+                state['complete'] = True
+                session[SESSION_KEY] = state
+                session.modified = True
+            return redirect(url_for('reports.fto_refinements.scenario_lab.lab', scenario_id=state['scenario_id']))
+
+        if action == 'act':
+            if state.get('complete'):
+                flash('This scenario is complete. Reset it or select another scenario to continue.', 'warning')
+                return redirect(url_for('reports.fto_refinements.scenario_lab.lab', scenario_id=state['scenario_id']))
+
+            turn = int(state.get('turn', 0))
+            if turn >= len(stages):
+                flash('All scenario stages are complete. Finish the scenario for the coaching review.', 'info')
+                return redirect(url_for('reports.fto_refinements.scenario_lab.lab', scenario_id=state['scenario_id']))
+
+            response_text = _normalize(request.form.get('response_text'))
+            if not response_text:
+                flash('Describe what you would do before continuing the scenario.', 'warning')
+                return redirect(url_for('reports.fto_refinements.scenario_lab.lab', scenario_id=state['scenario_id']))
+
+            _apply_action_cues(state, response_text[:2500])
+            state['turn'] = turn + 1
+            session[SESSION_KEY] = state
+            session.modified = True
+            return redirect(url_for('reports.fto_refinements.scenario_lab.lab', scenario_id=state['scenario_id']))
+
+    # A GET scenario selection starts the selected scenario cleanly if the ID changes.
+    if request.method == 'GET' and request.args.get('scenario_id') in SCENARIOS and requested_id != state.get('scenario_id'):
+        state = _new_state(requested_id)
+        session[SESSION_KEY] = state
+        session.modified = True
+        scenario = SCENARIOS[requested_id]
+        stages = scenario['stages']
+
+    turn = int(state.get('turn', 0))
+    latest_reveal = stages[turn - 1]['reveal'] if turn > 0 else None
+    current_stage = stages[turn] if turn < len(stages) else None
+    ready_to_finish = turn >= len(stages)
+    result = _coaching_summary(state) if state.get('complete') else None
 
     return render_template(
         'scenario_lab.html',
         user=current_user,
         scenarios=SCENARIOS,
-        scenario_id=scenario_id,
+        scenario_id=state['scenario_id'],
         scenario=scenario,
-        state=state,
-        known_facts=_known_facts(scenario_id, state.get('revealed', [])),
+        turn=turn,
+        total_turns=len(stages),
+        latest_reveal=latest_reveal,
+        current_stage=current_stage,
+        ready_to_finish=ready_to_finish,
+        complete=bool(state.get('complete')),
         result=result,
-        max_turns=MAX_TURNS,
+        practice_areas=[label for label, _terms in PRACTICE_AREAS],
     )
