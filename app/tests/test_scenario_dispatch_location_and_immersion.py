@@ -2,6 +2,7 @@ from app import create_app
 from app.extensions import db
 from app.models import ROLE_WEBSITE_CONTROLLER, User
 from app.routes.scenario_variants import build_run_context
+from app.simulator.location_catalog import CRASH_LOCATIONS, PUBLIC_MCLB_ROADS
 
 
 def _client():
@@ -45,6 +46,33 @@ def test_traffic_scenario_uses_specific_road_location_and_building_landmark():
     assert 'Bldg.' in context['location_display']
     assert context['location_display'] in context['dispatch_variant']
     assert 'MCLB Albany' in context['dispatch_variant']
+
+
+def test_s007_crash_dispatch_uses_named_public_mclb_road():
+    context = build_run_context('S007', seed=471728056, previous_choices={})
+    assert context['location_display'] in CRASH_LOCATIONS
+    assert context['location_name'] == context['location_display']
+    assert context['location_display'] in context['dispatch_variant']
+    assert any(road in context['location_display'] for road in PUBLIC_MCLB_ROADS)
+    assert 'MCLB Albany' in context['dispatch_variant']
+    assert 'Installation roadway / crash scene' not in context['dispatch_variant']
+    assert 'respond to a vehicle crash aboard the installation' not in context['dispatch_variant'].lower()
+
+
+def test_s007_live_page_renders_same_named_road_in_cad_and_dispatch():
+    _app, client = _client()
+    response = client.get('/sentinel/fto-center/scenario-lab/?scenario_id=S007')
+    assert response.status_code == 200
+    html = response.get_data(as_text=True)
+    with client.session_transaction() as s:
+        context = s['sentinel_scenario_lab_v2']['run_context']
+        location = context['location_display']
+        dispatch = context['dispatch_variant']
+    assert location in CRASH_LOCATIONS
+    assert location in dispatch
+    assert location in html
+    assert dispatch in html
+    assert 'Installation roadway / crash scene' not in html
 
 
 def test_virtual_patrol_renders_same_run_location_and_immersion_controls():
