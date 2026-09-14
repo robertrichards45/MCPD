@@ -61,8 +61,9 @@ def test_dashboard_keeps_desktop_user_agents_on_desktop_dashboard():
     )
     assert response.status_code == 200
     html = response.get_data(as_text=True)
-    assert 'Operational picture' in html
-    assert 'Start New Report' in html
+    assert 'Command Portal' in html
+    assert 'What do you need to work on?' in html
+    assert 'Narrative Creator' in html
     assert 'Forms Library' in html
 
 
@@ -73,7 +74,7 @@ def test_mobile_home_has_primary_field_actions():
     html = response.get_data(as_text=True)
     assert 'MCPD' in html
     assert 'Law Lookup' in html
-    assert 'Start Report' in html or 'Continue Report' in html
+    assert 'Incident Workspace' in html or 'Continue Incident' in html
     assert 'Forms' in html
     assert 'Officer Stats' in html
     assert 'Contact Info' in html
