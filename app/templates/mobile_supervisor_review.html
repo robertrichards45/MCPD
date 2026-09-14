@@ -6,9 +6,9 @@
   {% if current_user.has_any_role('WATCH_COMMANDER', 'DESK_SGT', 'WEBSITE_CONTROLLER') %}
   <div class="msr-card msr-command-card">
     <p class="msr-card-label">Command Tools</p>
-    <p class="msr-card-body">Access the full supervisor dashboard to review submitted packets, approve or return corrections, and track common deficiencies.</p>
+    <p class="msr-card-body">Review submitted packets, return corrections, and track common deficiencies from the supervisor workflow.</p>
     <div class="msr-action-list">
-      <a class="msr-btn-primary" href="{{ url_for('mobile.supervisor_dashboard') }}">Open Command Dashboard</a>
+      <a class="msr-btn-primary" href="{{ url_for('mobile.supervisor_dashboard') }}">Open Supervisor Dashboard</a>
     </div>
   </div>
   {% endif %}
@@ -86,6 +86,16 @@
   var forms   = Array.isArray(state.selectedForms) ? state.selectedForms : [];
   var facts   = Array.isArray(state.facts) ? state.facts : [];
   var stmts   = Array.isArray(state.statements) ? state.statements : [];
+  var guidance = state.paperworkGuidance && typeof state.paperworkGuidance === 'object' ? state.paperworkGuidance : {};
+  var normalForms = Array.isArray(guidance.recommendedForms) ? guidance.recommendedForms : [];
+  var formKeys = forms.map(function (name) { return String(name || '').trim().toLowerCase(); });
+  var missingNormalForms = normalForms.filter(function (name) {
+    return formKeys.indexOf(String(name || '').trim().toLowerCase()) < 0;
+  });
+  var normalPacketOk = missingNormalForms.length === 0;
+  var normalPacketLabel = normalForms.length
+    ? 'Configured normal paperwork present'
+    : 'No default paperwork required by the configured call type';
 
   var checks = [
     {
@@ -114,8 +124,8 @@
       fix: '{{ url_for("mobile.incident_persons") }}',
     },
     {
-      label: 'MCPD Stat Sheet in packet',
-      ok: forms.includes('MCPD Stat Sheet'),
+      label: normalPacketOk ? normalPacketLabel : 'Configured normal paperwork missing: ' + missingNormalForms.join(', '),
+      ok: normalPacketOk,
       fix: '{{ url_for("mobile.incident_selected_forms") }}',
     },
     {
@@ -148,7 +158,7 @@
   /* Status row */
   var statusRow = document.getElementById('msr-status-row');
   statusRow.innerHTML = '<span class="msr-badge ' + (allOk ? 'is-ready' : 'is-warn') + '">'
-    + (allOk ? '&#10003; Packet Ready to Send' : '&#9888; ' + (checks.length - passCount) + ' item' + (checks.length - passCount === 1 ? '' : 's') + ' need attention')
+    + (allOk ? '&#10003; Packet Ready for Final Review' : '&#9888; ' + (checks.length - passCount) + ' item' + (checks.length - passCount === 1 ? '' : 's') + ' need attention')
     + '</span>';
 
   /* Checklist */
@@ -156,10 +166,22 @@
   checks.forEach(function (c) {
     var div = document.createElement('div');
     div.className = 'msr-item ' + (c.ok ? 'is-ok' : 'is-fail');
-    div.innerHTML = '<span class="msr-item-icon">' + (c.ok ? '&#10003;' : '&#10007;') + '</span>'
-      + (c.ok
-        ? '<span class="msr-item-label">' + c.label + '</span>'
-        : '<a class="msr-item-label msr-item-fix" href="' + c.fix + '">' + c.label + ' &mdash; tap to fix</a>');
+    var icon = document.createElement('span');
+    icon.className = 'msr-item-icon';
+    icon.textContent = c.ok ? '✓' : '✕';
+    div.appendChild(icon);
+    if (c.ok) {
+      var label = document.createElement('span');
+      label.className = 'msr-item-label';
+      label.textContent = c.label;
+      div.appendChild(label);
+    } else {
+      var link = document.createElement('a');
+      link.className = 'msr-item-label msr-item-fix';
+      link.href = c.fix;
+      link.textContent = c.label + ' — tap to fix';
+      div.appendChild(link);
+    }
     listEl.appendChild(div);
   });
 
@@ -172,21 +194,30 @@
     var nqBody = document.getElementById('msr-nq-body');
     nqCard.style.display = '';
     var nqIssues = [];
-    if (wc < 30) nqIssues.push('Very short (' + wc + ' words). Aim for at least 50 words.');
-    else if (wc < 50) nqIssues.push('Brief (' + wc + ' words). Consider adding more detail.');
+    if (wc < 30) nqIssues.push('Very short (' + wc + ' words). Verify the narrative contains the facts needed for this incident.');
+    else if (wc < 50) nqIssues.push('Brief (' + wc + ' words). Review for missing factual detail.');
     var tl = narrative.toLowerCase();
-    if (!/(officer|this officer|responding|writer|reporting)/.test(tl)) nqIssues.push('Who was the responding officer?');
-    if (!/(suspect|victim|subject|person|individual|complainant|witness)/.test(tl)) nqIssues.push('Who was involved?');
-    if (!/(located|area|building|parking|street| at | near | on )/.test(tl)) nqIssues.push('Where did this occur?');
-    if (!/(approximately|approx|hours| at | on )/.test(tl)) nqIssues.push('When did this occur?');
-    if (!/(arrested|detained|advised|responded|notified|issued|transported|released|reported|cleared|secured)/.test(tl)) nqIssues.push('What actions were taken?');
+    if (!/(officer|this officer|responding|writer|reporting)/.test(tl)) nqIssues.push('Verify the responding/reporting officer is clear.');
+    if (!/(suspect|victim|subject|person|individual|complainant|witness)/.test(tl)) nqIssues.push('Verify involved-person roles are clear where applicable.');
+    if (!/(located|area|building|parking|street| at | near | on )/.test(tl)) nqIssues.push('Verify the incident location is clear.');
+    if (!/(approximately|approx|hours| at | on )/.test(tl)) nqIssues.push('Verify the incident time/chronology is clear.');
+    if (!/(arrested|detained|advised|responded|notified|issued|transported|released|reported|cleared|secured)/.test(tl)) nqIssues.push('Verify officer actions and final disposition are clear.');
     if (nqIssues.length === 0) {
-      nqBody.innerHTML = '<p class="msr-nq-ok">&#10003; ' + wc + ' words &mdash; narrative looks adequate.</p>';
+      nqBody.textContent = '✓ ' + wc + ' words — no obvious completeness cue was detected. Supervisor review still required.';
+      nqBody.className = 'msr-nq-ok';
     } else {
-      var html = '<p class="msr-nq-warn">&#9888; ' + wc + ' words &mdash; ' + nqIssues.length + ' suggestion(s):</p><ul class="msr-nq-list">';
-      nqIssues.forEach(function(i) { html += '<li>' + i + '</li>'; });
-      html += '</ul>';
-      nqBody.innerHTML = html;
+      var warning = document.createElement('p');
+      warning.className = 'msr-nq-warn';
+      warning.textContent = '⚠ ' + wc + ' words — ' + nqIssues.length + ' review cue(s):';
+      nqBody.appendChild(warning);
+      var list = document.createElement('ul');
+      list.className = 'msr-nq-list';
+      nqIssues.forEach(function (item) {
+        var li = document.createElement('li');
+        li.textContent = item;
+        list.appendChild(li);
+      });
+      nqBody.appendChild(list);
     }
   }
 }());
