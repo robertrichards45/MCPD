@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell mcpd-command-app">
+  {% include 'partials/nav.html' %}
+  <main class="page-wrap narrative-tool-page">
+    <section class="ops-head-card mb-3">
+      <div class="ops-head-copy">
+        <div class="eyebrow">FTO Center — Simulator Evidence</div>
+        <h2 class="mb-1">Performance Patterns</h2>
+        <p class="text-muted mb-0">{{ trainee.display_name if trainee.display_name is defined else trainee.name }} — evidence across completed synthetic patrol runs.</p>
+      </div>
+      <div class="ops-head-actions"><a class="btn btn-outline-secondary" href="{{ url_for('reports.sentinel.fto_program.dashboard') }}">FTO Program</a></div>
+    </section>
+
+    <div class="alert alert-secondary"><strong>Advisory only.</strong> {{ analytics.advisory or 'Simulator observations support human FTO review and do not create an official DOR rating or automatic training decision.' }}</div>
+
+    <section class="ops-panel mb-3">
+      <div class="eyebrow">Cross-Call Patterns</div>
+      <h3>{{ analytics.run_count }} completed simulator run{% if analytics.run_count != 1 %}s{% endif %}</h3>
+      {% if analytics.patterns %}
+      <div class="row g-3">
+        {% for item in analytics.patterns %}
+        <div class="col-md-6 col-xl-3">
+          <div class="border rounded p-3 h-100">
+            <strong>{{ item.label }}</strong>
+            <div class="display-6 mt-2">{{ item.percent }}%</div>
+            <div class="small text-muted">{{ item.observation }}</div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <hr>
+      <div class="row g-2">
+        <div class="col-md-6"><strong>Hidden evaluator interventions across runs:</strong> {{ analytics.total_interventions }}</div>
+        <div class="col-md-6"><strong>Structured evidence opportunities lost:</strong> {{ analytics.total_evidence_lost }}</div>
+      </div>
+      {% else %}
+      <p class="text-muted mb-0">Complete simulator calls will build pattern evidence here.</p>
+      {% endif %}
+    </section>
+
+    <section class="ops-panel mb-3">
+      <div class="eyebrow">Original vs. Remediation / Same-Family Comparison</div>
+      <h3>Compare Two Runs</h3>
+      <form method="get" class="row g-3 align-items-end">
+        <div class="col-lg-5">
+          <label class="form-label" for="first">First run</label>
+          <select class="form-select" id="first" name="first" required>
+            <option value="">Select a run</option>
+            {% for run in runs %}<option value="{{ run.id }}" {% if first and first.id == run.id %}selected{% endif %}>{{ run.scenario_id }} — {{ run.started_at.strftime('%Y-%m-%d %H:%M') if run.started_at else run.run_id }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-lg-5">
+          <label class="form-label" for="second">Second run</label>
+          <select class="form-select" id="second" name="second" required>
+            <option value="">Select a run</option>
+            {% for run in runs %}<option value="{{ run.id }}" {% if second and second.id == run.id %}selected{% endif %}>{{ run.scenario_id }} — {{ run.started_at.strftime('%Y-%m-%d %H:%M') if run.started_at else run.run_id }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-lg-2 d-grid"><button class="btn btn-primary" type="submit">Compare</button></div>
+      </form>
+      {% if comparison_error %}<div class="alert alert-warning mt-3 mb-0">{{ comparison_error }}</div>{% endif %}
+
+      {% if comparison %}
+      <div class="table-responsive mt-3">
+        <table class="table align-middle">
+          <thead><tr><th>Observed behavior</th><th>First</th><th>Second</th><th>Change</th></tr></thead>
+          <tbody>
+            {% for row in comparison.rows %}
+            <tr>
+              <td>{{ row.label }}</td>
+              <td>{{ row.first }}</td>
+              <td>{{ row.second }}</td>
+              <td>{% if row.delta > 0 %}+{% endif %}{{ row.delta }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <p class="small text-muted mb-0">A larger number is not automatically better. For example, fewer interventions or fewer lost evidence opportunities can be improvement, while resource use depends on the facts available in that run. The FTO interprets the evidence.</p>
+      {% endif %}
+    </section>
+
+    <section class="ops-panel mb-3">
+      <div class="eyebrow">Run Evidence</div>
+      <h3>Completed Calls</h3>
+      {% if runs %}
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead><tr><th>Family</th><th>Status</th><th>People</th><th>Evidence Preserved</th><th>Lost</th><th>Interventions</th><th>Review</th></tr></thead>
+          <tbody>
+            {% for run in runs %}
+            {% set summary = run_summaries.get(run.id, {}) %}
+            <tr>
+              <td>{{ run.scenario_id }}</td>
+              <td>{{ run.status|title }}</td>
+              <td>{{ summary.people_contacted }}</td>
+              <td>{{ summary.evidence_preserved }}</td>
+              <td>{{ summary.evidence_lost }}</td>
+              <td>{{ summary.interventions }}</td>
+              <td><a class="btn btn-sm btn-outline-primary" href="{{ url_for('reports.fto_refinements.scenario_lab.evaluator', run_id=run.run_id) }}">Evaluator Replay</a></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}<p class="text-muted mb-0">No completed runs are available yet.</p>{% endif %}
+    </section>
+  </main>
+</div>
+{% endblock %}
