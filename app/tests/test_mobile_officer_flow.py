@@ -122,8 +122,8 @@ def test_mobile_officer_flow_pages_include_updated_mobile_assets():
         assert 'Orders' in home
         assert 'Training' in home
         assert 'Saved' in home
-        assert 'Officer Stats' in home
-        assert 'Contact Info' in home
+        assert '<span>Stats</span>' in home
+        assert '<span>Profile</span>' in home
         assert '<svg viewBox="0 0 24 24">' in home
         assert 'Shift Workflow' not in home
         assert 'Command Radar' not in home
