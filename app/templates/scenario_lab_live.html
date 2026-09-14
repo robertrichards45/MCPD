@@ -2,183 +2,240 @@
 {% block body %}
 {% set active_shift = session.get('sentinel_virtual_shift_v1') %}
 {% set shift_mode = active_shift and active_shift.status == 'ACTIVE' and active_shift.active_run_id == run_context.run_id %}
+<style>
+  .patrol-page{max-width:none!important;width:100%!important;padding-right:18px!important}
+  .patrol-shell{width:100%;max-width:2400px;margin:0 auto}
+  .patrol-toolbar{display:grid;grid-template-columns:minmax(300px,1fr) minmax(520px,1.45fr);gap:12px;align-items:stretch}
+  .patrol-workspace{display:grid;grid-template-columns:minmax(290px,.8fr) minmax(520px,1.45fr) minmax(360px,1fr);grid-template-areas:'people command activity' 'intel command activity' 'radio action activity';gap:12px;align-items:start}
+  .patrol-card{background:var(--bs-body-bg,#fff);border:1px solid var(--bs-border-color,#d9dee7);border-radius:14px;padding:16px;box-shadow:0 2px 8px rgba(15,35,58,.05)}
+  .patrol-people{grid-area:people}.patrol-command{grid-area:command}.patrol-activity{grid-area:activity}.patrol-intel{grid-area:intel}.patrol-radio{grid-area:radio}.patrol-action{grid-area:action}
+  .patrol-scroll{max-height:670px;overflow:auto;padding-right:4px}
+  .patrol-feed-item{border:1px solid var(--bs-border-color,#d9dee7);border-radius:10px;padding:10px 12px;margin-bottom:8px;background:rgba(255,255,255,.7)}
+  .patrol-feed-item.face{border-left:4px solid var(--bs-primary,#0d6efd)}
+  .patrol-feed-item.radio{border-left:4px solid #6c757d}
+  .patrol-feed-item.scene{border-left:4px solid #198754}
+  .patrol-person{border:1px solid var(--bs-border-color,#d9dee7);border-radius:10px;padding:10px;margin-bottom:8px}
+  .patrol-person.active-contact{border:2px solid var(--bs-primary,#0d6efd);background:rgba(13,110,253,.05)}
+  .patrol-dispatch{font-size:1.05rem;line-height:1.45;background:rgba(13,110,253,.05);border:1px solid rgba(13,110,253,.18);border-radius:10px;padding:14px}
+  .patrol-scene-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .patrol-actions-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .patrol-title-row{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
+  .scenario-launcher{display:grid;grid-template-columns:minmax(260px,1fr) auto auto;gap:8px;align-items:end}
+  .scenario-launcher .form-select{min-height:42px}
+  .compact-list{margin-bottom:0;padding-left:18px}.compact-list li{margin-bottom:5px}
+  .call-status-pill{display:inline-flex;gap:6px;align-items:center;border:1px solid var(--bs-border-color,#d9dee7);border-radius:999px;padding:5px 10px;font-size:.82rem}
+  .patrol-textarea{min-height:132px;resize:vertical}
+  .end-call-box{border-top:1px solid var(--bs-border-color,#d9dee7);margin-top:12px;padding-top:12px}
+  @media(max-width:1400px){.patrol-workspace{grid-template-columns:minmax(260px,.85fr) minmax(430px,1.25fr) minmax(330px,1fr)}}
+  @media(max-width:1100px){.patrol-toolbar{grid-template-columns:1fr}.patrol-workspace{grid-template-columns:1fr 1fr;grid-template-areas:'command command' 'people intel' 'activity activity' 'radio action'}.patrol-scroll{max-height:460px}}
+  @media(max-width:760px){.patrol-workspace{grid-template-columns:1fr;grid-template-areas:'command' 'people' 'intel' 'activity' 'radio' 'action'}.patrol-scene-grid,.scenario-launcher{grid-template-columns:1fr}.patrol-page{padding-right:8px!important;padding-left:8px!important}}
+</style>
 <div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
-  <main class="page-wrap narrative-tool-page">
-    <section class="ops-head-card mb-3">
-      <div class="ops-head-copy">
-        <div class="eyebrow">Sentinel — Simulation Mode</div>
-        <h2 class="mb-1">Virtual Patrol</h2>
-        <p class="text-muted mb-0">Handle the call using the information you can actually see, hear, obtain, or develop.</p>
-      </div>
-      <div class="ops-head-actions d-flex gap-2 flex-wrap">
-        {% if shift_mode %}<a class="btn btn-outline-primary" href="{{ url_for('reports.fto_refinements.scenario_shift.shift') }}">Shift CAD</a>{% endif %}
-        <a class="btn btn-outline-primary" href="{{ url_for('reports.fto_refinements.scenario_notebook.notebook') }}">Field Notebook</a>
-        {% if evaluator_url %}<a class="btn btn-outline-secondary" href="{{ evaluator_url }}">FTO / Evaluator View</a>{% endif %}
-        <a class="btn btn-outline-secondary" href="{{ url_for('reports.sentinel.fto_center') }}">FTO Center</a>
-      </div>
-    </section>
-
-    <div class="alert alert-secondary mb-3">
-      <strong>TRAINING / SYNTHETIC.</strong> All people, records, evidence, outcomes, and identifiers in this simulator are fictional training data.
-    </div>
-
-    {% if observable.paused %}
-    <div class="alert alert-warning"><strong>Simulation paused by the instructor.</strong> The call state is preserved exactly where it is.</div>
-    {% endif %}
-
-    {% if observable.coaching_mode and observable.fto_message %}
-    <div class="alert alert-info">
-      <div class="eyebrow">FTO Coaching</div>
-      <strong>{{ observable.fto_message }}</strong>
-    </div>
-    {% endif %}
-
-    {% if terminated and terminal_outcome %}
-    <section class="ops-panel mb-3 border-danger">
-      <div class="eyebrow text-danger">Simulation Ended</div>
-      <h3>{{ terminal_outcome.title }}</h3>
-      <p>{{ terminal_outcome.public_outcome }}</p>
-      <p>{{ terminal_outcome.officer_outcome }}</p>
-      <p class="text-muted mb-3">This is a synthetic training outcome. The decision remains part of the run and cannot be rewritten. Complete the post-call documentation and self-assessment before debrief.</p>
-      <div class="d-flex gap-2 flex-wrap">
-        <a class="btn btn-primary" href="{{ url_for('reports.fto_refinements.scenario_paperwork.paperwork') }}">Complete Training Package</a>
-        <a class="btn btn-outline-primary" href="{{ url_for('reports.fto_refinements.scenario_notebook.notebook') }}">Review Field Notes</a>
-        {% if shift_mode %}<a class="btn btn-outline-secondary" href="{{ url_for('reports.fto_refinements.scenario_shift.shift') }}">Return to Shift</a>{% endif %}
-      </div>
-    </section>
-    {% endif %}
-
-    {% if complete and not terminated %}
-    <section class="ops-panel mb-3 border-success">
-      <div class="eyebrow">Call Cleared</div>
-      <h3>Complete the post-call work</h3>
-      <p class="text-muted">The live scene is over. Complete the officer paperwork, notification decisions, and self-assessment before opening the debrief.</p>
-      <div class="d-flex gap-2 flex-wrap">
-        <a class="btn btn-success" href="{{ url_for('reports.fto_refinements.scenario_paperwork.paperwork') }}">Complete Training Package</a>
-        <a class="btn btn-outline-primary" href="{{ url_for('reports.fto_refinements.scenario_notebook.notebook') }}">Review Field Notes</a>
-        {% if shift_mode %}<a class="btn btn-outline-secondary" href="{{ url_for('reports.fto_refinements.scenario_shift.shift') }}">Return to Shift</a>{% endif %}
-      </div>
-    </section>
-    {% endif %}
-
-    {% if not complete %}
-    <section class="row g-3 mb-3">
-      <div class="col-xl-7">
-        <article class="ops-panel h-100">
-          <div class="d-flex justify-content-between gap-2 align-items-start flex-wrap">
+  <main class="page-wrap patrol-page">
+    <div class="patrol-shell">
+      <section class="ops-head-card mb-3">
+        <div class="ops-head-copy">
+          <div class="eyebrow">Sentinel — Virtual Patrol</div>
+          <div class="patrol-title-row">
             <div>
-              <div class="eyebrow">CAD / Dispatch</div>
-              <h3 class="mb-1">Active Call{% if shift_mode %} — Unit {{ active_shift.unit_id }}{% endif %}</h3>
+              <h2 class="mb-1">{{ scenario.title }}</h2>
+              <p class="text-muted mb-0">Work the call from dispatch through disposition. Sentinel will not tell you the answer.</p>
+            </div>
+            <div class="patrol-actions-row">
+              <span class="call-status-pill"><strong>{{ scenario.category }}</strong></span>
+              <span class="call-status-pill">{{ scenario.difficulty }}</span>
+              {% if shift_mode %}<span class="call-status-pill">Unit {{ active_shift.unit_id }}</span>{% endif %}
+              <span class="call-status-pill">T+{{ observable.clock }}</span>
             </div>
           </div>
-          <div class="border rounded p-3 my-3"><strong>{{ run_context.dispatch_variant or scenario.dispatch }}</strong></div>
+        </div>
+        <div class="ops-head-actions d-flex gap-2 flex-wrap">
+          {% if shift_mode %}<a class="btn btn-outline-primary" href="{{ url_for('reports.fto_refinements.scenario_shift.shift') }}">Shift CAD</a>{% endif %}
+          <a class="btn btn-outline-primary" href="{{ url_for('reports.fto_refinements.scenario_notebook.notebook') }}">Field Notebook</a>
+          {% if evaluator_url %}<a class="btn btn-outline-secondary" href="{{ evaluator_url }}">FTO View</a>{% endif %}
+          <a class="btn btn-outline-secondary" href="{{ url_for('reports.sentinel.fto_center') }}">FTO Center</a>
+        </div>
+      </section>
+
+      <section class="patrol-toolbar mb-3">
+        <article class="patrol-card">
+          <div class="eyebrow">Training Mode</div>
+          <h3 class="mb-2">Choose the Call You Want to Work</h3>
+          <p class="small text-muted mb-3">Pick a specific call type such as Medical Assist, Traffic Stop, Larceny, or Disorderly Person—or let Sentinel choose one at random.</p>
+          <form method="post" id="scenario-launch-form" class="scenario-launcher">
+            <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
+            <input type="hidden" name="action" value="switch">
+            <div>
+              <label class="form-label small fw-semibold" for="scenario-picker">Scenario</label>
+              <select class="form-select" id="scenario-picker" name="scenario_id">
+                {% for sid, item in scenarios.items() %}
+                <option value="{{ sid }}" {% if sid == scenario_id %}selected{% endif %}>{{ item.title }} — {{ item.category }} — {{ item.difficulty }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <button class="btn btn-primary" type="submit">Start Selected</button>
+            <button class="btn btn-outline-primary" id="random-scenario-btn" type="button">Random Call</button>
+          </form>
+        </article>
+        <article class="patrol-card">
+          <div class="eyebrow">Current Training Run</div>
+          <div class="d-flex justify-content-between gap-3 flex-wrap align-items-start">
+            <div>
+              <strong>{{ scenario.title }}</strong>
+              <div class="small text-muted mt-1">Run {{ run_context.run_id }}</div>
+            </div>
+            <div class="small text-muted text-end">TRAINING / SYNTHETIC<br>All people and records are fictional.</div>
+          </div>
+          {% if observable.paused %}<div class="alert alert-warning mt-3 mb-0"><strong>Paused by FTO.</strong> The call state is preserved.</div>{% endif %}
+          {% if observable.coaching_mode and observable.fto_message %}<div class="alert alert-info mt-3 mb-0"><strong>FTO Coaching:</strong> {{ observable.fto_message }}</div>{% endif %}
+        </article>
+      </section>
+
+      {% if terminated and terminal_outcome %}
+      <section class="patrol-card mb-3 border-danger">
+        <div class="eyebrow text-danger">Simulation Ended</div>
+        <h3>{{ terminal_outcome.title }}</h3>
+        <p>{{ terminal_outcome.public_outcome }}</p>
+        <p>{{ terminal_outcome.officer_outcome }}</p>
+        <div class="patrol-actions-row">
+          <a class="btn btn-primary" href="{{ url_for('reports.fto_refinements.scenario_paperwork.paperwork') }}">Continue to Paperwork</a>
+          <a class="btn btn-outline-primary" href="{{ url_for('reports.fto_refinements.scenario_notebook.notebook') }}">Review Field Notes</a>
+        </div>
+      </section>
+      {% elif complete %}
+      <section class="patrol-card mb-3 border-success">
+        <div class="eyebrow text-success">Call Closed</div>
+        <h3 class="mb-1">Next Step: Complete the Training Package</h3>
+        <p class="text-muted">Complete the required paperwork, CID/notification decision, training forms, and self-assessment. The FTO will review the call and the documentation together.</p>
+        <a class="btn btn-success btn-lg" href="{{ url_for('reports.fto_refinements.scenario_paperwork.paperwork') }}">Go to Paperwork</a>
+      </section>
+      {% endif %}
+
+      {% if not complete %}
+      <section class="patrol-workspace">
+        <article class="patrol-card patrol-command">
+          <div class="patrol-title-row mb-2">
+            <div><div class="eyebrow">CAD / Dispatch</div><h3 class="mb-0">Active Call</h3></div>
+            <span class="call-status-pill">{{ scene_meta.scene }}</span>
+          </div>
+          <div class="patrol-dispatch mb-3"><strong>Dispatch:</strong> {{ run_context.dispatch_variant or scenario.dispatch }}</div>
+          <div class="patrol-scene-grid">
+            <div>
+              <div class="eyebrow mb-2">Current Scene</div>
+              {% for clue in scene_meta.visual %}<div class="border rounded p-2 mb-2">{{ clue }}</div>{% endfor %}
+            </div>
+            <div>
+              <div class="eyebrow mb-2">Scene Development</div>
+              {% if latest_reveal %}<div class="border rounded p-2 mb-2">{{ latest_reveal }}</div>{% endif %}
+              {% for item in visible_scene_updates %}<div class="border rounded p-2 mb-2">{{ item }}</div>{% endfor %}
+              {% if not latest_reveal and not visible_scene_updates %}<p class="text-muted small">No additional scene information has developed yet.</p>{% endif %}
+            </div>
+          </div>
           {% if observable.radio_log %}
-          <div class="d-grid gap-2">
-            {% for item in observable.radio_log[-10:] %}
-            <div class="border rounded p-2">
-              <div class="d-flex justify-content-between gap-2"><strong>{{ item.speaker }}</strong><span class="small text-muted">T+{{ item.clock }}</span></div>
-              <div>{{ item.text }}</div>
-            </div>
-            {% endfor %}
-          </div>
+          <hr>
+          <div class="eyebrow mb-2">Recent Radio</div>
+          {% for item in observable.radio_log[-4:] %}
+          <div class="d-flex justify-content-between gap-3 border-bottom py-1"><span><strong>{{ item.speaker }}:</strong> {{ item.text }}</span><span class="small text-muted text-nowrap">T+{{ item.clock }}</span></div>
+          {% endfor %}
           {% endif %}
         </article>
-      </div>
-      <div class="col-xl-5">
-        <article class="ops-panel h-100">
-          <div class="eyebrow">Current Scene</div>
-          <h3>{{ scene_meta.scene }}</h3>
-          <div class="row g-2 mb-2">
-            {% for clue in scene_meta.visual %}<div class="col-12"><div class="border rounded p-2">{{ clue }}</div></div>{% endfor %}
-          </div>
-          {% if latest_reveal %}<div class="border rounded p-2 mb-2"><strong>Developed:</strong> {{ latest_reveal }}</div>{% endif %}
-          {% for item in visible_scene_updates %}<div class="border rounded p-2 mb-2">{{ item }}</div>{% endfor %}
-          <div class="small text-muted mt-2">Simulation time: T+{{ observable.clock }}</div>
-        </article>
-      </div>
-    </section>
 
-    <section class="row g-3 mb-3">
-      <div class="col-xl-4">
-        <article class="ops-panel h-100">
-          <div class="eyebrow">People / Resources Present</div>
+        <article class="patrol-card patrol-people">
+          <div class="eyebrow">People / Resources</div>
           <h3>Who Is Here</h3>
           {% if observable.people %}
-          <div class="d-grid gap-2 mb-3">
             {% for person in observable.people %}
-            <div class="border rounded p-2">
-              <div class="d-flex justify-content-between gap-2 align-items-start flex-wrap">
-                <strong>{{ person.name }}</strong>
-                <span class="badge text-bg-light border">{{ person.role }}</span>
-              </div>
-              {% if person.location %}<div class="small text-muted">Location: {{ person.location }}</div>{% endif %}
-              <div class="small mt-1"><strong>Contact label:</strong> {{ person.role or person.name }}</div>
+            <div class="patrol-person">
+              <div class="d-flex justify-content-between gap-2 align-items-start"><strong>{{ person.name }}</strong><span class="badge text-bg-light border">{{ person.role }}</span></div>
+              {% if person.location %}<div class="small text-muted mt-1">{{ person.location }}</div>{% endif %}
             </div>
             {% endfor %}
-          </div>
-          <p class="small text-muted">You can address people naturally by role or common wording—for example, “subject” or “suspect,” and “reporting party,” “complainant,” or “caller.”</p>
-          {% else %}<p class="text-muted">No person has been identified or encountered yet.</p>{% endif %}
-          {% if observable.resources %}<hr>{% for resource in observable.resources %}<div class="mb-1"><strong>{{ resource.id|replace('_',' ')|title }}:</strong> {{ resource.status|replace('_',' ') }}</div>{% endfor %}{% endif %}
+          {% else %}<p class="text-muted small">No one has been identified or encountered yet.</p>{% endif %}
+          {% if observable.resources %}
+          <hr>
+          {% for resource in observable.resources %}<div class="d-flex justify-content-between gap-2 small mb-1"><strong>{{ resource.id|replace('_',' ')|title }}</strong><span>{{ resource.status|replace('_',' ')|title }}</span></div>{% endfor %}
+          {% endif %}
+          <p class="small text-muted mt-2 mb-0">Address people naturally: subject/suspect, reporting party/complainant/caller, witness, patient, driver, etc.</p>
         </article>
-      </div>
-      <div class="col-xl-4">
-        <article class="ops-panel h-100">
-          <div class="eyebrow">Information / Evidence Obtained</div>
-          <h3>Developed During the Call</h3>
-          {% if observable.known_information %}<ul>{% for item in observable.known_information %}<li>{{ item.text }}</li>{% endfor %}</ul>{% endif %}
-          {% if observable.evidence %}<div class="d-grid gap-2">{% for item in observable.evidence %}<div class="border rounded p-2"><strong>{{ item.label }}</strong><div class="small text-muted">{{ item.status }}</div></div>{% endfor %}</div>{% endif %}
-          {% if not observable.known_information and not observable.evidence %}<p class="text-muted">Nothing beyond the initial call information has been developed yet.</p>{% endif %}
-          <hr><a class="btn btn-sm btn-outline-primary" href="{{ url_for('reports.fto_refinements.scenario_notebook.notebook') }}">Open Field Notebook</a>
+
+        <article class="patrol-card patrol-intel">
+          <div class="eyebrow">Information / Evidence</div>
+          <h3>What You Have Developed</h3>
+          {% if observable.known_information %}<ul class="compact-list">{% for item in observable.known_information[-8:] %}<li>{{ item.text }}</li>{% endfor %}</ul>{% endif %}
+          {% if observable.evidence %}<div class="mt-2">{% for item in observable.evidence %}<div class="border rounded p-2 mb-2"><strong>{{ item.label }}</strong><div class="small text-muted">{{ item.status }}</div></div>{% endfor %}</div>{% endif %}
+          {% if not observable.known_information and not observable.evidence %}<p class="text-muted small">Nothing beyond the initial dispatch has been developed.</p>{% endif %}
+          <a class="btn btn-sm btn-outline-primary mt-2" href="{{ url_for('reports.fto_refinements.scenario_notebook.notebook') }}">Open Field Notebook</a>
         </article>
-      </div>
-      <div class="col-xl-4">
-        <article class="ops-panel h-100">
-          <div class="eyebrow">Recent Scene Activity</div>
+
+        <article class="patrol-card patrol-activity">
+          <div class="eyebrow">Call Timeline</div>
           <h3>Who Said / Did What</h3>
-          {% if observable.timeline %}
-          <div class="d-grid gap-2">
-            {% for item in observable.timeline[-10:]|reverse %}
-            <div class="border rounded p-2 {% if item.channel == 'face_to_face' %}border-primary{% endif %}">
-              <div class="d-flex justify-content-between gap-2 align-items-center flex-wrap mb-1">
-                <div>
-                  {% if item.actor %}<strong>{{ item.actor }}</strong>{% else %}<strong>Scene</strong>{% endif %}
-                  {% if item.channel == 'face_to_face' %}<span class="badge text-bg-primary ms-1">Face-to-Face</span>{% elif item.channel == 'radio' %}<span class="badge text-bg-light border ms-1">Radio</span>{% elif item.channel == 'scene' %}<span class="badge text-bg-light border ms-1">Scene</span>{% endif %}
+          <div class="patrol-scroll">
+            {% if observable.timeline %}
+              {% for item in observable.timeline|reverse %}
+              <div class="patrol-feed-item {% if item.channel == 'face_to_face' %}face{% elif item.channel == 'radio' %}radio{% elif item.channel == 'scene' %}scene{% endif %}">
+                <div class="d-flex justify-content-between gap-2 mb-1">
+                  <span><strong>{{ item.actor or 'Scene' }}</strong>{% if item.channel %}<span class="small text-muted"> · {{ item.channel|replace('_',' ')|title }}</span>{% endif %}</span>
+                  <span class="small text-muted text-nowrap">T+{{ item.clock }}</span>
                 </div>
-                <span class="small text-muted">T+{{ item.clock }}</span>
+                <div>{{ item.summary }}</div>
               </div>
-              <div>{{ item.summary }}</div>
-            </div>
-            {% endfor %}
+              {% endfor %}
+            {% else %}<p class="text-muted">The call has just begun.</p>{% endif %}
           </div>
-          {% else %}<p class="text-muted">The call has just begun.</p>{% endif %}
         </article>
-      </div>
-    </section>
 
-    <section class="row g-3 mb-3">
-      <div class="col-xl-5">
-        <article class="ops-panel h-100">
+        <article class="patrol-card patrol-radio">
           <div class="eyebrow">Radio</div><h3>Transmit</h3>
-          <p class="small text-muted">Talk to Dispatch and request agency resources naturally. Dispatch only knows what is available through this synthetic call, radio traffic, and simulated records.</p>
-          <form method="post"><input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}"><input type="hidden" name="scenario_id" value="{{ scenario_id }}"><input type="hidden" name="action" value="radio"><textarea class="form-control" name="radio_text" rows="5" maxlength="1200" required placeholder="Example: 214, show me on scene."></textarea><button class="btn btn-outline-primary mt-2" type="submit" {% if observable.paused %}disabled{% endif %}>Transmit</button></form>
+          <form method="post">
+            <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
+            <input type="hidden" name="scenario_id" value="{{ scenario_id }}">
+            <input type="hidden" name="action" value="radio">
+            <textarea class="form-control patrol-textarea" name="radio_text" maxlength="1200" required placeholder="Example: 214, show me on scene."></textarea>
+            <button class="btn btn-outline-primary mt-2" type="submit" {% if observable.paused %}disabled{% endif %}>Transmit</button>
+          </form>
         </article>
-      </div>
-      <div class="col-xl-7">
-        <article class="ops-panel h-100">
-          <div class="eyebrow">Officer Action</div><h3>What do you do?</h3>
-          <p class="small text-muted">State what you actually do, say, observe, ask, move toward, preserve, check, or decide. When more than one person is present, identify who you are addressing. Sentinel will resolve ordinary role synonyms and should never silently substitute a different person.</p>
-          <form method="post"><input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}"><input type="hidden" name="scenario_id" value="{{ scenario_id }}"><input type="hidden" name="action" value="officer_action"><textarea class="form-control" name="command_text" rows="8" maxlength="2500" required placeholder="Example: I make contact with the subject and ask, ‘Tell me what happened from your side.’"></textarea><button class="btn btn-primary mt-2" type="submit" {% if observable.paused %}disabled{% endif %}>Do / Say This</button></form>
-        </article>
-      </div>
-    </section>
-    {% endif %}
 
-    {% if not shift_mode %}
-    <section class="ops-panel mb-3"><div class="d-flex justify-content-between gap-3 align-items-end flex-wrap"><div><div class="eyebrow">New Training Run</div><p class="text-muted mb-0">Starting over creates a different synthetic fact pattern. Run details remain available to the FTO for reproducible review.</p></div><form method="post" class="d-flex gap-2 flex-wrap"><input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}"><select class="form-select" name="scenario_id">{% for sid, item in scenarios.items() %}<option value="{{ sid }}" {% if sid == scenario_id %}selected{% endif %}>{{ item.title }}</option>{% endfor %}</select><button class="btn btn-outline-secondary" type="submit" name="action" value="switch">Start New Run</button></form></div></section>
-    {% else %}
-    <section class="ops-panel mb-3"><div class="eyebrow">Shift Assignment</div><p class="text-muted mb-0">This call remains attached to your current synthetic shift. Return to Shift CAD to view the shift radio log or resume the assignment.</p></section>
-    {% endif %}
+        <article class="patrol-card patrol-action">
+          <div class="eyebrow">Officer Action</div><h3>What do you do or say?</h3>
+          <p class="small text-muted">Use normal language. If speaking to someone, identify the person you are addressing.</p>
+          <form method="post">
+            <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
+            <input type="hidden" name="scenario_id" value="{{ scenario_id }}">
+            <input type="hidden" name="action" value="officer_action">
+            <textarea class="form-control patrol-textarea" name="command_text" maxlength="2500" required placeholder="Example: I make contact with the subject and ask, 'Tell me what happened from your side.'"></textarea>
+            <button class="btn btn-primary mt-2" type="submit" {% if observable.paused %}disabled{% endif %}>Do / Say This</button>
+          </form>
+          <div class="end-call-box">
+            <div class="d-flex justify-content-between gap-3 align-items-center flex-wrap">
+              <div><strong>Finished with the call?</strong><div class="small text-muted">End the scene and move directly into the required paperwork. If you clear too early, that decision remains part of the FTO review.</div></div>
+              <form method="post" action="{{ url_for('reports.fto_refinements.scenario_notebook.complete_call') }}" onsubmit="return confirm('End this synthetic call and move to paperwork? Your live scene and field notes will become read only.');">
+                <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
+                <button class="btn btn-success" type="submit" {% if observable.paused %}disabled{% endif %}>End Call &amp; Complete Paperwork</button>
+              </form>
+            </div>
+          </div>
+        </article>
+      </section>
+      {% endif %}
+    </div>
   </main>
 </div>
+<script>
+(function(){
+  const button=document.getElementById('random-scenario-btn');
+  const select=document.getElementById('scenario-picker');
+  const form=document.getElementById('scenario-launch-form');
+  if(!button||!select||!form)return;
+  button.addEventListener('click',function(){
+    const options=Array.from(select.options);
+    const alternatives=options.filter(o=>o.value!==select.value);
+    const pool=alternatives.length?alternatives:options;
+    if(!pool.length)return;
+    select.value=pool[Math.floor(Math.random()*pool.length)].value;
+    form.submit();
+  });
+})();
+</script>
 {% endblock %}
