@@ -98,113 +98,63 @@ def test_fto_center_exposes_roadmaps_and_interactive_scenario_lab_entry():
     assert '/sentinel/fto-center/scenario-lab/' in html
 
 
-def test_interactive_scenario_lab_develops_facts_without_persisting_raw_actions():
+def test_virtual_patrol_develops_facts_through_separate_actions_and_preserves_replay():
     client = _client()
     response = client.get('/sentinel/fto-center/scenario-lab/?scenario_id=S003')
     html = response.get_data(as_text=True)
     assert response.status_code == 200
-    assert 'Scenario Lab' in html
-    assert 'Damage to Government Property' in html
-    assert 'Live Call State' in html
-    assert 'Run Identifier' in html
-    assert 'Scene' in html
+    assert 'Virtual Patrol' in html
+    assert 'CAD / Dispatch' in html
+    assert 'Current Scene' in html
+    assert 'Scene Risk' not in html
     assert 'A small government-owned light pole is visibly damaged.' not in html
 
-    response = client.post(
-        '/sentinel/fto-center/scenario-lab/',
-        data={
-            '_csrf_token': 'test-token',
-            'scenario_id': 'S003',
-            'action': 'act',
-            'response_text': 'I will advise dispatch, approach the scene safely, identify the involved witnesses and driver, and photograph and document the damaged government property before it changes.',
-        },
-        follow_redirects=True,
-    )
+    client.post('/sentinel/fto-center/scenario-lab/', data={
+        '_csrf_token': 'test-token', 'scenario_id': 'S003', 'action': 'radio',
+        'radio_text': '214, show me on scene.'
+    }, follow_redirects=True)
+    client.post('/sentinel/fto-center/scenario-lab/', data={
+        '_csrf_token': 'test-token', 'scenario_id': 'S003', 'action': 'officer_action',
+        'command_text': 'I approach and position safely where I can see the damage and surrounding area.'
+    }, follow_redirects=True)
+    client.post('/sentinel/fto-center/scenario-lab/', data={
+        '_csrf_token': 'test-token', 'scenario_id': 'S003', 'action': 'officer_action',
+        'command_text': 'I identify the facility employee, any witness, the driver, and the involved vehicle.'
+    }, follow_redirects=True)
+    response = client.post('/sentinel/fto-center/scenario-lab/', data={
+        '_csrf_token': 'test-token', 'scenario_id': 'S003', 'action': 'officer_action',
+        'command_text': 'I photograph and document the damaged government property before the scene changes.'
+    }, follow_redirects=True)
     html = response.get_data(as_text=True)
     assert response.status_code == 200
     assert 'A small government-owned light pole is visibly damaged.' in html
-    assert 'Witnesses' in html
-    assert 'Run Identifier' in html
 
     with client.session_transaction() as session:
         state = session.get('sentinel_scenario_lab_v2')
         assert state is not None
-        assert state['turn'] == 1
-        assert 'I will advise dispatch' not in str(state)
+        assert state['turn'] >= 1
         assert 'area_counts' in state
         assert 'engine' in state
+        assert 'world' in state
         assert state['run_context']['run_id'].startswith('S003-')
-
-    response = client.post(
-        '/sentinel/fto-center/scenario-lab/',
-        data={
-            '_csrf_token': 'test-token',
-            'scenario_id': 'S003',
-            'action': 'act',
-            'response_text': 'I will interview the reporting employee, identify and separate the firsthand witness who actually saw the collision, and identify the driver, operator, and involved vehicle.',
-        },
-        follow_redirects=True,
-    )
-    html = response.get_data(as_text=True)
-    assert response.status_code == 200
-    assert 'She did not witness the collision herself.' in html
-    assert 'Evidence' in html
+        summaries = [item['summary'] for item in state['world']['timeline']]
+        assert any('show me on scene' in item.lower() for item in summaries)
+        assert any(item['event_type'] == 'evaluator_observation' and not item['visible_to_trainee'] for item in state['world']['timeline'])
 
 
-def test_adaptive_scenario_lab_can_close_stable_run_and_uses_seg_aligned_coaching():
+def test_scenario_lab_uses_separate_simulation_and_evaluator_views():
     client = _client()
-    client.get('/sentinel/fto-center/scenario-lab/?scenario_id=S002')
-
-    actions = [
-        'I coordinate with the gate and dispatch, maintain safe vehicle-contact positioning while watching the occupant hands, and identify the driver, license, credential issue, and purpose for access.',
-        'I verify the driver identity and license, contact the sponsor or contractor at the destination, and calmly explain the access process while maintaining professional control.',
-        'I confirm the sponsor and meeting, apply the installation access and credential procedure, and conduct the appropriate identity, vehicle, and records checks through dispatch.',
-        'Based on the verified access requirements I deny access or direct the proper visitor process as appropriate, explain the outcome professionally to the driver and gate, notify dispatch, and document the entry or blotter record required.',
-    ]
-    for action_text in actions:
-        response = client.post(
-            '/sentinel/fto-center/scenario-lab/',
-            data={
-                '_csrf_token': 'test-token',
-                'scenario_id': 'S002',
-                'action': 'act',
-                'response_text': action_text,
-            },
-            follow_redirects=True,
-        )
-        assert response.status_code == 200
-
-    html = response.get_data(as_text=True)
-    assert 'Incident Ready to Close' in html
-    assert 'Run Identifier' in html
-
-    response = client.post(
-        '/sentinel/fto-center/scenario-lab/',
-        data={
-            '_csrf_token': 'test-token',
-            'scenario_id': 'S002',
-            'action': 'finish',
-        },
-        follow_redirects=True,
-    )
-    html = response.get_data(as_text=True)
-    assert response.status_code == 200
-    assert 'SEG-Aligned Practice Cues' in html
-    assert 'text-based practice cues only, not SEG/DOR ratings' in html
-    assert 'Investigative Skills' in html
-    assert 'Officer Safety: General' in html
-    assert 'Problem Solving / Decision Making' in html
-    assert 'Report Writing / Documentation' in html
-    assert 'Practice score' not in html
-    assert '1/7' not in html
-
     response = client.get('/sentinel/fto-center/scenario-lab/?scenario_id=S005')
     html = response.get_data(as_text=True)
     assert response.status_code == 200
-    assert 'Traffic Stop - Escalating Driver' in html
-    assert 'Live Call State' in html
-    assert 'Run Identifier' in html
-    assert 'Incident Ready to Close' not in html
+    assert 'Sentinel — Simulation Mode' in html
+    assert 'FTO / Evaluator View' in html
+    assert 'Scene Risk' not in html
+    assert 'Core Phases Cleared' not in html
+    assert 'Immediate FTO Feedback' not in html
+    assert 'Legal / Policy Research Unlocked' not in html
+    assert 'Radio' in html
+    assert 'Officer Action' in html
 
 
 def test_old_fto_instructor_get_redirects_to_fto_center():
