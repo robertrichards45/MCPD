@@ -9,6 +9,8 @@
   var lastFullText = '';
   var lastSpokenText = '';
   var processingTimer = null;
+  var sentinelDispatchAudio = null;
+  var SENTINEL_DISPATCH_VOICE_URL = '/sentinel/fto-center/scenario-lab/shift/voice/dispatch';
 
   function supportsVoice() {
     return !!(window.speechSynthesis && window.SpeechSynthesisUtterance);
@@ -74,9 +76,22 @@
     return summary;
   }
 
+  function stopNaturalDispatch() {
+    if (!sentinelDispatchAudio) return;
+    try {
+      sentinelDispatchAudio.pause();
+      sentinelDispatchAudio.currentTime = 0;
+      if (sentinelDispatchAudio._sentinelObjectUrl) {
+        URL.revokeObjectURL(sentinelDispatchAudio._sentinelObjectUrl);
+      }
+    } catch (e) {}
+    sentinelDispatchAudio = null;
+  }
+
   function stopVoice() {
     queue = [];
     speaking = false;
+    stopNaturalDispatch();
     if (processingTimer) {
       clearTimeout(processingTimer);
       processingTimer = null;
@@ -168,6 +183,84 @@
     if (text) speakSentences(text, { cancel: true });
   }
 
+  function browserDispatchFallback() {
+    var node = document.getElementById('dispatch-copy');
+    var text = node ? String(node.textContent || '').trim() : '';
+    if (text) speakFull(text);
+  }
+
+  function setDispatchButtonState(button, state) {
+    if (!button) return;
+    if (!button.dataset.sentinelOriginalLabel) button.dataset.sentinelOriginalLabel = button.textContent;
+    if (state === 'loading') {
+      button.disabled = true;
+      button.textContent = 'Loading Dispatcher…';
+      button.title = 'Generating a synthetic AI dispatcher voice.';
+    } else if (state === 'natural') {
+      button.disabled = false;
+      button.textContent = button.dataset.sentinelOriginalLabel;
+      button.title = 'Play synthetic AI-generated dispatcher voice.';
+    } else {
+      button.disabled = false;
+      button.textContent = button.dataset.sentinelOriginalLabel;
+      button.title = 'Natural dispatcher voice unavailable; browser voice fallback is available.';
+    }
+  }
+
+  function playNaturalSentinelDispatch(button) {
+    stopVoice();
+    setDispatchButtonState(button, 'loading');
+    fetch(SENTINEL_DISPATCH_VOICE_URL, { method: 'GET', credentials: 'same-origin' })
+      .then(function (response) {
+        if (!response.ok) throw new Error('dispatcher voice unavailable');
+        return response.blob();
+      })
+      .then(function (blob) {
+        var objectUrl = URL.createObjectURL(blob);
+        var audio = new Audio(objectUrl);
+        audio._sentinelObjectUrl = objectUrl;
+        sentinelDispatchAudio = audio;
+        audio.onended = function () {
+          if (audio._sentinelObjectUrl) URL.revokeObjectURL(audio._sentinelObjectUrl);
+          if (sentinelDispatchAudio === audio) sentinelDispatchAudio = null;
+        };
+        audio.onerror = function () {
+          if (audio._sentinelObjectUrl) URL.revokeObjectURL(audio._sentinelObjectUrl);
+          if (sentinelDispatchAudio === audio) sentinelDispatchAudio = null;
+          setDispatchButtonState(button, 'fallback');
+          browserDispatchFallback();
+        };
+        setDispatchButtonState(button, 'natural');
+        return audio.play();
+      })
+      .catch(function () {
+        setDispatchButtonState(button, 'fallback');
+        browserDispatchFallback();
+      });
+  }
+
+  // Scenario Lab historically attached a browser speechSynthesis handler directly
+  // to these buttons.  Capture the click first so natural server-generated audio
+  // gets priority; fall back to browser speech only if server TTS is unavailable.
+  document.addEventListener('click', function (event) {
+    var button = event.target && event.target.closest ? event.target.closest('#play-dispatch, #repeat-dispatch') : null;
+    if (!button) return;
+    event.preventDefault();
+    event.stopPropagation();
+    if (event.stopImmediatePropagation) event.stopImmediatePropagation();
+    playNaturalSentinelDispatch(button);
+  }, true);
+
+  document.addEventListener('DOMContentLoaded', function () {
+    ['play-dispatch', 'repeat-dispatch'].forEach(function (id) {
+      var button = document.getElementById(id);
+      if (button) {
+        if (!button.dataset.sentinelOriginalLabel) button.dataset.sentinelOriginalLabel = button.textContent;
+        button.title = 'Play synthetic AI-generated dispatcher voice.';
+      }
+    });
+  });
+
   window.MCPDVoiceAssistant = {
     startVoiceStatus: startVoiceStatus,
     speakProcessingIfDelayed: speakProcessingIfDelayed,
@@ -185,5 +278,6 @@
     isVoiceSupported: supportsVoice,
     unsupportedMessage: unsupportedMessage,
     splitSentences: splitSentences,
+    playNaturalSentinelDispatch: playNaturalSentinelDispatch,
   };
 }());
