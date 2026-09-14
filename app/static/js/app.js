@@ -172,6 +172,84 @@ function bindScenarioSingleSubmit() {
   });
 }
 
+function bindFastScenarioDictation() {
+  if (!window.location.pathname.startsWith('/sentinel/fto-center/scenario-lab')) return;
+  const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!Recognition) return;
+
+  const recognizers = new Map();
+
+  document.addEventListener('click', (event) => {
+    const button = event.target.closest('.voice-capture');
+    if (!button) return;
+
+    event.preventDefault();
+    event.stopImmediatePropagation();
+
+    const targetId = button.dataset.voiceTarget;
+    const target = targetId ? document.getElementById(targetId) : null;
+    if (!target || button.disabled) return;
+
+    let recognition = recognizers.get(targetId);
+    if (!recognition) {
+      recognition = new Recognition();
+      recognition.lang = 'en-US';
+      recognition.interimResults = true;
+      recognition.continuous = false;
+      recognition.maxAlternatives = 1;
+      recognizers.set(targetId, recognition);
+    }
+
+    const original = (target.value || '').trim();
+    let latestTranscript = '';
+    button.disabled = true;
+    button.classList.add('is-listening');
+    button.textContent = 'Starting mic…';
+
+    recognition.onstart = () => {
+      button.textContent = 'Listening…';
+    };
+
+    recognition.onresult = (speechEvent) => {
+      const parts = [];
+      for (let i = 0; i < speechEvent.results.length; i += 1) {
+        const result = speechEvent.results[i];
+        if (result && result[0] && result[0].transcript) {
+          parts.push(result[0].transcript.trim());
+        }
+      }
+      latestTranscript = parts.join(' ').trim();
+      if (latestTranscript) {
+        target.value = `${original}${original ? ' ' : ''}${latestTranscript}`;
+        target.focus();
+      }
+    };
+
+    recognition.onspeechend = () => {
+      try { recognition.stop(); } catch (_err) {}
+    };
+
+    recognition.onerror = () => {
+      button.title = 'Microphone dictation was unavailable. You can continue typing normally.';
+    };
+
+    recognition.onend = () => {
+      button.disabled = false;
+      button.classList.remove('is-listening');
+      button.textContent = 'Mic · Dictate';
+      if (latestTranscript) target.focus();
+    };
+
+    try {
+      recognition.start();
+    } catch (_err) {
+      button.disabled = false;
+      button.classList.remove('is-listening');
+      button.textContent = 'Mic · Dictate';
+    }
+  }, true);
+}
+
 function registerMcpdServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
   if (!window.isSecureContext && !['localhost', '127.0.0.1'].includes(window.location.hostname)) return;
@@ -284,6 +362,7 @@ window.addEventListener('load', () => {
   bindModuleScanner();
   bindModuleFeed();
   bindScenarioSingleSubmit();
+  bindFastScenarioDictation();
   guardMobileRender();
   registerMcpdServiceWorker();
 });
