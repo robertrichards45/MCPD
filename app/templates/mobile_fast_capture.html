@@ -67,7 +67,9 @@
   var STORAGE_KEY = 'mcpd.mobile.incident.state';
   var selectedSlug = null;
   var autosaveTimer = null;
+  var userEdited = false;
   var baseState = readExistingState();
+  var hadMeaningfulLocalState = hasMeaningfulState(baseState);
   var initialSnapshot = '';
 
   function clone(value) {
@@ -83,6 +85,20 @@
     } catch (e) { return {}; }
   }
 
+  function hasMeaningfulState(state) {
+    if (!state || typeof state !== 'object') return false;
+    var basics = state.incidentBasics && typeof state.incidentBasics === 'object' ? state.incidentBasics : {};
+    return !!(
+      state.callType ||
+      basics.location ||
+      basics.summary ||
+      (Array.isArray(state.facts) && state.facts.some(function (item) { return item && String(item.value || '').trim(); })) ||
+      (Array.isArray(state.persons) && state.persons.length) ||
+      (Array.isArray(state.statements) && state.statements.length) ||
+      String(state.narrative || '').trim()
+    );
+  }
+
   function factValue(state, id) {
     var list = Array.isArray(state.facts) ? state.facts : [];
     var match = list.find(function (item) { return item && item.id === id; });
@@ -95,6 +111,14 @@
       String(date.getMonth() + 1).padStart(2, '0'),
       String(date.getDate()).padStart(2, '0')
     ].join('-');
+  }
+
+  function buttonForSlug(slug) {
+    var selected = null;
+    document.querySelectorAll('.mfc-type-btn').forEach(function (button) {
+      if (button.getAttribute('data-slug') === String(slug || '')) selected = button;
+    });
+    return selected;
   }
 
   function hydrate() {
@@ -115,16 +139,37 @@
     if (!fastPerson && people.length === 1) fastPerson = people[0];
     document.getElementById('mfc-person').value = fastPerson ? String(fastPerson.name || '') : '';
 
+    document.querySelectorAll('.mfc-type-btn').forEach(function (button) { button.classList.remove('is-sel'); });
     if (selectedSlug) {
-      var selected = document.querySelector('.mfc-type-btn[data-slug="' + CSS.escape(String(selectedSlug)) + '"]');
-      if (!selected && selectedSlug === 'general-incident') selected = document.querySelector('.mfc-type-btn[data-slug="other"]');
+      var selected = buttonForSlug(selectedSlug);
+      if (!selected && selectedSlug === 'general-incident') selected = buttonForSlug('other');
       if (selected) selected.classList.add('is-sel');
     }
 
     initialSnapshot = JSON.stringify(captureFastFields());
-    if (baseState.callType || basics.location || basics.summary || people.length) {
+    if (hasMeaningfulState(baseState)) {
       showFeedback('Existing incident draft loaded. New notes will be merged, not replace the rest of the packet.');
     }
+  }
+
+  function loadServerDraftIfNeeded() {
+    if (hadMeaningfulLocalState) return;
+    fetch('/mobile/api/incident/draft', {
+      method: 'GET',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    }).then(function (response) {
+      if (!response.ok) throw new Error('Draft lookup failed');
+      return response.json();
+    }).then(function (payload) {
+      var remote = payload && payload.draft && payload.draft.state;
+      if (userEdited || !hasMeaningfulState(remote)) return;
+      baseState = clone(remote);
+      try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(baseState)); } catch (_err) {}
+      hydrate();
+    }).catch(function () {
+      /* Fast Capture remains fully usable from the local draft when the
+         server is temporarily unavailable. */
+    });
   }
 
   function captureFastFields() {
@@ -236,6 +281,7 @@
   }
 
   function scheduleAutosave() {
+    userEdited = true;
     window.clearTimeout(autosaveTimer);
     autosaveTimer = window.setTimeout(function () {
       saveLocal();
@@ -266,6 +312,7 @@
 
   document.getElementById('mfc-continue').addEventListener('click', function () {
     var button = this;
+    userEdited = true;
     var state = saveLocal();
     if (!state) {
       showFeedback('Could not save locally. Keep this page open and try again.');
@@ -283,6 +330,7 @@
 
   document.getElementById('mfc-save').addEventListener('click', function () {
     var button = this;
+    userEdited = true;
     var state = saveLocal();
     if (!state) {
       showFeedback('Could not save — local storage is unavailable.');
@@ -301,6 +349,7 @@
   });
 
   hydrate();
+  loadServerDraftIfNeeded();
 }());
 </script>
 {% endblock %}
