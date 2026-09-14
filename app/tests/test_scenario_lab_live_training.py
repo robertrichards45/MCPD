@@ -21,7 +21,7 @@ def _client():
     return client
 
 
-def test_live_contact_answers_without_advancing_stage():
+def test_live_contact_answers_without_clearing_call_phase():
     client = _client()
     client.get('/sentinel/fto-center/scenario-lab/?scenario_id=S001')
     response = client.post('/sentinel/fto-center/scenario-lab/', data={
@@ -33,12 +33,13 @@ def test_live_contact_answers_without_advancing_stage():
     }, follow_redirects=True)
     html = response.get_data(as_text=True)
     assert response.status_code == 200
-    assert 'No weapon has been reported.' in html
-    assert 'Decision 1 of 4' in html
+    assert 'No confirmed weapon information has been developed.' in html
+    assert 'Arrival' in html
     with client.session_transaction() as s:
         state = s['sentinel_scenario_lab_v2']
         assert state['turn'] == 0
         assert state['actor_interactions'] == 1
+        assert state['engine']['clock'] >= 1
         assert 'Has a weapon been reported?' not in str(state)
 
 
@@ -52,7 +53,7 @@ def test_future_actor_is_not_available_early():
         'actor_id': 'subject',
         'question_text': 'Tell me what happened.'
     }, follow_redirects=True)
-    assert 'That person is not available at this point' in response.get_data(as_text=True)
+    assert 'not available in the current call state' in response.get_data(as_text=True)
 
 
 def test_catastrophic_deadly_force_decision_terminates_exercise_and_flags_fto():
@@ -77,7 +78,7 @@ def test_catastrophic_deadly_force_decision_terminates_exercise_and_flags_fto():
         assert state['fto_alert'] is True
 
 
-def test_terminal_outcome_moves_to_next_scenario():
+def test_terminal_outcome_moves_to_next_scenario_with_new_run():
     client = _client()
     client.get('/sentinel/fto-center/scenario-lab/?scenario_id=S001')
     client.post('/sentinel/fto-center/scenario-lab/', data={
@@ -91,7 +92,9 @@ def test_terminal_outcome_moves_to_next_scenario():
     }, follow_redirects=True)
     html = response.get_data(as_text=True)
     assert 'Suspicious Vehicle at Main Gate' in html
-    assert 'Decision 1 of 4' in html
+    assert 'Run Identifier' in html
     with client.session_transaction() as s:
-        assert s['sentinel_scenario_lab_v2']['scenario_id'] == 'S002'
-        assert s['sentinel_scenario_lab_v2']['terminated'] is False
+        state = s['sentinel_scenario_lab_v2']
+        assert state['scenario_id'] == 'S002'
+        assert state['terminated'] is False
+        assert state['run_context']['run_id'].startswith('S002-')
