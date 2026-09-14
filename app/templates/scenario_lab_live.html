@@ -1,5 +1,7 @@
 {% extends 'base.html' %}
 {% block body %}
+{% set active_shift = session.get('sentinel_virtual_shift_v1') %}
+{% set shift_mode = active_shift and active_shift.status == 'ACTIVE' and active_shift.active_run_id == run_context.run_id %}
 <div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
   <main class="page-wrap narrative-tool-page">
@@ -10,6 +12,7 @@
         <p class="text-muted mb-0">Handle the call using the information you can actually see, hear, obtain, or develop.</p>
       </div>
       <div class="ops-head-actions d-flex gap-2 flex-wrap">
+        {% if shift_mode %}<a class="btn btn-outline-primary" href="{{ url_for('reports.fto_refinements.scenario_shift.shift') }}">Shift CAD</a>{% endif %}
         {% if evaluator_url %}<a class="btn btn-outline-secondary" href="{{ evaluator_url }}">FTO / Evaluator View</a>{% endif %}
         <a class="btn btn-outline-secondary" href="{{ url_for('reports.sentinel.fto_center') }}">FTO Center</a>
       </div>
@@ -39,11 +42,15 @@
       <p class="text-muted mb-3">This is a synthetic training outcome. The decision remains part of the run and cannot be rewritten.</p>
       <div class="d-flex gap-2 flex-wrap">
         {% if review_url %}<a class="btn btn-primary" href="{{ review_url }}">After-Action Review</a>{% endif %}
+        {% if shift_mode %}
+        <a class="btn btn-outline-secondary" href="{{ url_for('reports.fto_refinements.scenario_shift.shift') }}">Return to Shift</a>
+        {% else %}
         <form method="post">
           <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
           <input type="hidden" name="scenario_id" value="{{ scenario_id }}">
           <button class="btn btn-outline-secondary" type="submit" name="action" value="next">Next Training Call</button>
         </form>
+        {% endif %}
       </div>
     </section>
     {% endif %}
@@ -55,11 +62,15 @@
       <p class="text-muted">The live simulation is over. Instruction and evaluation now move to after-action review.</p>
       <div class="d-flex gap-2 flex-wrap">
         {% if review_url %}<a class="btn btn-success" href="{{ review_url }}">Open After-Action Review</a>{% endif %}
+        {% if shift_mode %}
+        <a class="btn btn-outline-secondary" href="{{ url_for('reports.fto_refinements.scenario_shift.shift') }}">Return to Shift</a>
+        {% else %}
         <form method="post">
           <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
           <input type="hidden" name="scenario_id" value="{{ scenario_id }}">
           <button class="btn btn-outline-secondary" type="submit" name="action" value="next">Next Training Call</button>
         </form>
+        {% endif %}
       </div>
     </section>
     {% endif %}
@@ -71,9 +82,8 @@
           <div class="d-flex justify-content-between gap-2 align-items-start flex-wrap">
             <div>
               <div class="eyebrow">CAD / Dispatch</div>
-              <h3 class="mb-1">Active Call</h3>
+              <h3 class="mb-1">Active Call{% if shift_mode %} — Unit {{ active_shift.unit_id }}{% endif %}</h3>
             </div>
-            <div class="small text-muted">Run {{ run_context.run_id }}</div>
           </div>
           <div class="border rounded p-3 my-3">
             <strong>{{ run_context.dispatch_variant or scenario.dispatch }}</strong>
@@ -198,11 +208,12 @@
     </section>
     {% endif %}
 
+    {% if not shift_mode %}
     <section class="ops-panel mb-3">
       <div class="d-flex justify-content-between gap-3 align-items-end flex-wrap">
         <div>
           <div class="eyebrow">New Training Run</div>
-          <p class="text-muted mb-0">Starting over creates a different synthetic fact pattern. The run identifier preserves reproducibility for FTO review.</p>
+          <p class="text-muted mb-0">Starting over creates a different synthetic fact pattern. Run details remain available to the FTO for reproducible review.</p>
         </div>
         <form method="post" class="d-flex gap-2 flex-wrap">
           <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
@@ -213,6 +224,12 @@
         </form>
       </div>
     </section>
+    {% else %}
+    <section class="ops-panel mb-3">
+      <div class="eyebrow">Shift Assignment</div>
+      <p class="text-muted mb-0">This call remains attached to your current synthetic shift. Return to Shift CAD to view the shift radio log or resume the assignment.</p>
+    </section>
+    {% endif %}
   </main>
 </div>
 {% endblock %}
