@@ -4,6 +4,7 @@ from flask_login import current_user, login_required
 from ..simulator.evidence_visuals import initialize_visual_evidence, render_evidence_svg
 from ..simulator.run_store import can_evaluator_view, can_trainee_view, load_run, load_run_state
 from .fto_program import can_manage
+from . import scenario_handbook_register as _scenario_handbook_register  # noqa: F401,E402
 
 
 bp = Blueprint('scenario_evidence', __name__, url_prefix='/scenario-lab/evidence')
