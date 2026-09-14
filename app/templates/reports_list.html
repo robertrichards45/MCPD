@@ -8,7 +8,7 @@
         <div class="ops-head-copy">
           <div class="eyebrow forms-library-eyebrow">Reporting Hub</div>
           <h2 class="mb-1">Reports Center</h2>
-          <p class="text-muted mb-0">Submitted packets, correction status, supervisor review queues, and report-writing tools.</p>
+          <p class="text-muted mb-0">One reporting workspace for call-type guidance, narratives, paperwork, submitted packets, corrections, and supervisor review.</p>
         </div>
         <div class="ops-head-stats">
           <article class="ops-stat-pill">
@@ -25,21 +25,84 @@
           </article>
         </div>
         <div class="forms-toolbar">
-          <a class="btn btn-primary" href="{{ url_for('bodycam.narrative_tool') }}">Narrative Creator</a>
+          <a class="btn btn-primary" href="#incident-workspace">Incident Workspace</a>
+          <a class="btn btn-outline-secondary" href="{{ url_for('bodycam.narrative_tool') }}">Narrative Creator</a>
           <a class="btn btn-outline-secondary" href="{{ url_for('reports.accidents') }}">Accident Tools</a>
           <a class="btn btn-outline-secondary" href="{{ url_for('forms.list_forms') }}">Forms Library</a>
         </div>
       </div>
     </section>
 
+    <section id="incident-workspace" class="ops-panel report-center-panel" aria-label="Incident Workspace">
+      <div class="report-panel-head">
+        <div>
+          <div class="eyebrow">Incident Workspace</div>
+          <h3 class="mb-1">Choose the Call Type First</h3>
+          <p class="text-muted mb-0">The Call Type Paperwork Manager drives this workflow. Pick the incident type and MCPD Portal will build the starting checklist and paperwork set from the currently configured rules.</p>
+        </div>
+        <span class="badge bg-primary">Workflow Driven</span>
+      </div>
+
+      <div class="alert alert-light border mb-3" role="note">
+        <strong>How this works:</strong>
+        <span class="d-block mt-1">Default paperwork is shown as the normal starting set. Conditional paperwork is a prompt only and should be completed when the actual facts and approved policy make it applicable. The software does not create facts or turn a conditional form into a requirement.</span>
+      </div>
+
+      <div class="row g-3">
+        {% for slug, rule in call_type_rules|dictsort %}
+        <div class="col-md-6 col-xl-4">
+          <article class="border rounded p-3 h-100 d-flex flex-column">
+            <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+              <div>
+                <div class="eyebrow">{{ rule.shortLabel or 'Call Type' }}</div>
+                <h4 class="mb-1">{{ rule.title }}</h4>
+              </div>
+              <span class="badge text-bg-light">{{ rule.recommendedForms|length }} default</span>
+            </div>
+            <p class="text-muted small">{{ rule.description or 'Guided incident and paperwork workflow.' }}</p>
+
+            <div class="mb-2">
+              <strong class="d-block small">Default paperwork</strong>
+              {% if rule.recommendedForms %}
+              <ul class="small mb-0 ps-3">
+                {% for form_name in rule.recommendedForms[:3] %}<li>{{ form_name }}</li>{% endfor %}
+                {% if rule.recommendedForms|length > 3 %}<li>+ {{ rule.recommendedForms|length - 3 }} more</li>{% endif %}
+              </ul>
+              {% else %}<span class="small text-muted">No default forms configured.</span>{% endif %}
+            </div>
+
+            <div class="mb-3">
+              <strong class="d-block small">Conditional paperwork</strong>
+              {% if rule.optionalForms %}
+              <span class="small text-muted">{{ rule.optionalForms|join(' • ') }}</span>
+              {% else %}<span class="small text-muted">None configured.</span>{% endif %}
+            </div>
+
+            <div class="mt-auto d-flex gap-2 flex-wrap">
+              {% if slug == 'traffic-accident' %}
+              <button class="btn btn-sm btn-primary report-call-type-card" type="button" data-call-type="{{ slug }}" data-next-url="{{ url_for('reports.accidents') }}">Open Accident Workspace</button>
+              {% else %}
+              <button class="btn btn-sm btn-primary report-call-type-card" type="button" data-call-type="{{ slug }}" data-next-url="{{ url_for('mobile.incident_basics') }}">Open Incident Workspace</button>
+              {% endif %}
+              <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('bodycam.narrative_tool') }}">Narrative</a>
+            </div>
+          </article>
+        </div>
+        {% else %}
+        <div class="col-12"><p class="text-muted mb-0">No active call-type rules are configured.</p></div>
+        {% endfor %}
+      </div>
+    </section>
+
     <section class="ops-panel report-center-panel report-writing-tools" aria-label="Report writing tools">
       <div class="report-panel-head">
         <div>
-          <h3 class="mb-1">Writing Tools</h3>
-          <p class="text-muted mb-0">Build a narrative from verified facts, run a quality check, or organize the core 5Ws before entering the final report in the authoritative system.</p>
+          <h3 class="mb-1">Narrative & Sentinel</h3>
+          <p class="text-muted mb-0">Build a narrative from verified facts and use Sentinel in the same writing workflow to identify missing information, chronology issues, articulation concerns, and supervisor review points.</p>
         </div>
         <div class="forms-toolbar">
-          <a class="btn btn-primary" href="{{ url_for('bodycam.narrative_tool') }}">Narrative Creator</a>
+          <a class="btn btn-primary" href="{{ url_for('bodycam.narrative_tool') }}">Narrative Creator + Sentinel</a>
+          <a class="btn btn-outline-secondary" href="{{ url_for('reports.sentinel.report_inspector') }}">Full Quality Review</a>
           <a class="btn btn-outline-secondary" href="{{ url_for('bodycam.five_w_tool') }}">5W Builder</a>
         </div>
       </div>
@@ -48,8 +111,8 @@
     <section class="ops-panel report-center-panel report-command-board" aria-label="Report operating picture">
       <div class="report-panel-head">
         <div>
-          <h3 class="mb-1">Report Operating Picture</h3>
-          <p class="text-muted mb-0">Live packet status, workflow steps, and review actions in one view.</p>
+          <h3 class="mb-1">Needs My Attention</h3>
+          <p class="text-muted mb-0">Live packet status, correction workflow, and review actions in one view.</p>
         </div>
         <span class="badge bg-primary">Live Queue</span>
       </div>
@@ -93,7 +156,7 @@
         <div class="report-panel-head">
           <div>
             <h3 class="mb-1">Submitted Field Packets</h3>
-            <p class="text-muted mb-0">Mobile/desktop packet status from the field workflow.</p>
+            <p class="text-muted mb-0">Field packet status from the guided incident workflow.</p>
           </div>
           <span class="badge bg-dark">{{ incident_packets|length }}</span>
         </div>

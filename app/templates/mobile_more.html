@@ -26,26 +26,26 @@
 <section class="mobile-more-page">
   <div class="mobile-section-head">
     <h3>More tools</h3>
-    <p>Reporting support, Sentinel coaching, reference, saved work, and administrative tools.</p>
+    <p>Reporting, training, reference, saved work, and role-specific administrative tools.</p>
   </div>
   <div class="mobile-more-grid">
     {% if portal_is_site_controller or portal_is_watch_commander_view %}
       {{ tool_card('Approve / Assign Officers', 'Activate accounts and assign officers to watch or installation.', url_for('mobile.supervisor_officers'), 'officers', True) }}
-      {{ tool_card('Incident Command', 'IC board, PAR checks, resource status, command log, and AAR snapshot.', url_for('incident_command.dashboard'), 'command', True) }}
       {{ tool_card('Officer Files', 'Upload and review smart-filed officer documents.', url_for('assistant.officer_files_console'), 'library') }}
       {{ tool_card('Stats Approvals', 'Approve officer stats and performance submissions.', url_for('performance.pending'), 'reports') }}
       {{ tool_card('Readiness Tracker', 'Monitor qualifications and team readiness.', url_for('qual_tracker.tracker_readiness'), 'officers') }}
       {{ tool_card('Command Notices', 'Post and review watch announcements.', url_for('announcements.board'), 'reports') }}
       {{ tool_card('BOLO Board', 'Review and manage BOLO information.', url_for('bolo.bolo_board'), 'reports') }}
     {% endif %}
+    {{ tool_card('Incident Workspace', 'Choose the call type and build the guided report packet from the current paperwork rules.', '/reports#incident-workspace', 'reports', True) }}
     {{ tool_card('Fast Capture', 'Log quick field notes now and refine them in Narrative Creator.', url_for('mobile.fast_capture'), 'narrative') }}
-    {{ tool_card('Reports Center', 'Open visible reports, packets, and supervisor review status.', url_for('reports.list_reports'), 'reports') }}
+    {{ tool_card('Reports Center', 'Open visible reports, packets, corrections, and supervisor review status.', url_for('reports.list_reports'), 'reports') }}
     {{ tool_card('Narrative Creator', 'Build a fact-based narrative and identify missing or conflicting details.', url_for('bodycam.mobile_narrative_tool'), 'narrative', True) }}
-    {{ tool_card('Sentinel Report Inspector', 'Run a second-pass completeness, chronology, articulation, and offense-cue review.', '/sentinel/report-inspector', 'sentinel', True) }}
-    {{ tool_card('AI FTO Instructor', 'Practice scenarios and get category-based coaching for FTO review.', '/sentinel/fto-instructor', 'sentinel') }}
+    {{ tool_card('Report Quality Review', 'Run Sentinel completeness, chronology, articulation, and offense-cue review.', '/sentinel/report-inspector', 'sentinel', True) }}
+    {{ tool_card('FTO Center', 'Program roadmap, Scenario Lab, evaluation coaching, DOR development, and remediation support.', '/sentinel/fto-center', 'sentinel', True) }}
     {{ tool_card('5W Builder', 'Organize the core who, what, when, where, why/how, and officer actions.', url_for('bodycam.mobile_five_w_tool'), 'narrative') }}
     {{ tool_card('Forms Library', 'Open official forms and guided paperwork workflows.', url_for('forms.list_forms'), 'library') }}
-    {{ tool_card('Accident Tools', 'Choose the routine diagram or investigator reconstruction workflow.', url_for('reports.accidents'), 'vehicle') }}
+    {{ tool_card('Accident Tools', 'Open the guided crash documentation and diagram workflow.', url_for('reports.accidents'), 'vehicle') }}
     {{ tool_card('Saved Work', 'Open saved work, packets, and drafts.', url_for('forms.saved_forms'), 'saved') }}
     {{ tool_card('My Stats', 'View your saved forms, reports, and submitted packet counts.', url_for('mobile.officer_stats'), 'reports') }}
     {{ tool_card('Edit Contact Info', 'Update your profile email and contact details.', url_for('mobile.officer_contact'), 'officers') }}

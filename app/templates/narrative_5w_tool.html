@@ -14,23 +14,29 @@
           <p class="text-muted mb-0">Convert your call log into a professionally formatted watch blotter using AI.</p>
         {% else %}
           <h2 class="mb-1">Narrative Creator</h2>
-          <p class="text-muted mb-0">Build a fact-preserving draft, identify missing or unclear information, and run an AI quality review before finalizing the report.</p>
+          <p class="text-muted mb-0">Write, organize, and review the narrative in one place. Sentinel checks completeness, chronology, consistency, and articulation without inventing missing facts.</p>
         {% endif %}
       </div>
       <div class="ops-head-actions">
         {% if tool_mode == 'narrative' %}
-          <a class="btn btn-sm btn-primary" href="/sentinel/report-inspector">Open Sentinel Inspector</a>
-          <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('bodycam.five_w_tool') }}">Switch to 5W Builder</a>
+          <a class="btn btn-sm btn-outline-primary" href="/sentinel/report-inspector">Full Report Quality Review</a>
+          <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('bodycam.five_w_tool') }}">5W Builder</a>
         {% elif tool_mode == '5w' %}
-          <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('bodycam.narrative_tool') }}">Switch to Narrative Creator</a>
+          <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('bodycam.narrative_tool') }}">Narrative Creator</a>
         {% elif tool_mode == 'blotter' %}
           <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('bodycam.narrative_tool') }}">Narrative Creator</a>
           <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('bodycam.five_w_tool') }}">5W Builder</a>
         {% endif %}
       </div>
     </section>
+    {% if tool_mode == 'narrative' %}
+    <div class="alert alert-info border mb-3">
+      <strong>Sentinel is built into this editor.</strong>
+      Enter only facts actually known or documented. The review panels will identify what to verify; they will never supply a missing fact just to make the report appear complete.
+    </div>
+    {% endif %}
     {% include 'partials/narrative_5w_panel.html' %}
   </main>
 </div>
-<script src="{{ url_for('static', filename='js/narrative_5w_tool.js', v='2026-09-13-sentinel-review') }}"></script>
+<script src="{{ url_for('static', filename='js/narrative_5w_tool.js', v='2026-09-14-integrated-sentinel') }}"></script>
 {% endblock %}

@@ -7,18 +7,83 @@
       <div class="ops-head-copy">
         <div class="eyebrow">Traffic / Crash Response</div>
         <h2 class="mb-1">Accident Tools</h2>
-        <p class="text-muted mb-0">Choose the simplest tool that fits the crash. Sentinel-style prompts help you build a complete packet without inventing facts.</p>
+        <p class="text-muted mb-0">Guided crash documentation, diagrams, paperwork checks, and Sentinel review without turning estimates into facts.</p>
       </div>
     </div>
+
+    <section class="ops-panel mb-3" id="crash-wizard">
+      <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-3">
+        <div>
+          <div class="eyebrow">Guided Crash Intake</div>
+          <h3 class="mb-1">Start with what you actually know</h3>
+          <p class="text-muted mb-0">Answer the scene questions below. Accident Tools will recommend the workflow and packet checks; it will not decide fault or causation.</p>
+        </div>
+        <span class="badge text-bg-primary">Step 1 of 3</span>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="w-100"><strong>Crash level</strong>
+            <select id="acc-level" class="form-select mt-1">
+              <option value="routine">Routine / property damage</option>
+              <option value="injury">Injury reported</option>
+              <option value="serious">Serious injury / complex scene</option>
+              <option value="fatal">Fatal / major reconstruction consideration</option>
+            </select>
+          </label>
+        </div>
+        <div class="col-md-4">
+          <label class="w-100"><strong>Vehicles involved</strong>
+            <select id="acc-vehicles" class="form-select mt-1">
+              <option value="1">1 vehicle</option>
+              <option value="2" selected>2 vehicles</option>
+              <option value="3">3+ vehicles</option>
+            </select>
+          </label>
+        </div>
+        <div class="col-md-4">
+          <label class="w-100"><strong>Scene type</strong>
+            <select id="acc-scene" class="form-select mt-1">
+              <option value="roadway">Roadway</option>
+              <option value="parking">Parking lot</option>
+              <option value="gate">Gate / access-control area</option>
+              <option value="other">Other installation area</option>
+            </select>
+          </label>
+        </div>
+        <div class="col-md-4"><label class="border rounded p-3 d-flex gap-2 h-100"><input id="acc-injury" type="checkbox" class="mt-1"><span><strong>Injury / medical response</strong><br><small class="text-muted">Medical treatment, transport, complaint of pain, or EMS response.</small></span></label></div>
+        <div class="col-md-4"><label class="border rounded p-3 d-flex gap-2 h-100"><input id="acc-witness" type="checkbox" class="mt-1"><span><strong>Independent witness</strong><br><small class="text-muted">Witness statement/contact information may be needed.</small></span></label></div>
+        <div class="col-md-4"><label class="border rounded p-3 d-flex gap-2 h-100"><input id="acc-government" type="checkbox" class="mt-1"><span><strong>Government property involved</strong><br><small class="text-muted">Document ownership, damage, notifications, and disposition.</small></span></label></div>
+        <div class="col-md-4"><label class="border rounded p-3 d-flex gap-2 h-100"><input id="acc-tow" type="checkbox" class="mt-1"><span><strong>Tow / vehicle removal</strong><br><small class="text-muted">Record who removed the vehicle and final disposition.</small></span></label></div>
+        <div class="col-md-4"><label class="border rounded p-3 d-flex gap-2 h-100"><input id="acc-citation" type="checkbox" class="mt-1"><span><strong>Enforcement action</strong><br><small class="text-muted">Citation, warning, apprehension, or referral considered/taken.</small></span></label></div>
+        <div class="col-md-4"><label class="border rounded p-3 d-flex gap-2 h-100"><input id="acc-technical" type="checkbox" class="mt-1"><span><strong>Technical reconstruction indicators</strong><br><small class="text-muted">Complex measurements, serious injury/fatality, speed analysis, or advanced evidence interpretation.</small></span></label></div>
+      </div>
+
+      <div class="d-flex gap-2 flex-wrap mt-3">
+        <button id="acc-build-guide" class="btn btn-primary" type="button">Build My Crash Checklist</button>
+        <a class="btn btn-outline-secondary" href="{{ url_for('forms.list_forms') }}">Open Traffic Forms</a>
+      </div>
+
+      <div id="acc-guide-result" class="border rounded p-3 mt-3" style="display:none;" aria-live="polite">
+        <div class="d-flex justify-content-between gap-2 align-items-start flex-wrap mb-2">
+          <div>
+            <div class="eyebrow">Recommended Workflow</div>
+            <h4 id="acc-guide-title" class="mb-1"></h4>
+          </div>
+          <span id="acc-guide-badge" class="badge text-bg-secondary"></span>
+        </div>
+        <ul id="acc-guide-list" class="mb-2"></ul>
+        <div class="alert alert-warning small mb-0"><strong>Verify before submission:</strong> fault, speed, causation, measurements, impact sequence, and reconstruction conclusions must not be presented as established facts unless supported by the actual evidence and appropriate authority/training.</div>
+      </div>
+    </section>
 
     <section class="ops-panel mb-3">
       <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
         <div>
-          <div class="eyebrow">Start Here</div>
-          <h3 class="mb-1">Which workflow do I need?</h3>
-          <p class="text-muted mb-0">Routine crash scene: use the Officer Diagram. Complex/fatal/technical reconstruction: use Accident Reconstruction if authorized.</p>
+          <div class="eyebrow">Workflow</div>
+          <h3 class="mb-1">Three-step crash process</h3>
+          <p class="text-muted mb-0">Use the simplest workflow that accurately documents the scene and required packet.</p>
         </div>
-        <a class="btn btn-outline-secondary" href="{{ url_for('forms.list_forms') }}">Open Traffic Forms</a>
       </div>
       <div class="row g-3 mt-1">
         <div class="col-md-4"><div class="border rounded p-3 h-100"><strong>1. Stabilize & document</strong><p class="small text-muted mb-0 mt-1">Confirm injuries/emergency response, involved vehicles/persons, roadway position, weather/lighting, damage, and witness information.</p></div></div>
@@ -83,10 +148,15 @@
           'Statements clearly attributed to the person who provided them',
           'Photos/evidence and diagram referenced in the narrative when applicable',
           'Traffic control, environmental/road conditions, and enforcement action documented',
-          'Required forms reviewed through the Forms / Paperwork Navigator'
+          'Required forms reviewed through the Forms / Paperwork Navigator',
+          'Final narrative reviewed through Sentinel before supervisor submission'
         ] %}
         <div class="col-md-6"><label class="border rounded p-2 d-flex gap-2 align-items-start h-100"><input type="checkbox" class="mt-1"><span>{{ item }}</span></label></div>
         {% endfor %}
+      </div>
+      <div class="d-flex gap-2 flex-wrap mt-3">
+        <a class="btn btn-outline-primary" href="{{ url_for('bodycam.narrative_tool') }}">Narrative Creator</a>
+        <a class="btn btn-outline-primary" href="/sentinel/report-inspector">Sentinel Review</a>
       </div>
       <p class="small text-muted mt-2 mb-0">This checklist is a completeness aid, not a substitute for current policy, crash-reporting requirements, or supervisor review.</p>
     </section>
@@ -111,4 +181,42 @@
     </div>
   </div>
 </div>
+<script>
+(function () {
+  const button = document.getElementById('acc-build-guide');
+  if (!button) return;
+  button.addEventListener('click', function () {
+    const level = document.getElementById('acc-level').value;
+    const vehicles = document.getElementById('acc-vehicles').value;
+    const scene = document.getElementById('acc-scene').value;
+    const injury = document.getElementById('acc-injury').checked;
+    const witness = document.getElementById('acc-witness').checked;
+    const government = document.getElementById('acc-government').checked;
+    const tow = document.getElementById('acc-tow').checked;
+    const citation = document.getElementById('acc-citation').checked;
+    const technical = document.getElementById('acc-technical').checked;
+
+    const advanced = technical || level === 'serious' || level === 'fatal';
+    const items = [
+      'Document exact date/time/location, roadway or parking context, vehicle positions, damage, and involved persons.',
+      'Use the ' + (advanced ? 'investigator reconstruction workflow if authorized; preserve a responding-officer diagram as appropriate.' : 'Officer Accident Diagram for the scene unless later facts require technical reconstruction.'),
+      'Record the scene type as ' + scene + ' and identify observed traffic controls, lighting/weather, road surface, and relevant markings.',
+      'Document all ' + vehicles + ' vehicle grouping(s), identifiers, direction of travel, damage, final position, and disposition as applicable.'
+    ];
+    if (injury || level === 'injury' || level === 'serious' || level === 'fatal') items.push('Document injury complaints, EMS/fire response, treatment/transport, and related notifications without making medical conclusions.');
+    if (witness) items.push('Obtain and attribute independent witness information/statements; keep witness facts separate from officer observations.');
+    if (government) items.push('Document the government-property connection, specific damage, responsible-party information, required notifications, and disposition.');
+    if (tow) items.push('Document towing/removal authority, company or receiving party, time, and final vehicle disposition.');
+    if (citation) items.push('Document the observed facts supporting any warning/citation/apprehension/referral and the final enforcement disposition.');
+    if (advanced) items.push('Preserve measurements, marks, photos, evidence, and technical data for trained reconstruction review; do not convert estimates into facts.');
+    items.push('Review the call-type paperwork requirements, complete the narrative, then run Sentinel before supervisor submission.');
+
+    document.getElementById('acc-guide-title').textContent = advanced ? 'Advanced / Investigator Review Recommended' : 'Routine Officer Crash Workflow';
+    document.getElementById('acc-guide-badge').textContent = advanced ? 'Advanced review' : 'Officer workflow';
+    document.getElementById('acc-guide-list').innerHTML = items.map(function (item) { return '<li class="mb-1">' + item + '</li>'; }).join('');
+    document.getElementById('acc-guide-result').style.display = 'block';
+    document.getElementById('acc-guide-result').scrollIntoView({behavior: 'smooth', block: 'nearest'});
+  });
+})();
+</script>
 {% endblock %}

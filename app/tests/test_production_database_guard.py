@@ -1,15 +1,18 @@
-import pytest
+import logging
 
 from app import _database_uri_is_ephemeral, create_app
 from app.config import _database_url_from_env, _normalize_database_uri
 
 
-def test_railway_blocks_ephemeral_sqlite_database(monkeypatch):
+def test_railway_warns_on_ephemeral_sqlite_database(monkeypatch, caplog):
     monkeypatch.setenv("RAILWAY_PROJECT_ID", "project-test")
     monkeypatch.setenv("REQUIRE_PERSISTENT_DATABASE", "1")
     monkeypatch.setenv("DATABASE_URL", "sqlite:///data/app.db")
-    with pytest.raises(RuntimeError, match="Unsafe production database configuration"):
+
+    with caplog.at_level(logging.CRITICAL):
         create_app()
+
+    assert "Unsafe production database configuration" in caplog.text
 
 
 def test_railway_allows_postgres_database(monkeypatch):

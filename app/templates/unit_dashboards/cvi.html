@@ -17,7 +17,6 @@
         <a href="{{ url_for('dashboard.k9_dashboard') }}">K-9</a>
         <a href="{{ url_for('dashboard.cvi_dashboard') }}" aria-current="page">CVI</a>
         <a href="{{ url_for('dashboard.srt_dashboard') }}">SRT</a>
-        <a href="{{ url_for('incident_command.dashboard') }}">Incident Command</a>
       </nav>
     </header>
 
@@ -35,10 +34,7 @@
           {% for officer in team %}
           <div class="command-row">
             <span class="command-status-dot {{ officer.state_class }}" aria-hidden="true"></span>
-            <div>
-              <strong>{{ officer.name }}</strong>
-              <small>{{ officer.post }}</small>
-            </div>
+            <div><strong>{{ officer.name }}</strong><small>{{ officer.post }}</small></div>
             <span class="command-pill">{{ officer.status }}</span>
           </div>
           {% endfor %}
@@ -53,25 +49,22 @@
             <span class="command-pill" style="min-width:3.5rem;text-align:center;flex-shrink:0">{{ entry.time }}</span>
             <small style="line-height:1.5">{{ entry.entry }}</small>
           </div>
-          {% else %}
-          <p class="wc-row-card">No entries this shift.</p>
-          {% endfor %}
+          {% else %}<p class="wc-row-card">No entries this shift.</p>{% endfor %}
         </div>
 
         <h2 class="wc-big-number" style="font-size:1rem;font-weight:600;margin:1.5rem 0 .5rem">Quick Actions</h2>
         <div class="wc-action-grid">
-          <a href="{{ url_for('watch_commander.unit_map') }}">Unit Map<span>Gate 2 and CVI station positions.</span></a>
+          <a href="{{ url_for('watch_commander.unit_map') }}">Unit Map<span>Gate 2 and CVI station positions when available.</span></a>
           <a href="{{ url_for('watch_commander.reports') }}">Reports<span>OOS and inspection report review.</span></a>
           <a href="{{ url_for('forms.saved_forms') }}">Saved Work<span>Saved packets and supervisor-visible items.</span></a>
-          <a href="{{ url_for('notifications.inbox') }}">Messages<span>Command messages and gate alerts.</span></a>
+          <a href="{{ url_for('training.training_menu') }}">Training<span>Training and qualification records.</span></a>
         </div>
       </section>
     </div>
     {% else %}
     <div class="ops-panel" style="margin:2rem auto;max-width:600px;text-align:center;padding:2rem;">
-      <strong>Live data requires officer sign-on.</strong>
-      <p style="margin-top:.5rem;color:var(--text-secondary)">CVI officers must check in via the shift sign-on page to appear here. Enable Demo Mode to see sample data.</p>
-      <a class="command-action-btn" href="{{ url_for('watch_commander.sign_on') }}" style="display:inline-block;margin-top:1rem">Check In</a>
+      <strong>No live CVI status data is available in this view.</strong>
+      <p style="margin-top:.5rem;color:var(--text-secondary)">Use CVI records, reports, saved work, and training tools for current information. Enable Demo Mode only to view sample dashboard data.</p>
     </div>
     {% endif %}
   </main>

@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell mcpd-command-app">
+  {% include 'partials/nav.html' %}
+  <main class="page-wrap">
+    <section class="ops-head-card mb-3">
+      <div class="ops-head-copy">
+        <div class="eyebrow">MCPD Portal</div>
+        <h2 class="mb-1">Search</h2>
+        <p class="text-muted mb-0">One search point for authorized reports, forms, training, law/reference tools, and core MCPD workflows.</p>
+      </div>
+    </section>
+
+    <section class="ops-panel mb-3">
+      <form method="get" class="d-flex gap-2 flex-wrap">
+        <input class="form-control flex-grow-1" style="min-width:260px;" type="search" name="q" value="{{ query }}" placeholder="Example: damage government property negligent, lost ID paperwork, larceny statement" autofocus>
+        <button class="btn btn-primary" type="submit">Search MCPD</button>
+      </form>
+      <p class="small text-muted mt-2 mb-0">Search results never bypass existing permissions. Report search uses report titles/status only and does not expose narrative text.</p>
+    </section>
+
+    <section class="row g-3 mb-3">
+      {% for item in shortcuts %}
+      <div class="col-md-6 col-xl-4">
+        <a class="ops-panel d-block h-100 text-decoration-none" href="{{ item.href }}">
+          <strong class="d-block mb-1">{{ item.title }}</strong>
+          <span class="text-muted">{{ item.detail }}</span>
+        </a>
+      </div>
+      {% endfor %}
+    </section>
+
+    <section class="ops-panel">
+      <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap mb-3">
+        <div>
+          <div class="eyebrow">Results</div>
+          <h3 class="mb-0">{% if query %}Matches for “{{ query }}”{% else %}Enter a search above{% endif %}</h3>
+        </div>
+        {% if query %}<span class="badge text-bg-secondary">{{ results|length }} portal match{{ '' if results|length == 1 else 'es' }}</span>{% endif %}
+      </div>
+
+      {% if query and results %}
+        <div class="list-group">
+          {% for item in results %}
+          <a class="list-group-item list-group-item-action py-3" href="{{ item.href }}">
+            <div class="d-flex justify-content-between gap-3 align-items-start">
+              <div>
+                <small class="text-uppercase text-muted">{{ item.group }}</small>
+                <strong class="d-block">{{ item.title }}</strong>
+                <span class="text-muted">{{ item.detail }}</span>
+              </div>
+              <span aria-hidden="true">›</span>
+            </div>
+          </a>
+          {% endfor %}
+        </div>
+      {% elif query %}
+        <div class="alert alert-light border mb-0">
+          <strong>No direct portal metadata matches.</strong>
+          <div class="mt-1">Use the Law & Legal Search or Orders & Memos shortcuts above for source-document searching. Try a shorter phrase if needed.</div>
+        </div>
+      {% else %}
+        <p class="text-muted mb-0">Search by a call type, form name, training topic, report title, offense, order/PDI topic, or plain-English question.</p>
+      {% endif %}
+    </section>
+  </main>
+</div>
+{% endblock %}
