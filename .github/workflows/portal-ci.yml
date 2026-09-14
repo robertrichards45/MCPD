@@ -56,6 +56,7 @@ jobs:
               'reports.fto_refinements.scenario_lab.lab',
               'reports.fto_refinements.scenario_lab.evaluator',
               'reports.fto_refinements.scenario_lab.review',
+              'reports.fto_refinements.scenario_evidence.evidence_svg',
               'reports.fto_refinements.scenario_shift.shift',
               'reports.fto_refinements.scenario_analytics.dashboard',
               'reports.fto_refinements.scenario_instructor.control',
@@ -86,6 +87,9 @@ jobs:
 
       - name: Run Scenario Lab live branching tests
         run: python -m pytest -q app/tests/test_scenario_lab_live_training.py
+
+      - name: Run Scenario Lab visual evidence tests
+        run: python -m pytest -q app/tests/test_scenario_visual_evidence.py
 
       - name: Run Scenario Lab simulator platform tests
         run: python -m pytest -q app/tests/test_scenario_lab_simulator_platform.py
