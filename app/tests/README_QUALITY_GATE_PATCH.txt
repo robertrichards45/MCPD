@@ -1,1 +1,0 @@
-Staged compatibility cleanup; canonical test replacement is applied by Git tree update.

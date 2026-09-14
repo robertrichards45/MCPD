@@ -25,10 +25,7 @@ def _client():
 def test_weak_action_does_not_advance_but_evaluator_result_stays_hidden():
     client = _client()
     client.get('/sentinel/fto-center/scenario-lab/?scenario_id=S001')
-    response = client.post('/sentinel/fto-center/scenario-lab/', data={
-        '_csrf_token': 'test-token', 'scenario_id': 'S001', 'action': 'officer_action',
-        'command_text': 'I just handle it and move on.'
-    }, follow_redirects=True)
+    response = client.post('/sentinel/fto-center/scenario-lab/', data={'_csrf_token':'test-token','scenario_id':'S001','action':'officer_action','command_text':'I just handle it and move on.'}, follow_redirects=True)
     html = response.get_data(as_text=True)
     assert response.status_code == 200
     assert 'Virtual Patrol' in html
@@ -47,20 +44,9 @@ def test_weak_action_does_not_advance_but_evaluator_result_stays_hidden():
 def test_separate_natural_actions_accumulate_without_magic_paragraph():
     client = _client()
     client.get('/sentinel/fto-center/scenario-lab/?scenario_id=S001')
-
-    client.post('/sentinel/fto-center/scenario-lab/', data={
-        '_csrf_token': 'test-token', 'scenario_id': 'S001', 'action': 'radio',
-        'radio_text': '214, show me on scene.'
-    }, follow_redirects=True)
-    client.post('/sentinel/fto-center/scenario-lab/', data={
-        '_csrf_token': 'test-token', 'scenario_id': 'S001', 'action': 'officer_action',
-        'command_text': 'I position where I can see the entrance and keep some distance.'
-    }, follow_redirects=True)
-    response = client.post('/sentinel/fto-center/scenario-lab/', data={
-        '_csrf_token': 'test-token', 'scenario_id': 'S001', 'action': 'officer_action',
-        'command_text': "I want to talk to the Staff Member first. Ma'am, tell me exactly what happened."
-    }, follow_redirects=True)
-
+    client.post('/sentinel/fto-center/scenario-lab/', data={'_csrf_token':'test-token','scenario_id':'S001','action':'radio','radio_text':'214, show me on scene.'}, follow_redirects=True)
+    client.post('/sentinel/fto-center/scenario-lab/', data={'_csrf_token':'test-token','scenario_id':'S001','action':'officer_action','command_text':'I position where I can see the entrance and keep some distance.'}, follow_redirects=True)
+    response = client.post('/sentinel/fto-center/scenario-lab/', data={'_csrf_token':'test-token','scenario_id':'S001','action':'officer_action','command_text':"I want to talk to the Staff Member first. Ma'am, tell me exactly what happened."}, follow_redirects=True)
     html = response.get_data(as_text=True)
     assert response.status_code == 200
     assert 'Decision accepted' not in html
@@ -74,9 +60,7 @@ def test_separate_natural_actions_accumulate_without_magic_paragraph():
 def test_normal_evaluation_has_no_automated_hint_path():
     client = _client()
     client.get('/sentinel/fto-center/scenario-lab/?scenario_id=S003')
-    response = client.post('/sentinel/fto-center/scenario-lab/', data={
-        '_csrf_token': 'test-token', 'scenario_id': 'S003', 'action': 'hint'
-    }, follow_redirects=True)
+    response = client.post('/sentinel/fto-center/scenario-lab/', data={'_csrf_token':'test-token','scenario_id':'S003','action':'hint'}, follow_redirects=True)
     html = response.get_data(as_text=True)
     assert 'Evaluation runs do not provide automated hints' in html
     assert 'FTO Coaching Locked' not in html
@@ -90,11 +74,7 @@ def test_live_simulation_hides_internal_engine_and_legal_research():
     response = client.get('/sentinel/fto-center/scenario-lab/?scenario_id=S005')
     html = response.get_data(as_text=True)
     assert response.status_code == 200
-    for hidden_label in (
-        'Scene Risk', 'Core Phases Cleared', 'Branch Events', 'Immediate FTO Feedback',
-        'Still unresolved', 'Complaint exposure', 'Force review', 'Legal / Policy Research Unlocked',
-        'Training Objective',
-    ):
+    for hidden_label in ('Scene Risk','Core Phases Cleared','Branch Events','Immediate FTO Feedback','Still unresolved','Complaint exposure','Force review','Legal / Policy Research Unlocked','Training Objective'):
         assert hidden_label not in html
     assert 'CAD / Dispatch' in html
     assert 'Current Scene' in html
