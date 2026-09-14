@@ -14,10 +14,13 @@ def test_base_loads_mobile_layers_last_and_uses_safe_viewport():
     assert "filename='css/mobile-refresh.css'" in base
     assert "filename='css/mobile-global.css'" in base
     assert "filename='css/mobile-components.css'" in base
+    assert "filename='css/mobile-audit.css'" in base
     assert base.index("filename='css/mcpd-unified.css'") < base.index("filename='css/mobile-refresh.css'")
     assert base.index("filename='css/mobile-refresh.css'") < base.index('{% block head %}')
     assert base.index('{% block head %}') < base.index("filename='css/mobile-global.css'")
     assert base.index("filename='css/mobile-global.css'") < base.index("filename='css/mobile-components.css'")
+    assert base.index("filename='css/mobile-components.css'") < base.index("filename='css/mobile-audit.css'")
+    assert "filename='js/mobile-audit.js'" in base
     assert "'mobile-foundation' in (body_class|default(''))" in base
 
 
@@ -27,6 +30,7 @@ def test_real_phone_view_toggle_reports_current_responsive_mode():
     assert "matchMedia('(max-width: 1020px)')" in base
     assert "setView(isResponsiveMobileView() ? 'desktop' : 'mobile')" in base
     assert "window.addEventListener('resize', syncViewLabels" in base
+    assert "document.body.classList.contains('mobile-foundation')" in base
 
 
 def test_mobile_stabilizer_covers_overflow_touch_forms_and_scenario_priority():
@@ -59,6 +63,25 @@ def test_mobile_component_layer_covers_high_use_workflows():
     assert 'grid-template-columns: minmax(0, 1fr) !important' in css
 
 
+def test_mobile_audit_layer_handles_header_return_path_and_keyboard_dock():
+    css = _read('app/static/css/mobile-audit.css')
+    js = _read('app/static/js/mobile-audit.js')
+    nav = _read('app/templates/partials/nav.html')
+
+    assert '.mcpd-mobile-home-link' in css
+    assert '.mobile-keyboard-open .mobile-tab-bar' in css
+    assert '.mcpd-header-search' in css
+    assert '@media (max-width: 1020px)' in css
+    assert 'data-force-mobile' in nav
+    assert 'Mobile Home' in nav
+
+    assert "setStoredView('mobile')" in js
+    assert "setStoredView('desktop')" in js
+    assert 'mobile-keyboard-open' in js
+    assert 'window.visualViewport' in js
+    assert "event.target.scrollIntoView" in js
+
+
 def test_signature_canvas_coordinates_scale_when_css_resizes_canvas():
     js = _read('app/static/js/app.js')
     assert 'canvas.width / rect.width' in js
@@ -89,6 +112,8 @@ def test_mobile_more_keeps_incident_workflow_inside_mobile_portal():
     assert "url_for('mobile.incident_start')" in more
     assert "'/reports#reports-new'" not in more
     assert 'Incident Workspace' in more
+    assert 'data-force-desktop' in more
+    assert "'Desktop Dashboard'" in more
 
 
 def test_fast_capture_uses_local_calendar_date_not_utc_date():
@@ -99,8 +124,29 @@ def test_fast_capture_uses_local_calendar_date_not_utc_date():
     assert 'toISOString().slice(0, 10)' not in fast_capture
 
 
+def test_fast_capture_merges_and_recovers_existing_incident_drafts():
+    fast_capture = _read('app/templates/mobile_fast_capture.html')
+    assert 'readExistingState' in fast_capture
+    assert 'hasMeaningfulState' in fast_capture
+    assert 'loadServerDraftIfNeeded' in fast_capture
+    assert "fetch('/mobile/api/incident/draft'" in fast_capture
+    assert "method: 'GET'" in fast_capture
+    assert "method: 'POST'" in fast_capture
+    assert 'mergeFacts' in fast_capture
+    assert 'mergeUnique' in fast_capture
+    assert 'next.statements' in fast_capture
+    assert 'next.formDrafts' in fast_capture
+    assert 'scheduleAutosave' in fast_capture
+    assert 'CSS.escape' not in fast_capture
+
+
 def test_mobile_shell_only_references_existing_mobile_runtime_bundle():
     shell = _read('app/templates/mobile_shell.html')
     assert "filename='mobile/incident-core.js'" in shell
     assert (ROOT / 'app/static/mobile/incident-core.js').exists()
     assert 'mobile_incident.js' not in shell
+    assert 'data-theme-toggle' in shell
+    assert 'internalNavigation' in shell
+    assert 'markInternalNavigation' in shell
+    assert "target.origin === window.location.origin" in shell
+    assert "window.addEventListener('beforeunload'" in shell
