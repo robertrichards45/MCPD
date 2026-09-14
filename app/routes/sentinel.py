@@ -336,3 +336,9 @@ def fto_instructor():
     if request.method == 'POST':
         return fto_center()
     return redirect(url_for('reports.sentinel.fto_center'))
+
+
+# Persistent DOR/program management lives inside FTO Center without replacing
+# the Scenario Lab or its advisory-only Sentinel coaching workflow.
+from . import fto_program as _fto_program
+bp.register_blueprint(_fto_program.bp)

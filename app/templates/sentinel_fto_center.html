@@ -7,213 +7,76 @@
       <div class="ops-head-copy">
         <div class="eyebrow">Training & Development</div>
         <h2 class="mb-1">FTO Center</h2>
-        <p class="text-muted mb-0">Field training, daily evaluation, scenario practice, DOR support, remediation, and trainee development in one workspace. Sentinel supports the process; the FTO remains the evaluator.</p>
+        <p class="text-muted mb-0">Field training programs, DORs, trainee progress, remediation, and scenario practice in one workspace.</p>
       </div>
+      <div class="ops-head-actions"><a class="btn btn-primary" href="{{ url_for('reports.sentinel.fto_program.dashboard') }}">Open Program Dashboard</a></div>
     </section>
 
+    <div class="alert alert-warning mb-3"><strong>FTO judgment controls:</strong> Sentinel supports training and coaching only. Official DOR ratings, remediation decisions, advancement, extensions, and completion remain with the assigned FTO and supervisory chain under the approved MCPD FTO program.</div>
+
     <section class="row g-3 mb-3">
-      <div class="col-md-6 col-xl-3">
-        <article class="ops-panel h-100">
-          <div class="eyebrow">Program</div>
-          <h4>My FTO Program</h4>
-          <p class="text-muted mb-2">Use the standard 8-week or accelerated 4-week roadmap as the training framework.</p>
-          <a class="btn btn-sm btn-outline-primary" href="#program-roadmap">Program Roadmap</a>
-        </article>
-      </div>
-      <div class="col-md-6 col-xl-3">
-        <article class="ops-panel h-100">
-          <div class="eyebrow">Today</div>
-          <h4>Daily Evaluation</h4>
-          <p class="text-muted mb-2">Review communication, safety, investigation, authority, judgment, documentation, professionalism, and policy awareness.</p>
-          <a class="btn btn-sm btn-outline-primary" href="#daily-evaluation">Evaluation Areas</a>
-        </article>
-      </div>
-      <div class="col-md-6 col-xl-3">
-        <article class="ops-panel h-100">
-          <div class="eyebrow">Records</div>
-          <h4>DOR & Progress</h4>
-          <p class="text-muted mb-2">Organize observations into a DOR draft, track development areas, and document remediation.</p>
-          <a class="btn btn-sm btn-outline-primary" href="#dor-workflow">DOR Workflow</a>
-        </article>
-      </div>
-      <div class="col-md-6 col-xl-3">
-        <article class="ops-panel h-100">
-          <div class="eyebrow">Practice</div>
-          <h4>Scenario Lab</h4>
-          <p class="text-muted mb-2">Practice installation-relevant calls and receive structured coaching without making AI the final evaluator.</p>
-          <a class="btn btn-sm btn-outline-primary" href="#scenario-lab">Open Scenario Lab</a>
-        </article>
-      </div>
+      <div class="col-md-6 col-xl-3"><article class="ops-panel h-100"><div class="eyebrow">Program</div><h4>Program Dashboard</h4><p class="text-muted">Open standard 8-week or accelerated 4-week trainee records, assignments, progress, and completion status.</p><a class="btn btn-sm btn-primary" href="{{ url_for('reports.sentinel.fto_program.dashboard') }}">Open Programs</a></article></div>
+      <div class="col-md-6 col-xl-3"><article class="ops-panel h-100"><div class="eyebrow">Daily</div><h4>DOR & Progress</h4><p class="text-muted">Enter observed ratings, comments, supervisor reviews, acknowledgments, trends, and remediation from the trainee record.</p><a class="btn btn-sm btn-outline-primary" href="{{ url_for('reports.sentinel.fto_program.dashboard') }}">Open DOR Records</a></article></div>
+      <div class="col-md-6 col-xl-3"><article class="ops-panel h-100"><div class="eyebrow">Reference</div><h4>Program Roadmap</h4><p class="text-muted">Review the standard and accelerated training framework before opening the official trainee record.</p><a class="btn btn-sm btn-outline-primary" href="#program-roadmap">View Roadmap</a></article></div>
+      <div class="col-md-6 col-xl-3"><article class="ops-panel h-100"><div class="eyebrow">Practice</div><h4>Scenario Lab</h4><p class="text-muted">Practice installation-relevant calls and receive advisory coaching without changing official FTO ratings.</p><a class="btn btn-sm btn-outline-primary" href="#scenario-lab">Open Scenario Lab</a></article></div>
     </section>
 
     <section id="program-roadmap" class="ops-panel mb-3">
-      <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap mb-3">
-        <div>
-          <div class="eyebrow">Program Roadmap</div>
-          <h3 class="mb-1">Standard and Accelerated Paths</h3>
-          <p class="text-muted mb-0">The roadmap is a training framework. The approved MCPD FTO order/curriculum remains the controlling source.</p>
-        </div>
-        <span class="badge text-bg-dark">FTO / Supervisor controlled</span>
-      </div>
+      <div class="eyebrow">Program Roadmap</div><h3>Standard and Accelerated Paths</h3>
+      <p class="text-muted">This is a working framework. The approved MCPD FTO order/curriculum remains the controlling source.</p>
       <div class="row g-3">
-        <div class="col-xl-6">
-          <div class="border rounded p-3 h-100">
-            <h4>Standard FTO Program — 8 Weeks</h4>
-            <ol class="mb-0">
-              <li><strong>Orientation & Foundations</strong> — department procedures, radio, safety, and report baseline.</li>
-              <li><strong>Patrol & Calls for Service</strong> — response, scene organization, interviews, and documentation decisions.</li>
-              <li><strong>Traffic & Access Control</strong> — vehicle contacts, access-control incidents, and documentation.</li>
-              <li><strong>Investigations & Evidence</strong> — statements, property/evidence, report packets, and investigative follow-up.</li>
-              <li><strong>Legal Articulation</strong> — connect enforcement decisions to facts and applicable authority.</li>
-              <li><strong>Complex Calls</strong> — multi-party incidents and higher-complexity documentation.</li>
-              <li><strong>Independent Operations</strong> — trainee performs the primary role with reduced prompting.</li>
-              <li><strong>Final Evaluation</strong> — outstanding curriculum, remediation, report quality, and recommendation.</li>
-            </ol>
-          </div>
-        </div>
-        <div class="col-xl-6">
-          <div class="border rounded p-3 h-100">
-            <h4>Accelerated FTO Program — 4 Weeks</h4>
-            <ol class="mb-0">
-              <li><strong>Installation Orientation</strong> — local orders, procedures, geography/posts, radio, and reporting expectations.</li>
-              <li><strong>Patrol & Enforcement Validation</strong> — demonstrate core field skills and legal/report articulation.</li>
-              <li><strong>Complex Incident Validation</strong> — demonstrate complete incident handling and paperwork decisions.</li>
-              <li><strong>Independent Validation</strong> — final performance review, policy knowledge, remediation closure, and recommendation.</li>
-            </ol>
-          </div>
-        </div>
+        <div class="col-xl-6"><div class="border rounded p-3 h-100"><h4>Standard FTO Program — 8 Weeks</h4><ol class="mb-0"><li><strong>Orientation & Foundations</strong> — procedures, radio, safety, reporting baseline.</li><li><strong>Patrol & Calls for Service</strong> — response, scene organization, interviews, documentation.</li><li><strong>Traffic & Access Control</strong> — vehicle contacts and installation access incidents.</li><li><strong>Investigations & Evidence</strong> — statements, property/evidence, report packets.</li><li><strong>Legal Articulation</strong> — connect enforcement decisions to observed facts and authority.</li><li><strong>Complex Calls</strong> — multi-party incidents and higher-complexity documentation.</li><li><strong>Independent Operations</strong> — reduced prompting with direct FTO observation.</li><li><strong>Final Evaluation</strong> — outstanding requirements, remediation, and supervisory recommendation.</li></ol></div></div>
+        <div class="col-xl-6"><div class="border rounded p-3 h-100"><h4>Accelerated FTO Program — 4 Weeks</h4><ol class="mb-0"><li><strong>Installation Orientation</strong> — local orders, geography/posts, radio, and reporting expectations.</li><li><strong>Patrol & Enforcement Validation</strong> — core field skills and legal/report articulation.</li><li><strong>Complex Incident Validation</strong> — complete incident handling and paperwork decisions.</li><li><strong>Independent Validation</strong> — final performance review, remediation closure, and recommendation.</li></ol><div class="alert alert-warning mt-3 mb-0">Accelerated training does not automatically waive installation-specific requirements. Supervisory authorization and the approved FTO policy control.</div></div></div>
       </div>
-      <div class="alert alert-warning mt-3 mb-0"><strong>Important:</strong> accelerated training should not automatically waive installation-specific requirements. Any shortened program should follow the approved FTO policy and supervisory authorization.</div>
     </section>
 
-    <section id="daily-evaluation" class="ops-panel mb-3">
-      <div class="eyebrow">Daily Evaluation</div>
-      <h3>Core Development Areas</h3>
-      <p class="text-muted">Use these categories consistently across real-world observations and Scenario Lab coaching. A numeric cue from Sentinel is not the FTO rating.</p>
+    <section class="ops-panel mb-3">
+      <div class="eyebrow">DOR & Remediation Workflow</div>
+      <h3>Observe → Evaluate → Finalize → Review → Develop</h3>
+      <p class="text-muted">The official Program Dashboard turns this workflow into persistent trainee records while keeping every employment/training decision with authorized personnel.</p>
       <div class="row g-2">
-        {% for area in fto_areas %}
-        <div class="col-md-6 col-xl-3"><div class="border rounded p-3 h-100"><strong>{{ area }}</strong><div class="small text-muted mt-1">FTO observation and comments control the final evaluation.</div></div></div>
-        {% endfor %}
+        <div class="col-md-6 col-xl"><div class="border rounded p-3 h-100"><strong>1. Observe</strong><div class="small text-muted mt-1">Record only performance actually observed.</div></div></div>
+        <div class="col-md-6 col-xl"><div class="border rounded p-3 h-100"><strong>2. Evaluate</strong><div class="small text-muted mt-1">The FTO enters the official DOR ratings and comments.</div></div></div>
+        <div class="col-md-6 col-xl"><div class="border rounded p-3 h-100"><strong>3. Review</strong><div class="small text-muted mt-1">Supervisor review and trainee acknowledgment are separately recorded.</div></div></div>
+        <div class="col-md-6 col-xl"><div class="border rounded p-3 h-100"><strong>4. Develop</strong><div class="small text-muted mt-1">Remediation stays open until an authorized human verifies performance.</div></div></div>
       </div>
+      <a class="btn btn-outline-primary mt-3" href="{{ url_for('reports.sentinel.fto_program.dashboard') }}">Open Official DOR & Progress Records</a>
+    </section>
+
+    <section class="ops-panel mb-3">
+      <div class="eyebrow">Official DOR Categories</div><h3>Core Development Areas</h3>
+      <p class="text-muted">These categories are used consistently in the trainee record. Sentinel scenario scores below are separate coaching cues.</p>
+      <div class="row g-2">{% for area in fto_areas %}<div class="col-md-6 col-xl-3"><div class="border rounded p-3 h-100"><strong>{{ area }}</strong><div class="small text-muted mt-1">Final rating entered by an authorized FTO/supervisor.</div></div></div>{% endfor %}</div>
     </section>
 
     <section id="scenario-lab" class="row g-3">
       <div class="col-xl-5">
         <article class="ops-panel h-100">
-          <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
-            <div>
-              <div class="eyebrow">Scenario Lab</div>
-              <h3 class="mb-1">Practice Decision Making</h3>
-              <p class="text-muted mb-0">Explain what you would actually do. Do not add facts that are not in the scenario.</p>
-            </div>
-            <span class="badge text-bg-dark">Training only</span>
-          </div>
+          <div class="eyebrow">Scenario Lab</div><h3>Practice Decision Making</h3><p class="text-muted">Explain what you would actually do using only the facts provided.</p>
           <form method="post">
             <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
-            <label class="w-100 mb-3">
-              <strong>Training scenario</strong>
-              <select class="form-select mt-2" name="scenario_id" onchange="this.form.submit()">
-                {% for sid, item in scenarios.items() %}
-                <option value="{{ sid }}" {% if sid == scenario_id %}selected{% endif %}>{{ item.title }} — {{ item.difficulty }}</option>
-                {% endfor %}
-              </select>
-            </label>
-
-            <div class="border rounded p-3 mb-3">
-              <div class="d-flex justify-content-between gap-2 flex-wrap mb-2">
-                <span class="badge text-bg-light">{{ scenario.category }}</span>
-                <span class="badge text-bg-light">{{ scenario.difficulty }}</span>
-              </div>
-              <div class="eyebrow">Dispatch</div>
-              <p class="mb-2"><strong>{{ scenario.dispatch }}</strong></p>
-              <div class="eyebrow mt-3">Training objective</div>
-              <p class="mb-0 text-muted">{{ scenario.objective }}</p>
-            </div>
-
-            <label class="w-100">
-              <strong>What do you do next?</strong>
-              <textarea class="form-control mt-2" name="response_text" rows="12" placeholder="Describe your communication, approach, safety considerations, investigative steps, legal authority, decision making, documentation, and disposition.">{{ response_text }}</textarea>
-            </label>
-            <div class="d-flex gap-2 flex-wrap mt-3">
-              <button class="btn btn-primary" type="submit">Evaluate Training Response</button>
-              <a class="btn btn-outline-secondary" href="{{ url_for('reports.sentinel.fto_center') }}">Reset</a>
-            </div>
+            <label class="w-100 mb-3"><strong>Training Scenario</strong><select class="form-select mt-2" name="scenario_id" onchange="this.form.submit()">{% for sid, item in scenarios.items() %}<option value="{{ sid }}" {% if sid == scenario_id %}selected{% endif %}>{{ item.title }} — {{ item.difficulty }}</option>{% endfor %}</select></label>
+            <div class="border rounded p-3 mb-3"><div class="d-flex gap-2 flex-wrap mb-2"><span class="badge text-bg-light">{{ scenario.category }}</span><span class="badge text-bg-light">{{ scenario.difficulty }}</span></div><div class="eyebrow">Dispatch</div><p><strong>{{ scenario.dispatch }}</strong></p><div class="eyebrow">Training Objective</div><p class="text-muted mb-0">{{ scenario.objective }}</p></div>
+            <label class="w-100"><strong>What do you do next?</strong><textarea class="form-control mt-2" name="response_text" rows="12" placeholder="Describe communication, safety, investigative steps, authority, judgment, documentation, and disposition.">{{ response_text }}</textarea></label>
+            <div class="d-flex gap-2 flex-wrap mt-3"><button class="btn btn-primary" type="submit">Evaluate Practice Response</button><a class="btn btn-outline-secondary" href="{{ url_for('reports.sentinel.fto_center') }}">Reset</a></div>
           </form>
         </article>
       </div>
-
       <div class="col-xl-7">
         <article class="ops-panel h-100">
-          <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap mb-3">
-            <div>
-              <div class="eyebrow">Sentinel Coaching</div>
-              <h3 class="mb-1">FTO Evaluation Support</h3>
-              <p class="text-muted mb-0">Every automated observation is a coaching cue, not a final rating.</p>
-            </div>
-            {% if result %}<div style="font-size:2rem;font-weight:800;">{{ result.score }}%</div>{% endif %}
-          </div>
-
+          <div class="eyebrow">Sentinel Coaching</div>
+          <div class="d-flex justify-content-between align-items-start gap-3"><div><h3>Practice Feedback</h3><p class="text-muted">Automated observations are coaching cues, not official FTO ratings.</p></div>{% if result %}<strong class="fs-2">{{ result.score }}%</strong>{% endif %}</div>
           {% if result %}
-          <div class="bodycam-warning mb-3">
-            <strong>Instructor review required</strong>
-            <span>{{ result.notice }}</span>
-          </div>
-
-          <div class="row g-2 mb-3">
-            {% for area in result.areas %}
-            <div class="col-md-6">
-              <div class="border rounded p-3 h-100">
-                <div class="d-flex justify-content-between gap-2"><strong>{{ area.area }}</strong><span>{{ area.score }}/{{ area.max }}</span></div>
-                <small class="text-muted">{{ area.status|replace('-', ' ')|title }}{% if area.hits %} &bull; Cues: {{ area.hits|join(', ') }}{% endif %}</small>
-                <details class="mt-2"><summary class="small">Why was this flagged?</summary><p class="small text-muted mt-2 mb-0">Sentinel compares the response with language cues associated with this development area. The FTO must decide whether the trainee's actual decision making and performance meet the approved standard.</p></details>
-              </div>
-            </div>
-            {% endfor %}
-          </div>
-
-          <div class="row g-3 mb-3">
-            <div class="col-md-6">
-              <div class="border rounded p-3 h-100">
-                <h5>Observed strengths</h5>
-                {% if result.strengths %}<ul class="mb-0">{% for item in result.strengths %}<li>{{ item }}</li>{% endfor %}</ul>{% else %}<p class="text-muted mb-0">No category reached the strong-cue threshold. FTO review is still required.</p>{% endif %}
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="border rounded p-3 h-100">
-                <h5>Development areas</h5>
-                {% if result.development %}<ul class="mb-0">{% for item in result.development %}<li>{{ item }}</li>{% endfor %}</ul>{% else %}<p class="text-muted mb-0">No additional development cues identified by this automated pass.</p>{% endif %}
-              </div>
-            </div>
-          </div>
-
-          <h4>Follow-up coaching questions</h4>
-          <ol>{% for item in result.followups %}<li class="mb-2">{{ item }}</li>{% endfor %}</ol>
+          <div class="bodycam-warning mb-3"><strong>Instructor review required</strong><span>{{ result.notice }}</span></div>
+          <div class="row g-2 mb-3">{% for area in result.areas %}<div class="col-md-6"><div class="border rounded p-3 h-100"><div class="d-flex justify-content-between gap-2"><strong>{{ area.area }}</strong><span>{{ area.score }}/{{ area.max }}</span></div><small class="text-muted">{{ area.status|replace('-', ' ')|title }}{% if area.hits %} &bull; Cues: {{ area.hits|join(', ') }}{% endif %}</small><details class="mt-2"><summary class="small">Why was this flagged?</summary><p class="small text-muted mt-2 mb-0">Sentinel found language cues associated with this training area. The FTO must decide whether the trainee's actual performance meets the approved standard; this automated score is not copied into the official DOR.</p></details></div></div>{% endfor %}</div>
+          <div class="row g-3"><div class="col-md-6"><div class="border rounded p-3 h-100"><h5>Strength Cues</h5>{% if result.strengths %}<ul class="mb-0">{% for item in result.strengths %}<li>{{ item }}</li>{% endfor %}</ul>{% else %}<p class="text-muted mb-0">None reached the strong-cue threshold.</p>{% endif %}</div></div><div class="col-md-6"><div class="border rounded p-3 h-100"><h5>Development Cues</h5>{% if result.development %}<ul class="mb-0">{% for item in result.development %}<li>{{ item }}</li>{% endfor %}</ul>{% else %}<p class="text-muted mb-0">No additional cues identified.</p>{% endif %}</div></div></div>
+          <h4 class="mt-3">Follow-Up Coaching Questions</h4><ol>{% for item in result.followups %}<li class="mb-2">{{ item }}</li>{% endfor %}</ol>
+          <a class="btn btn-outline-primary" href="{{ url_for('reports.sentinel.fto_program.dashboard') }}">Go to Official FTO Record</a>
           {% else %}
-          <p class="text-muted">Select a scenario and explain your response. FTO Center will review the response across the core development areas.</p>
-          <div class="row g-2 mt-1">{% for area in fto_areas %}<div class="col-md-6"><div class="border rounded p-3">{{ area }}</div></div>{% endfor %}</div>
+          <p class="text-muted">Select a scenario and explain your response to receive structured coaching across the eight development areas.</p><div class="row g-2">{% for area in fto_areas %}<div class="col-md-6"><div class="border rounded p-3">{{ area }}</div></div>{% endfor %}</div>
           {% endif %}
         </article>
       </div>
-    </section>
-
-    <section id="dor-workflow" class="ops-panel mt-3">
-      <div class="eyebrow">DOR & Remediation Workflow</div>
-      <h3>Observation → FTO Review → DOR → Acknowledgment → Development</h3>
-      <div class="row g-3 mt-1">
-        <div class="col-md-6 col-xl-3"><div class="border rounded p-3 h-100"><strong>1. Observe</strong><p class="small text-muted mb-0 mt-1">Record what the FTO actually observed during the shift or training event.</p></div></div>
-        <div class="col-md-6 col-xl-3"><div class="border rounded p-3 h-100"><strong>2. Evaluate</strong><p class="small text-muted mb-0 mt-1">Use consistent categories and approved standards. Sentinel may organize cues but does not set the final rating.</p></div></div>
-        <div class="col-md-6 col-xl-3"><div class="border rounded p-3 h-100"><strong>3. Document</strong><p class="small text-muted mb-0 mt-1">The FTO finalizes the DOR comments, ratings, remediation, and required follow-up.</p></div></div>
-        <div class="col-md-6 col-xl-3"><div class="border rounded p-3 h-100"><strong>4. Develop</strong><p class="small text-muted mb-0 mt-1">Track improvement, repeat observation where needed, and close remediation only after the FTO verifies performance.</p></div></div>
-      </div>
-      {% if result %}
-      <div class="border rounded p-3 mt-3">
-        <h4>Draft Development Summary</h4>
-        <p class="mb-2"><strong>Strength cues:</strong> {{ result.strengths|join(', ') if result.strengths else 'None reached the strong-cue threshold.' }}</p>
-        <p class="mb-2"><strong>Development cues:</strong> {{ result.development|join(', ') if result.development else 'No additional development cues identified.' }}</p>
-        <p class="small text-muted mb-0">This is not a DOR. The FTO must use direct observations and approved rating standards to prepare the official evaluation.</p>
-      </div>
-      {% endif %}
-      <div class="alert alert-warning mt-3 mb-0"><strong>Control principle:</strong> Sentinel may organize observations and identify patterns, but it will not automatically pass, fail, advance, extend, discipline, or clear remediation for a trainee. Those decisions remain with the assigned FTO and supervisory chain.</div>
     </section>
   </main>
 </div>
