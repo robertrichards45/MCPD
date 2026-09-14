@@ -16,7 +16,7 @@ jobs:
     env:
       APP_ENV: dev
       REQUIRE_PERSISTENT_DATABASE: "0"
-      MCPD_DATABASE_URL: sqlite:////tmp/mcpd-ci.db
+      DATABASE_URL: sqlite:////tmp/mcpd-ci.db
       SECRET_KEY: mcpd-ci-only-not-production
       LEGAL_AI_EXPANSION_ENABLED: "0"
       ORDERS_AI_ASSIST_ENABLED: "0"
@@ -60,9 +60,11 @@ jobs:
           print(f'Loaded {len(endpoints)} endpoints; required MCPD workflow endpoints are present.')
           PY
 
-      - name: Run workflow regression tests
-        run: |
-          python -m pytest -q \
-            app/tests/test_sentinel_integration.py \
-            app/tests/test_accident_tools_routing.py \
-            app/tests/test_production_database_guard.py
+      - name: Verify production database guard
+        run: python -m pytest -q app/tests/test_production_database_guard.py
+
+      - name: Run Sentinel workflow regression tests
+        run: python -m pytest -q app/tests/test_sentinel_integration.py
+
+      - name: Run accident workflow regression tests
+        run: python -m pytest -q app/tests/test_accident_tools_routing.py
