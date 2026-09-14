@@ -88,6 +88,9 @@ jobs:
       - name: Run Scenario Lab live branching tests
         run: python -m pytest -q app/tests/test_scenario_lab_live_training.py
 
+      - name: Run radio timeline regression tests
+        run: python -m pytest -q app/tests/test_scenario_radio_timeline.py
+
       - name: Run Scenario Lab visual evidence tests
         run: python -m pytest -q app/tests/test_scenario_visual_evidence.py
 
