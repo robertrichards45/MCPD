@@ -4,74 +4,61 @@ import secrets
 
 from flask import has_request_context, session
 
+from ..simulator.location_catalog import (
+    ACCESS_CONTROL_LOCATIONS,
+    DISORDERLY_LOCATIONS,
+    MEDICAL_LOCATIONS,
+    PROPERTY_DAMAGE_LOCATIONS,
+    RETAIL_LOCATIONS,
+    TRAFFIC_LOCATIONS,
+)
+
 
 NEXT_SCENARIO = {'S001': 'S002', 'S002': 'S003', 'S003': 'S004', 'S004': 'S005', 'S005': 'S006', 'S006': 'S001'}
 SESSION_KEY = 'sentinel_scenario_lab_v2'
 SEED_OVERRIDE_KEY = 'sentinel_scenario_seed_override_v1'
 
 
-# Training locations are intentionally limited to building/area-level information.
-# They give CAD/dispatch the specificity an officer expects without embedding
-# sensitive floor plans, access vulnerabilities, or operational security details.
+# Location pools come from the handbook-derived, non-sensitive training catalog.
+# Do not copy the complete LES Security Checklist into this public repository.
 VARIANTS = {
     'S001': {
-        'location': (
-            'Bldg. 7130 — Barracks common area',
-            'Bldg. 7450 — Main lobby / customer-service area',
-            'Bldg. 1241 — Administrative office area',
-            'Bldg. 3000 — Main Gate visitor-processing area',
-        ),
+        'location': DISORDERLY_LOCATIONS,
         'subject_status': ('civilian visitor', 'contractor employee', 'active-duty service member', 'retiree with installation access'),
         'access_history': ('invited earlier', 'walked in during business hours', 'previously told to leave today', 'claims an employee invited them'),
         'demeanor': ('loud but stationary', 'argumentative and pacing', 'calm until challenged', 'emotionally upset and recording the encounter'),
         'witness_quality': ('one firsthand witness', 'two conflicting employees', 'only hearsay at first', 'camera coverage may exist'),
     },
     'S002': {
-        'location': ('Bldg. 3000 — Main Gate inbound inspection area',),
+        'location': ACCESS_CONTROL_LOCATIONS,
         'purpose': ('contractor meeting', 'delivery', 'job interview', 'family visit', 'service appointment'),
         'credential_issue': ('no installation credential', 'expired credential', 'credential does not match claimed purpose', 'visitor sponsorship not located'),
         'demeanor': ('confused and cooperative', 'argumentative', 'nervous but compliant', 'impatient and filming'),
         'records_twist': ('no initial records information', 'identity requires clarification', 'vehicle registration differs from driver', 'sponsor information is incomplete'),
     },
     'S003': {
-        'location': (
-            'Bldg. 7130 — Barracks parking area',
-            'Bldg. 7450 — North parking area',
-            'Bldg. 1241 — Administrative parking area',
-        ),
+        'location': PROPERTY_DAMAGE_LOCATIONS,
         'property': ('light pole', 'parking bollard', 'government fence section', 'facility sign', 'government vehicle mirror'),
         'driver_status': ('civilian contractor', 'active-duty service member', 'government employee', 'delivery driver'),
         'knowledge': ('driver says contact was unnoticed', 'driver admits contact but thought there was no damage', 'driver disputes making contact', 'driver left and returned after being called'),
         'evidence': ('fresh vehicle damage', 'paint transfer only', 'camera may cover the area', 'physical marks are ambiguous'),
     },
     'S004': {
-        'location': (
-            'Bldg. 3500 — Retail / exchange facility',
-            'Bldg. 7450 — Customer-service retail area',
-        ),
+        'location': RETAIL_LOCATIONS,
         'conduct': ('item placed in a personal bag', 'price tag allegedly changed', 'merchandise moved between containers', 'self-checkout price discrepancy'),
         'video': ('clear video exists', 'video angle is partial', 'camera was offline', 'video exists but has not been preserved yet'),
         'subject_status': ('civilian', 'contractor employee', 'active-duty service member', 'dependent'),
         'intent_issue': ('subject claims mistake', 'subject claims another person moved the item', 'subject says they intended to pay', 'subject gives an inconsistent explanation'),
     },
     'S005': {
-        'stop_location': (
-            'Radford Blvd near Bldg. 7130',
-            'Radford Blvd near Bldg. 7450',
-            'installation roadway near Bldg. 1241',
-            'Main Gate approach near Bldg. 3000',
-        ),
+        'stop_location': TRAFFIC_LOCATIONS,
         'violation': ('speeding', 'failure to maintain lane', 'stop-sign violation', 'unsafe lane change'),
-        'road': ('two-lane installation road', 'multi-lane arterial near a gate', 'low-light roadway', 'work-zone area'),
+        'road': ('two-lane installation road', 'multi-lane arterial', 'low-light roadway', 'work-zone area'),
         'driver_demeanor': ('argumentative', 'anxious', 'cooperative but distracted', 'records the contact and challenges the reason for stop'),
         'movement': ('reaches toward center console', 'keeps searching through a bag', 'turns repeatedly toward the rear seat', 'keeps hands visible but refuses casual questions'),
     },
     'S006': {
-        'location': (
-            'Bldg. 1241 — Administrative work area',
-            'Bldg. 7450 — Facility work area',
-            'Bldg. 7130 — Barracks common area',
-        ),
+        'location': MEDICAL_LOCATIONS,
         'presentation': ('dizziness and near-syncope', 'confusion after a collapse', 'possible seizure-like activity reported by a coworker', 'chest discomfort with anxiety', 'weakness after working in heat'),
         'witness_pattern': ('two coworkers give conflicting timelines', 'one witness saw only the aftermath', 'a supervisor repeats hearsay as fact', 'one employee may have seen the entire event but is about to leave'),
         'scene_issue': ('coworkers crowd the patient', 'equipment blocks EMS access', 'patient wants to stand despite dizziness', 'a coworker insists it was an assault without firsthand knowledge'),
