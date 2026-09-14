@@ -12,10 +12,7 @@ def _common_environment(rng):
     time_of_day = rng.choice(('day', 'day', 'day', 'evening', 'night'))
     weather = rng.choice(('clear', 'clear', 'clear', 'light rain', 'overcast'))
     lighting = 'low light' if time_of_day in {'evening', 'night'} else 'normal daylight'
-    if weather == 'light rain':
-        visibility = 'slightly reduced'
-    else:
-        visibility = 'normal'
+    visibility = 'slightly reduced' if weather == 'light rain' else 'normal'
     return {
         'time_of_day': time_of_day,
         'weather': weather,
@@ -35,13 +32,21 @@ def _profile(rng, reliability_options=None, deception_chance=0):
         'deceptive': deceptive,
         'incorrect_beliefs': [],
         'private_facts': [],
+        'deceptive_claims': [],
     }
+
+
+def _add_mistaken_belief(profile, text):
+    if profile.get('reliability') == 'mistaken_on_details':
+        profile.setdefault('incorrect_beliefs', []).append(text)
 
 
 def build_scenario_truth(scenario_id, run_context):
     """Build immutable core facts for one reproducible synthetic run.
 
     Dialogue may vary, but these facts are the authoritative reality for the run.
+    Incorrect beliefs and intentional deception are also structured here so the
+    language model never gets permission to invent its own falsehoods.
     """
     choices = dict((run_context or {}).get('choices') or {})
     rng = _rng(run_context)
@@ -65,6 +70,12 @@ def build_scenario_truth(scenario_id, run_context):
             f"Observed demeanor: {choices.get('demeanor', 'argumentative')}.",
         ]
         truth['people']['subject']['private_facts'] = [f"Status: {choices.get('subject_status', 'civilian visitor')}. "]
+        if truth['people']['subject']['deceptive'] and 'told to leave' in choices.get('access_history', '').lower():
+            truth['people']['subject']['deceptive_claims'].append('Staff never told me to leave.')
+        _add_mistaken_belief(
+            truth['people']['employee2'],
+            'I thought the subject threatened an employee, but I did not hear the exact words and may have assumed that from the argument.',
+        )
         if choices.get('witness_quality') == 'camera coverage may exist':
             truth['evidence']['facility_video'] = {
                 'label': 'Facility surveillance video',
@@ -84,6 +95,8 @@ def build_scenario_truth(scenario_id, run_context):
         truth['people']['sponsor'] = _profile(rng, ('reliable', 'mostly_reliable'))
         truth['people']['gate']['private_facts'] = [f"Credential issue: {choices.get('credential_issue', 'access issue')}."]
         truth['people']['driver']['private_facts'] = [f"Claimed purpose: {choices.get('purpose', 'visit')}."]
+        if truth['people']['driver']['deceptive']:
+            truth['people']['driver']['deceptive_claims'].append('I was told everything was already cleared before I arrived.')
         truth['disposition_constraints'].append('Installation access may be denied without creating a criminal enforcement outcome.')
 
     elif scenario_id == 'S003':
@@ -91,10 +104,16 @@ def build_scenario_truth(scenario_id, run_context):
         truth['people']['witness'] = _profile(rng, ('reliable', 'mostly_reliable', 'mistaken_on_details'))
         truth['people']['driver'] = _profile(rng, ('reliable', 'mostly_reliable'), deception_chance=12)
         truth['people']['driver']['private_facts'] = [choices.get('knowledge', 'Driver knowledge is unclear.')]
+        _add_mistaken_belief(
+            truth['people']['witness'],
+            'I thought the truck was backing fast, but I only saw the last part of the movement and cannot reliably estimate speed.',
+        )
+        if truth['people']['driver']['deceptive'] and 'admits contact' not in choices.get('knowledge', '').lower():
+            truth['people']['driver']['deceptive_claims'].append('I am certain my truck never touched anything.')
         truth['evidence']['property_damage'] = {
             'label': f"Damage to government {choices.get('property', 'property')}",
             'exists': True,
-            'status': 'available',
+            'status': 'hidden',
             'source': 'scene observation',
             'location': 'incident scene',
             'discover_keywords': ['damage', 'pole', 'fence', 'sign', 'mirror', 'property', 'examine', 'look'],
@@ -117,6 +136,10 @@ def build_scenario_truth(scenario_id, run_context):
     elif scenario_id == 'S004':
         truth['people']['lp'] = _profile(rng, ('reliable', 'mostly_reliable', 'mistaken_on_details'))
         truth['people']['subject'] = _profile(rng, ('reliable', 'mostly_reliable'), deception_chance=28)
+        _add_mistaken_belief(
+            truth['people']['lp'],
+            'I believed the subject had passed the final point of sale, but part of my view was blocked and I may be wrong about the exact position.',
+        )
         video_status = choices.get('video', 'video availability uncertain')
         exists = 'offline' not in video_status.lower()
         if exists:
@@ -133,7 +156,7 @@ def build_scenario_truth(scenario_id, run_context):
         truth['evidence']['merchandise'] = {
             'label': 'Recovered merchandise / transaction item',
             'exists': True,
-            'status': 'available',
+            'status': 'hidden',
             'source': 'loss prevention',
             'location': 'retail office',
             'discover_keywords': ['item', 'merchandise', 'property', 'receipt', 'price'],
@@ -141,6 +164,8 @@ def build_scenario_truth(scenario_id, run_context):
             'description': choices.get('conduct', 'reported merchandise issue'),
         }
         truth['people']['subject']['private_facts'] = [choices.get('intent_issue', 'Subject disputes criminal intent.')]
+        if truth['people']['subject']['deceptive'] and 'personal bag' in choices.get('conduct', '').lower():
+            truth['people']['subject']['deceptive_claims'].append('I never put the item in my bag.')
         truth['disposition_constraints'].append('Arrest is not the default successful disposition; insufficient evidence or referral may be reasonable.')
 
     elif scenario_id == 'S005':
@@ -149,10 +174,12 @@ def build_scenario_truth(scenario_id, run_context):
             f"Observed driving issue: {choices.get('violation', 'traffic violation')}.",
             f"Movement tendency: {choices.get('movement', 'ordinary vehicle movement')}.",
         ]
+        if truth['people']['driver']['deceptive']:
+            truth['people']['driver']['deceptive_claims'].append('I was not doing anything that could have caused a traffic stop.')
         truth['evidence']['vehicle_position'] = {
             'label': 'Roadway / vehicle position',
             'exists': True,
-            'status': 'available',
+            'status': 'hidden',
             'source': 'officer observation',
             'location': 'traffic stop scene',
             'discover_keywords': ['vehicle', 'position', 'road', 'traffic', 'look', 'observe'],
@@ -170,6 +197,14 @@ def build_scenario_truth(scenario_id, run_context):
             f"Presentation: {choices.get('presentation', 'medical complaint')}.",
             f"Current state: {choices.get('patient_state', 'conscious')}.",
         ]
+        _add_mistaken_belief(
+            truth['people']['coworker1'],
+            'I thought the patient had been knocked down because I found them on the floor, but I did not see how they got there.',
+        )
+        _add_mistaken_belief(
+            truth['people']['coworker2'],
+            'I thought the patient simply sat down, but I did not see the entire sequence.',
+        )
         witness_pattern = choices.get('witness_pattern', '')
         if 'one employee may have seen the entire event but is about to leave' in witness_pattern:
             truth['people']['fullwitness']['leaves_at'] = 6
@@ -180,4 +215,7 @@ def build_scenario_truth(scenario_id, run_context):
 
 def npc_truth_facts(truth, actor_id):
     profile = ((truth or {}).get('people') or {}).get(actor_id) or {}
-    return [str(value).strip() for value in profile.get('private_facts') or [] if str(value).strip()]
+    rows = [str(value).strip() for value in profile.get('private_facts') or [] if str(value).strip()]
+    if profile.get('deceptive'):
+        rows.extend(str(value).strip() for value in profile.get('deceptive_claims') or [] if str(value).strip())
+    return rows
