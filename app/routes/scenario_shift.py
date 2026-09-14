@@ -2,7 +2,14 @@ from flask import Blueprint, redirect, render_template, request, session, url_fo
 from flask_login import current_user, login_required
 
 from ..simulator.run_store import load_run, load_run_state
-from ..simulator.shift_engine import assign_next_call, complete_active_call, end_shift, new_shift, set_dispatch_details
+from ..simulator.shift_engine import (
+    assign_next_call,
+    attach_run,
+    complete_active_call,
+    end_shift,
+    new_shift,
+    set_dispatch_details,
+)
 from .scenario_variants import build_run_context
 
 
@@ -39,6 +46,29 @@ def _ensure_assignment(shift):
     return shift
 
 
+def _start_assigned_run(shift_state):
+    scenario_id = shift_state.get('active_scenario_id')
+    if not scenario_id:
+        return None
+    if shift_state.get('active_run_id'):
+        return shift_state.get('active_run_id')
+
+    # Imported here to avoid a blueprint import cycle during application startup.
+    from .scenario_lab_live import _new_state
+
+    state = _new_state(scenario_id, seed=shift_state.get('active_call_seed'))
+    state['shift_context'] = {
+        'shift_id': shift_state.get('shift_id'),
+        'call_number': shift_state.get('call_index'),
+        'unit_id': shift_state.get('unit_id'),
+    }
+    session[SCENARIO_SESSION_KEY] = state
+    run_id = (state.get('run_context') or {}).get('run_id')
+    attach_run(shift_state, scenario_id, run_id, shift_state.get('active_dispatch_text'))
+    session.modified = True
+    return run_id
+
+
 @bp.route('/', methods=['GET', 'POST'])
 @login_required
 def shift():
@@ -59,10 +89,13 @@ def shift():
             _save(shift_state)
             return redirect(url_for('reports.fto_refinements.scenario_shift.shift'))
         if action == 'respond' and isinstance(shift_state, dict) and shift_state.get('active_scenario_id'):
-            if not shift_state.get('active_run_id'):
-                session.pop(SCENARIO_SESSION_KEY, None)
+            _start_assigned_run(shift_state)
             _save(shift_state)
-            return redirect(url_for('reports.fto_refinements.scenario_lab.lab', scenario_id=shift_state['active_scenario_id'], shift='1'))
+            return redirect(url_for(
+                'reports.fto_refinements.scenario_lab.lab',
+                scenario_id=shift_state['active_scenario_id'],
+                shift='1',
+            ))
 
     if isinstance(shift_state, dict):
         _refresh_completed_call(shift_state)
