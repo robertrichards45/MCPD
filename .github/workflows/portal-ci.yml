@@ -83,6 +83,9 @@ jobs:
       - name: Run Scenario Lab simulator platform tests
         run: python -m pytest -q app/tests/test_scenario_lab_simulator_platform.py
 
+      - name: Run server-backed simulator session tests
+        run: python -m pytest -q app/tests/test_simulator_server_session.py
+
       - name: Run Virtual Shift and structured truth tests
         run: python -m pytest -q app/tests/test_virtual_shift_truth.py
 
