@@ -117,7 +117,7 @@ def test_mobile_officer_flow_pages_include_updated_mobile_assets():
 
         assert 'MCPD' in home
         assert 'Law Lookup' in home
-        assert 'Start Report' in home or 'Continue Report' in home
+        assert 'Incident Workspace' in home or 'Continue Incident' in home
         assert 'Forms' in home
         assert 'Orders' in home
         assert 'Training' in home
