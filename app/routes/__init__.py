@@ -124,7 +124,7 @@ def _retire_requested_portal_modules():
         return redirect('/dashboard')
     if path in {'/notifications', '/notifications/inbox'}:
         return redirect('/dashboard')
-    if path.startswith('/bodycam'):
+    if path.startswith(('/bodycam', '/mobile/bodycam')):
         return redirect('/tools/narrative')
     return None
 
