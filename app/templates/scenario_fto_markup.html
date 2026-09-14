@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell mcpd-command-app">
+  {% include 'partials/nav.html' %}
+  <main class="page-wrap narrative-tool-page">
+    <section class="ops-head-card mb-3">
+      <div class="ops-head-copy">
+        <div class="eyebrow">Sentinel — FTO Documentation Review</div>
+        <h2 class="mb-1">Line-by-Line Markup</h2>
+        <p class="text-muted mb-0">Annotate the trainee's narrative and synthetic form fields without changing the trainee's original work.</p>
+      </div>
+      <div class="ops-head-actions d-flex gap-2 flex-wrap">
+        <a class="btn btn-outline-secondary" href="{{ package_url }}">Training Package</a>
+        <a class="btn btn-outline-primary" href="{{ forms_url }}">Training Forms</a>
+        <a class="btn btn-outline-secondary" href="{{ evaluator_url }}">Evaluator Replay</a>
+      </div>
+    </section>
+
+    <div class="alert alert-secondary mb-3"><strong>HUMAN FTO REVIEW.</strong> Markup is advisory training documentation. Sentinel does not convert these comments into an automatic DOR rating, disciplinary finding, or employment decision.</div>
+
+    <section class="ops-panel mb-3">
+      <div class="row g-2">
+        <div class="col-md-4"><div class="border rounded p-3"><div class="eyebrow">Run</div><strong>{{ run.run_id }}</strong></div></div>
+        <div class="col-md-4"><div class="border rounded p-3"><div class="eyebrow">Revision Under Review</div><strong>{{ submission.revision }}</strong></div></div>
+        <div class="col-md-4"><div class="border rounded p-3"><div class="eyebrow">Annotations</div><strong>{{ annotations|length }}</strong></div></div>
+      </div>
+    </section>
+
+    {% if diff_rows %}
+    <section class="ops-panel mb-3">
+      <div class="eyebrow">Revision Comparison</div>
+      <h3>Original vs. Revision {{ submission.revision }}</h3>
+      <p class="small text-muted">Only changed lines are emphasized. This comparison does not replace human review of the full narrative.</p>
+      <div class="border rounded p-3" style="max-height:360px;overflow:auto">
+        {% for row in diff_rows %}
+        <div class="font-monospace small {% if row.kind == 'add' %}bg-success-subtle{% elif row.kind == 'remove' %}bg-danger-subtle{% endif %} px-2 py-1"><strong>{{ row.marker }}</strong> {{ row.text }}</div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    <section class="ops-panel mb-3">
+      <div class="eyebrow">Narrative Markup</div>
+      <h3>Annotate a Specific Line</h3>
+      {% if narrative_lines %}
+      <div class="d-grid gap-2 mb-3">
+        {% for line in narrative_lines %}
+        <div class="border rounded p-3">
+          <div class="small text-muted mb-1">Line {{ line.number }}</div>
+          <div style="white-space:pre-wrap">{{ line.text }}</div>
+        </div>
+        {% endfor %}
+      </div>
+      <form method="post">
+        <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
+        <input type="hidden" name="action" value="annotate_narrative">
+        <div class="row g-2">
+          <div class="col-md-2"><label class="form-label"><strong>Line</strong></label><select class="form-select" name="line_number" required>{% for line in narrative_lines %}<option value="{{ line.number }}">{{ line.number }}</option>{% endfor %}</select></div>
+          <div class="col-md-3"><label class="form-label"><strong>Category</strong></label><select class="form-select" name="category" required>{% for value, label in annotation_categories.items() %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></div>
+          <div class="col-md-7"><label class="form-label"><strong>FTO Comment</strong></label><textarea class="form-control" name="comment" rows="3" maxlength="3000" required></textarea></div>
+        </div>
+        <button class="btn btn-primary mt-2" type="submit">Add Narrative Annotation</button>
+      </form>
+      {% else %}<p class="text-muted">No narrative text is available for this revision.</p>{% endif %}
+    </section>
+
+    <section class="ops-panel mb-3">
+      <div class="eyebrow">Form Markup</div>
+      <h3>Annotate a Training Form Field</h3>
+      {% if form_fields %}
+      <form method="post">
+        <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
+        <input type="hidden" name="action" value="annotate_form">
+        <div class="row g-2">
+          <div class="col-lg-5"><label class="form-label"><strong>Field</strong></label><select class="form-select" name="field_key" required>{% for field in form_fields %}<option value="{{ field.key }}">{{ field.document_name }} — {{ field.label }}</option>{% endfor %}</select></div>
+          <div class="col-lg-2"><label class="form-label"><strong>Category</strong></label><select class="form-select" name="category" required>{% for value, label in annotation_categories.items() %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></div>
+          <div class="col-lg-5"><label class="form-label"><strong>FTO Comment</strong></label><textarea class="form-control" name="comment" rows="3" maxlength="3000" required></textarea></div>
+        </div>
+        <button class="btn btn-primary mt-2" type="submit">Add Form Annotation</button>
+      </form>
+      <hr>
+      <div class="d-grid gap-2">
+        {% for field in form_fields %}<div class="border rounded p-2"><strong>{{ field.document_name }} — {{ field.label }}</strong><div class="small text-muted">{{ field.value or '—' }}</div></div>{% endfor %}
+      </div>
+      {% else %}<p class="text-muted">No completed training-form fields are attached to this revision yet.</p>{% endif %}
+    </section>
+
+    <section class="ops-panel mb-3">
+      <div class="eyebrow">Preserved FTO Annotations</div>
+      <h3>Review History</h3>
+      {% if annotations %}
+      <div class="d-grid gap-2">
+        {% for item in annotations %}
+        <div class="border rounded p-3 {% if item.resolved %}opacity-75{% endif %}">
+          <div class="d-flex justify-content-between gap-2 flex-wrap"><strong>{{ item.category_label }}</strong><span class="small text-muted">{{ item.created_at }}</span></div>
+          <div class="small text-muted mb-1">{{ item.anchor_label }}</div>
+          {% if item.snapshot %}<div class="border-start ps-2 mb-2" style="white-space:pre-wrap">{{ item.snapshot }}</div>{% endif %}
+          <div style="white-space:pre-wrap">{{ item.comment }}</div>
+          {% if item.resolved %}<div class="alert alert-success mt-2 mb-0"><strong>Resolved:</strong> {{ item.resolution_note or 'Marked resolved by the FTO.' }}</div>{% else %}
+          <form method="post" class="mt-2">
+            <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
+            <input type="hidden" name="action" value="resolve_annotation">
+            <input type="hidden" name="annotation_id" value="{{ item.id }}">
+            <div class="input-group"><input class="form-control" name="resolution_note" maxlength="1000" placeholder="Optional resolution note"><button class="btn btn-outline-success" type="submit">Mark Resolved</button></div>
+          </form>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}<p class="text-muted mb-0">No FTO annotations have been added to this revision.</p>{% endif %}
+    </section>
+  </main>
+</div>
+{% endblock %}
