@@ -86,7 +86,7 @@ def test_simulation_mode_hides_evaluator_state_but_evaluator_mode_exposes_it():
     response = client.get('/sentinel/fto-center/scenario-lab/?scenario_id=S005')
     html = response.get_data(as_text=True)
     assert response.status_code == 200
-    assert 'Sentinel — Simulation Mode' in html
+    assert 'Sentinel Virtual Patrol Simulator' in html
     assert 'Scene Risk' not in html
     assert 'Hidden World State' not in html
     assert 'Unresolved / missed' not in html
@@ -125,7 +125,9 @@ def test_instructor_can_pause_and_enable_coaching_without_changing_truth():
     assert 'Resume Simulation' in response.get_data(as_text=True)
 
     response = client.get('/sentinel/fto-center/scenario-lab/?scenario_id=S003')
-    assert 'Simulation paused by the instructor' in response.get_data(as_text=True)
+    paused_html = response.get_data(as_text=True)
+    assert 'Paused by FTO.' in paused_html
+    assert 'call state is preserved' in paused_html
     with client.session_transaction() as s:
         assert s['sentinel_scenario_lab_v2']['run_context']['seed'] == seed
         assert s['sentinel_scenario_lab_v2']['world']['paused'] is True
