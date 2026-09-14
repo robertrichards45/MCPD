@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell mcpd-command-app">
+  {% include 'partials/nav.html' %}
+  <main class="page-wrap narrative-tool-page">
+    <section class="ops-head-card mb-3">
+      <div class="ops-head-copy">
+        <div class="eyebrow">Sentinel — Field Notebook</div>
+        <h2 class="mb-1">Training Field Notes</h2>
+        <p class="text-muted mb-0">Record information you actually develop during the synthetic call. Notes remain attached to this exact run for later FTO review.</p>
+      </div>
+      <div class="ops-head-actions d-flex gap-2 flex-wrap">
+        <a class="btn btn-outline-secondary" href="{{ back_url }}">{{ 'Back to Evaluator' if evaluator_mode else 'Back to Simulation' }}</a>
+      </div>
+    </section>
+
+    <div class="alert alert-secondary mb-3">
+      <strong>TRAINING / SYNTHETIC.</strong> This notebook is part of a fictional training run and is not an official police record.
+    </div>
+
+    {% if not state %}
+    <section class="ops-panel mb-3">
+      <div class="eyebrow">No Active Run</div>
+      <h3>Start a Scenario First</h3>
+      <p class="text-muted">The field notebook is tied to a specific simulator run so the notes, decisions, and later paperwork can be reviewed together.</p>
+      <a class="btn btn-primary" href="{{ url_for('reports.fto_refinements.scenario_lab.lab') }}">Open Virtual Patrol</a>
+    </section>
+    {% else %}
+    <section class="ops-panel mb-3">
+      <div class="row g-3">
+        <div class="col-md-4"><div class="border rounded p-3 h-100"><div class="eyebrow">Scenario</div><strong>{{ scenario_title }}</strong></div></div>
+        <div class="col-md-4"><div class="border rounded p-3 h-100"><div class="eyebrow">Run</div><strong>{{ run_id }}</strong></div></div>
+        <div class="col-md-4"><div class="border rounded p-3 h-100"><div class="eyebrow">Notebook Status</div><strong>{{ 'Open for field notes' if editable else 'Preserved / read only' }}</strong></div></div>
+      </div>
+    </section>
+
+    {% if editable %}
+    <section class="ops-panel mb-3">
+      <div class="eyebrow">New Entry</div>
+      <h3>Add a Field Note</h3>
+      <p class="small text-muted">Use this like an officer notebook: capture names, times, identifiers, statements, evidence reminders, follow-up items, or other facts you actually obtained. Sentinel will not fill in facts you failed to document.</p>
+      <form method="post">
+        <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
+        <input type="hidden" name="action" value="add">
+        <div class="row g-2">
+          <div class="col-md-3">
+            <label class="form-label" for="category"><strong>Category</strong></label>
+            <select class="form-select" id="category" name="category">
+              <option value="general">General</option>
+              <option value="identity">Identity / Contact</option>
+              <option value="statement">Statement</option>
+              <option value="vehicle">Vehicle</option>
+              <option value="evidence">Evidence</option>
+              <option value="timeline">Time / Sequence</option>
+              <option value="follow_up">Follow-Up</option>
+            </select>
+          </div>
+          <div class="col-md-9">
+            <label class="form-label" for="note_text"><strong>Note</strong></label>
+            <textarea class="form-control" id="note_text" name="note_text" rows="4" maxlength="2500" required placeholder="Write what you would actually put in your field notebook."></textarea>
+          </div>
+        </div>
+        <button class="btn btn-primary mt-2" type="submit">Save Field Note</button>
+      </form>
+    </section>
+    {% endif %}
+
+    <section class="ops-panel mb-3">
+      <div class="d-flex justify-content-between gap-3 align-items-start flex-wrap">
+        <div>
+          <div class="eyebrow">Notebook History</div>
+          <h3 class="mb-1">Entries for This Run</h3>
+        </div>
+        <span class="badge text-bg-light">{{ notes|length }} entr{{ 'y' if notes|length == 1 else 'ies' }}</span>
+      </div>
+
+      {% if notes %}
+      <div class="d-grid gap-2 mt-3">
+        {% for note in notes %}
+        <article class="border rounded p-3 {% if note.status == 'superseded' %}opacity-75{% endif %}">
+          <div class="d-flex justify-content-between gap-2 flex-wrap">
+            <div>
+              <strong>{{ note.id }}</strong>
+              <span class="badge text-bg-light ms-1">{{ note.category|replace('_',' ')|title }}</span>
+              {% if note.status == 'superseded' %}<span class="badge text-bg-warning ms-1">Superseded</span>{% endif %}
+              {% if note.revision_of %}<span class="small text-muted ms-1">Revision of {{ note.revision_of }}</span>{% endif %}
+            </div>
+            <span class="small text-muted">T+{{ note.clock }}</span>
+          </div>
+          <p class="mb-0 mt-2">{{ note.text }}</p>
+
+          {% if editable and note.status == 'active' %}
+          <details class="mt-2">
+            <summary class="small">Revise this note</summary>
+            <form method="post" class="mt-2">
+              <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
+              <input type="hidden" name="action" value="revise">
+              <input type="hidden" name="note_id" value="{{ note.id }}">
+              <input type="hidden" name="category" value="{{ note.category }}">
+              <textarea class="form-control" name="note_text" rows="3" maxlength="2500" required>{{ note.text }}</textarea>
+              <button class="btn btn-sm btn-outline-primary mt-2" type="submit">Save Revision</button>
+            </form>
+          </details>
+          {% endif %}
+        </article>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="text-muted mt-3 mb-0">No field notes have been recorded for this run.</p>
+      {% endif %}
+    </section>
+
+    {% if evaluator_mode %}
+    <div class="alert alert-info">
+      <strong>Evaluator view:</strong> Field notes are trainee-created training artifacts. Compare them with the scenario timeline, developed facts, and submitted paperwork; do not treat a missing or imperfect note as an automatic DOR finding.
+    </div>
+    {% endif %}
+    {% endif %}
+  </main>
+</div>
+{% endblock %}
