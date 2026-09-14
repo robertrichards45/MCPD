@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [main]
   push:
-    branches: [main, portal-workflow-v2]
+    branches: [main]
 
 permissions:
   contents: read
@@ -54,6 +54,7 @@ jobs:
               'reports.accidents',
               'bodycam.narrative_tool',
               'forms.call_type_rules_manager',
+              'mobile.incident_selected_forms',
           }
           missing = sorted(required - endpoints)
           if missing:
@@ -72,6 +73,9 @@ jobs:
 
       - name: Run Call Type Paperwork regression tests
         run: python -m pytest -q app/tests/test_call_type_rules_manager.py
+
+      - name: Run mobile incident workflow regression tests
+        run: python -m pytest -q app/tests/test_mobile_officer_flow.py
 
       - name: Run accident workflow regression tests
         run: python -m pytest -q app/tests/test_accident_tools_routing.py
