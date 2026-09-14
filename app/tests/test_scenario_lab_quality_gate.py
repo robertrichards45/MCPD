@@ -22,7 +22,7 @@ def _client():
     return client
 
 
-def test_weak_answer_does_not_advance():
+def test_weak_answer_does_not_clear_call_phase():
     client = _client()
     client.get('/sentinel/fto-center/scenario-lab/?scenario_id=S001')
     response = client.post('/sentinel/fto-center/scenario-lab/', data={
@@ -31,26 +31,29 @@ def test_weak_answer_does_not_advance():
     }, follow_redirects=True)
     html = response.get_data(as_text=True)
     assert response.status_code == 200
-    assert 'Decision 1 of 4' in html
+    assert 'Arrival' in html
     assert 'Decision held' in html or 'FTO intervention' in html
     assert 'A staff member meets you outside' not in html
     with client.session_transaction() as s:
         state = s['sentinel_scenario_lab_v2']
         assert state['turn'] == 0
         assert state['revision_count'] == 1
+        assert state['engine']['clock'] >= 1
 
 
-def test_stage_specific_answer_advances_and_releases_new_facts():
+def test_stage_specific_answer_clears_phase_and_releases_facts():
     client = _client()
     client.get('/sentinel/fto-center/scenario-lab/?scenario_id=S001')
     response = client.post('/sentinel/fto-center/scenario-lab/', data={
         '_csrf_token': 'test-token', 'scenario_id': 'S001', 'action': 'act',
-        'response_text': 'I advise dispatch I am on scene, maintain safe distance, contact the reporting staff member for initial facts, and request another unit if risk warrants it.'
+        'response_text': 'I advise dispatch I am on scene, maintain safe distance and positioning, contact the reporting staff member for initial facts, and request another unit if the risk warrants it.'
     }, follow_redirects=True)
     html = response.get_data(as_text=True)
     assert 'Decision accepted' in html
-    assert 'Decision 2 of 4' in html
+    assert 'Initial Contact' in html
     assert 'A staff member meets you outside' in html
+    with client.session_transaction() as s:
+        assert s['sentinel_scenario_lab_v2']['turn'] == 1
 
 
 def test_coaching_is_locked_until_sustained_effort():
@@ -75,20 +78,20 @@ def test_coaching_is_locked_until_sustained_effort():
     }, follow_redirects=True)
     html = response.get_data(as_text=True)
     assert 'FTO coaching question' in html
-    assert 'Decision 1 of 4' in html
+    assert 'Scene' in html
     with client.session_transaction() as s:
         state = s['sentinel_scenario_lab_v2']
         assert state['turn'] == 0
         assert state['hint_count'] == 1
 
 
-def test_finish_cannot_bypass_remaining_decisions():
+def test_finish_cannot_bypass_active_call():
     client = _client()
     client.get('/sentinel/fto-center/scenario-lab/?scenario_id=S006')
     response = client.post('/sentinel/fto-center/scenario-lab/', data={
         '_csrf_token': 'test-token', 'scenario_id': 'S006', 'action': 'finish'
     }, follow_redirects=True)
     html = response.get_data(as_text=True)
-    assert 'Complete every decision point before finishing' in html
-    assert 'Decision 1 of 4' in html
+    assert 'The call is still active' in html
+    assert 'Arrival' in html
     assert 'FTO Coaching Review' not in html
