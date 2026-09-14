@@ -34,6 +34,17 @@ def summarize_run(state):
             if actor_id:
                 contacted_people.add(actor_id)
 
+    discovered_people = []
+    for person_id, row in (world.get('people') or {}).items():
+        if not isinstance(row, dict):
+            continue
+        if row.get('discovered') and _text(row.get('status')).lower() not in {'hidden'}:
+            discovered_people.append(_text(person_id))
+    uncontacted_people = sorted(
+        person_id for person_id in discovered_people
+        if person_id and person_id not in contacted_people
+    )
+
     evidence = world.get('evidence') or {}
     evidence_status = Counter(_text(row.get('status')).lower() for row in evidence.values() if isinstance(row, dict))
     preserved_ids = [
@@ -44,6 +55,31 @@ def summarize_run(state):
         key for key, row in evidence.items()
         if isinstance(row, dict) and _text(row.get('status')).lower() == 'lost'
     ]
+    undiscovered_ids = [
+        key for key, row in evidence.items()
+        if isinstance(row, dict) and _text(row.get('status')).lower() in {'hidden', 'available'}
+    ]
+    missed_evidence_ids = sorted(set(lost_ids + undiscovered_ids))
+
+    missed_opportunities = []
+    if uncontacted_people:
+        missed_opportunities.append({
+            'type': 'people',
+            'label': 'People available but never contacted',
+            'items': uncontacted_people,
+        })
+    if undiscovered_ids:
+        missed_opportunities.append({
+            'type': 'evidence_undiscovered',
+            'label': 'Evidence opportunities never developed',
+            'items': sorted(undiscovered_ids),
+        })
+    if lost_ids:
+        missed_opportunities.append({
+            'type': 'evidence_lost',
+            'label': 'Evidence discovered/available but later lost',
+            'items': sorted(lost_ids),
+        })
 
     return {
         'scenario_id': _text(state.get('scenario_id')),
@@ -55,10 +91,14 @@ def summarize_run(state):
         'observations': action_types['observe'],
         'interviews': action_types['interview'] + action_types['speak'],
         'people_contacted': len(contacted_people),
+        'people_discovered': len(discovered_people),
+        'uncontacted_people': len(uncontacted_people),
+        'uncontacted_people_ids': uncontacted_people,
         'records_checks': action_types['records_check'],
         'evidence_actions': action_types['preserve_evidence'] + action_types['document_evidence'] + action_types['collect_evidence'],
         'evidence_preserved': len(preserved_ids),
         'evidence_lost': len(lost_ids),
+        'evidence_undiscovered': len(undiscovered_ids),
         'legal_articulation': action_types['legal_assessment'],
         'deescalation': action_types['deescalate'],
         'documentation': action_types['document_report'],
@@ -74,6 +114,10 @@ def summarize_run(state):
         'complete': bool(state.get('complete')),
         'preserved_evidence_ids': preserved_ids,
         'lost_evidence_ids': lost_ids,
+        'undiscovered_evidence_ids': undiscovered_ids,
+        'missed_evidence_ids': missed_evidence_ids,
+        'missed_opportunity_count': len(uncontacted_people) + len(missed_evidence_ids),
+        'missed_opportunities': missed_opportunities,
         'evidence_status': dict(evidence_status),
     }
 
@@ -82,9 +126,11 @@ COMPARISON_FIELDS = (
     ('radio_status', 'Radio status transmissions'),
     ('backup_requests', 'Backup requests'),
     ('people_contacted', 'People contacted'),
+    ('uncontacted_people', 'Available people not contacted'),
     ('interviews', 'Interview / conversation actions'),
     ('records_checks', 'Records checks'),
     ('evidence_preserved', 'Evidence preserved / collected'),
+    ('evidence_undiscovered', 'Evidence opportunities not developed'),
     ('evidence_lost', 'Evidence opportunities lost'),
     ('legal_articulation', 'Legal-basis articulation'),
     ('deescalation', 'De-escalation actions'),
@@ -147,11 +193,16 @@ def aggregate_patterns(states):
 
     interventions = sum(int(row.get('interventions', 0) or 0) for row in summaries)
     lost = sum(int(row.get('evidence_lost', 0) or 0) for row in summaries)
+    undiscovered = sum(int(row.get('evidence_undiscovered', 0) or 0) for row in summaries)
+    uncontacted = sum(int(row.get('uncontacted_people', 0) or 0) for row in summaries)
     return {
         'run_count': count,
         'patterns': patterns,
         'summaries': summaries,
         'total_interventions': interventions,
         'total_evidence_lost': lost,
+        'total_evidence_undiscovered': undiscovered,
+        'total_uncontacted_people': uncontacted,
+        'total_missed_opportunities': sum(int(row.get('missed_opportunity_count', 0) or 0) for row in summaries),
         'advisory': 'These are simulator observations for human FTO review, not DOR ratings or automatic training decisions.',
     }
