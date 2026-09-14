@@ -67,9 +67,15 @@
   var STORAGE_KEY = 'mcpd.mobile.incident.state';
   var selectedSlug = null;
 
-  /* Pre-fill today's date and current time */
+  /* Pre-fill the user's local date and current time. Using toISOString()
+     here can select the prior/next calendar date near local midnight. */
   var now = new Date();
-  document.getElementById('mfc-date').value = now.toISOString().slice(0, 10);
+  var localDate = [
+    now.getFullYear(),
+    String(now.getMonth() + 1).padStart(2, '0'),
+    String(now.getDate()).padStart(2, '0')
+  ].join('-');
+  document.getElementById('mfc-date').value = localDate;
   document.getElementById('mfc-time').value = now.toTimeString().slice(0, 5);
 
   /* Call type selection */
