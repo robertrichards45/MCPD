@@ -5,6 +5,7 @@ from flask_login import current_user, login_required
 
 from ..extensions import db
 from ..fto_models import FTORemediation
+from ..simulator.report_consistency import review_training_narrative
 from ..simulator.run_store import (
     can_evaluator_view,
     can_trainee_view,
@@ -135,6 +136,7 @@ def _comparison(scenario_id, submission):
         'cid_match': cid_match,
         'cid_required': cid_required,
         'trainee_cid': trainee_cid,
+        'report_analysis': submission.get('report_analysis') or {'mode': 'not_run', 'suggestions': []},
     }
 
 
@@ -242,6 +244,7 @@ def paperwork():
         package['submitted_at'] = submission['submitted_at']
         package['latest_revision'] = submission['revision']
         state['training_package'] = package
+        submission['report_analysis'] = review_training_narrative(state, submission['narrative'])
         add_timeline(
             state,
             'training_package_submitted' if submission['revision'] == 0 else 'training_package_revised',
@@ -252,6 +255,7 @@ def paperwork():
                 'revision': submission['revision'],
                 'selected_documents': submission['selected_documents'],
                 'cid_decision': submission['cid_decision'],
+                'report_analysis_mode': (submission.get('report_analysis') or {}).get('mode'),
             },
             visible_to_trainee=True,
         )
