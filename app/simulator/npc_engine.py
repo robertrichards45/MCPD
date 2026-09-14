@@ -1,5 +1,6 @@
 import hashlib
 import random
+import re
 
 from ..services.ai_client import (
     ask_openai_with_system,
@@ -81,6 +82,39 @@ def update_npc_from_actions(state, actor_id, actions):
     return row
 
 
+def _identity_reply(mind, question):
+    """Return the exact synthetic identity already developed for this person."""
+    identity = mind.get('identity') if mind.get('identity_obtained') else None
+    if not isinstance(identity, dict):
+        return ''
+    low = _text(question).lower()
+    identity_terms = (
+        'identify', 'identification', 'your name', 'name and', 'name,', 'date of birth',
+        'dob', 'birth date', 'address', 'phone', 'telephone', 'contact information',
+        'contact info', 'license', 'state id', 'id card',
+    )
+    if not any(term in low for term in identity_terms):
+        return ''
+
+    requested = []
+    if any(term in low for term in ('your name', 'name and', 'name,', 'identify', 'identification')):
+        requested.append(f"My name is {identity.get('full_name')}.")
+    if any(term in low for term in ('date of birth', 'dob', 'birth date')):
+        requested.append(f"My date of birth is {identity.get('dob')}.")
+    if 'address' in low:
+        requested.append(f"My address is {identity.get('address')}.")
+    if any(term in low for term in ('phone', 'telephone', 'contact information', 'contact info')):
+        requested.append(f"My phone number is {identity.get('phone')}.")
+    if any(term in low for term in ('license', 'state id', 'id card', 'identification')):
+        requested.append(f"My training identification number is {identity.get('state_id')}.")
+    if not requested:
+        requested = [
+            f"My name is {identity.get('full_name')}, date of birth {identity.get('dob')}, "
+            f"and my address is {identity.get('address')}."
+        ]
+    return ' '.join(requested)
+
+
 def _guard_reply(reply, allowed_text):
     answer = _text(reply)
     low = answer.lower()
@@ -107,6 +141,12 @@ def respond(state, actor, question, allowed_facts, visible_facts, fallback, run_
     mind = ensure_npc_mind(state, actor, run_context=run_context)
     update_npc_from_actions(state, actor.get('id'), officer_actions or [])
     question = _text(question)
+
+    identity_answer = _identity_reply(mind, question)
+    if identity_answer:
+        person_memory(state, actor.get('id'), question, identity_answer)
+        return identity_answer, 'structured_identity'
+
     allowed_facts = [_text(value) for value in (allowed_facts or []) if _text(value)]
     visible_facts = [_text(value) for value in (visible_facts or []) if _text(value)]
     incorrect_beliefs = [_text(value) for value in mind.get('incorrect_beliefs') or [] if _text(value)]
