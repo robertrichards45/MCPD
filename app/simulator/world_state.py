@@ -47,6 +47,7 @@ def new_world_state(scenario_id, run_context=None):
             'investigations': {'status': 'available_by_request'},
         },
         'evidence': {},
+        'statements': [],
         'records': {},
         'known_information': [],
         'outstanding_tasks': [],
@@ -71,6 +72,7 @@ def ensure_world_state(state, scenario_id):
     world['scenario_id'] = scenario_id
     world['run_id'] = _text(run_context.get('run_id')) or world.get('run_id', '')
     world.setdefault('scheduled_events', [])
+    world.setdefault('statements', [])
     return world
 
 
@@ -83,6 +85,7 @@ def replay_snapshot(world):
         'people': deepcopy(world.get('people') or {}),
         'resources': deepcopy(world.get('resources') or {}),
         'evidence': deepcopy(world.get('evidence') or {}),
+        'statements': deepcopy(world.get('statements') or []),
         'records': deepcopy(world.get('records') or {}),
         'known_information': deepcopy(world.get('known_information') or []),
         'irreversible_events': deepcopy(world.get('irreversible_events') or []),
@@ -312,11 +315,24 @@ def observable_world(state):
                 'role': row.get('role'),
                 'location': row.get('location'),
                 'status': row.get('status'),
+                'identity_obtained': bool(row.get('identity_obtained')),
+                'identity': deepcopy(row.get('identity') or {}) if row.get('identity_obtained') else {},
             })
     evidence = [
         {'id': row.get('id'), 'label': row.get('label'), 'status': row.get('status'), 'source': row.get('source')}
         for row in (world.get('evidence') or {}).values()
         if _evidence_visible_to_trainee(row)
+    ]
+    statements = [
+        {
+            'id': row.get('id'),
+            'declarant_name': row.get('declarant_name'),
+            'role': row.get('role'),
+            'status': row.get('status'),
+            'form_document_name': row.get('form_document_name'),
+        }
+        for row in (world.get('statements') or [])
+        if row.get('status') == 'received'
     ]
     resources = []
     for key, row in (world.get('resources') or {}).items():
@@ -329,6 +345,7 @@ def observable_world(state):
         'people': people,
         'resources': resources,
         'evidence': evidence,
+        'statements': statements,
         'known_information': deepcopy(world.get('known_information') or []),
         'radio_log': deepcopy(world.get('radio_log') or []),
         'timeline': [deepcopy(row) for row in (world.get('timeline') or []) if row.get('visible_to_trainee')],
