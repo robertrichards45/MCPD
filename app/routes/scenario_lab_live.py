@@ -7,6 +7,7 @@ from ..extensions import db
 from ..fto_models import FTOScenarioEvent
 from ..simulator.action_interpreter import actions_to_semantic_text, interpret_action
 from ..simulator.dispatch_engine import handle_radio_transmission
+from ..simulator.evidence_engine import apply_evidence_actions, initialize_truth_and_evidence
 from ..simulator.npc_engine import respond as npc_respond
 from ..simulator.run_store import (
     can_evaluator_view,
@@ -18,6 +19,8 @@ from ..simulator.run_store import (
     set_coaching_mode,
     set_pause,
 )
+from ..simulator.scenario_truth import build_scenario_truth, npc_truth_facts
+from ..simulator.time_engine import apply_time_consequences
 from ..simulator.world_state import (
     add_known_information,
     add_timeline,
@@ -55,6 +58,15 @@ bp = Blueprint('scenario_lab', __name__, url_prefix='/scenario-lab')
 SESSION_KEY = 'sentinel_scenario_lab_v2'
 
 
+def _initialize_truth(state, scenario_id):
+    world = ensure_world_state(state, scenario_id)
+    if not world.get('truth'):
+        truth = build_scenario_truth(scenario_id, state.get('run_context') or {})
+        initialize_truth_and_evidence(state, scenario_id, truth)
+    apply_time_consequences(state)
+    return world
+
+
 def _new_state(scenario_id):
     run_context = build_run_context(scenario_id)
     state = {
@@ -80,7 +92,7 @@ def _new_state(scenario_id):
         'run_context': run_context,
     }
     ensure_engine_state(state, scenario_id)
-    ensure_world_state(state, scenario_id)
+    _initialize_truth(state, scenario_id)
     dispatch_text = run_context.get('dispatch_variant') or SCENARIOS[scenario_id]['dispatch']
     add_known_information(state, dispatch_text, source='dispatch')
     add_timeline(state, 'dispatch', dispatch_text, actor='Dispatch', channel='radio', visible_to_trainee=True)
@@ -121,7 +133,7 @@ def _state_for(scenario_id):
         if not state.get('run_context'):
             state['run_context'] = build_run_context(scenario_id)
         ensure_engine_state(state, scenario_id)
-        ensure_world_state(state, scenario_id)
+        _initialize_truth(state, scenario_id)
     _merge_remote_controls(state)
     _sync_discovered_people(state, scenario_id, int(state.get('turn', 0)))
     session[SESSION_KEY] = state
@@ -131,8 +143,13 @@ def _state_for(scenario_id):
 
 def _available_cast(state, scenario_id, turn):
     rows = []
+    world = ensure_world_state(state, scenario_id)
+    departed = set(world.get('departed_actor_ids') or [])
     for actor in SCENARIO_META.get(scenario_id, {}).get('cast', []):
-        if actor.get('role') == 'Radio':
+        if actor.get('role') == 'Radio' or actor.get('id') in departed:
+            continue
+        person = (world.get('people') or {}).get(actor.get('id')) or {}
+        if person.get('status') == 'departed':
             continue
         if int(actor.get('from', 0)) <= turn and actor_available(state, scenario_id, actor['id']):
             rows.append(actor)
@@ -170,7 +187,10 @@ def _fallback_actor_reply(state, scenario_id, actor, question):
     variant = actor_variant_fact(state.get('run_context') or {}, actor['id'], question)
     if variant:
         return variant
+    truth_facts = npc_truth_facts((state.get('world') or {}).get('truth') or {}, actor['id'])
     low = _normalize(question).lower()
+    if truth_facts and any(term in low for term in ('status', 'what happened', 'why', 'know', 'see', 'saw', 'remember', 'tell me')):
+        return truth_facts[0]
     for pattern, reply in actor.get('facts', []):
         if re.search(pattern, low):
             return reply
@@ -182,7 +202,9 @@ def _fallback_actor_reply(state, scenario_id, actor, question):
 
 
 def _talk_to_actor(state, scenario_id, turn, actor, officer_text, actions):
+    world = ensure_world_state(state, scenario_id)
     allowed = [reply for _pattern, reply in actor.get('facts', [])]
+    allowed.extend(npc_truth_facts(world.get('truth') or {}, actor['id']))
     variant = actor_variant_fact(state.get('run_context') or {}, actor['id'], officer_text)
     if variant:
         allowed.append(variant)
@@ -221,7 +243,10 @@ def _append_consequences(state, values):
 def _catastrophic_outcome(scenario_id, turn, response_text, actions):
     low = _normalize(response_text).lower()
     action_types = {str(row.get('action_type') or '').lower() for row in (actions or [])}
+    world_truth = None
     if 'deadly_force' in action_types:
+        # Current scenario families do not create a hidden deadly threat. Future
+        # families may supply a structured force event that changes this check.
         return {
             'severity': 'critical',
             'title': 'Exercise terminated — deadly-force decision unsupported by presented facts',
@@ -407,6 +432,7 @@ def lab():
             actions = interpret_action(text, channel='radio', visible_people=visible_people, visible_resources=visible_resources)
             handle_radio_transmission(state, actions, text, state.get('run_context') or {})
             apply_interpreted_actions(state, actions, raw_text=text, channel='radio')
+            apply_time_consequences(state)
             _hidden_evaluate_and_advance(state, scenario_id, text, actions)
             _maybe_complete_after_clear(state, actions)
             _persist_session_state(state)
@@ -419,6 +445,8 @@ def lab():
                 return redirect(url_for('reports.fto_refinements.scenario_lab.lab', scenario_id=scenario_id))
             actions = interpret_action(text, channel='scene', visible_people=visible_people, visible_resources=visible_resources)
             apply_interpreted_actions(state, actions, raw_text=text, channel='scene')
+            apply_evidence_actions(state, actions, text)
+            apply_time_consequences(state)
 
             action_types = {str(row.get('action_type') or '').lower() for row in actions}
             if action_types & {'speak', 'interview'}:
