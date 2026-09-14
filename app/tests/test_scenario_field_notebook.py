@@ -114,3 +114,40 @@ def test_closed_run_notebook_is_read_only():
         notes = s['sentinel_scenario_lab_v2']['world']['field_notes']
         assert len(notes) == 1
         assert notes[0]['text'] == 'Original note.'
+
+
+def test_virtual_patrol_has_specific_scenario_picker_and_random_call_button():
+    client = _client()
+    response = client.get('/sentinel/fto-center/scenario-lab/?scenario_id=S001')
+    assert response.status_code == 200
+    html = response.get_data(as_text=True)
+    assert 'Choose the Call You Want to Work' in html
+    assert 'Medical Assist with Conflicting Information' in html
+    assert 'Traffic Stop - Escalating Driver' in html
+    assert 'Random Call' in html
+    assert 'Start Selected' in html
+
+
+def test_end_call_moves_to_paperwork_even_when_core_stages_are_unfinished():
+    client = _client()
+    response = client.get('/sentinel/fto-center/scenario-lab/?scenario_id=S006')
+    assert response.status_code == 200
+
+    with client.session_transaction() as s:
+        state = s['sentinel_scenario_lab_v2']
+        assert state['turn'] == 0
+        assert state['complete'] is False
+
+    response = client.post('/sentinel/fto-center/scenario-notebook/complete-call', data={
+        '_csrf_token': 'test-token',
+    }, follow_redirects=True)
+    assert response.status_code == 200
+    html = response.get_data(as_text=True)
+    assert 'Training Package' in html
+    assert 'Call closed' in html
+
+    with client.session_transaction() as s:
+        state = s['sentinel_scenario_lab_v2']
+        assert state['complete'] is True
+        assert state['post_call_handoff']['cleared_before_all_core_stages'] is True
+        assert state['post_call_handoff']['turn_at_clear'] == 0
