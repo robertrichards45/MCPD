@@ -146,6 +146,32 @@ function bindModuleFeed() {
   window.setInterval(() => refreshModuleFeed(feed), 15000);
 }
 
+function bindScenarioSingleSubmit() {
+  if (!window.location.pathname.startsWith('/sentinel/fto-center/scenario-lab')) return;
+
+  document.querySelectorAll('form').forEach((form) => {
+    const actionInput = form.querySelector('input[name="action"]');
+    const action = actionInput ? String(actionInput.value || '').toLowerCase() : '';
+    if (!['radio', 'officer_action'].includes(action)) return;
+
+    form.addEventListener('submit', (event) => {
+      if (form.dataset.submitting === '1') {
+        event.preventDefault();
+        return;
+      }
+      if (!form.checkValidity()) return;
+
+      form.dataset.submitting = '1';
+      const submitButton = form.querySelector('button[type="submit"]');
+      if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.setAttribute('aria-busy', 'true');
+        submitButton.textContent = action === 'radio' ? 'Transmitting…' : 'Working…';
+      }
+    });
+  });
+}
+
 function registerMcpdServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
   if (!window.isSecureContext && !['localhost', '127.0.0.1'].includes(window.location.hostname)) return;
@@ -257,6 +283,7 @@ window.addEventListener('load', () => {
 
   bindModuleScanner();
   bindModuleFeed();
+  bindScenarioSingleSubmit();
   guardMobileRender();
   registerMcpdServiceWorker();
 });
