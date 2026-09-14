@@ -92,7 +92,8 @@ def test_fto_center_exposes_standard_and_accelerated_program_roadmaps():
     assert 'Standard FTO Program — 8 Weeks' in html
     assert 'Accelerated FTO Program — 4 Weeks' in html
     assert 'DOR &amp; Remediation Workflow' in html or 'DOR & Remediation Workflow' in html
-    assert 'will not automatically pass, fail, advance, extend, discipline' in html
+    assert 'Sentinel supports training and coaching only' in html
+    assert 'Official DOR ratings, remediation decisions, advancement, extensions, and completion remain' in html
 
 
 def test_old_fto_instructor_get_redirects_to_fto_center():
