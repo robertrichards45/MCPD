@@ -50,6 +50,23 @@ def _run_id(state):
     return _text(((state or {}).get('run_context') or {}).get('run_id'))
 
 
+def _merge_remote_package(state):
+    """Refresh FTO-side package review changes into the trainee's browser session."""
+    run_id = _run_id(state)
+    if not run_id or not getattr(current_user, 'is_authenticated', False):
+        return state
+    run = load_run(run_id)
+    if run is None or run.trainee_id != current_user.id:
+        return state
+    remote_state = load_run_state(run)
+    remote_package = remote_state.get('training_package')
+    if isinstance(remote_package, dict):
+        state['training_package'] = remote_package
+        session[SESSION_KEY] = state
+        session.modified = True
+    return state
+
+
 def _package(state):
     package = state.get('training_package')
     if not isinstance(package, dict):
@@ -196,6 +213,7 @@ def paperwork():
         flash('Finish or clear the synthetic call before completing post-call paperwork.', 'warning')
         return redirect(url_for('reports.fto_refinements.scenario_lab.lab', scenario_id=state.get('scenario_id')))
 
+    state = _merge_remote_package(state)
     scenario_id = _text(state.get('scenario_id')).upper()
     package = _package(state)
     if request.method == 'POST':
