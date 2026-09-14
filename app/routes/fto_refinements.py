@@ -1,7 +1,7 @@
 import json
 from datetime import date, datetime
 
-from flask import Blueprint, abort, flash, redirect, render_template, request, session, url_for
+from flask import Blueprint, abort, current_app, flash, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_required
 from sqlalchemy import or_
 
@@ -12,6 +12,7 @@ from ..fto_models import (
     FTORemediation,
     FTOScenarioAlert,
 )
+from ..simulator.run_store import load_run, load_run_state, persist_run
 from .fto_program import (
     RATING_AREAS,
     RATING_CHOICES,
@@ -25,6 +26,7 @@ from .fto_program import (
 
 bp = Blueprint('fto_refinements', __name__, url_prefix='/sentinel/fto-center')
 _SCENARIO_SESSION_KEY = 'sentinel_scenario_lab_v2'
+_SERVER_STATE_MARKER = '_sentinel_server_state'
 
 
 def _ratings_from_form():
@@ -60,6 +62,73 @@ def _can_review_scenario_alert(user, alert):
 
 def _open_scenario_alert_count(user):
     return _scenario_alert_query_for(user).filter(FTOScenarioAlert.acknowledged_at.is_(None)).count()
+
+
+def _server_backed_simulator_session_enabled():
+    configured = current_app.config.get('SIMULATOR_SERVER_BACKED_SESSION')
+    if configured is not None:
+        return bool(configured)
+    return not bool(current_app.config.get('TESTING'))
+
+
+def _scenario_request():
+    return request.path.startswith('/sentinel/fto-center/scenario-lab')
+
+
+def _run_id_from_state(state):
+    if not isinstance(state, dict):
+        return ''
+    if state.get(_SERVER_STATE_MARKER):
+        return _text(state.get('run_id'))
+    return _text(((state.get('run_context') or {}).get('run_id')))
+
+
+def _compact_scenario_session_if_persisted():
+    if not _server_backed_simulator_session_enabled():
+        return
+    state = session.get(_SCENARIO_SESSION_KEY)
+    if not isinstance(state, dict) or state.get(_SERVER_STATE_MARKER):
+        return
+    run_id = _run_id_from_state(state)
+    if not run_id:
+        return
+    row = load_run(run_id)
+    if row is None or row.trainee_id != getattr(current_user, 'id', None):
+        return
+    session[_SCENARIO_SESSION_KEY] = {
+        _SERVER_STATE_MARKER: True,
+        'scenario_id': _text(state.get('scenario_id')),
+        'run_id': run_id,
+    }
+    session.modified = True
+
+
+@bp.before_app_request
+def hydrate_server_backed_scenario_session():
+    """Hydrate the active synthetic patrol run from DB before Scenario Lab executes."""
+    if not _scenario_request() or not getattr(current_user, 'is_authenticated', False):
+        return None
+    handle = session.get(_SCENARIO_SESSION_KEY)
+    if not isinstance(handle, dict) or not handle.get(_SERVER_STATE_MARKER):
+        return None
+    run_id = _text(handle.get('run_id'))
+    if not run_id:
+        session.pop(_SCENARIO_SESSION_KEY, None)
+        session.modified = True
+        return None
+    row = load_run(run_id)
+    if row is None or row.trainee_id != current_user.id:
+        session.pop(_SCENARIO_SESSION_KEY, None)
+        session.modified = True
+        return None
+    state = load_run_state(row)
+    if not isinstance(state, dict):
+        session.pop(_SCENARIO_SESSION_KEY, None)
+        session.modified = True
+        return None
+    session[_SCENARIO_SESSION_KEY] = state
+    session.modified = True
+    return None
 
 
 def dashboard_attention_items(user):
@@ -160,55 +229,64 @@ def dashboard_attention_items(user):
 
 @bp.after_app_request
 def persist_critical_scenario_alert(response):
-    """Persist an advisory alert for a trainee's assigned FTO after a terminal practice outcome."""
-    if not request.path.startswith('/sentinel/fto-center/scenario-lab'):
-        return response
-    if not getattr(current_user, 'is_authenticated', False):
+    """Persist terminal advisory alerts, then compact live state to a DB run handle."""
+    if not _scenario_request() or not getattr(current_user, 'is_authenticated', False):
         return response
 
     state = session.get(_SCENARIO_SESSION_KEY)
-    if not isinstance(state, dict) or not state.get('fto_alert') or state.get('alert_persisted'):
+    if not isinstance(state, dict):
         return response
 
-    assignment = (
-        FTOProgramAssignment.query
-        .filter(
-            FTOProgramAssignment.trainee_id == current_user.id,
-            FTOProgramAssignment.status.in_(('ACTIVE', 'PAUSED', 'EXTENDED')),
+    # A handle can be left in place on evaluator/review requests where the live
+    # trainee state did not need to be hydrated.
+    if state.get(_SERVER_STATE_MARKER):
+        return response
+
+    if state.get('fto_alert') and not state.get('alert_persisted'):
+        assignment = (
+            FTOProgramAssignment.query
+            .filter(
+                FTOProgramAssignment.trainee_id == current_user.id,
+                FTOProgramAssignment.status.in_(('ACTIVE', 'PAUSED', 'EXTENDED')),
+            )
+            .order_by(FTOProgramAssignment.updated_at.desc(), FTOProgramAssignment.id.desc())
+            .first()
         )
-        .order_by(FTOProgramAssignment.updated_at.desc(), FTOProgramAssignment.id.desc())
-        .first()
-    )
-    if assignment is None:
-        state['alert_delivery'] = 'No active FTO assignment is linked to this trainee account.'
-        session[_SCENARIO_SESSION_KEY] = state
-        session.modified = True
-        return response
+        if assignment is None:
+            state['alert_delivery'] = 'No active FTO assignment is linked to this trainee account.'
+        else:
+            outcome = state.get('terminal_outcome') or {}
+            summary_parts = [
+                _text(outcome.get('public_outcome')),
+                _text(outcome.get('officer_outcome')),
+                _text(outcome.get('legal_outcome')),
+            ]
+            alert = FTOScenarioAlert(
+                assignment_id=assignment.id,
+                trainee_id=current_user.id,
+                assigned_fto_id=assignment.assigned_fto_id,
+                supervisor_id=assignment.supervisor_id,
+                scenario_id=_text(state.get('scenario_id')) or 'UNKNOWN',
+                severity='CRITICAL',
+                outcome_title=_text(outcome.get('title'))[:255] or 'Critical Scenario Lab outcome',
+                outcome_summary=' '.join(part for part in summary_parts if part)[:3000] or None,
+            )
+            db.session.add(alert)
+            db.session.commit()
+            state['alert_persisted'] = True
+            state['alert_id'] = alert.id
+            state['alert_delivery'] = 'Delivered to the assigned FTO Center work queue for human review.'
 
-    outcome = state.get('terminal_outcome') or {}
-    summary_parts = [
-        _text(outcome.get('public_outcome')),
-        _text(outcome.get('officer_outcome')),
-        _text(outcome.get('legal_outcome')),
-    ]
-    alert = FTOScenarioAlert(
-        assignment_id=assignment.id,
-        trainee_id=current_user.id,
-        assigned_fto_id=assignment.assigned_fto_id,
-        supervisor_id=assignment.supervisor_id,
-        scenario_id=_text(state.get('scenario_id')) or 'UNKNOWN',
-        severity='CRITICAL',
-        outcome_title=_text(outcome.get('title'))[:255] or 'Critical Scenario Lab outcome',
-        outcome_summary=' '.join(part for part in summary_parts if part)[:3000] or None,
-    )
-    db.session.add(alert)
-    db.session.commit()
+        # Alert-delivery state belongs with the server-side run so it survives
+        # session compaction and pause/resume.
+        try:
+            persist_run(state, current_user.id)
+        except Exception:
+            db.session.rollback()
 
-    state['alert_persisted'] = True
-    state['alert_id'] = alert.id
-    state['alert_delivery'] = 'Delivered to the assigned FTO Center work queue for human review.'
     session[_SCENARIO_SESSION_KEY] = state
     session.modified = True
+    _compact_scenario_session_if_persisted()
     return response
 
 
