@@ -9,6 +9,7 @@ from ..simulator.run_store import (
     load_run_state,
     persist_run,
 )
+from ..simulator.world_state import add_timeline
 from .fto_program import can_manage
 from .scenario_lab import SCENARIOS
 
@@ -34,6 +35,51 @@ def _scenario_label(state):
 
 def _run_id(state):
     return _text(((state or {}).get('run_context') or {}).get('run_id'))
+
+
+@bp.post('/complete-call')
+@login_required
+def complete_call():
+    """Close the synthetic call and move the trainee into post-call documentation.
+
+    A trainee is allowed to clear a call even when simulator objectives remain
+    unfinished. That is realistic FTO evidence, not a reason to trap the trainee
+    in the live scene. The run records whether the handoff occurred before all
+    scenario stages were developed so the FTO can review the decision later.
+    """
+    state = _active_state()
+    if state is None:
+        flash('No active simulator call was found.', 'warning')
+        return redirect(url_for('reports.fto_refinements.scenario_lab.lab'))
+
+    scenario_id = _text(state.get('scenario_id')).upper()
+    scenario = SCENARIOS.get(scenario_id) or {}
+    stages_total = len(scenario.get('stages') or [])
+    turn = int(state.get('turn', 0) or 0)
+
+    if not state.get('complete'):
+        state['complete'] = True
+        state['post_call_handoff'] = {
+            'turn_at_clear': turn,
+            'stages_total': stages_total,
+            'cleared_before_all_core_stages': bool(stages_total and turn < stages_total),
+            'source': 'trainee_end_call',
+        }
+        add_timeline(
+            state,
+            'call_cleared',
+            'The trainee ended the synthetic call and moved to post-call documentation.',
+            actor='Trainee',
+            channel='radio',
+            details=dict(state['post_call_handoff']),
+            visible_to_trainee=True,
+        )
+
+    session[SESSION_KEY] = state
+    session.modified = True
+    persist_run(state, current_user.id)
+    flash('Call closed. Complete the required training paperwork and notification decisions.', 'success')
+    return redirect(url_for('reports.fto_refinements.scenario_paperwork.paperwork'))
 
 
 @bp.route('/', methods=['GET', 'POST'])
