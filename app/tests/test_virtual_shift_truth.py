@@ -65,7 +65,7 @@ def test_virtual_shift_uses_same_seed_for_cad_and_assigned_run():
     )
     html = response.get_data(as_text=True)
     assert response.status_code == 200
-    assert 'Sentinel — Simulation Mode' in html
+    assert 'Sentinel Virtual Patrol Simulator' in html
     assert 'Shift CAD' in html
     assert 'New Training Run' not in html
     assert 'Run S00' not in html
