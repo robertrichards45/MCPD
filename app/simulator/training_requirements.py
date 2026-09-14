@@ -27,6 +27,27 @@ def _trainee_document(name):
     return bool(low) and not any(term in low for term in _BLOTTER_TERMS)
 
 
+def _third_party_statement_form(name):
+    """Identify forms completed by the declarant rather than by the officer.
+
+    OPNAV 5580/2 voluntary statements and similarly named witness/declarant
+    statement forms must never be presented as trainee-authored paperwork.
+    Officer-authored force/detention statements are intentionally excluded from
+    this classification.
+    """
+    low = _text(name).lower()
+    if not low:
+        return False
+    if 'force use' in low or 'use of detention' in low:
+        return False
+    return (
+        'voluntary statement' in low
+        or 'witness statement' in low
+        or 'declarant statement' in low
+        or low.startswith('written statement')
+    )
+
+
 def load_scenario_requirement_overrides():
     path = _scenario_requirements_path()
     try:
@@ -39,10 +60,11 @@ def load_scenario_requirement_overrides():
 def requirements_for_scenario(scenario_id):
     """Return the one post-call requirements view consumed by the simulator.
 
-    Paperwork comes from the existing Call Type Paperwork Manager rules. Scenario-
-    specific training requirements supply notification/CID decisions that are not
-    currently represented by that older rules schema. Blotter/journal entries are
-    always excluded from trainee paperwork by product requirement.
+    Officer paperwork comes from the existing Call Type Paperwork Manager rules.
+    Third-party written statements are tracked separately because the witness,
+    complainant, victim, subject, or other declarant completes their own statement;
+    the trainee officer obtains and documents it but does not author it.
+    Blotter/journal entries are always excluded from trainee paperwork.
     """
     scenario_id = _text(scenario_id).upper()
     overrides = load_scenario_requirement_overrides().get(scenario_id) or {}
@@ -53,13 +75,22 @@ def requirements_for_scenario(scenario_id):
     manager_forms = _list(call_type.get('recommendedForms'))
     scenario_documents = _list(overrides.get('officerDocuments'))
     officer_documents = []
-    seen = set()
+    statement_documents = []
+    seen_officer = set()
+    seen_statement = set()
+
     for name in manager_forms + scenario_documents:
-        key = name.lower()
-        if not _trainee_document(name) or key in seen:
+        if not _trainee_document(name):
             continue
-        officer_documents.append(name)
-        seen.add(key)
+        key = name.lower()
+        if _third_party_statement_form(name):
+            if key not in seen_statement:
+                statement_documents.append(name)
+                seen_statement.add(key)
+            continue
+        if key not in seen_officer:
+            officer_documents.append(name)
+            seen_officer.add(key)
 
     cid = dict(overrides.get('cid') or {})
     requirement = _text(cid.get('requirement')).lower() or 'unconfigured'
@@ -71,7 +102,11 @@ def requirements_for_scenario(scenario_id):
         'call_type_slug': call_type_slug,
         'call_type_title': _text(call_type.get('title')) or call_type_slug.replace('-', ' ').title(),
         'officer_documents': officer_documents,
-        'optional_documents': [name for name in _list(call_type.get('optionalForms')) if _trainee_document(name)],
+        'optional_documents': [
+            name for name in _list(call_type.get('optionalForms'))
+            if _trainee_document(name) and not _third_party_statement_form(name)
+        ],
+        'statement_documents': statement_documents,
         'written_statements': _list(overrides.get('writtenStatements')),
         'notifications': deepcopy(overrides.get('notifications') or []),
         'cid': {
@@ -84,14 +119,11 @@ def requirements_for_scenario(scenario_id):
             'scenario_notifications': 'FTO scenario requirements',
         },
         'trainee_blotter_required': False,
+        'statements_are_declarant_completed': True,
     }
 
 
 def trainee_requirement_choices(scenario_id):
-    """Return choices safe to present only after the live call is over."""
+    """Return only documentation the trainee officer personally completes."""
     requirements = requirements_for_scenario(scenario_id)
-    choices = list(requirements['officer_documents'])
-    for item in requirements['written_statements']:
-        if item not in choices:
-            choices.append(item)
-    return choices
+    return list(requirements['officer_documents'])
