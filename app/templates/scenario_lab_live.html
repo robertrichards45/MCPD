@@ -5,180 +5,88 @@
   <main class="page-wrap narrative-tool-page">
     <section class="ops-head-card mb-3">
       <div class="ops-head-copy">
-        <div class="eyebrow">FTO Center — Adaptive Scenario Training</div>
-        <h2 class="mb-1">Scenario Lab</h2>
-        <p class="text-muted mb-0">Work the call, question people, make decisions, and deal with what your choices cause. Each new run changes the facts and can branch differently.</p>
+        <div class="eyebrow">Sentinel — Simulation Mode</div>
+        <h2 class="mb-1">Virtual Patrol</h2>
+        <p class="text-muted mb-0">Handle the call using the information you can actually see, hear, obtain, or develop.</p>
       </div>
       <div class="ops-head-actions d-flex gap-2 flex-wrap">
-        <a class="btn btn-outline-secondary" href="{{ url_for('reports.sentinel.fto_center') }}">Back to FTO Center</a>
-        <a class="btn btn-outline-secondary" href="{{ url_for('reports.sentinel.fto_program.dashboard') }}">Program Dashboard</a>
+        {% if evaluator_url %}<a class="btn btn-outline-secondary" href="{{ evaluator_url }}">FTO / Evaluator View</a>{% endif %}
+        <a class="btn btn-outline-secondary" href="{{ url_for('reports.sentinel.fto_center') }}">FTO Center</a>
       </div>
     </section>
 
-    <div class="alert alert-warning mb-3">
-      <strong>Synthetic training only.</strong> Injury, death, arrest, criminal referral, complaints, administrative review, and other outcomes are simulated. Legal references are research cues—not charging decisions—and jurisdiction must be verified.
+    <div class="alert alert-secondary mb-3">
+      <strong>TRAINING / SYNTHETIC.</strong> All people, records, evidence, outcomes, and identifiers in this simulator are fictional training data.
     </div>
 
-    <section class="ops-panel mb-3">
-      <form method="post" class="row g-3 align-items-end">
-        <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
-        <input type="hidden" name="action" value="switch">
-        <div class="col-lg-9">
-          <label class="form-label" for="scenario_id"><strong>Scenario Family</strong></label>
-          <select class="form-select" id="scenario_id" name="scenario_id">
-            {% for sid, item in scenarios.items() %}
-            <option value="{{ sid }}" {% if sid == scenario_id %}selected{% endif %}>{{ sid }} — {{ item.title }} — {{ item.difficulty }}</option>
-            {% endfor %}
-          </select>
-          <div class="form-text">Loading or restarting creates a new synthetic run with a new fact pattern.</div>
-        </div>
-        <div class="col-lg-3 d-grid"><button class="btn btn-outline-primary" type="submit">Start New Run</button></div>
-      </form>
-    </section>
+    {% if observable.paused %}
+    <div class="alert alert-warning"><strong>Simulation paused by the instructor.</strong> The call state is preserved exactly where it is.</div>
+    {% endif %}
+
+    {% if observable.coaching_mode and observable.fto_message %}
+    <div class="alert alert-info">
+      <div class="eyebrow">FTO Coaching</div>
+      <strong>{{ observable.fto_message }}</strong>
+    </div>
+    {% endif %}
 
     {% if terminated and terminal_outcome %}
     <section class="ops-panel mb-3 border-danger">
-      <div class="eyebrow text-danger">Terminal Training Outcome</div>
+      <div class="eyebrow text-danger">Simulation Ended</div>
       <h3>{{ terminal_outcome.title }}</h3>
-      <div class="alert alert-danger">
-        <p class="mb-2"><strong>Public / subject outcome:</strong> {{ terminal_outcome.public_outcome }}</p>
-        <p class="mb-2"><strong>Officer outcome:</strong> {{ terminal_outcome.officer_outcome }}</p>
-        <p class="mb-2"><strong>Legal / administrative storyline:</strong> {{ terminal_outcome.legal_outcome }}</p>
-        <p class="mb-0"><strong>FTO:</strong> {{ terminal_outcome.fto }}</p>
-      </div>
-      <p class="text-muted">This run ends here. The trainee cannot rewrite the decision and continue as though it never occurred.</p>
+      <p>{{ terminal_outcome.public_outcome }}</p>
+      <p>{{ terminal_outcome.officer_outcome }}</p>
+      <p class="text-muted mb-3">This is a synthetic training outcome. The decision remains part of the run and cannot be rewritten.</p>
       <div class="d-flex gap-2 flex-wrap">
+        {% if review_url %}<a class="btn btn-primary" href="{{ review_url }}">After-Action Review</a>{% endif %}
         <form method="post">
           <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
           <input type="hidden" name="scenario_id" value="{{ scenario_id }}">
-          <button class="btn btn-danger" type="submit" name="action" value="next">Continue to Next Scenario</button>
-        </form>
-        <form method="post">
-          <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
-          <input type="hidden" name="scenario_id" value="{{ scenario_id }}">
-          <button class="btn btn-outline-secondary" type="submit" name="action" value="reset">Start New Remediation Run</button>
+          <button class="btn btn-outline-secondary" type="submit" name="action" value="next">Next Training Call</button>
         </form>
       </div>
     </section>
     {% endif %}
 
-    <section class="row g-3 mb-3">
-      <div class="col-xl-5">
-        <article class="ops-panel h-100">
-          <div class="d-flex justify-content-between gap-2 flex-wrap mb-2">
-            <div>
-              <div class="eyebrow">{{ scenario.category }}</div>
-              <h3 class="mb-1">{{ scenario.title }}</h3>
-            </div>
-            <div class="d-flex gap-2 flex-wrap align-content-start">
-              <span class="badge text-bg-light">{{ scenario.difficulty }}</span>
-              <span class="badge text-bg-light">{{ scenario.phase }}</span>
-            </div>
-          </div>
-          <div class="border rounded p-3 mb-3">
-            <div class="eyebrow">Dispatch — This Run</div>
-            <p class="mb-0"><strong>{{ run_context.dispatch_variant or scenario.dispatch }}</strong></p>
-          </div>
-          <div class="border rounded p-3 mb-3">
-            <div class="eyebrow">Run Identifier</div>
-            <strong>{{ run_context.run_id }}</strong>
-            <div class="small text-muted mt-1">Used so an FTO can reproduce and discuss this exact synthetic fact pattern.</div>
-          </div>
-          <div class="border rounded p-3">
-            <div class="eyebrow">Scene Board</div>
-            <strong>{{ scene_meta.scene }}</strong>
-            <div class="row g-2 mt-1">
-              {% for clue in scene_meta.visual %}
-              <div class="col-12 col-md-6"><div class="small border rounded p-2 h-100">{{ clue }}</div></div>
-              {% endfor %}
-            </div>
-            <p class="small text-muted mt-2 mb-0">Only released facts appear here. Visual material is added only when it carries evidence, scene-position, or decision value.</p>
-          </div>
-        </article>
+    {% if complete and not terminated %}
+    <section class="ops-panel mb-3 border-success">
+      <div class="eyebrow">Call Cleared</div>
+      <h3>Run complete</h3>
+      <p class="text-muted">The live simulation is over. Instruction and evaluation now move to after-action review.</p>
+      <div class="d-flex gap-2 flex-wrap">
+        {% if review_url %}<a class="btn btn-success" href="{{ review_url }}">Open After-Action Review</a>{% endif %}
+        <form method="post">
+          <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
+          <input type="hidden" name="scenario_id" value="{{ scenario_id }}">
+          <button class="btn btn-outline-secondary" type="submit" name="action" value="next">Next Training Call</button>
+        </form>
       </div>
+    </section>
+    {% endif %}
 
+    {% if not complete %}
+    <section class="row g-3 mb-3">
       <div class="col-xl-7">
         <article class="ops-panel h-100">
-          <div class="eyebrow">Live Call State</div>
-          <div class="row g-2 mt-1">
-            <div class="col-md-4"><div class="border rounded p-3 h-100"><div class="small text-muted">Scene Risk</div><strong>{{ scene_status.risk_label }}</strong></div></div>
-            <div class="col-md-4"><div class="border rounded p-3 h-100"><div class="small text-muted">Person / Patient State</div><strong>{{ scene_status.subject_state or 'Neutral' }}</strong></div></div>
-            <div class="col-md-4"><div class="border rounded p-3 h-100"><div class="small text-muted">Backup / Resources</div><strong>{{ scene_status.backup or 'Not Requested' }}</strong></div></div>
+          <div class="d-flex justify-content-between gap-2 align-items-start flex-wrap">
+            <div>
+              <div class="eyebrow">CAD / Dispatch</div>
+              <h3 class="mb-1">Active Call</h3>
+            </div>
+            <div class="small text-muted">Run {{ run_context.run_id }}</div>
           </div>
-          <div class="row g-2 mt-1">
-            <div class="col-md-4"><div class="border rounded p-3 h-100"><div class="small text-muted">Core Phases Cleared</div><strong>{{ core_phases_cleared }}</strong></div></div>
-            <div class="col-md-4"><div class="border rounded p-3 h-100"><div class="small text-muted">Branch Events</div><strong>{{ scene_status.branch_count }}</strong></div></div>
-            <div class="col-md-4"><div class="border rounded p-3 h-100"><div class="small text-muted">Elapsed Call Beats</div><strong>{{ scene_status.clock }}</strong></div></div>
+          <div class="border rounded p-3 my-3">
+            <strong>{{ run_context.dispatch_variant or scenario.dispatch }}</strong>
           </div>
-          {% if scene_status.complaint_risk or scene_status.use_of_force_review %}
-          <div class="alert alert-warning mt-3 mb-0">
-            {% if scene_status.complaint_risk %}<div><strong>Complaint exposure:</strong> the run now contains facts that could generate a complaint/review.</div>{% endif %}
-            {% if scene_status.use_of_force_review %}<div><strong>Force review:</strong> the run now requires later human review of the control decision.</div>{% endif %}
-          </div>
-          {% endif %}
-          {% if scene_status.updates %}
-          <hr>
-          <div class="eyebrow">What Has Changed</div>
-          <ul class="mb-0">{% for item in scene_status.updates %}<li>{{ item }}</li>{% endfor %}</ul>
-          {% endif %}
-          {% if scene_status.evidence %}
-          <hr>
-          <div class="eyebrow">Evidence / Information Preserved</div>
-          <ul class="mb-0">{% for item in scene_status.evidence %}<li>{{ item }}</li>{% endfor %}</ul>
-          {% endif %}
-        </article>
-      </div>
-    </section>
-
-    {% if latest_reveal and not terminated %}
-    <section class="ops-panel mb-3 border-primary">
-      <div class="eyebrow">New Information Developed</div>
-      <p class="mb-0">{{ latest_reveal }}</p>
-    </section>
-    {% endif %}
-
-    {% if run_context.visual_evidence %}
-    <section class="ops-panel mb-3">
-      <div class="eyebrow">Conditional Visual Evidence</div>
-      <h3>Only When It Adds Training Value</h3>
-      <div class="row g-2">
-        {% for item in run_context.visual_evidence %}
-        <div class="col-md-6"><div class="border rounded p-3 h-100">{{ item }}</div></div>
-        {% endfor %}
-      </div>
-    </section>
-    {% endif %}
-
-    {% if not complete and current_stage %}
-    <section class="row g-3 mb-3">
-      <div class="col-xl-5">
-        <article class="ops-panel h-100">
-          <div class="eyebrow">Live Contacts</div>
-          <h3>Talk to People in the Call</h3>
-          <p class="small text-muted">Ask what you would actually ask. People know only what they reasonably know in this run. Time passes while you investigate, so witnesses, evidence, resources, and behavior can change.</p>
-          <form method="post">
-            <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
-            <input type="hidden" name="scenario_id" value="{{ scenario_id }}">
-            <input type="hidden" name="action" value="ask_actor">
-            <label class="form-label" for="actor_id"><strong>Contact</strong></label>
-            <select class="form-select mb-2" id="actor_id" name="actor_id" required>
-              {% for actor in available_cast %}
-              <option value="{{ actor.id }}">{{ actor.name }} — {{ actor.role }}</option>
-              {% endfor %}
-            </select>
-            <label class="form-label" for="question_text"><strong>Your question</strong></label>
-            <textarea class="form-control" id="question_text" name="question_text" rows="4" maxlength="800" required placeholder="Ask one specific question you would actually ask on scene."></textarea>
-            <button class="btn btn-outline-primary mt-2" type="submit">Ask Question</button>
-          </form>
-
-          {% if dialogue %}
-          <hr>
-          <div class="eyebrow">Recent Contact Log</div>
+          {% if observable.radio_log %}
           <div class="d-grid gap-2">
-            {% for item in dialogue|reverse %}
+            {% for item in observable.radio_log[-10:] %}
             <div class="border rounded p-2">
-              <div class="d-flex justify-content-between gap-2"><strong>{{ item.actor }}</strong><span class="small text-muted">{{ item.role }}</span></div>
-              <div class="mt-1">{{ item.answer }}</div>
+              <div class="d-flex justify-content-between gap-2">
+                <strong>{{ item.speaker }}</strong>
+                <span class="small text-muted">T+{{ item.clock }}</span>
+              </div>
+              <div>{{ item.text }}</div>
             </div>
             {% endfor %}
           </div>
@@ -186,154 +94,124 @@
         </article>
       </div>
 
-      <div class="col-xl-7">
-        <article class="ops-panel h-100 {% if current_stage.kind == 'Live Branch Event' %}border-warning{% endif %}">
-          <div class="eyebrow">{{ current_stage.kind }}</div>
-          <h3>{{ current_stage.name }}</h3>
-          <p><strong>{{ current_stage.prompt }}</strong></p>
-          {% if current_stage.kind == 'Live Branch Event' %}
-          <div class="alert alert-warning">This event exists because of the current call state. Resolve it before the underlying call can continue.</div>
+      <div class="col-xl-5">
+        <article class="ops-panel h-100">
+          <div class="eyebrow">Current Scene</div>
+          <h3>{{ scene_meta.scene }}</h3>
+          <div class="row g-2 mb-2">
+            {% for clue in scene_meta.visual %}
+            <div class="col-12"><div class="border rounded p-2">{{ clue }}</div></div>
+            {% endfor %}
+          </div>
+          {% if latest_reveal %}<div class="border rounded p-2 mb-2"><strong>Developed:</strong> {{ latest_reveal }}</div>{% endif %}
+          {% for item in visible_scene_updates %}
+          <div class="border rounded p-2 mb-2">{{ item }}</div>
+          {% endfor %}
+          <div class="small text-muted mt-2">Simulation time: T+{{ observable.clock }}</div>
+        </article>
+      </div>
+    </section>
+
+    <section class="row g-3 mb-3">
+      <div class="col-xl-4">
+        <article class="ops-panel h-100">
+          <div class="eyebrow">People / Resources Present</div>
+          <h3>What You Currently Have</h3>
+          {% if observable.people %}
+          <div class="d-grid gap-2 mb-3">
+            {% for person in observable.people %}
+            <div class="border rounded p-2">
+              <strong>{{ person.name }}</strong>
+              <div class="small text-muted">{{ person.role }}{% if person.location %} — {{ person.location }}{% endif %}</div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}<p class="text-muted">No person has been identified or encountered yet.</p>{% endif %}
+          {% if observable.resources %}
+          <hr>
+          {% for resource in observable.resources %}<div class="mb-1"><strong>{{ resource.id|replace('_',' ')|title }}:</strong> {{ resource.status|replace('_',' ') }}</div>{% endfor %}
           {% endif %}
+        </article>
+      </div>
+
+      <div class="col-xl-4">
+        <article class="ops-panel h-100">
+          <div class="eyebrow">Information / Evidence Obtained</div>
+          <h3>Developed During the Call</h3>
+          {% if observable.known_information %}
+          <ul>{% for item in observable.known_information %}<li>{{ item.text }}</li>{% endfor %}</ul>
+          {% endif %}
+          {% if observable.evidence %}
+          <div class="d-grid gap-2">
+            {% for item in observable.evidence %}<div class="border rounded p-2"><strong>{{ item.label }}</strong><div class="small text-muted">{{ item.status }}</div></div>{% endfor %}
+          </div>
+          {% endif %}
+          {% if not observable.known_information and not observable.evidence %}<p class="text-muted">Nothing beyond the initial call information has been developed yet.</p>{% endif %}
+        </article>
+      </div>
+
+      <div class="col-xl-4">
+        <article class="ops-panel h-100">
+          <div class="eyebrow">Recent Scene Activity</div>
+          <h3>What Has Happened</h3>
+          {% if observable.timeline %}
+          <div class="d-grid gap-2">
+            {% for item in observable.timeline[-8:]|reverse %}
+            <div class="border rounded p-2"><span class="small text-muted">T+{{ item.clock }}</span> {{ item.summary }}</div>
+            {% endfor %}
+          </div>
+          {% else %}<p class="text-muted">The call has just begun.</p>{% endif %}
+        </article>
+      </div>
+    </section>
+
+    <section class="row g-3 mb-3">
+      <div class="col-xl-5">
+        <article class="ops-panel h-100">
+          <div class="eyebrow">Radio</div>
+          <h3>Transmit</h3>
+          <p class="small text-muted">Talk to Dispatch and request agency resources naturally. Dispatch only knows what is available through this synthetic call, radio traffic, and simulated records.</p>
           <form method="post">
             <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
             <input type="hidden" name="scenario_id" value="{{ scenario_id }}">
-            <label class="form-label" for="response_text"><strong>What do you actually do next?</strong></label>
-            <textarea class="form-control" id="response_text" name="response_text" rows="9" maxlength="2500" required placeholder="Work the call. Explain the action and reasoning you would use based on the facts currently available."></textarea>
-            <div class="d-flex gap-2 flex-wrap mt-3">
-              <button class="btn btn-primary" type="submit" name="action" value="act">Commit Decision</button>
-              {% if hint_status and hint_status.unlocked %}
-              <button class="btn btn-outline-warning" type="submit" name="action" value="hint" formnovalidate>Request FTO Coaching Question</button>
-              {% else %}
-              <button class="btn btn-outline-secondary" type="button" disabled title="Coaching unlocks only after sustained effort.">FTO Coaching Locked</button>
-              {% endif %}
-              <button class="btn btn-outline-secondary" type="submit" name="action" value="reset" formnovalidate>Start Different Run</button>
-            </div>
+            <input type="hidden" name="action" value="radio">
+            <textarea class="form-control" name="radio_text" rows="5" maxlength="1200" required placeholder="Example: 214, show me on scene."></textarea>
+            <button class="btn btn-outline-primary mt-2" type="submit" {% if observable.paused %}disabled{% endif %}>Transmit</button>
           </form>
-          {% if hint_status and not hint_status.unlocked %}
-          <p class="small text-muted mt-2 mb-0">Coaching stays locked until the trainee genuinely works this problem. Current problem: {{ hint_status.attempts }}/{{ hint_status.required_attempts }} committed decisions or {{ hint_status.interactions }}/{{ hint_status.required_interactions }} live contacts.</p>
-          {% endif %}
+        </article>
+      </div>
+
+      <div class="col-xl-7">
+        <article class="ops-panel h-100">
+          <div class="eyebrow">Officer Action</div>
+          <h3>What do you do?</h3>
+          <p class="small text-muted">State what you actually do, say, observe, ask, move toward, preserve, check, or decide. There are no action-menu answers.</p>
+          <form method="post">
+            <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
+            <input type="hidden" name="scenario_id" value="{{ scenario_id }}">
+            <input type="hidden" name="action" value="officer_action">
+            <textarea class="form-control" name="command_text" rows="8" maxlength="2500" required placeholder="Example: I want to talk to the reporting party first. Ma'am, tell me exactly what happened."></textarea>
+            <button class="btn btn-primary mt-2" type="submit" {% if observable.paused %}disabled{% endif %}>Do / Say This</button>
+          </form>
         </article>
       </div>
     </section>
     {% endif %}
 
-    {% if feedback and not terminated %}
-    <section class="ops-panel mb-3 {% if feedback.status == 'accepted' %}border-success{% elif feedback.status == 'intervention' %}border-danger{% elif feedback.status == 'hint' %}border-warning{% else %}border-warning{% endif %}">
-      <div class="eyebrow">Immediate FTO Feedback</div>
-      <h3>{{ feedback.headline }}</h3>
-      <p>{{ feedback.consequence }}</p>
-      {% if feedback.status != 'hint' %}
-      <div class="row g-3">
-        <div class="col-md-6">
-          <strong>Demonstrated</strong>
-          {% if feedback.strengths %}<ul class="mb-0">{% for item in feedback.strengths %}<li>{{ item }}</li>{% endfor %}</ul>{% else %}<p class="text-muted mb-0">No required concept was clearly demonstrated yet.</p>{% endif %}
-        </div>
-        <div class="col-md-6">
-          <strong>Still unresolved</strong>
-          {% if feedback.gaps %}<ul class="mb-0">{% for item in feedback.gaps %}<li>{{ item }}</li>{% endfor %}</ul>{% else %}<p class="text-muted mb-0">No configured gap remains for this problem.</p>{% endif %}
-        </div>
-      </div>
-      {% if feedback.issues %}
-      <div class="alert alert-danger mt-3 mb-0"><strong>FTO stop:</strong><ul class="mb-0">{% for item in feedback.issues %}<li>{{ item }}</li>{% endfor %}</ul></div>
-      {% endif %}
-      {% endif %}
-    </section>
-    {% endif %}
-
-    {% if consequences and not terminated %}
     <section class="ops-panel mb-3">
-      <div class="eyebrow">Consequences Already Created</div>
-      <h3>The Call Remembers What You Did</h3>
-      <ul class="mb-0">{% for item in consequences %}<li>{{ item }}</li>{% endfor %}</ul>
-    </section>
-    {% endif %}
-
-    {% if legal_refs and not terminated %}
-    <section class="ops-panel mb-3">
-      <div class="eyebrow">Legal / Policy Research Unlocked</div>
-      <h3>References Made Relevant by the Facts</h3>
-      <p class="text-muted">These are research cues, not answers. Determine whether the facts, person status, installation jurisdiction, and required elements actually make the authority applicable.</p>
-      <div class="row g-3">
-        {% for item in legal_refs %}
-        <div class="col-lg-6">
-          <article class="border rounded p-3 h-100">
-            <div class="d-flex justify-content-between gap-2"><strong>{{ item.citation }}</strong><span class="badge text-bg-light">{{ item.jurisdiction }}</span></div>
-            <div class="mt-1"><strong>{{ item.title }}</strong></div>
-            <p class="small text-muted mt-2">{{ item.why }}</p>
-            <div class="d-flex gap-2 flex-wrap">
-              <a class="btn btn-sm btn-outline-primary" href="{{ item.lookup_url }}" target="_blank" rel="noopener">Open Law Lookup</a>
-              {% if item.official_url %}<a class="btn btn-sm btn-outline-secondary" href="{{ item.official_url }}" target="_blank" rel="noopener">Official U.S. Code</a>{% endif %}
-            </div>
-          </article>
+      <div class="d-flex justify-content-between gap-3 align-items-end flex-wrap">
+        <div>
+          <div class="eyebrow">New Training Run</div>
+          <p class="text-muted mb-0">Starting over creates a different synthetic fact pattern. The run identifier preserves reproducibility for FTO review.</p>
         </div>
-        {% endfor %}
-      </div>
-    </section>
-    {% endif %}
-
-    {% if not complete and ready_to_finish %}
-    <section class="ops-panel mb-3">
-      <div class="eyebrow">Incident Ready to Close</div>
-      <h3>Finish the Run</h3>
-      <p class="text-muted">No live branch is unresolved and the core call has reached disposition. Finish to review the complete adaptive run.</p>
-      <form method="post" class="d-flex gap-2 flex-wrap">
-        <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
-        <input type="hidden" name="scenario_id" value="{{ scenario_id }}">
-        <button class="btn btn-success" type="submit" name="action" value="finish">Finish Scenario</button>
-        <button class="btn btn-outline-secondary" type="submit" name="action" value="reset">Start Different Run</button>
-      </form>
-    </section>
-    {% endif %}
-
-    {% if result %}
-    <section class="ops-panel mb-3">
-      <div class="eyebrow">FTO Coaching Review</div>
-      <h3>SEG-Aligned Practice Cues</h3>
-      <h4>{{ result.practice_outcome }}</h4>
-      <div class="alert alert-secondary"><strong>Important:</strong> {{ result.notice }}</div>
-      <div class="row g-3 mb-3">
-        <div class="col-md-2"><div class="border rounded p-3 h-100"><div class="eyebrow">Attempts</div><strong class="fs-4">{{ result.attempts }}</strong></div></div>
-        <div class="col-md-2"><div class="border rounded p-3 h-100"><div class="eyebrow">Revisions</div><strong class="fs-4">{{ result.revisions }}</strong></div></div>
-        <div class="col-md-2"><div class="border rounded p-3 h-100"><div class="eyebrow">Contacts</div><strong class="fs-4">{{ result.actor_interactions }}</strong></div></div>
-        <div class="col-md-2"><div class="border rounded p-3 h-100"><div class="eyebrow">Branch Events</div><strong class="fs-4">{{ result.branch_count }}</strong></div></div>
-        <div class="col-md-2"><div class="border rounded p-3 h-100"><div class="eyebrow">Hints</div><strong class="fs-4">{{ result.hints }}</strong></div></div>
-        <div class="col-md-2"><div class="border rounded p-3 h-100"><div class="eyebrow">Run ID</div><span class="small">{{ result.run_id }}</span></div></div>
-      </div>
-      {% if result.complaint_risk or result.use_of_force_review %}
-      <div class="alert alert-warning">
-        This synthetic run generated {% if result.complaint_risk %}complaint/review exposure{% endif %}{% if result.complaint_risk and result.use_of_force_review %} and {% endif %}{% if result.use_of_force_review %}a control/use-of-force review cue{% endif %}. Human FTO review is required; the software does not create discipline or an official finding.
-      </div>
-      {% endif %}
-      <div class="row g-3">
-        {% for item in result.areas %}
-        <div class="col-md-6 col-xl-4">
-          <article class="border rounded p-3 h-100">
-            <div class="d-flex justify-content-between gap-2"><strong>{{ item.area }}</strong><span class="badge {% if item.level == 'good' %}text-bg-success{% elif item.level == 'partial' %}text-bg-warning{% else %}text-bg-secondary{% endif %}">{{ item.status }}</span></div>
-          </article>
-        </div>
-        {% endfor %}
-      </div>
-      <div class="d-flex gap-2 flex-wrap mt-3">
-        <form method="post">
+        <form method="post" class="d-flex gap-2 flex-wrap">
           <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
-          <input type="hidden" name="scenario_id" value="{{ scenario_id }}">
-          <button class="btn btn-primary" type="submit" name="action" value="next">Next Scenario Family</button>
+          <select class="form-select" name="scenario_id">
+            {% for sid, item in scenarios.items() %}<option value="{{ sid }}" {% if sid == scenario_id %}selected{% endif %}>{{ item.title }}</option>{% endfor %}
+          </select>
+          <button class="btn btn-outline-secondary" type="submit" name="action" value="switch">Start New Run</button>
         </form>
-        <form method="post">
-          <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
-          <input type="hidden" name="scenario_id" value="{{ scenario_id }}">
-          <button class="btn btn-outline-secondary" type="submit" name="action" value="reset">Run Same Family With New Facts</button>
-        </form>
-        <a class="btn btn-outline-primary" href="{{ url_for('reports.sentinel.fto_program.dashboard') }}">Open Official FTO Record</a>
       </div>
-    </section>
-    {% endif %}
-
-    <section class="ops-panel mb-3">
-      <div class="eyebrow">Training Design</div>
-      <h3>Adaptive, Not a Quiz</h3>
-      <p class="text-muted mb-2">The trainee is not shown a four-answer script. Time, risk, contacts, evidence, resources, and actor behavior can change. Coaching must be earned and asks questions rather than giving answers. Catastrophic decisions can end the run and notify the assigned FTO.</p>
-      <div class="row g-2">{% for area in practice_areas %}<div class="col-md-6 col-xl-3"><div class="border rounded p-3 h-100">{{ area }}</div></div>{% endfor %}</div>
     </section>
   </main>
 </div>
