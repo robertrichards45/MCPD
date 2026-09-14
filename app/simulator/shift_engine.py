@@ -2,6 +2,8 @@ import hashlib
 import random
 import secrets
 
+from .location_catalog import enrich_vehicle_crash_dispatch
+
 
 SHIFT_VERSION = 2
 SHIFT_CALL_POOL = (
@@ -80,7 +82,8 @@ def assign_next_call(shift):
 
 def set_dispatch_details(shift, dispatch_text):
     """Attach only the CAD information the trainee should receive for this call."""
-    text = str(dispatch_text or '').strip()
+    seed = shift.get('active_call_seed') or shift.get('seed') or 1
+    text = enrich_vehicle_crash_dispatch(dispatch_text, seed=seed)
     shift['active_dispatch_text'] = text
     if text:
         log = list(shift.get('dispatch_log') or [])
@@ -103,8 +106,11 @@ def set_dispatch_details(shift, dispatch_text):
 def attach_run(shift, scenario_id, run_id, dispatch_text):
     shift['active_scenario_id'] = scenario_id
     shift['active_run_id'] = run_id
-    if dispatch_text and not shift.get('active_dispatch_text'):
-        set_dispatch_details(shift, dispatch_text)
+    # Re-normalize the active CAD text here as defense in depth so a custom or
+    # dynamically generated crash call cannot bypass the public-road enrichment.
+    active_text = dispatch_text or shift.get('active_dispatch_text')
+    if active_text:
+        set_dispatch_details(shift, active_text)
     return shift
 
 
