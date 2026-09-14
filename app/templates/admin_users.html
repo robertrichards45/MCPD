@@ -4,8 +4,8 @@
   {% include 'partials/nav.html' %}
   <div class="page-wrap">
     <div class="ops-head-card mb-3">
-      <h2 class="mb-1">Personnel Management</h2>
-      <p class="text-muted mb-0">Website Controllers manage all personnel. Watch Commanders manage only their installation's officers.</p>
+      <h2 class="mb-1">Personnel &amp; Account Management</h2>
+      <p class="text-muted mb-0">Review new account requests, create accounts, assign roles and supervisors, and manage existing personnel access.</p>
     </div>
 
     {% if database_write_notice %}<div class="alert alert-warning">{{ database_write_notice }}</div>{% endif %}
@@ -18,8 +18,11 @@
     <div class="ops-panel mb-4 pending-approvals-card">
       <div class="d-flex align-items-center gap-2 mb-3">
         <span class="pending-badge-dot"></span>
-        <h5 class="mb-0">Pending Account Requests</h5>
-        <span class="badge bg-warning text-dark ms-1">{{ pending_accounts|length }}</span>
+        <div>
+          <h5 class="mb-0">New Account Requests</h5>
+          <div class="text-muted small">Verify the officer, assign the correct access level, then approve or reject the request.</div>
+        </div>
+        <span class="badge bg-warning text-dark ms-auto">{{ pending_accounts|length }} Pending</span>
       </div>
       <div class="pending-list">
         {% for pending in pending_accounts %}
@@ -54,7 +57,7 @@
                   </select>
                 </div>
                 <div>
-                  <label class="form-label-xs">Supervisor / Unit</label>
+                  <label class="form-label-xs">Supervisor</label>
                   <select class="form-control form-control-sm" name="supervisor_id">
                     <option value="">Unassigned</option>
                     {% for sup in supervisors %}
@@ -82,13 +85,23 @@
         {% endfor %}
       </div>
     </div>
+    {% else %}
+    <div class="ops-panel mb-4">
+      <div class="d-flex align-items-center justify-content-between gap-3 flex-wrap">
+        <div>
+          <h5 class="mb-1">New Account Requests</h5>
+          <p class="text-muted mb-0">There are no accounts waiting for approval.</p>
+        </div>
+        <span class="badge bg-success">0 Pending</span>
+      </div>
+    </div>
     {% endif %}
 
-    {# ── Create / Update ────────────────────────────────────────────── #}
+    {# ── Create / Maintenance ───────────────────────────────────────── #}
     <div class="row">
       <div class="col-md-6">
         <details class="ops-panel mb-3 collapse-card" open>
-          <summary>Create User</summary>
+          <summary>Create Account</summary>
           <div class="mt-2">
         <form method="post">
           <input type="hidden" name="action" value="create" />
@@ -107,7 +120,7 @@
           <div class="mb-3"><label>Officer Number</label><input class="form-control" name="officer_number" /></div>
           <div class="mb-3"><label>EDIPI</label><input class="form-control" name="edipi" /></div>
           <div class="mb-3"><label>Username</label><input class="form-control" name="username" /></div>
-          <div class="mb-3"><label>Password</label><input class="form-control" name="password" /></div>
+          <div class="mb-3"><label>Temporary Password</label><input class="form-control" name="password" /></div>
           <div class="mb-3"><label>Role</label>
             <select class="form-control" name="role">
               {% for role in role_options %}
@@ -115,7 +128,7 @@
               {% endfor %}
             </select>
           </div>
-          <div class="mb-3"><label>Supervisor / Watch Commander</label>
+          <div class="mb-3"><label>Supervisor</label>
             <select class="form-control" name="supervisor_id">
               <option value="">Unassigned</option>
               {% for supervisor in supervisors %}
@@ -123,18 +136,14 @@
               {% endfor %}
             </select>
           </div>
-          <div class="form-check mb-3">
-            <input class="form-check-input" type="checkbox" name="can_grade_cleoc_reports" value="1" id="createCanGradeCleoc">
-            <label class="form-check-label" for="createCanGradeCleoc">Can review mock reports</label>
-          </div>
-          <button class="btn btn-primary">Create</button>
+          <button class="btn btn-primary">Create Account</button>
         </form>
           </div>
         </details>
       </div>
       <div class="col-md-6">
-        <details class="ops-panel mb-3 collapse-card" open>
-          <summary>Update / Reassign / Reset / Disable / Delete</summary>
+        <details class="ops-panel mb-3 collapse-card">
+          <summary>Account Maintenance</summary>
           <div class="mt-2">
 
         <div class="personnel-section-label">Transfer / Reassign Officer</div>
@@ -166,7 +175,7 @@
               {% endfor %}
             </select>
           </div>
-          <div class="mb-3"><label>Supervisor / Watch Commander</label>
+          <div class="mb-3"><label>Supervisor</label>
             <select class="form-control" name="supervisor_id">
               <option value="">Unassigned</option>
               {% for supervisor in supervisors %}
@@ -174,11 +183,7 @@
               {% endfor %}
             </select>
           </div>
-          <div class="form-check mb-3">
-            <input class="form-check-input" type="checkbox" name="can_grade_cleoc_reports" value="1" id="updateCanGradeCleoc">
-            <label class="form-check-label" for="updateCanGradeCleoc">Grant mock report review access</label>
-          </div>
-          <button class="btn btn-secondary">Transfer / Save Reassignment</button>
+          <button class="btn btn-secondary">Save Reassignment</button>
         </form>
 
         <div class="personnel-section-label">Reset Password</div>
@@ -207,7 +212,7 @@
               {% endfor %}
             </select>
           </div>
-          <div class="form-text mb-2">Disables login but keeps the record.</div>
+          <div class="form-text mb-2">Disables login but keeps the personnel record.</div>
           <button class="btn btn-warning text-dark">Disable Account</button>
         </form>
         <form method="post" onsubmit="return confirm('Permanently delete this officer\'s profile and all associated data? This cannot be undone.');">
@@ -220,7 +225,7 @@
               {% endfor %}
             </select>
           </div>
-          <div class="form-text mb-2">Use when an officer separates from the Marine Corps. Permanently removes their profile.</div>
+          <div class="form-text mb-2">Permanently removes the account and associated portal profile.</div>
           <button class="btn btn-danger">Delete Profile Permanently</button>
         </form>
         <form method="post" class="mt-3">
@@ -271,7 +276,7 @@
               <td>{{ u.role_label }}</td>
               <td>{{ 'Granted' if u.builder_mode_access else '' }}</td>
               <td>{{ u.supervisor.display_name if u.supervisor else '' }}</td>
-              <td>{{ u.active }}</td>
+              <td>{{ 'Yes' if u.active else 'No' }}</td>
               <td class="personnel-row-actions">
                 {% if u.id in editable_user_ids %}
                   <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('auth.edit_user', user_id=u.id) }}">Edit</a>
