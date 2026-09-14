@@ -317,3 +317,125 @@ def test_open_remediation_blocks_completion_until_human_verification():
             assert db.session.get(FTORemediation, 1).status == 'CLOSED'
     finally:
         _dispose(app, db_path)
+
+
+def test_dor_draft_can_be_edited_and_finalized_but_finalized_record_is_locked():
+    app, db_path, ids = _build_app_and_users()
+    try:
+        client = app.test_client()
+        _create_program(client, ids)
+        _login(client, ids['fto'])
+
+        response = client.post(
+            '/sentinel/fto-center/programs/1/dor',
+            data={
+                '_csrf_token': 'test-token',
+                'training_date': '2026-09-14',
+                'scenario_id': 'Initial field observation',
+                'rating_0': '2',
+                'strengths': 'Initial strength.',
+                'comments': 'Draft comments.',
+                'action': 'draft',
+            },
+            follow_redirects=False,
+        )
+        assert response.status_code == 302
+
+        record = client.get('/sentinel/fto-center/programs/1')
+        assert record.status_code == 200
+        assert 'Edit Draft' in record.get_data(as_text=True)
+
+        edit_page = client.get('/sentinel/fto-center/dor/1/edit')
+        assert edit_page.status_code == 200
+        html = edit_page.get_data(as_text=True)
+        assert 'Edit Daily Observation Report' in html
+        assert 'Draft comments.' in html
+
+        _login(client, ids['outsider'])
+        assert client.get('/sentinel/fto-center/dor/1/edit').status_code == 403
+
+        _login(client, ids['fto'])
+        response = client.post(
+            '/sentinel/fto-center/dor/1/edit',
+            data={
+                '_csrf_token': 'test-token',
+                'training_date': '2026-09-15',
+                'scenario_id': 'Updated observation',
+                'rating_0': '4',
+                'rating_1': '3',
+                'strengths': 'Updated observed strength.',
+                'development_areas': 'Continue report articulation.',
+                'comments': 'Finalized after FTO review of the draft.',
+                'action': 'finalize',
+            },
+            follow_redirects=False,
+        )
+        assert response.status_code == 302
+
+        with app.app_context():
+            dor = db.session.get(FTODailyObservation, 1)
+            assert dor.status == 'FINALIZED'
+            assert dor.training_date.isoformat() == '2026-09-15'
+            assert dor.scenario_id == 'Updated observation'
+            assert dor.overall_rating == 3.5
+            assert dor.finalized_at is not None
+            assert 'Finalized after FTO review' in dor.comments
+
+        assert client.get('/sentinel/fto-center/dor/1/edit').status_code == 403
+    finally:
+        _dispose(app, db_path)
+
+
+def test_fto_attention_items_are_role_scoped_on_dashboard():
+    app, db_path, ids = _build_app_and_users()
+    try:
+        client = app.test_client()
+        _create_program(client, ids)
+
+        _login(client, ids['fto'])
+        response = client.post(
+            '/sentinel/fto-center/programs/1/dor',
+            data={
+                '_csrf_token': 'test-token',
+                'training_date': '2026-09-14',
+                'rating_0': '3',
+                'action': 'draft',
+            },
+            follow_redirects=False,
+        )
+        assert response.status_code == 302
+        dashboard = client.get('/dashboard')
+        assert dashboard.status_code == 200
+        assert 'FTO DOR Drafts' in dashboard.get_data(as_text=True)
+
+        response = client.post(
+            '/sentinel/fto-center/dor/1/edit',
+            data={
+                '_csrf_token': 'test-token',
+                'training_date': '2026-09-14',
+                'rating_0': '3',
+                'rating_1': '4',
+                'action': 'finalize',
+            },
+            follow_redirects=False,
+        )
+        assert response.status_code == 302
+
+        _login(client, ids['supervisor'])
+        dashboard = client.get('/dashboard')
+        assert dashboard.status_code == 200
+        assert 'FTO DORs Awaiting Review' in dashboard.get_data(as_text=True)
+
+        _login(client, ids['trainee'])
+        dashboard = client.get('/dashboard')
+        assert dashboard.status_code == 200
+        assert 'FTO DOR Acknowledgment' in dashboard.get_data(as_text=True)
+
+        _login(client, ids['outsider'])
+        dashboard = client.get('/dashboard')
+        assert dashboard.status_code == 200
+        outsider_html = dashboard.get_data(as_text=True)
+        assert 'FTO DOR Drafts' not in outsider_html
+        assert 'FTO DOR Acknowledgment' not in outsider_html
+    finally:
+        _dispose(app, db_path)
