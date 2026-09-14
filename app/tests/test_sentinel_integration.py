@@ -84,7 +84,7 @@ def test_fto_center_returns_expanded_category_scoring_and_followup():
     assert 'Why was this flagged?' in html
 
 
-def test_fto_center_exposes_standard_and_accelerated_program_roadmaps():
+def test_fto_center_exposes_roadmaps_and_interactive_scenario_lab_entry():
     client = _client()
     response = client.get('/sentinel/fto-center')
     html = response.get_data(as_text=True)
@@ -93,7 +93,87 @@ def test_fto_center_exposes_standard_and_accelerated_program_roadmaps():
     assert 'Accelerated FTO Program — 4 Weeks' in html
     assert 'DOR &amp; Remediation Workflow' in html or 'DOR & Remediation Workflow' in html
     assert 'Sentinel supports training and coaching only' in html
-    assert 'Official DOR ratings, remediation decisions, advancement, extensions, and completion remain' in html
+    assert 'assigned FTO/instructor owns the final rating' in html
+    assert 'Open Interactive Lab' in html
+    assert '/sentinel/fto-center/scenario-lab/' in html
+
+
+def test_interactive_scenario_lab_reveals_scripted_facts_turn_by_turn():
+    client = _client()
+    response = client.get('/sentinel/fto-center/scenario-lab/?scenario_id=S003')
+    html = response.get_data(as_text=True)
+    assert response.status_code == 200
+    assert 'Scenario Lab' in html
+    assert 'Damage to Government Property' in html
+    assert 'No additional facts have been revealed yet.' in html
+
+    response = client.post(
+        '/sentinel/fto-center/scenario-lab/',
+        data={
+            '_csrf_token': 'test-token',
+            'scenario_id': 'S003',
+            'action': 'act',
+            'response_text': 'I will interview the witness and inspect and photograph the damaged pole.',
+        },
+    )
+    html = response.get_data(as_text=True)
+    assert response.status_code == 200
+    assert 'contractor pickup backed into the light pole' in html
+    assert 'light pole is bent near its base' in html
+    assert 'Turn 1' in html
+    assert 'I will interview the witness' in html
+
+    response = client.post(
+        '/sentinel/fto-center/scenario-lab/',
+        data={
+            '_csrf_token': 'test-token',
+            'scenario_id': 'S003',
+            'action': 'act',
+            'response_text': 'I will contact and identify the contractor driver and ask what happened.',
+        },
+    )
+    html = response.get_data(as_text=True)
+    assert response.status_code == 200
+    assert 'contractor driver acknowledges the vehicle contacted the pole' in html
+    assert 'Turn 2' in html
+    assert 'I will interview the witness' in html
+
+
+def test_interactive_scenario_lab_finish_scores_complete_session_and_switch_resets():
+    client = _client()
+    client.get('/sentinel/fto-center/scenario-lab/?scenario_id=S001')
+    client.post(
+        '/sentinel/fto-center/scenario-lab/',
+        data={
+            '_csrf_token': 'test-token',
+            'scenario_id': 'S001',
+            'action': 'act',
+            'response_text': 'I advise dispatch on scene, request backup, contact the witness, keep distance, watch hands, and ask what occurred.',
+        },
+    )
+    response = client.post(
+        '/sentinel/fto-center/scenario-lab/',
+        data={
+            '_csrf_token': 'test-token',
+            'scenario_id': 'S001',
+            'action': 'finish',
+            'response_text': 'I will explain the legal authority, use de-escalation, document statements, and complete the report.',
+        },
+    )
+    html = response.get_data(as_text=True)
+    assert response.status_code == 200
+    assert 'End-of-Scenario Feedback' in html
+    assert 'Practice score' in html
+    assert 'Turns completed' in html
+    assert 'Why was this flagged?' in html
+    assert 'Instructor review required' in html
+
+    response = client.get('/sentinel/fto-center/scenario-lab/?scenario_id=S005')
+    html = response.get_data(as_text=True)
+    assert response.status_code == 200
+    assert 'Traffic Stop — Escalating Driver' in html
+    assert 'Submit your first action to begin the scenario.' in html
+    assert 'I advise dispatch on scene' not in html
 
 
 def test_old_fto_instructor_get_redirects_to_fto_center():
