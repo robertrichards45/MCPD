@@ -77,6 +77,9 @@ jobs:
       - name: Run Scenario Lab live branching tests
         run: python -m pytest -q app/tests/test_scenario_lab_live_training.py
 
+      - name: Run Scenario Lab FTO alert test
+        run: python -m pytest -q app/tests/test_scenario_lab_fto_alert.py
+
       - name: Run retired-module regression tests
         run: python -m pytest -q app/tests/test_retired_modules.py
 
