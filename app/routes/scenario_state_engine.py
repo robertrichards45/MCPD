@@ -45,6 +45,14 @@ SCENARIO_PROFILES = {
     'S004': {'risk': 28, 'subject_state': 'guarded', 'backup': 'not_requested'},
     'S005': {'risk': 52, 'subject_state': 'argumentative', 'backup': 'not_requested'},
     'S006': {'risk': 35, 'subject_state': 'medical', 'backup': 'ems_enroute'},
+    'S007': {'risk': 38, 'subject_state': 'neutral', 'backup': 'not_requested'},
+    'S008': {'risk': 46, 'subject_state': 'detained', 'backup': 'not_requested'},
+    'S009': {'risk': 58, 'subject_state': 'volatile', 'backup': 'not_requested'},
+    'S010': {'risk': 54, 'subject_state': 'impaired_possible', 'backup': 'not_requested'},
+    'S011': {'risk': 34, 'subject_state': 'guarded', 'backup': 'not_requested'},
+    'S012': {'risk': 22, 'subject_state': 'neutral', 'backup': 'not_requested'},
+    'S013': {'risk': 40, 'subject_state': 'guarded', 'backup': 'not_requested'},
+    'S014': {'risk': 50, 'subject_state': 'unknown', 'backup': 'not_requested'},
 }
 
 
@@ -119,6 +127,42 @@ BRANCH_EVENTS = {
             ('Radio / status update', ('dispatch', 'radio', 'update', 'status'), 'Update communications when the condition materially changes.'),
         ],
         'resolved': 'EMS has clear access to the patient while witness information remains available for later clarification.',
+    },
+    'warrant_extradition_conflict': {
+        'title': 'Live Event — Entering Agency Declines Extradition',
+        'prompt': 'Dispatch confirms the warrant is valid, but the entering agency states it will not extradite from this location. No separate local charge has been established. What do you do now?',
+        'minimum': 3,
+        'criteria': [
+            ('Confirm the limitation', ('confirm', 'entering agency', 'extradition', 'warrant number', 'official'), 'Confirm the warrant/extradition limitation through the appropriate source and document who provided it.'),
+            ('Reassess detention authority', ('authority', 'lawful basis', 'legal basis', 'detention', 'no local charge', 'independent basis'), 'Reassess whether any lawful independent basis remains to continue detention.'),
+            ('Lawful disposition', ('release', 'free to leave', 'not transport', 'do not transport', 'no transport'), 'Do not assume transport merely because a warrant hit exists when the entering agency declines extradition and no other basis is established.'),
+            ('Document / notify', ('document', 'report', 'dispatch', 'supervisor', 'warrant'), 'Document the confirmation, disposition, and appropriate notifications.'),
+        ],
+        'resolved': 'The extradition limitation is confirmed and the detention/disposition is reassessed using the authority actually available in the exercise.',
+    },
+    'domestic_interference': {
+        'title': 'Live Event — Parties Interfere With Each Other’s Accounts',
+        'prompt': 'The parties remain together. One repeatedly interrupts, answers for the other, and moves closer whenever the other person starts to speak. What do you do now?',
+        'minimum': 3,
+        'criteria': [
+            ('Separate / position parties', ('separate', 'apart', 'different area', 'distance', 'position'), 'Separate or position the parties so safety and independent accounts can be assessed.'),
+            ('Immediate safety / injury check', ('weapon', 'threat', 'injury', 'ems', 'safety'), 'Continue checking immediate danger, injuries, and medical needs without deciding guilt by assumption.'),
+            ('Independent accounts', ('interview', 'statement', 'separately', 'independent', 'each party', 'both parties'), 'Develop independent accounts rather than allowing one party to control the narrative.'),
+            ('Evidence / witnesses', ('witness', 'photo', 'photograph', 'evidence', 'scene', 'document'), 'Preserve observable evidence and identify corroborating witnesses or other sources.'),
+        ],
+        'resolved': 'The parties are controlled separately enough for independent safety and fact development to continue.',
+    },
+    'consent_withdrawn': {
+        'title': 'Live Event — Consent Is Withdrawn',
+        'prompt': 'The person clearly withdraws consent before the consent-based search is complete. No new warrant or other search authority has been established yet. What do you do now?',
+        'minimum': 3,
+        'criteria': [
+            ('Stop consent-based search', ('stop', 'cease', 'withdrawn', 'no longer consent', 'end the search'), 'Recognize that withdrawn consent cannot continue to serve as the authority for further consent-based searching.'),
+            ('Reassess lawful authority', ('warrant', 'probable cause', 'authority', 'legal basis', 'exception', 'independent basis'), 'Identify whether another lawful authority actually exists instead of inventing one.'),
+            ('Respect scope / control', ('scope', 'do not search', 'not search', 'secure', 'preserve'), 'Control the scene and preserve what can lawfully be preserved without exceeding the remaining authority.'),
+            ('Document withdrawal', ('document', 'report', 'time', 'statement', 'withdraw'), 'Document the withdrawal and the officer response accurately.'),
+        ],
+        'resolved': 'The consent-based search stops and the investigation continues only within authority independently supported by the facts.',
     },
 }
 
@@ -323,6 +367,8 @@ def _maybe_branch_after_decision(state, scenario_id, turn, signals, accepted):
         return consequences
 
     risk = int(engine.get('risk', 0))
+    choices = dict((state.get('run_context') or {}).get('choices') or {})
+
     if scenario_id == 'S001' and turn >= 1 and (signals.get('antagonistic') or risk >= 68):
         message = 'The subject reacts to the encounter by stepping closer and raising his voice while bystanders begin recording.'
         if _set_pending_event(engine, 'subject_escalation', message):
@@ -336,6 +382,21 @@ def _maybe_branch_after_decision(state, scenario_id, turn, signals, accepted):
     if scenario_id == 'S006' and turn == 0 and accepted and not signals.get('ems'):
         message = 'The patient becomes less responsive just as EMS arrives, and coworkers crowd toward the patient.'
         if _set_pending_event(engine, 'patient_deterioration', message):
+            consequences.append(message)
+
+    if scenario_id == 'S008' and turn >= 1 and 'declines extradition' in _low(choices.get('extradition')):
+        message = 'Dispatch confirms the warrant, but the entering agency advises it will not extradite from this location.'
+        if _set_pending_event(engine, 'warrant_extradition_conflict', message):
+            consequences.append(message)
+
+    if scenario_id == 'S009' and turn == 0 and not signals.get('scene_control'):
+        message = 'Because the parties remain together, one begins interrupting and answering for the other while moving closer.'
+        if _set_pending_event(engine, 'domestic_interference', message):
+            consequences.append(message)
+
+    if scenario_id == 'S013' and turn >= 1 and 'withdrawn' in _low(choices.get('consent')):
+        message = 'The person clearly withdraws consent before the consent-based search is complete.'
+        if _set_pending_event(engine, 'consent_withdrawn', message):
             consequences.append(message)
 
     return consequences
@@ -422,6 +483,18 @@ def resolve_branch_event(state, scenario_id, event_id, response_text):
         evidence = dict(engine.get('evidence') or {})
         evidence['medical_priority'] = True
         engine['evidence'] = evidence
+    elif event_id == 'warrant_extradition_conflict':
+        engine['subject_state'] = 'disposition_pending'
+        engine['risk'] = max(20, int(engine.get('risk', 40)) - 8)
+    elif event_id == 'domestic_interference':
+        evidence = dict(engine.get('evidence') or {})
+        evidence['scene_control'] = True
+        engine['evidence'] = evidence
+        engine['subject_state'] = 'parties_separated'
+        engine['risk'] = max(35, int(engine.get('risk', 58)) - 10)
+    elif event_id == 'consent_withdrawn':
+        engine['subject_state'] = 'search_authority_reassessed'
+        engine['risk'] = max(20, int(engine.get('risk', 40)) - 5)
 
     engine['pending_event'] = None
     _advance_clock(state, scenario_id, 0, 1)
