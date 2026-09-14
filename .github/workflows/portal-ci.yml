@@ -60,6 +60,10 @@ jobs:
               'reports.fto_refinements.scenario_analytics.dashboard',
               'reports.fto_refinements.scenario_instructor.control',
               'reports.fto_refinements.scenario_paperwork.paperwork',
+              'reports.fto_refinements.scenario_paperwork.training_forms_page',
+              'reports.fto_refinements.scenario_paperwork.review_training_forms',
+              'reports.fto_refinements.scenario_paperwork.markup',
+              'reports.fto_refinements.scenario_paperwork.review_paperwork',
               'reports.sentinel.portal_search',
               'reports.accidents',
               'bodycam.narrative_tool',
@@ -106,6 +110,9 @@ jobs:
 
       - name: Run Scenario Lab paperwork/debrief lifecycle tests
         run: python -m pytest -q app/tests/test_scenario_paperwork_workflow.py
+
+      - name: Run training-form isolation and FTO markup tests
+        run: python -m pytest -q app/tests/test_scenario_training_forms_and_markup.py
 
       - name: Run Scenario Lab adaptive state-engine tests
         run: python -m pytest -q app/tests/test_scenario_state_engine.py
