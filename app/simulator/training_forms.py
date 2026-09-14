@@ -3,6 +3,7 @@ import re
 from copy import deepcopy
 
 from ..services.form_field_registry import get_registry_entry
+from .training_requirements import is_declarant_completed_form
 
 
 _TEXT_LIMIT = 4000
@@ -18,35 +19,16 @@ def _token(value, size=12):
     return hashlib.sha1(raw).hexdigest()[:size]
 
 
-def _fallback_fields(document_name):
-    low = _text(document_name).lower()
-    if 'statement' in low:
-        return [
-            {'name': 'declarant_name', 'label': 'Declarant / Statement Source', 'type': 'text', 'required': True, 'status': 'TRAINING'},
-            {'name': 'statement_date', 'label': 'Statement Date', 'type': 'date', 'required': True, 'status': 'TRAINING'},
-            {'name': 'statement_time', 'label': 'Statement Time', 'type': 'time', 'required': False, 'status': 'TRAINING'},
-            {'name': 'statement_location', 'label': 'Statement Location', 'type': 'text', 'required': True, 'status': 'TRAINING'},
-            {'name': 'statement_text', 'label': 'Statement', 'type': 'textarea', 'required': True, 'status': 'TRAINING'},
-            {'name': 'declarant_initials', 'label': 'Declarant Initials (Synthetic Training)', 'type': 'initial', 'required': False, 'status': 'TRAINING'},
-        ]
-    return [
-        {'name': 'reference_number', 'label': 'Reference / Case Number', 'type': 'text', 'required': False, 'status': 'TRAINING'},
-        {'name': 'date', 'label': 'Date', 'type': 'date', 'required': True, 'status': 'TRAINING'},
-        {'name': 'location', 'label': 'Location', 'type': 'text', 'required': True, 'status': 'TRAINING'},
-        {'name': 'details', 'label': 'Required Details', 'type': 'textarea', 'required': True, 'status': 'TRAINING'},
-        {'name': 'officer_name', 'label': 'Officer Name', 'type': 'text', 'required': False, 'status': 'TRAINING'},
-    ]
-
-
 def training_form_definition(document_name):
-    """Return a synthetic form definition based on the controlled official field registry.
+    """Return a synthetic replica definition for one real MCPD form.
 
-    The definition contains no operational Form/SavedForm record identifier and cannot
-    itself create an official document. It is a training replica attached to a simulator run.
+    The simulator uses the controlled MCPD form-field registry. It does not create
+    a generic substitute when an official form is not mapped; an unmapped official
+    form is explicitly blocked so training never teaches the wrong paperwork.
     """
     document_name = _text(document_name)
     entry = get_registry_entry(document_name)
-    source_fields = deepcopy(entry.get('fields') or []) if entry else _fallback_fields(document_name)
+    source_fields = deepcopy(entry.get('fields') or []) if entry else []
     fields = []
     doc_token = _token(document_name)
 
@@ -64,7 +46,7 @@ def training_form_definition(document_name):
             'officer_only': bool(raw.get('officer_only')),
             'person_field': bool(raw.get('person_field')),
             'sig_role': sig_role,
-            'mapping_status': _text(raw.get('status')) or ('TRAINING' if not entry else 'UNSPECIFIED'),
+            'mapping_status': _text(raw.get('status')) or ('UNSPECIFIED' if entry else 'UNMAPPED'),
             'input_name': f'tf_{doc_token}_{index}',
             'index': index,
             'training_signature': field_type in {'signature', 'initial'},
@@ -74,14 +56,20 @@ def training_form_definition(document_name):
         'document_name': document_name,
         'document_id': doc_token,
         'registry_pattern': _text((entry or {}).get('form_title_pattern')),
-        'source': 'official_form_field_registry' if entry else 'training_fallback_schema',
+        'source': 'official_form_field_registry' if entry else 'official_form_mapping_missing',
         'notes': _text((entry or {}).get('notes')),
         'fields': fields,
+        'mapping_missing': not bool(entry),
     }
 
 
-def training_form_definitions(document_names):
-    definitions = []
+def officer_editable_document_names(document_names):
+    """Return selected forms the trainee officer actually completes.
+
+    Declarant-completed statement forms stay part of the trainee's paperwork
+    selection record, but they are never converted into editable officer forms.
+    """
+    result = []
     seen = set()
     for name in document_names or []:
         clean = _text(name)
@@ -90,8 +78,17 @@ def training_form_definitions(document_names):
             continue
         if 'blotter' in key or 'desk journal' in key or 'desk-journal' in key:
             continue
-        definitions.append(training_form_definition(clean))
+        if is_declarant_completed_form(clean):
+            continue
+        result.append(clean)
         seen.add(key)
+    return result
+
+
+def training_form_definitions(document_names):
+    definitions = []
+    for clean in officer_editable_document_names(document_names):
+        definitions.append(training_form_definition(clean))
     return definitions
 
 
@@ -110,6 +107,13 @@ def parse_training_form_submission(document_names, form_data):
     errors = []
 
     for definition in definitions:
+        if definition.get('mapping_missing'):
+            errors.append(
+                f"{definition['document_name']}: the official form exists in the MCPD library but its "
+                'training field mapping is unavailable. Do not substitute a generic form.'
+            )
+            continue
+
         values = {}
         fields_snapshot = []
         for field in definition['fields']:
