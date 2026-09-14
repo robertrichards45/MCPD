@@ -75,18 +75,37 @@
           {% if statement.get('status') == 'received' %}
           <article class="border rounded p-3">
             <div class="d-flex justify-content-between gap-2 align-items-start flex-wrap">
-              <div><strong>{{ statement.get('declarant_name') }}</strong><div class="small text-muted">{{ statement.get('role') }} — {{ statement.get('id') }}</div></div>
-              <span class="badge text-bg-success">Received / Read Only</span>
+              <div><strong>{{ statement.get('form_document_name') or 'Written Statement' }}</strong><div class="small text-muted">Declarant: {{ statement.get('declarant_name') }} — {{ statement.get('role') }} — {{ statement.get('id') }}</div></div>
+              <span class="badge text-bg-success">Completed by Declarant / Read Only</span>
             </div>
             <div class="row g-2 small mt-2">
               <div class="col-md-4"><strong>DOB</strong><br>{{ statement.get('dob') }}</div>
               <div class="col-md-4"><strong>Phone</strong><br>{{ statement.get('phone') }}</div>
-              <div class="col-md-4"><strong>Time</strong><br>{{ statement.get('statement_time') }}</div>
+              <div class="col-md-4"><strong>Date / Time</strong><br>{{ statement.get('statement_date') }} / {{ statement.get('statement_time') }}</div>
               <div class="col-12"><strong>Address</strong><br>{{ statement.get('address') }}</div>
             </div>
             <div class="border rounded p-3 mt-3" style="white-space:pre-wrap">{{ statement.get('statement_text') }}</div>
             <div class="mt-2 small"><strong>Declarant signature:</strong> {{ statement.get('signature') }}</div>
-            <div class="small text-muted">Synthetic training statement completed by the simulated declarant. Officer editing is disabled.</div>
+            {% if statement.get('form_fields') %}
+            <details class="border rounded p-3 mt-3">
+              <summary><strong>View Completed OPNAV Training Form Fields</strong></summary>
+              <div class="table-responsive mt-3">
+                <table class="table table-sm align-middle mb-0">
+                  <thead><tr><th>Field</th><th>Completed Value</th><th>Completed By</th></tr></thead>
+                  <tbody>
+                    {% for field in statement.get('form_fields') %}
+                    <tr>
+                      <td>{{ field.get('label') or field.get('name') }}{% if field.get('required') %} <span class="text-danger">*</span>{% endif %}</td>
+                      <td style="white-space:pre-wrap">{{ field.get('value') or '—' }}</td>
+                      <td>{% if field.get('officer_only') %}<span class="badge text-bg-light border">Officer-only — intentionally blank</span>{% else %}<span class="badge text-bg-secondary">Declarant</span>{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </details>
+            {% endif %}
+            <div class="small text-muted mt-2">Synthetic training statement generated from the controlled MCPD form-field registry. Declarant fields are locked; the trainee cannot rewrite the statement.</div>
           </article>
           {% endif %}
         {% endfor %}
