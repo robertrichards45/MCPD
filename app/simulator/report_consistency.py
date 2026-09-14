@@ -1,6 +1,8 @@
 import json
 import re
 
+from flask import current_app, has_app_context
+
 from ..services.ai_client import (
     ask_openai_with_system,
     configured_openai_api_key,
@@ -37,10 +39,7 @@ def _ledger(state):
 
     evidence = []
     raw_evidence = world.get('evidence') or {}
-    if isinstance(raw_evidence, dict):
-        rows = raw_evidence.items()
-    else:
-        rows = []
+    rows = raw_evidence.items() if isinstance(raw_evidence, dict) else []
     for evidence_id, item in rows:
         item = item if isinstance(item, dict) else {}
         evidence.append({
@@ -166,6 +165,12 @@ def review_training_narrative(state, narrative):
     """
     narrative = str(narrative or '').strip()
     deterministic = _deterministic_suggestions(state, narrative)
+
+    # CI/tests and explicitly offline installations must stay deterministic and
+    # must never require an external model call to submit training paperwork.
+    if has_app_context() and current_app.config.get('TESTING'):
+        return {'mode': 'deterministic', 'suggestions': deterministic}
+
     api_key = configured_openai_api_key()
     if not api_key or not narrative:
         return {'mode': 'deterministic', 'suggestions': deterministic}
