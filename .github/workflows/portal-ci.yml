@@ -53,6 +53,7 @@ jobs:
               'reports.sentinel.fto_program.dashboard',
               'reports.sentinel.fto_program.assignment',
               'reports.fto_refinements.edit_dor',
+              'reports.fto_refinements.scenario_lab.lab',
               'reports.sentinel.portal_search',
               'reports.accidents',
               'bodycam.narrative_tool',
@@ -69,6 +70,9 @@ jobs:
 
       - name: Run Sentinel workflow regression tests
         run: python -m pytest -q app/tests/test_sentinel_integration.py
+
+      - name: Run Scenario Lab quality-gate tests
+        run: python -m pytest -q app/tests/test_scenario_lab_quality_gate.py
 
       - name: Run retired-module regression tests
         run: python -m pytest -q app/tests/test_retired_modules.py
