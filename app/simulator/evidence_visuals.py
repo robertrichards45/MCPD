@@ -10,6 +10,44 @@ def _text(value):
     return ' '.join(str(value or '').split()).strip()
 
 
+def initialize_visual_evidence(state, scenario_id):
+    """Add visual-only scene evidence that must still be discovered by trainee action."""
+    world = ensure_world_state(state, scenario_id)
+    evidence = dict(world.get('evidence') or {})
+    choices = ((state.get('run_context') or {}).get('choices') or {})
+    supplements = {}
+    if scenario_id == 'S002':
+        supplements['gate_layout'] = {
+            'id': 'gate_layout',
+            'label': 'Gate / inspection-area layout',
+            'status': 'hidden',
+            'source': 'officer scene observation',
+            'location': 'Main Gate inspection area',
+            'description': choices.get('credential_issue', 'access-control issue'),
+            'discover_keywords': ['gate', 'inspection area', 'layout', 'vehicle position', 'observe', 'look around', 'scene'],
+            'expires_at': None,
+            'discovered_at': None,
+            'preserved_at': None,
+        }
+    elif scenario_id == 'S006':
+        supplements['scene_layout'] = {
+            'id': 'scene_layout',
+            'label': 'Medical-assist scene layout',
+            'status': 'hidden',
+            'source': 'officer scene observation',
+            'location': 'medical-assist scene',
+            'description': choices.get('scene_issue', 'scene access and crowding conditions'),
+            'discover_keywords': ['scene', 'look around', 'layout', 'ems access', 'crowd', 'hazard', 'surroundings', 'patient area'],
+            'expires_at': None,
+            'discovered_at': None,
+            'preserved_at': None,
+        }
+    for evidence_id, row in supplements.items():
+        evidence.setdefault(evidence_id, row)
+    world['evidence'] = evidence
+    return world
+
+
 def _visible(row, evaluator=False):
     status = _text((row or {}).get('status')).lower()
     if evaluator:
