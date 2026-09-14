@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell mcpd-command-app">
+  {% include 'partials/nav.html' %}
+  <main class="page-wrap narrative-tool-page">
+    <section class="ops-head-card mb-3">
+      <div class="ops-head-copy">
+        <div class="eyebrow">FTO Center</div>
+        <h2 class="mb-1">Scenario Lab</h2>
+        <p class="text-muted mb-0">Interactive PBLE-style practice. Facts are revealed as the trainee works through the call.</p>
+      </div>
+      <div class="ops-head-actions d-flex gap-2 flex-wrap">
+        <a class="btn btn-outline-secondary" href="{{ url_for('reports.sentinel.fto_center') }}">Back to FTO Center</a>
+        <a class="btn btn-outline-secondary" href="{{ url_for('reports.sentinel.fto_program.dashboard') }}">Program Dashboard</a>
+      </div>
+    </section>
+
+    <div class="alert alert-warning mb-3">
+      <strong>Training aid only.</strong> Scenario Lab coaching does not create or change an official DOR rating, remediation decision, advancement decision, or completion recommendation. The assigned FTO and supervisory chain remain the evaluators.
+    </div>
+
+    <section class="ops-panel mb-3">
+      <form method="post" class="row g-3 align-items-end">
+        <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
+        <input type="hidden" name="action" value="switch">
+        <div class="col-lg-9">
+          <label class="form-label" for="scenario_id"><strong>Training Scenario</strong></label>
+          <select class="form-select" id="scenario_id" name="scenario_id">
+            {% for sid, item in scenarios.items() %}
+            <option value="{{ sid }}" {% if sid == scenario_id %}selected{% endif %}>{{ sid }} — {{ item.title }} — {{ item.difficulty }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-lg-3 d-grid"><button class="btn btn-outline-primary" type="submit">Load Scenario</button></div>
+      </form>
+    </section>
+
+    <section class="row g-3 mb-3">
+      <div class="col-xl-5">
+        <article class="ops-panel h-100">
+          <div class="d-flex justify-content-between gap-2 flex-wrap mb-2">
+            <div><div class="eyebrow">{{ scenario.category }}</div><h3 class="mb-1">{{ scenario.title }}</h3></div>
+            <div class="d-flex gap-2 flex-wrap align-content-start"><span class="badge text-bg-light">{{ scenario.difficulty }}</span><span class="badge text-bg-light">{{ scenario.phase }}</span></div>
+          </div>
+          <div class="border rounded p-3 mb-3">
+            <div class="eyebrow">Dispatch</div>
+            <p class="mb-0"><strong>{{ scenario.dispatch }}</strong></p>
+          </div>
+          <div class="border rounded p-3">
+            <div class="eyebrow">Training Objective</div>
+            <p class="mb-0 text-muted">{{ scenario.objective }}</p>
+          </div>
+        </article>
+      </div>
+
+      <div class="col-xl-7">
+        <article class="ops-panel h-100">
+          <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
+            <div><div class="eyebrow">Scenario Progress</div><h3 class="mb-1">Decision {{ turn + 1 if turn < total_turns else total_turns }} of {{ total_turns }}</h3></div>
+            <strong>{{ ((turn / total_turns) * 100)|round|int }}%</strong>
+          </div>
+          <div class="progress mt-3" role="progressbar" aria-valuenow="{{ ((turn / total_turns) * 100)|round|int }}" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-bar" style="width: {{ ((turn / total_turns) * 100)|round|int }}%"></div>
+          </div>
+          <p class="small text-muted mt-3 mb-0">The trainee receives only the facts developed to this point. Do not assume facts that have not been provided or established.</p>
+        </article>
+      </div>
+    </section>
+
+    {% if latest_reveal %}
+    <section class="ops-panel mb-3 border-primary">
+      <div class="eyebrow">New Information</div>
+      <h3>{{ scenario.stages[turn - 1].name }}</h3>
+      <p class="mb-0">{{ latest_reveal }}</p>
+    </section>
+    {% endif %}
+
+    {% if not complete and current_stage %}
+    <section class="ops-panel mb-3">
+      <div class="eyebrow">Trainee Decision</div>
+      <h3>{{ current_stage.name }}</h3>
+      <p><strong>{{ current_stage.prompt }}</strong></p>
+      <form method="post">
+        <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
+        <input type="hidden" name="action" value="submit">
+        <input type="hidden" name="scenario_id" value="{{ scenario_id }}">
+        <label class="form-label" for="response_text"><strong>What do you do next?</strong></label>
+        <textarea class="form-control" id="response_text" name="response_text" rows="9" maxlength="2500" required placeholder="Describe only what you would actually do at this point: communication, safety, investigation, legal/policy considerations, documentation, and disposition as applicable."></textarea>
+        <div class="d-flex gap-2 flex-wrap mt-3">
+          <button class="btn btn-primary" type="submit">Submit Action & Continue</button>
+          <button class="btn btn-outline-secondary" type="submit" name="action" value="reset" formnovalidate>Restart Scenario</button>
+        </div>
+      </form>
+    </section>
+    {% elif not complete and ready_to_finish %}
+    <section class="ops-panel mb-3">
+      <div class="eyebrow">Scenario Complete</div>
+      <h3>Ready for Coaching Review</h3>
+      <p class="text-muted">All scripted decision points are complete. Finish the scenario to review which SEG-aligned practice areas appeared in the trainee's written decisions.</p>
+      <form method="post" class="d-flex gap-2 flex-wrap">
+        <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
+        <input type="hidden" name="scenario_id" value="{{ scenario_id }}">
+        <button class="btn btn-success" type="submit" name="action" value="finish">Finish Scenario</button>
+        <button class="btn btn-outline-secondary" type="submit" name="action" value="reset">Restart Scenario</button>
+      </form>
+    </section>
+    {% endif %}
+
+    {% if result %}
+    <section class="ops-panel mb-3">
+      <div class="eyebrow">FTO Coaching Review</div>
+      <h3>SEG-Aligned Practice Cues</h3>
+      <div class="alert alert-secondary"><strong>Important:</strong> {{ result.notice }}</div>
+      <div class="row g-3">
+        {% for item in result.areas %}
+        <div class="col-md-6 col-xl-4">
+          <article class="border rounded p-3 h-100">
+            <div class="d-flex justify-content-between gap-2"><strong>{{ item.area }}</strong><span class="badge {% if item.level == 'good' %}text-bg-success{% elif item.level == 'partial' %}text-bg-warning{% else %}text-bg-secondary{% endif %}">{{ item.status }}</span></div>
+            <p class="small text-muted mt-2 mb-0">This reflects text cues across the scenario only. The FTO must compare actual behavior to the approved Standard Evaluation Guidelines.</p>
+          </article>
+        </div>
+        {% endfor %}
+      </div>
+
+      <h4 class="mt-4">Instructor Discussion Areas</h4>
+      {% if result.discussion %}
+      <ul>{% for item in result.discussion %}<li>{{ item }} — ask the trainee to explain what they would do and why, then evaluate against the approved FTP standard.</li>{% endfor %}</ul>
+      {% else %}
+      <p class="text-muted">The written responses touched all configured coaching areas. The FTO should still review quality, timing, judgment, and actual performance rather than treating cue coverage as competency.</p>
+      {% endif %}
+
+      <div class="d-flex gap-2 flex-wrap mt-3">
+        <form method="post">
+          <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
+          <input type="hidden" name="scenario_id" value="{{ scenario_id }}">
+          <button class="btn btn-primary" type="submit" name="action" value="reset">Run Scenario Again</button>
+        </form>
+        <a class="btn btn-outline-primary" href="{{ url_for('reports.sentinel.fto_program.dashboard') }}">Open Official FTO Record</a>
+      </div>
+    </section>
+    {% endif %}
+
+    <section class="ops-panel mb-3">
+      <div class="eyebrow">How Scenario Lab Is Evaluated</div>
+      <h3>Coaching Areas, Not Automatic DOR Scores</h3>
+      <p class="text-muted">The Lab watches for whether the trainee's written decisions address these areas. It does not automatically assign the FTP's official numeric ratings.</p>
+      <div class="row g-2">{% for area in practice_areas %}<div class="col-md-6 col-xl-3"><div class="border rounded p-3 h-100">{{ area }}</div></div>{% endfor %}</div>
+    </section>
+  </main>
+</div>
+{% endblock %}
