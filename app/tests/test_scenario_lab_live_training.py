@@ -54,7 +54,6 @@ def test_radio_and_records_are_separate_from_face_to_face_contact():
         radio = state['world']['radio_log']
         assert any(item['speaker'] == 'Trainee' for item in radio)
         assert state['world']['records']
-        # Records are intentionally delayed; another world beat is needed for the return.
         assert any(item.get('metadata', {}).get('type') == 'records' for item in state['world']['pending_radio'])
 
     response = client.post('/sentinel/fto-center/scenario-lab/', data={
@@ -127,7 +126,7 @@ def test_negated_deadly_force_statement_does_not_terminate_run():
         assert not any(row.get('action_type') == 'deadly_force' for row in state['world']['last_actions'])
 
 
-def test_terminal_outcome_moves_to_next_scenario_with_new_run():
+def test_terminal_outcome_moves_to_next_scenario_with_hidden_new_run_id():
     _app, client, _uid = _client()
     client.get('/sentinel/fto-center/scenario-lab/?scenario_id=S001')
     client.post('/sentinel/fto-center/scenario-lab/', data={
@@ -139,7 +138,7 @@ def test_terminal_outcome_moves_to_next_scenario_with_new_run():
     }, follow_redirects=True)
     html = response.get_data(as_text=True)
     assert 'Suspicious Vehicle at Main Gate' in html
-    assert 'Run S002-' in html
+    assert 'Run S002-' not in html
     with client.session_transaction() as s:
         state = s['sentinel_scenario_lab_v2']
         assert state['scenario_id'] == 'S002'
