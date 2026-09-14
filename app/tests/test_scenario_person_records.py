@@ -1,5 +1,6 @@
 from app.simulator.npc_engine import respond as npc_respond
 from app.simulator.person_records import obtain_requested_statements, reveal_requested_identities
+from app.simulator.training_forms import officer_editable_document_names, training_form_definitions
 from app.simulator.training_requirements import requirements_for_scenario, trainee_requirement_choices
 from app.simulator.world_state import ensure_world_state
 
@@ -110,9 +111,21 @@ def test_written_statement_is_completed_by_declarant_and_read_only():
     assert all(field['locked'] is True for field in statement['form_fields'])
 
 
-def test_voluntary_statement_is_not_officer_editable_paperwork_choice():
+def test_full_form_library_includes_statements_but_statement_is_not_officer_editable():
     requirements = requirements_for_scenario('S004')
-    officer_choices = trainee_requirement_choices('S004')
-    assert all('voluntary statement' not in value.lower() for value in officer_choices)
+    all_choices = trainee_requirement_choices('S004')
+    statement_name = next(value for value in all_choices if 'opnav 5580 2 voluntary statement' in value.lower() and 'traffic' not in value.lower())
+
+    assert any('sf 91' in value.lower() for value in all_choices)
+    assert any('evidence custody' in value.lower() for value in all_choices)
+    assert statement_name in all_choices
     assert any('voluntary statement' in value.lower() for value in requirements['statement_documents'])
     assert requirements['statements_are_declarant_completed'] is True
+
+    mixed_selection = [statement_name, 'OPNAV 5580 22Evidence Custody Document']
+    editable = officer_editable_document_names(mixed_selection)
+    assert statement_name not in editable
+    assert 'OPNAV 5580 22Evidence Custody Document' in editable
+
+    definitions = training_form_definitions([statement_name])
+    assert definitions == []
