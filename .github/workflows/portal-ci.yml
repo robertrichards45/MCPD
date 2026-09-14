@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [main]
   push:
-    branches: [main, portal-workflow-v2]
+    branches: [main, portal-workflow-v2, fto-center-v2]
 
 permissions:
   contents: read
@@ -50,6 +50,8 @@ jobs:
           required = {
               'reports.sentinel.report_inspector',
               'reports.sentinel.fto_center',
+              'reports.sentinel.fto_program.dashboard',
+              'reports.sentinel.fto_program.assignment',
               'reports.sentinel.portal_search',
               'reports.accidents',
               'bodycam.narrative_tool',
@@ -69,6 +71,9 @@ jobs:
 
       - name: Run retired-module regression tests
         run: python -m pytest -q app/tests/test_retired_modules.py
+
+      - name: Run FTO Center program regression tests
+        run: python -m pytest -q app/tests/test_fto_program_workflow.py
 
       - name: Run Call Type Paperwork regression tests
         run: python -m pytest -q app/tests/test_call_type_rules_manager.py
