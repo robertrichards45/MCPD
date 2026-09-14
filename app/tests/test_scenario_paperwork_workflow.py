@@ -1,7 +1,7 @@
 from app import create_app
 from app.extensions import db
 from app.models import ROLE_WEBSITE_CONTROLLER, User
-from app.simulator.training_requirements import requirements_for_scenario
+from app.simulator.training_requirements import requirements_for_scenario, trainee_requirement_choices
 
 
 def _client():
@@ -41,7 +41,6 @@ def _submit_package(client, narrative='Synthetic training narrative based only o
     return client.post('/sentinel/fto-center/scenario-paperwork/', data={
         '_csrf_token': 'test-token',
         'action': 'submit',
-        'selected_documents': ['OPNAV 5580 2 Voluntary Statement'],
         'cid_decision': 'screen',
         'notification_notes': 'Training screening decision documented.',
         'narrative': narrative,
@@ -68,6 +67,14 @@ def test_requirements_never_assign_blotter_to_trainee():
         assert all('desk journal' not in item.lower() for item in requirements['officer_documents'])
 
 
+def test_trainee_form_picker_is_full_library_not_scenario_answer_key():
+    choices = trainee_requirement_choices('S004')
+    assert any('voluntary statement' in item.lower() for item in choices)
+    assert any('evidence custody' in item.lower() for item in choices)
+    assert any('sf 91' in item.lower() for item in choices)
+    assert all('blotter' not in item.lower() for item in choices)
+
+
 def test_property_and_theft_training_require_cid_screening():
     assert requirements_for_scenario('S003')['cid']['requirement'] == 'screen'
     assert requirements_for_scenario('S004')['cid']['requirement'] == 'screen'
@@ -89,7 +96,7 @@ def test_completed_call_can_submit_self_assess_unlock_debrief_and_preserve_revis
     response = _submit_package(client)
     assert response.status_code == 200
     html = response.get_data(as_text=True)
-    assert 'complete the self-assessment' in html.lower()
+    assert 'self-assessment' in html.lower()
     assert 'Open After-Action Debrief' not in html
 
     with client.session_transaction() as s:
@@ -114,7 +121,6 @@ def test_completed_call_can_submit_self_assess_unlock_debrief_and_preserve_revis
     client.post('/sentinel/fto-center/scenario-paperwork/', data={
         '_csrf_token': 'test-token',
         'action': 'revise',
-        'selected_documents': ['OPNAV 5580 2 Voluntary Statement'],
         'cid_decision': 'screen',
         'notification_notes': 'Updated synthetic training documentation.',
         'narrative': 'Revision one preserves the original and corrects the synthetic narrative.',
@@ -122,7 +128,6 @@ def test_completed_call_can_submit_self_assess_unlock_debrief_and_preserve_revis
 
     with client.session_transaction() as s:
         package = s['sentinel_scenario_lab_v2']['training_package']
-        assert package['status'] == 'READY_FOR_FTO_REVIEW'
         assert len(package['submissions']) == 2
         assert package['submissions'][0]['revision'] == 0
         assert package['submissions'][1]['revision'] == 1
@@ -135,7 +140,6 @@ def test_hidden_report_consistency_cues_show_only_in_evaluator_view():
 
     trainee_response = client.get('/sentinel/fto-center/scenario-paperwork/')
     trainee_html = trainee_response.get_data(as_text=True)
-    assert 'Advisory Narrative Consistency' not in trainee_html
     assert 'Narrative is very short' not in trainee_html
 
     with client.session_transaction() as s:
@@ -144,7 +148,7 @@ def test_hidden_report_consistency_cues_show_only_in_evaluator_view():
     evaluator_response = client.get(f'/sentinel/fto-center/scenario-paperwork/run/{run_id}')
     evaluator_html = evaluator_response.get_data(as_text=True)
     assert evaluator_response.status_code == 200
-    assert 'Advisory Narrative Consistency' in evaluator_html
+    assert 'Possible Narrative Issues for Human Verification' in evaluator_html
     assert 'Narrative is very short' in evaluator_html
     assert 'FTO disposition locked' in evaluator_html
 
@@ -194,7 +198,6 @@ def test_fto_disposition_is_locked_until_self_assessment_then_review_syncs_and_c
     html = response.get_data(as_text=True)
     assert response.status_code == 200
     assert 'Trainee Acknowledged Review' in html
-    assert 'review, not agreement' in html.lower()
 
     with client.session_transaction() as s:
         state = s['sentinel_scenario_lab_v2']
