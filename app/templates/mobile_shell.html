@@ -41,6 +41,7 @@
   (function () {
     var STORAGE_KEY = 'mcpd.mobile.incident.state';
     var internalNavigation = false;
+    var navigationResetTimer = null;
 
     function hasActiveIncident() {
       try {
@@ -60,6 +61,14 @@
       } catch (e) { return false; }
     }
 
+    function markInternalNavigation() {
+      internalNavigation = true;
+      window.clearTimeout(navigationResetTimer);
+      navigationResetTimer = window.setTimeout(function () {
+        internalNavigation = false;
+      }, 1800);
+    }
+
     /* Internal portal navigation is safe: the incident state already lives in
        sessionStorage and the incident runtime syncs meaningful drafts to the
        server. Only warn for an actual tab/window exit or external navigation. */
@@ -68,15 +77,16 @@
       if (!link || link.target === '_blank' || link.hasAttribute('download')) return;
       try {
         var target = new URL(link.href, window.location.href);
-        if (target.origin === window.location.origin) internalNavigation = true;
+        if (target.origin === window.location.origin) markInternalNavigation();
       } catch (e) {}
     }, true);
 
     document.addEventListener('submit', function () {
-      internalNavigation = true;
+      markInternalNavigation();
     }, true);
 
     window.addEventListener('pageshow', function () {
+      window.clearTimeout(navigationResetTimer);
       internalNavigation = false;
     });
 
