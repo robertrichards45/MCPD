@@ -1,4 +1,5 @@
 import random
+import re
 import secrets
 
 from flask import has_request_context, session
@@ -9,39 +10,68 @@ SESSION_KEY = 'sentinel_scenario_lab_v2'
 SEED_OVERRIDE_KEY = 'sentinel_scenario_seed_override_v1'
 
 
+# Training locations are intentionally limited to building/area-level information.
+# They give CAD/dispatch the specificity an officer expects without embedding
+# sensitive floor plans, access vulnerabilities, or operational security details.
 VARIANTS = {
     'S001': {
-        'location': ('library public area', 'barracks common area', 'customer-service office', 'recreation facility lobby'),
+        'location': (
+            'Bldg. 7130 — Barracks common area',
+            'Bldg. 7450 — Main lobby / customer-service area',
+            'Bldg. 1241 — Administrative office area',
+            'Bldg. 3000 — Main Gate visitor-processing area',
+        ),
         'subject_status': ('civilian visitor', 'contractor employee', 'active-duty service member', 'retiree with installation access'),
         'access_history': ('invited earlier', 'walked in during business hours', 'previously told to leave today', 'claims an employee invited them'),
         'demeanor': ('loud but stationary', 'argumentative and pacing', 'calm until challenged', 'emotionally upset and recording the encounter'),
         'witness_quality': ('one firsthand witness', 'two conflicting employees', 'only hearsay at first', 'camera coverage may exist'),
     },
     'S002': {
+        'location': ('Bldg. 3000 — Main Gate inbound inspection area',),
         'purpose': ('contractor meeting', 'delivery', 'job interview', 'family visit', 'service appointment'),
         'credential_issue': ('no installation credential', 'expired credential', 'credential does not match claimed purpose', 'visitor sponsorship not located'),
         'demeanor': ('confused and cooperative', 'argumentative', 'nervous but compliant', 'impatient and filming'),
         'records_twist': ('no initial records information', 'identity requires clarification', 'vehicle registration differs from driver', 'sponsor information is incomplete'),
     },
     'S003': {
+        'location': (
+            'Bldg. 7130 — Barracks parking area',
+            'Bldg. 7450 — North parking area',
+            'Bldg. 1241 — Administrative parking area',
+        ),
         'property': ('light pole', 'parking bollard', 'government fence section', 'facility sign', 'government vehicle mirror'),
         'driver_status': ('civilian contractor', 'active-duty service member', 'government employee', 'delivery driver'),
         'knowledge': ('driver says contact was unnoticed', 'driver admits contact but thought there was no damage', 'driver disputes making contact', 'driver left and returned after being called'),
         'evidence': ('fresh vehicle damage', 'paint transfer only', 'camera may cover the area', 'physical marks are ambiguous'),
     },
     'S004': {
+        'location': (
+            'Bldg. 3500 — Retail / exchange facility',
+            'Bldg. 7450 — Customer-service retail area',
+        ),
         'conduct': ('item placed in a personal bag', 'price tag allegedly changed', 'merchandise moved between containers', 'self-checkout price discrepancy'),
         'video': ('clear video exists', 'video angle is partial', 'camera was offline', 'video exists but has not been preserved yet'),
         'subject_status': ('civilian', 'contractor employee', 'active-duty service member', 'dependent'),
         'intent_issue': ('subject claims mistake', 'subject claims another person moved the item', 'subject says they intended to pay', 'subject gives an inconsistent explanation'),
     },
     'S005': {
+        'stop_location': (
+            'Radford Blvd near Bldg. 7130',
+            'Radford Blvd near Bldg. 7450',
+            'installation roadway near Bldg. 1241',
+            'Main Gate approach near Bldg. 3000',
+        ),
         'violation': ('speeding', 'failure to maintain lane', 'stop-sign violation', 'unsafe lane change'),
         'road': ('two-lane installation road', 'multi-lane arterial near a gate', 'low-light roadway', 'work-zone area'),
         'driver_demeanor': ('argumentative', 'anxious', 'cooperative but distracted', 'records the contact and challenges the reason for stop'),
         'movement': ('reaches toward center console', 'keeps searching through a bag', 'turns repeatedly toward the rear seat', 'keeps hands visible but refuses casual questions'),
     },
     'S006': {
+        'location': (
+            'Bldg. 1241 — Administrative work area',
+            'Bldg. 7450 — Facility work area',
+            'Bldg. 7130 — Barracks common area',
+        ),
         'presentation': ('dizziness and near-syncope', 'confusion after a collapse', 'possible seizure-like activity reported by a coworker', 'chest discomfort with anxiety', 'weakness after working in heat'),
         'witness_pattern': ('two coworkers give conflicting timelines', 'one witness saw only the aftermath', 'a supervisor repeats hearsay as fact', 'one employee may have seen the entire event but is about to leave'),
         'scene_issue': ('coworkers crowd the patient', 'equipment blocks EMS access', 'patient wants to stand despite dizziness', 'a coworker insists it was an assault without firsthand knowledge'),
@@ -77,6 +107,22 @@ def _consume_seed_override(scenario_id):
         return int(override.get('seed'))
     except (TypeError, ValueError):
         return None
+
+
+def _location_metadata(location_text):
+    text = str(location_text or '').strip()
+    match = re.search(r'\bBldg\.\s*([A-Za-z0-9-]+)', text, re.I)
+    building_number = match.group(1) if match else ''
+    location_name = text
+    if '—' in text:
+        location_name = text.split('—', 1)[1].strip()
+    elif ' - ' in text:
+        location_name = text.split(' - ', 1)[1].strip()
+    return {
+        'location_display': text,
+        'building_number': building_number,
+        'location_name': location_name,
+    }
 
 
 def build_run_context(scenario_id, seed=None, previous_choices=None):
@@ -118,20 +164,47 @@ def build_run_context(scenario_id, seed=None, previous_choices=None):
     }
 
     if scenario_id == 'S001':
-        context['dispatch_variant'] = f"Respond to the {choices['location']} for a disorderly person. Initial demeanor: {choices['demeanor']}. Access history is not yet resolved."
+        context.update(_location_metadata(choices['location']))
+        context['dispatch_variant'] = (
+            f"Unit 214, respond to {choices['location']}, MCLB Albany, for a disorderly person. "
+            f"Caller reports the individual is {choices['demeanor']}. Access status is not yet resolved."
+        )
     elif scenario_id == 'S002':
-        context['dispatch_variant'] = f"Main Gate requests patrol assistance with a {choices['purpose']} access issue: {choices['credential_issue']}. Driver is {choices['demeanor']}."
+        context.update(_location_metadata(choices['location']))
+        context['dispatch_variant'] = (
+            f"Unit 214, respond to {choices['location']}, MCLB Albany, to assist gate personnel with "
+            f"a {choices['purpose']} access issue. Reported problem: {choices['credential_issue']}. "
+            f"Driver is {choices['demeanor']}."
+        )
     elif scenario_id == 'S003':
-        context['dispatch_variant'] = f"Respond to possible damage to a government {choices['property']}. Operator is reported as a {choices['driver_status']}; initial evidence: {choices['evidence']}."
+        context.update(_location_metadata(choices['location']))
+        context['dispatch_variant'] = (
+            f"Unit 214, respond to {choices['location']}, MCLB Albany, for reported damage to government property. "
+            f"A vehicle is reported in connection with damage to a {choices['property']}. "
+            f"Operator is reported as a {choices['driver_status']}."
+        )
         context['visual_evidence'] = ['Damage overview image can unlock after scene documentation.', 'Vehicle-to-object comparison can unlock if both remain available.']
     elif scenario_id == 'S004':
-        context['dispatch_variant'] = f"Respond to a reported retail theft incident involving {choices['conduct']}. Video status: {choices['video']}. Subject status: {choices['subject_status']}."
+        context.update(_location_metadata(choices['location']))
+        context['dispatch_variant'] = (
+            f"Unit 214, respond to {choices['location']}, MCLB Albany, for a reported larceny/shoplifting incident. "
+            f"Staff reports {choices['conduct']}. Video status: {choices['video']}."
+        )
         context['visual_evidence'] = ['Surveillance stills appear only when usable video exists and is preserved.', 'Recovered-property imagery appears only when it helps establish a material fact.']
     elif scenario_id == 'S005':
-        context['dispatch_variant'] = f"You observe a {choices['violation']} on a {choices['road']}. Driver is initially {choices['driver_demeanor']}."
+        context.update(_location_metadata(choices['stop_location']))
+        context['dispatch_variant'] = (
+            f"Traffic enforcement at {choices['stop_location']}, MCLB Albany. You observe a {choices['violation']}. "
+            f"The vehicle stops and the driver is initially {choices['driver_demeanor']}."
+        )
         context['visual_evidence'] = ['A roadway / vehicle-position diagram can unlock when positioning becomes a decision issue.']
     elif scenario_id == 'S006':
-        context['dispatch_variant'] = f"Respond to a workplace medical assist: {choices['presentation']}. Patient is {choices['patient_state']}; {choices['witness_pattern']}."
+        context.update(_location_metadata(choices['location']))
+        context['dispatch_variant'] = (
+            f"Unit 214, respond to {choices['location']}, MCLB Albany, for a medical assist. "
+            f"Reported condition: {choices['presentation']}. Patient is {choices['patient_state']}; "
+            f"{choices['witness_pattern']}."
+        )
         context['visual_evidence'] = ['A scene-layout diagram can unlock if crowding, hazards, or EMS access becomes operationally important.']
     return context
 
@@ -141,7 +214,7 @@ def actor_variant_fact(run_context, actor_id, question):
     low = str(question or '').lower()
     scenario_id = str((run_context or {}).get('run_id', '')).split('-', 1)[0]
 
-    if actor_id == 'dispatch' and any(term in low for term in ('initial', 'call', 'information', 'dispatch')):
+    if actor_id == 'dispatch' and any(term in low for term in ('initial', 'call', 'information', 'dispatch', 'location', 'address', 'building')):
         return (run_context or {}).get('dispatch_variant', '')
 
     if scenario_id == 'S001':
