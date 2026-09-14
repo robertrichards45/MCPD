@@ -1,5 +1,5 @@
 import re
-from flask import Blueprint, render_template, request
+from flask import Blueprint, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
 bp = Blueprint('sentinel', __name__, url_prefix='/sentinel')
@@ -8,12 +8,44 @@ SCENARIOS = {
     'S001': {
         'title': 'Disorderly Person Refusing to Leave',
         'difficulty': 'Intermediate',
+        'category': 'Calls for Service',
         'dispatch': 'Unit 214, respond to Building 7130 for a disorderly individual refusing to leave.',
+        'objective': 'Practice scene approach, de-escalation, investigation, legal articulation, and disposition.',
     },
     'S002': {
         'title': 'Suspicious Vehicle at Main Gate',
         'difficulty': 'Basic',
+        'category': 'Access Control',
         'dispatch': 'Main Gate requests patrol assistance with a driver who cannot provide valid installation access credentials and is becoming argumentative.',
+        'objective': 'Practice officer safety, identification, access-control decision making, and documentation.',
+    },
+    'S003': {
+        'title': 'Damage to Government Property',
+        'difficulty': 'Intermediate',
+        'category': 'Investigation',
+        'dispatch': 'Respond to a report of a contractor vehicle striking government property near a facility parking area.',
+        'objective': 'Practice witness development, damage documentation, evidence collection, and articulation of willful/negligent/accidental facts without guessing.',
+    },
+    'S004': {
+        'title': 'Larceny / Shoplifting Report',
+        'difficulty': 'Intermediate',
+        'category': 'Investigation',
+        'dispatch': 'Respond to a reported theft where staff have identified a possible subject and recovered property may be involved.',
+        'objective': 'Practice interviews, statements, property/value documentation, evidence handling, and CID/policy considerations.',
+    },
+    'S005': {
+        'title': 'Traffic Stop — Escalating Driver',
+        'difficulty': 'Advanced',
+        'category': 'Traffic Enforcement',
+        'dispatch': 'Conduct a traffic stop on a vehicle after observing a moving violation. The driver becomes increasingly argumentative after contact.',
+        'objective': 'Practice radio traffic, positioning, officer safety, legal authority, communication, enforcement decision making, and report articulation.',
+    },
+    'S006': {
+        'title': 'Medical Assist with Conflicting Information',
+        'difficulty': 'Basic',
+        'category': 'Calls for Service',
+        'dispatch': 'Respond to a workplace medical assist. Coworkers provide conflicting information about what happened before the patient became ill.',
+        'objective': 'Practice scene organization, witness separation, fact collection, medical-assist documentation, and disposition.',
     },
 }
 
@@ -48,6 +80,17 @@ OFFENSES = [
             ('Officer action', 'Does the narrative explain detention, removal, citation, arrest, release, or referral?', ['detained', 'escorted', 'removed', 'citation', 'arrested', 'released', 'referred']),
         ],
     },
+]
+
+FTO_AREAS = [
+    ('Radio Communication', ['radio', 'dispatch', 'en route', 'on scene', 'status', 'location']),
+    ('Officer Safety', ['backup', 'cover', 'distance', 'hands', 'weapon', 'position', 'approach']),
+    ('Investigation', ['ask', 'interview', 'witness', 'statement', 'separate', 'identify', 'evidence']),
+    ('Legal Authority', ['detain', 'reasonable suspicion', 'probable cause', 'authority', 'consent', 'arrest', 'citation']),
+    ('Judgment / Decision Making', ['assess', 'plan', 'priority', 'risk', 'options', 'de-escalat', 'request supervisor']),
+    ('Documentation', ['report', 'document', 'statement', 'ccn', 'blotter', 'evidence', 'photograph']),
+    ('Professionalism', ['calm', 'professional', 'explain', 'respect', 'de-escalat', 'communication']),
+    ('Policy / Procedure Awareness', ['policy', 'pdi', 'sop', 'order', 'procedure', 'notify', 'screening']),
 ]
 
 
@@ -150,23 +193,26 @@ def _report_review(text):
 
 def _evaluate_fto(text):
     low = _normalize(text).lower()
-    checks = [
-        ('Radio communication', ['radio', 'dispatch', 'en route', 'on scene', '214']),
-        ('Officer safety', ['backup', 'cover', 'distance', 'hands', 'weapon', 'position', 'approach']),
-        ('Investigation', ['ask', 'interview', 'witness', 'statement', 'separate', 'identify']),
-        ('Legal authority', ['detain', 'reasonable suspicion', 'probable cause', 'authority', 'consent', 'arrest']),
-        ('Documentation', ['report', 'document', 'statement', 'ccn', 'blotter', 'evidence']),
-    ]
     rows = []
-    raw = 0
-    for label, terms in checks:
+    raw_points = 0
+    max_points = len(FTO_AREAS) * 20
+    for label, terms in FTO_AREAS:
         hits = [term for term in terms if term in low]
         points = 20 if len(hits) >= 2 else 12 if len(hits) == 1 else 5
-        raw += points
-        rows.append({'area': label, 'score': points, 'max': 20, 'hits': hits[:4], 'status': 'good' if points >= 20 else 'partial' if points >= 12 else 'needs-work'})
+        raw_points += points
+        rows.append({
+            'area': label,
+            'score': points,
+            'max': 20,
+            'hits': hits[:4],
+            'status': 'good' if points >= 20 else 'partial' if points >= 12 else 'needs-work',
+        })
+
+    score = round((raw_points / max_points) * 100) if max_points else 0
     if len(text.split()) < 25:
-        raw = max(0, raw - 10)
-    raw = min(96, raw)
+        score = max(0, score - 8)
+    score = min(96, score)
+
     followups = []
     if not _has_any(low, ['reasonable suspicion', 'probable cause', 'authority', 'consent']):
         followups.append('Explain what legal authority, if any, supports a detention, search, citation, or arrest at this point.')
@@ -174,9 +220,21 @@ def _evaluate_fto(text):
         followups.append('Who should be interviewed first, and what facts are you trying to establish?')
     if not _has_any(low, ['backup', 'position', 'hands', 'distance', 'weapon']):
         followups.append('What officer-safety considerations affect your approach?')
+    if not _has_any(low, ['report', 'document', 'ccn', 'blotter', 'statement']):
+        followups.append('What documentation or report products would you complete, and why?')
     if not followups:
         followups.append('What new information would make you change your plan, and what would you document?')
-    return {'score': raw, 'areas': rows, 'followups': followups[:3], 'notice': 'Training aid only. The assigned FTO/instructor makes the final evaluation.'}
+
+    strengths = [row['area'] for row in rows if row['status'] == 'good']
+    development = [row['area'] for row in rows if row['status'] != 'good']
+    return {
+        'score': score,
+        'areas': rows,
+        'followups': followups[:4],
+        'strengths': strengths,
+        'development': development,
+        'notice': 'Sentinel is a training aid. The assigned FTO/instructor owns the final rating, comments, remediation, and advancement recommendation.',
+    }
 
 
 @bp.route('/report-inspector', methods=['GET', 'POST'])
@@ -191,10 +249,10 @@ def report_inspector():
     return render_template('sentinel_report_inspector.html', user=current_user, narrative=narrative, result=result)
 
 
-@bp.route('/fto-instructor', methods=['GET', 'POST'])
+@bp.route('/fto-center', methods=['GET', 'POST'])
 @login_required
-def fto_instructor():
-    scenario_id = request.form.get('scenario_id') or 'S001'
+def fto_center():
+    scenario_id = request.form.get('scenario_id') or request.args.get('scenario_id') or 'S001'
     scenario = SCENARIOS.get(scenario_id, SCENARIOS['S001'])
     response_text = ''
     result = None
@@ -202,4 +260,22 @@ def fto_instructor():
         response_text = (request.form.get('response_text') or '').strip()
         if response_text:
             result = _evaluate_fto(response_text)
-    return render_template('sentinel_fto_instructor.html', user=current_user, scenarios=SCENARIOS, scenario_id=scenario_id, scenario=scenario, response_text=response_text, result=result)
+    return render_template(
+        'sentinel_fto_center.html',
+        user=current_user,
+        scenarios=SCENARIOS,
+        scenario_id=scenario_id,
+        scenario=scenario,
+        response_text=response_text,
+        result=result,
+        fto_areas=[area for area, _terms in FTO_AREAS],
+    )
+
+
+@bp.route('/fto-instructor', methods=['GET', 'POST'])
+@login_required
+def fto_instructor():
+    """Compatibility route for old bookmarks after the FTO Center rename."""
+    if request.method == 'POST':
+        return fto_center()
+    return redirect(url_for('reports.sentinel.fto_center'))
