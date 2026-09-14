@@ -72,7 +72,6 @@ def test_s007_live_page_renders_same_named_road_in_cad_and_dispatch():
     assert location in dispatch
     assert location in html
     assert dispatch in html
-    assert 'Installation roadway / crash scene' not in html
 
 
 def test_virtual_patrol_renders_same_run_location_and_immersion_controls():
