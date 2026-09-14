@@ -90,6 +90,7 @@ def test_completed_call_can_submit_and_preserve_original_package():
         assert len(package['submissions']) == 1
         assert package['submissions'][0]['revision'] == 0
         assert package['submissions'][0]['cid_decision'] == 'screen'
+        assert package['submissions'][0]['report_analysis']['mode'] == 'deterministic'
 
     client.post('/sentinel/fto-center/scenario-paperwork/', data={
         '_csrf_token': 'test-token',
@@ -107,6 +108,27 @@ def test_completed_call_can_submit_and_preserve_original_package():
         assert package['submissions'][1]['revision'] == 1
         assert 'facts developed' in package['submissions'][0]['narrative']
         assert 'Revision one' in package['submissions'][1]['narrative']
+
+
+def test_hidden_report_consistency_cues_show_only_in_evaluator_view():
+    client = _client()
+    _complete_s004(client)
+    _submit_package(client, narrative='Short synthetic narrative.')
+
+    trainee_response = client.get('/sentinel/fto-center/scenario-paperwork/')
+    trainee_html = trainee_response.get_data(as_text=True)
+    assert 'Advisory Narrative Consistency' not in trainee_html
+    assert 'Narrative is very short' not in trainee_html
+
+    with client.session_transaction() as s:
+        run_id = s['sentinel_scenario_lab_v2']['run_context']['run_id']
+
+    evaluator_response = client.get(f'/sentinel/fto-center/scenario-paperwork/run/{run_id}')
+    evaluator_html = evaluator_response.get_data(as_text=True)
+    assert evaluator_response.status_code == 200
+    assert 'Advisory Narrative Consistency' in evaluator_html
+    assert 'Narrative is very short' in evaluator_html
+    assert 'not automatic errors' in evaluator_html
 
 
 def test_fto_can_return_package_and_trainee_session_receives_review():
