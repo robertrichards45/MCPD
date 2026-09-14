@@ -100,6 +100,9 @@ jobs:
       - name: Run instructor live-control tests
         run: python -m pytest -q app/tests/test_simulator_instructor_control.py
 
+      - name: Run exact replay snapshot tests
+        run: python -m pytest -q app/tests/test_simulator_replay_snapshots.py
+
       - name: Run Scenario Lab adaptive state-engine tests
         run: python -m pytest -q app/tests/test_scenario_state_engine.py
 
