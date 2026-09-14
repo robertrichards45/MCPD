@@ -4,27 +4,45 @@
   {% include 'partials/nav.html' %}
   <div class="page-wrap">
     <div class="ops-head-card mb-3">
-      <h2 class="mb-1">Accident Tools</h2>
-      <p class="text-muted mb-0">Select a tool based on your role and the complexity of the incident.</p>
+      <div class="ops-head-copy">
+        <div class="eyebrow">Traffic / Crash Response</div>
+        <h2 class="mb-1">Accident Tools</h2>
+        <p class="text-muted mb-0">Choose the simplest tool that fits the crash. Sentinel-style prompts help you build a complete packet without inventing facts.</p>
+      </div>
     </div>
+
+    <section class="ops-panel mb-3">
+      <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+        <div>
+          <div class="eyebrow">Start Here</div>
+          <h3 class="mb-1">Which workflow do I need?</h3>
+          <p class="text-muted mb-0">Routine crash scene: use the Officer Diagram. Complex/fatal/technical reconstruction: use Accident Reconstruction if authorized.</p>
+        </div>
+        <a class="btn btn-outline-secondary" href="{{ url_for('forms.list_forms') }}">Open Traffic Forms</a>
+      </div>
+      <div class="row g-3 mt-1">
+        <div class="col-md-4"><div class="border rounded p-3 h-100"><strong>1. Stabilize & document</strong><p class="small text-muted mb-0 mt-1">Confirm injuries/emergency response, involved vehicles/persons, roadway position, weather/lighting, damage, and witness information.</p></div></div>
+        <div class="col-md-4"><div class="border rounded p-3 h-100"><strong>2. Build the scene</strong><p class="small text-muted mb-0 mt-1">Place vehicles/objects and record only measurements, directions, marks, and points of impact actually observed or measured.</p></div></div>
+        <div class="col-md-4"><div class="border rounded p-3 h-100"><strong>3. Complete the packet</strong><p class="small text-muted mb-0 mt-1">Review the diagram, photos/evidence, statements, required crash forms, enforcement action, and final disposition before submission.</p></div></div>
+      </div>
+    </section>
 
     <div class="row g-4 mb-4">
       <div class="col-md-6">
         <div class="ops-panel h-100 accident-tool-card">
           <div class="accident-tool-badge accident-tool-badge--officer">Officer</div>
-          <h3 class="mt-3 mb-2">Accident Diagram</h3>
-          <p class="text-muted mb-3">
-            For responding officers. Quickly sketch the crash scene: position vehicles, place waypoints to mark the sequence of events, add callout notes, and generate a diagram for the case packet. Works on tablet or desktop.
-          </p>
+          <h3 class="mt-3 mb-2">Officer Accident Diagram</h3>
+          <p class="text-muted mb-3">For the responding officer. Build a clear scene diagram that supports the report packet without turning the tool into a reconstruction opinion.</p>
           <ul class="accident-tool-features mb-4">
-            <li>Drag-and-drop vehicles, signs, and road elements</li>
-            <li>Numbered waypoints for event sequence</li>
-            <li>Callout annotation boxes</li>
-            <li>Traffic lights, stop signs, skid marks, impact markers</li>
-            <li>Export PNG attached to the case record</li>
+            <li>Drag-and-drop vehicles, signs, roadway objects, and impact markers</li>
+            <li>Numbered waypoints to show sequence or final positions</li>
+            <li>Callout notes for observations and measured facts</li>
+            <li>Traffic controls, skid/yaw marks, debris, and points of impact</li>
+            <li>Export PNG for the case packet</li>
           </ul>
+          <div class="alert alert-warning small"><strong>Do not estimate as fact:</strong> speeds, causation, measurements, or impact sequence must be identified as observed, measured, reported, or estimated.</div>
           <div class="mt-auto d-flex gap-2 flex-wrap">
-            <a class="btn btn-primary" href="{{ url_for('reports.officer_accident_diagram_new') }}">Open Diagram Tool</a>
+            <a class="btn btn-primary" href="{{ url_for('reports.officer_accident_diagram_new') }}">Open Officer Diagram</a>
           </div>
         </div>
       </div>
@@ -33,16 +51,15 @@
         <div class="ops-panel h-100 accident-tool-card accident-tool-card--advanced">
           <div class="accident-tool-badge accident-tool-badge--investigator">Investigator</div>
           <h3 class="mt-3 mb-2">Accident Reconstruction</h3>
-          <p class="text-muted mb-3">
-            For trained accident investigators. Full case management with vehicles, precise measurements, photo and evidence uploads, and a reconstruction packet PDF for submission.
-          </p>
+          <p class="text-muted mb-3">For trained/authorized accident investigators. Use when the case requires technical measurements, calculations, evidence management, or a reconstruction packet.</p>
           <ul class="accident-tool-features mb-4">
-            <li>All diagram features plus precise measurements</li>
-            <li>Skid length, yaw radius, impact point logging</li>
+            <li>Officer diagram features plus precise measurements</li>
+            <li>Skid length, yaw radius, impact point, and roadway measurements</li>
             <li>Photo, video, and PDF evidence attachment</li>
-            <li>Multi-vehicle case record with notes</li>
+            <li>Multi-vehicle records, timeline, and investigator notes</li>
             <li>Downloadable reconstruction packet PDF</li>
           </ul>
+          <div class="alert alert-info small"><strong>Verification required:</strong> calculations and reconstruction conclusions must be reviewed by trained personnel before being treated as investigative findings.</div>
           <div class="mt-auto d-flex gap-2 flex-wrap">
             {% if can_open_reconstruction %}
             <a class="btn btn-primary" href="{{ url_for('reports.investigator_reconstruction_new') }}">Open Reconstruction Tool</a>
@@ -54,6 +71,26 @@
       </div>
     </div>
 
+    <section class="ops-panel mb-3">
+      <div class="eyebrow">Pre-Submission Check</div>
+      <h3 class="mb-2">Crash packet review</h3>
+      <div class="row g-2">
+        {% for item in [
+          'Date, time, exact location, roadway/parking-lot context',
+          'Drivers, passengers, owners, witnesses, and contact information as applicable',
+          'Vehicle identifiers, direction of travel, damage, final position, and tow/disposition',
+          'Injury/medical response and emergency-service information when applicable',
+          'Statements clearly attributed to the person who provided them',
+          'Photos/evidence and diagram referenced in the narrative when applicable',
+          'Traffic control, environmental/road conditions, and enforcement action documented',
+          'Required forms reviewed through the Forms / Paperwork Navigator'
+        ] %}
+        <div class="col-md-6"><label class="border rounded p-2 d-flex gap-2 align-items-start h-100"><input type="checkbox" class="mt-1"><span>{{ item }}</span></label></div>
+        {% endfor %}
+      </div>
+      <p class="small text-muted mt-2 mb-0">This checklist is a completeness aid, not a substitute for current policy, crash-reporting requirements, or supervisor review.</p>
+    </section>
+
     <div class="ops-panel">
       <h5 class="mb-2">Recent Cases</h5>
       {% if recent_cases %}
@@ -64,10 +101,7 @@
                 <strong>#{{ c.id }} {{ c.title }}</strong>
                 <span class="small text-muted">{{ c.updated_at.strftime('%Y-%m-%d') if c.updated_at else '' }}</span>
               </div>
-              <div class="small text-muted">
-                <span class="badge bg-light text-dark border me-2">{{ c.type_label }}</span>
-                {% if c.location %}{{ c.location }}{% else %}Location pending{% endif %}
-              </div>
+              <div class="small text-muted"><span class="badge bg-light text-dark border me-2">{{ c.type_label }}</span>{% if c.location %}{{ c.location }}{% else %}Location pending{% endif %}</div>
             </a>
           {% endfor %}
         </div>
