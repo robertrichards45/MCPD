@@ -98,14 +98,16 @@ def test_fto_center_exposes_roadmaps_and_interactive_scenario_lab_entry():
     assert '/sentinel/fto-center/scenario-lab/' in html
 
 
-def test_interactive_scenario_lab_reveals_staged_facts_without_persisting_raw_actions():
+def test_interactive_scenario_lab_develops_facts_without_persisting_raw_actions():
     client = _client()
     response = client.get('/sentinel/fto-center/scenario-lab/?scenario_id=S003')
     html = response.get_data(as_text=True)
     assert response.status_code == 200
     assert 'Scenario Lab' in html
     assert 'Damage to Government Property' in html
-    assert 'Decision 1 of 4' in html
+    assert 'Live Call State' in html
+    assert 'Run Identifier' in html
+    assert 'Scene' in html
     assert 'A small government-owned light pole is visibly damaged.' not in html
 
     response = client.post(
@@ -114,15 +116,15 @@ def test_interactive_scenario_lab_reveals_staged_facts_without_persisting_raw_ac
             '_csrf_token': 'test-token',
             'scenario_id': 'S003',
             'action': 'act',
-            'response_text': 'I will advise dispatch, approach safely, identify witnesses, and photograph the damaged government property.',
+            'response_text': 'I will advise dispatch, approach the scene safely, identify the involved witnesses and driver, and photograph and document the damaged government property before it changes.',
         },
         follow_redirects=True,
     )
     html = response.get_data(as_text=True)
     assert response.status_code == 200
     assert 'A small government-owned light pole is visibly damaged.' in html
-    assert 'Decision 2 of 4' in html
-    assert 'identify or interview' in html
+    assert 'Witnesses' in html
+    assert 'Run Identifier' in html
 
     with client.session_transaction() as session:
         state = session.get('sentinel_scenario_lab_v2')
@@ -130,6 +132,8 @@ def test_interactive_scenario_lab_reveals_staged_facts_without_persisting_raw_ac
         assert state['turn'] == 1
         assert 'I will advise dispatch' not in str(state)
         assert 'area_counts' in state
+        assert 'engine' in state
+        assert state['run_context']['run_id'].startswith('S003-')
 
     response = client.post(
         '/sentinel/fto-center/scenario-lab/',
@@ -137,32 +141,32 @@ def test_interactive_scenario_lab_reveals_staged_facts_without_persisting_raw_ac
             '_csrf_token': 'test-token',
             'scenario_id': 'S003',
             'action': 'act',
-            'response_text': 'I will interview the reporting person and determine who actually witnessed the collision.',
+            'response_text': 'I will interview the reporting employee, identify and separate the firsthand witness who actually saw the collision, and identify the driver, operator, and involved vehicle.',
         },
         follow_redirects=True,
     )
     html = response.get_data(as_text=True)
     assert response.status_code == 200
     assert 'She did not witness the collision herself.' in html
-    assert 'Decision 3 of 4' in html
+    assert 'Evidence' in html
 
 
-def test_interactive_scenario_lab_completes_four_stage_flow_and_uses_seg_aligned_coaching():
+def test_adaptive_scenario_lab_can_close_stable_run_and_uses_seg_aligned_coaching():
     client = _client()
-    client.get('/sentinel/fto-center/scenario-lab/?scenario_id=S001')
+    client.get('/sentinel/fto-center/scenario-lab/?scenario_id=S002')
 
     actions = [
-        'I advise dispatch I am on scene, request backup if needed, maintain distance, and contact the reporting staff member.',
-        'I approach professionally, watch the subject hands and positioning, explain why I am there, and ask the subject what occurred.',
-        'I interview and separate witnesses, verify who directed the subject to leave, review available video, and assess legal authority before enforcement.',
-        'I determine the appropriate disposition from the established facts, notify dispatch, document statements and evidence, and complete the report.',
+        'I coordinate with the gate and dispatch, maintain safe vehicle-contact positioning while watching the occupant hands, and identify the driver, license, credential issue, and purpose for access.',
+        'I verify the driver identity and license, contact the sponsor or contractor at the destination, and calmly explain the access process while maintaining professional control.',
+        'I confirm the sponsor and meeting, apply the installation access and credential procedure, and conduct the appropriate identity, vehicle, and records checks through dispatch.',
+        'Based on the verified access requirements I deny access or direct the proper visitor process as appropriate, explain the outcome professionally to the driver and gate, notify dispatch, and document the entry or blotter record required.',
     ]
     for action_text in actions:
         response = client.post(
             '/sentinel/fto-center/scenario-lab/',
             data={
                 '_csrf_token': 'test-token',
-                'scenario_id': 'S001',
+                'scenario_id': 'S002',
                 'action': 'act',
                 'response_text': action_text,
             },
@@ -171,14 +175,14 @@ def test_interactive_scenario_lab_completes_four_stage_flow_and_uses_seg_aligned
         assert response.status_code == 200
 
     html = response.get_data(as_text=True)
-    assert 'Ready for Coaching Review' in html
-    assert '100%' in html
+    assert 'Incident Ready to Close' in html
+    assert 'Run Identifier' in html
 
     response = client.post(
         '/sentinel/fto-center/scenario-lab/',
         data={
             '_csrf_token': 'test-token',
-            'scenario_id': 'S001',
+            'scenario_id': 'S002',
             'action': 'finish',
         },
         follow_redirects=True,
@@ -198,8 +202,9 @@ def test_interactive_scenario_lab_completes_four_stage_flow_and_uses_seg_aligned
     html = response.get_data(as_text=True)
     assert response.status_code == 200
     assert 'Traffic Stop - Escalating Driver' in html
-    assert 'Decision 1 of 4' in html
-    assert 'Ready for Coaching Review' not in html
+    assert 'Live Call State' in html
+    assert 'Run Identifier' in html
+    assert 'Incident Ready to Close' not in html
 
 
 def test_old_fto_instructor_get_redirects_to_fto_center():
