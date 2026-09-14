@@ -1,16 +1,35 @@
 from app import create_app
-from app.models import User
+from app.extensions import db
+from app.models import ROLE_WEBSITE_CONTROLLER, User
 
 
 def _client():
     app = create_app()
     app.config['TESTING'] = True
     with app.app_context():
-        user = User.query.filter(User.username.ilike('robertrichards')).first() or User.query.first()
-        assert user is not None
+        user = User.query.filter_by(username='sentinel-ci').first()
+        if user is None:
+            user = User(
+                username='sentinel-ci',
+                name='Sentinel CI Controller',
+                role=ROLE_WEBSITE_CONTROLLER,
+                active=True,
+                pending_approval=False,
+                builder_mode_access=False,
+            )
+            user.set_password('ci-only-password')
+            db.session.add(user)
+            db.session.commit()
+        else:
+            user.role = ROLE_WEBSITE_CONTROLLER
+            user.active = True
+            user.pending_approval = False
+            db.session.commit()
+
+        user_id = user.id
         client = app.test_client()
         with client.session_transaction() as session:
-            session['_user_id'] = str(user.id)
+            session['_user_id'] = str(user_id)
             session['_fresh'] = True
             session['_csrf_token'] = 'test-token'
     return client
