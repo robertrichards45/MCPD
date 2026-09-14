@@ -1,6 +1,7 @@
 from app import create_app
 from app.extensions import db
 from app.models import ROLE_WEBSITE_CONTROLLER, User
+from app.simulator.world_state import _visible_timeline_without_legacy_radio_duplicates
 
 
 def _client():
@@ -60,3 +61,29 @@ def test_one_radio_transmission_creates_one_trainee_timeline_card():
 
     assert len(timeline_matches) == 1
     assert len(radio_log_matches) == 1
+
+
+def test_legacy_same_clock_radio_pair_is_hidden_but_later_repeat_remains():
+    text = 'dispatch 310 im onscene'
+    world = {
+        'timeline': [
+            {
+                'event_type': 'radio_transmission', 'actor': 'Trainee', 'channel': 'radio',
+                'summary': text, 'clock': 0, 'visible_to_trainee': True,
+            },
+            {
+                'event_type': 'trainee_action', 'actor': 'Trainee', 'channel': 'radio',
+                'summary': text, 'clock': 0, 'visible_to_trainee': True,
+            },
+            {
+                'event_type': 'trainee_action', 'actor': 'Trainee', 'channel': 'radio',
+                'summary': text, 'clock': 2, 'visible_to_trainee': True,
+            },
+        ]
+    }
+
+    cleaned = _visible_timeline_without_legacy_radio_duplicates(world)
+
+    assert len(cleaned) == 2
+    assert [row['clock'] for row in cleaned] == [0, 2]
+    assert cleaned[0]['event_type'] == 'trainee_action'
