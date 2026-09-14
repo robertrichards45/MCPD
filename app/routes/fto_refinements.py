@@ -1,12 +1,17 @@
 import json
 from datetime import date, datetime
 
-from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
+from flask import Blueprint, abort, flash, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_required
 from sqlalchemy import or_
 
 from ..extensions import db
-from ..fto_models import FTODailyObservation, FTOProgramAssignment, FTORemediation
+from ..fto_models import (
+    FTODailyObservation,
+    FTOProgramAssignment,
+    FTORemediation,
+    FTOScenarioAlert,
+)
 from .fto_program import (
     RATING_AREAS,
     RATING_CHOICES,
@@ -19,6 +24,7 @@ from .fto_program import (
 )
 
 bp = Blueprint('fto_refinements', __name__, url_prefix='/sentinel/fto-center')
+_SCENARIO_SESSION_KEY = 'sentinel_scenario_lab_v2'
 
 
 def _ratings_from_form():
@@ -36,6 +42,18 @@ def _ratings_from_form():
     return ratings, observed
 
 
+def _open_scenario_alert_count(user):
+    query = FTOScenarioAlert.query.filter(FTOScenarioAlert.acknowledged_at.is_(None))
+    if can_manage(user):
+        return query.count()
+    return query.filter(
+        or_(
+            FTOScenarioAlert.assigned_fto_id == user.id,
+            FTOScenarioAlert.supervisor_id == user.id,
+        )
+    ).count()
+
+
 def dashboard_attention_items(user):
     """Return role-scoped FTO work queues; no AI performance judgments are used."""
     if not user or not getattr(user, 'is_authenticated', False):
@@ -43,6 +61,15 @@ def dashboard_attention_items(user):
 
     items = []
     program_endpoint = 'reports.sentinel.fto_program.dashboard'
+
+    critical_alerts = _open_scenario_alert_count(user)
+    if critical_alerts:
+        items.append({
+            'label': 'Critical Scenario Lab Alerts',
+            'value': str(critical_alerts),
+            'detail': 'Synthetic training outcomes requiring assigned FTO/supervisor human review; not automatic DOR findings',
+            'endpoint': program_endpoint,
+        })
 
     if can_manage(user):
         pending_review = (
@@ -121,6 +148,60 @@ def dashboard_attention_items(user):
         })
 
     return items
+
+
+@bp.after_app_request
+def persist_critical_scenario_alert(response):
+    """Persist an advisory alert for a trainee's assigned FTO after a terminal practice outcome."""
+    if not request.path.startswith('/sentinel/fto-center/scenario-lab'):
+        return response
+    if not getattr(current_user, 'is_authenticated', False):
+        return response
+
+    state = session.get(_SCENARIO_SESSION_KEY)
+    if not isinstance(state, dict) or not state.get('fto_alert') or state.get('alert_persisted'):
+        return response
+
+    assignment = (
+        FTOProgramAssignment.query
+        .filter(
+            FTOProgramAssignment.trainee_id == current_user.id,
+            FTOProgramAssignment.status.in_(('ACTIVE', 'PAUSED', 'EXTENDED')),
+        )
+        .order_by(FTOProgramAssignment.updated_at.desc(), FTOProgramAssignment.id.desc())
+        .first()
+    )
+    if assignment is None:
+        state['alert_delivery'] = 'No active FTO assignment is linked to this trainee account.'
+        session[_SCENARIO_SESSION_KEY] = state
+        session.modified = True
+        return response
+
+    outcome = state.get('terminal_outcome') or {}
+    summary_parts = [
+        _text(outcome.get('public_outcome')),
+        _text(outcome.get('officer_outcome')),
+        _text(outcome.get('legal_outcome')),
+    ]
+    alert = FTOScenarioAlert(
+        assignment_id=assignment.id,
+        trainee_id=current_user.id,
+        assigned_fto_id=assignment.assigned_fto_id,
+        supervisor_id=assignment.supervisor_id,
+        scenario_id=_text(state.get('scenario_id')) or 'UNKNOWN',
+        severity='CRITICAL',
+        outcome_title=_text(outcome.get('title'))[:255] or 'Critical Scenario Lab outcome',
+        outcome_summary=' '.join(part for part in summary_parts if part)[:3000] or None,
+    )
+    db.session.add(alert)
+    db.session.commit()
+
+    state['alert_persisted'] = True
+    state['alert_id'] = alert.id
+    state['alert_delivery'] = 'Delivered to the assigned FTO Center work queue for human review.'
+    session[_SCENARIO_SESSION_KEY] = state
+    session.modified = True
+    return response
 
 
 @bp.route('/dor/<int:dor_id>/edit', methods=['GET', 'POST'])
