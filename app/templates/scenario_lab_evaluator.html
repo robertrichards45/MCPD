@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell mcpd-command-app">
+  {% include 'partials/nav.html' %}
+  <main class="page-wrap narrative-tool-page">
+    <section class="ops-head-card mb-3">
+      <div class="ops-head-copy">
+        <div class="eyebrow">Sentinel — FTO / Evaluator Mode</div>
+        <h2 class="mb-1">Scenario Observation</h2>
+        <p class="text-muted mb-0">Hidden simulator state for human training review. Nothing on this screen is an automatic DOR rating or employment decision.</p>
+      </div>
+      <div class="ops-head-actions d-flex gap-2 flex-wrap">
+        <a class="btn btn-outline-secondary" href="{{ url_for('reports.fto_refinements.scenario_lab.lab', scenario_id=run.scenario_id) }}">Simulation Mode</a>
+        <a class="btn btn-outline-secondary" href="{{ url_for('reports.sentinel.fto_program.dashboard') }}">FTO Program</a>
+      </div>
+    </section>
+
+    <section class="ops-panel mb-3">
+      <div class="row g-3">
+        <div class="col-md-3"><div class="border rounded p-3 h-100"><div class="eyebrow">Run</div><strong>{{ run.run_id }}</strong></div></div>
+        <div class="col-md-3"><div class="border rounded p-3 h-100"><div class="eyebrow">Trainee</div><strong>{{ run.trainee.display_name if run.trainee else run.trainee_id }}</strong></div></div>
+        <div class="col-md-2"><div class="border rounded p-3 h-100"><div class="eyebrow">Mode</div><strong>{{ run.mode }}</strong></div></div>
+        <div class="col-md-2"><div class="border rounded p-3 h-100"><div class="eyebrow">Status</div><strong>{{ run.status }}</strong></div></div>
+        <div class="col-md-2"><div class="border rounded p-3 h-100"><div class="eyebrow">Clock</div><strong>T+{{ world.clock }}</strong></div></div>
+      </div>
+    </section>
+
+    {% if run.status not in ['COMPLETED','TERMINATED'] %}
+    <section class="ops-panel mb-3">
+      <div class="eyebrow">Instructor Control</div>
+      <h3>Live Observation Controls</h3>
+      <div class="d-flex gap-2 flex-wrap mb-3">
+        <form method="post" action="{{ url_for('reports.fto_refinements.scenario_lab.evaluator_control', run_id=run.run_id) }}">
+          <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
+          <button class="btn btn-outline-warning" name="control" value="{{ 'resume' if world.paused else 'pause' }}">{{ 'Resume' if world.paused else 'Pause' }} Simulation</button>
+        </form>
+        <form method="post" action="{{ url_for('reports.fto_refinements.scenario_lab.evaluator_control', run_id=run.run_id) }}">
+          <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
+          <button class="btn btn-outline-primary" name="control" value="{{ 'coaching_off' if world.coaching_mode else 'coaching_on' }}">{{ 'Disable Coaching Mode' if world.coaching_mode else 'Enable Coaching Mode' }}</button>
+        </form>
+      </div>
+      {% if world.coaching_mode %}
+      <form method="post" action="{{ url_for('reports.fto_refinements.scenario_lab.evaluator_control', run_id=run.run_id) }}">
+        <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
+        <input type="hidden" name="control" value="coach">
+        <label class="form-label"><strong>Socratic coaching question</strong></label>
+        <textarea class="form-control" name="message" rows="3" maxlength="1000" placeholder="Ask a question that makes the trainee reassess; do not supply the answer."></textarea>
+        <button class="btn btn-primary mt-2">Send to Trainee</button>
+      </form>
+      {% endif %}
+    </section>
+    {% endif %}
+
+    <section class="row g-3 mb-3">
+      <div class="col-xl-6">
+        <article class="ops-panel h-100">
+          <div class="eyebrow">Hidden World State</div>
+          <h3>Scene / Resource State</h3>
+          <div class="row g-2">
+            <div class="col-md-4"><div class="border rounded p-2"><small>Internal risk</small><div><strong>{{ engine.risk }}</strong></div></div></div>
+            <div class="col-md-4"><div class="border rounded p-2"><small>Subject state</small><div><strong>{{ engine.subject_state }}</strong></div></div></div>
+            <div class="col-md-4"><div class="border rounded p-2"><small>Hidden phase</small><div><strong>{{ turn }}</strong></div></div></div>
+          </div>
+          <hr>
+          <strong>Resources</strong>
+          <pre class="small mb-0" style="white-space:pre-wrap">{{ world.resources|tojson(indent=2) }}</pre>
+          <hr>
+          <strong>Pending / irreversible</strong>
+          <pre class="small mb-0" style="white-space:pre-wrap">{{ {'pending_event': engine.pending_event, 'irreversible_events': world.irreversible_events}|tojson(indent=2) }}</pre>
+        </article>
+      </div>
+
+      <div class="col-xl-6">
+        <article class="ops-panel h-100">
+          <div class="eyebrow">Evaluator Evidence</div>
+          <h3>Current Training Signals</h3>
+          {% if feedback %}
+          <p><strong>Hidden status:</strong> {{ feedback.status }}</p>
+          {% if feedback.strengths %}<strong>Demonstrated</strong><ul>{% for item in feedback.strengths %}<li>{{ item }}</li>{% endfor %}</ul>{% endif %}
+          {% if feedback.gaps %}<strong>Unresolved / missed</strong><ul>{% for item in feedback.gaps %}<li>{{ item }}</li>{% endfor %}</ul>{% endif %}
+          {% if feedback.issues %}<strong>Safety / legal flags</strong><ul>{% for item in feedback.issues %}<li>{{ item }}</li>{% endfor %}</ul>{% endif %}
+          {% else %}<p class="text-muted">No hidden evaluator signal has been generated yet.</p>{% endif %}
+          {% if engine.complaint_risk %}<div class="alert alert-warning">Complaint/professional-review cue is active.</div>{% endif %}
+          {% if engine.use_of_force_review %}<div class="alert alert-warning">Use-of-force review cue is active.</div>{% endif %}
+        </article>
+      </div>
+    </section>
+
+    <section class="row g-3 mb-3">
+      <div class="col-xl-6">
+        <article class="ops-panel h-100">
+          <div class="eyebrow">NPC Minds</div>
+          <h3>Knowledge / Memory / Cooperation</h3>
+          {% if world.people %}
+          <div class="d-grid gap-2">
+            {% for pid, person in world.people.items() %}
+            <details class="border rounded p-2">
+              <summary><strong>{{ person.name or pid }}</strong> — {{ person.role }} — {{ person.status }}</summary>
+              <div class="small mt-2">Personality: {{ person.personality or 'not initialized' }} | Stress: {{ person.stress }} | Cooperation: {{ person.cooperation }} | Reliability: {{ person.reliability or 'not initialized' }}</div>
+              {% if person.memory %}<pre class="small mt-2" style="white-space:pre-wrap">{{ person.memory|tojson(indent=2) }}</pre>{% endif %}
+            </details>
+            {% endfor %}
+          </div>
+          {% else %}<p class="text-muted">No NPC minds initialized yet.</p>{% endif %}
+        </article>
+      </div>
+      <div class="col-xl-6">
+        <article class="ops-panel h-100">
+          <div class="eyebrow">Evidence / Records</div>
+          <h3>Structured Truth Objects</h3>
+          <strong>Evidence</strong>
+          <pre class="small" style="white-space:pre-wrap">{{ world.evidence|tojson(indent=2) }}</pre>
+          <strong>Records</strong>
+          <pre class="small mb-0" style="white-space:pre-wrap">{{ world.records|tojson(indent=2) }}</pre>
+        </article>
+      </div>
+    </section>
+
+    {% if legal_refs %}
+    <section class="ops-panel mb-3">
+      <div class="eyebrow">Legal / Policy Research Cues</div>
+      <h3>Advisory Only — Verify Jurisdiction and Current Authority</h3>
+      <div class="row g-2">
+        {% for item in legal_refs %}
+        <div class="col-md-6"><div class="border rounded p-3 h-100"><strong>{{ item.citation }} — {{ item.title }}</strong><div class="small text-muted">{{ item.jurisdiction }}</div><p class="mb-0 mt-2">{{ item.why }}</p></div></div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    <section class="ops-panel mb-3">
+      <div class="eyebrow">Replay Timeline</div>
+      <h3>What the Trainee Knew When They Acted</h3>
+      {% if events %}
+      <div class="d-grid gap-2">
+        {% for event in events %}
+        <details class="border rounded p-2">
+          <summary><strong>#{{ event.sequence }} {{ event.event_type }}</strong> — {{ event.channel or 'system' }}{% if event.actor %} — {{ event.actor }}{% endif %}</summary>
+          <p class="mt-2 mb-2">{{ event.summary }}</p>
+          <pre class="small mb-0" style="white-space:pre-wrap">{{ event.world_snapshot_json }}</pre>
+        </details>
+        {% endfor %}
+      </div>
+      {% else %}<p class="text-muted">No persisted replay events yet.</p>{% endif %}
+    </section>
+  </main>
+</div>
+{% endblock %}
