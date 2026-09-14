@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell mcpd-command-app">
+  {% include 'partials/nav.html' %}
+  <main class="page-wrap narrative-tool-page">
+    <section class="ops-head-card mb-3">
+      <div class="ops-head-copy">
+        <div class="eyebrow">Sentinel — Post-Call Documentation</div>
+        <h2 class="mb-1">Training Package</h2>
+        <p class="text-muted mb-0">Complete the documentation and notification decisions you would be responsible for after this synthetic call.</p>
+      </div>
+      <div class="ops-head-actions d-flex gap-2 flex-wrap">
+        {% if evaluator_mode and run %}<a class="btn btn-outline-secondary" href="{{ url_for('reports.fto_refinements.scenario_lab.evaluator', run_id=run.run_id) }}">Evaluator View</a>{% endif %}
+        <a class="btn btn-outline-primary" href="{{ url_for('reports.fto_refinements.scenario_notebook.review_notebook', run_id=run_id) if run_id else url_for('reports.fto_refinements.scenario_notebook.notebook') }}">Field Notebook</a>
+        <a class="btn btn-outline-secondary" href="{{ url_for('reports.fto_refinements.scenario_lab.lab', scenario_id=scenario_id) }}">Virtual Patrol</a>
+      </div>
+    </section>
+
+    <div class="alert alert-secondary mb-3"><strong>TRAINING / SYNTHETIC.</strong> Nothing entered here is an official police record. Blotter/desk-journal entry is intentionally not part of the trainee paperwork exercise.</div>
+
+    <section class="ops-panel mb-3">
+      <div class="row g-3">
+        <div class="col-md-4"><div class="border rounded p-3 h-100"><div class="eyebrow">Scenario</div><strong>{{ scenario.title or scenario_id }}</strong></div></div>
+        <div class="col-md-4"><div class="border rounded p-3 h-100"><div class="eyebrow">Run</div><strong>{{ run_id }}</strong></div></div>
+        <div class="col-md-4"><div class="border rounded p-3 h-100"><div class="eyebrow">Package Status</div><strong>{{ package.status|replace('_',' ')|title }}</strong></div></div>
+      </div>
+    </section>
+
+    {% if not evaluator_mode %}
+    <section class="ops-panel mb-3">
+      <div class="eyebrow">Officer Responsibility</div>
+      <h3>{{ 'Submit a Revision' if latest else 'Complete Your Training Paperwork' }}</h3>
+      <p class="small text-muted">Select the officer-completed documentation you believe is required. Sentinel does not show the correct answer here. Use the facts you developed, your training, and applicable MCPD procedures.</p>
+      <form method="post">
+        <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
+        <input type="hidden" name="action" value="{{ 'revise' if latest else 'submit' }}">
+
+        <div class="mb-3">
+          <label class="form-label"><strong>Paperwork / Statements</strong></label>
+          {% if document_choices %}
+          <div class="row g-2">
+            {% for item in document_choices %}
+            <div class="col-md-6">
+              <label class="border rounded p-3 d-flex gap-2 align-items-start h-100">
+                <input class="form-check-input mt-1" type="checkbox" name="selected_documents" value="{{ item }}" {% if latest and item in latest.selected_documents %}checked{% endif %}>
+                <span>{{ item }}</span>
+              </label>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p class="text-muted">No specific form choices are configured for this scenario. The trainee still must complete the narrative and notification decision.</p>
+          {% endif %}
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="cid_decision"><strong>CID Decision</strong></label>
+          <select class="form-select" id="cid_decision" name="cid_decision" required>
+            <option value="">Select what you believe is required...</option>
+            {% for value, label in cid_decisions.items() %}
+            <option value="{{ value }}" {% if latest and latest.cid_decision == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+          <div class="form-text">The correct CID screening/notification requirement is intentionally not revealed until human review.</div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="notification_notes"><strong>Notifications / Screening Notes</strong></label>
+          <textarea class="form-control" id="notification_notes" name="notification_notes" rows="4" maxlength="3000" placeholder="Document who you would notify/screen, when, and what information you would provide.">{{ latest.notification_notes if latest else '' }}</textarea>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="narrative"><strong>Training Narrative</strong></label>
+          <textarea class="form-control" id="narrative" name="narrative" rows="14" maxlength="12000" required placeholder="Write the report narrative from the facts you actually developed during the call. Do not add information you never obtained.">{{ latest.narrative if latest else '' }}</textarea>
+          <div class="form-text">Narrative Creator assistance is intentionally not provided on this evaluation screen.</div>
+        </div>
+
+        <button class="btn btn-primary" type="submit">{{ 'Submit Revision ' ~ ((latest.revision or 0) + 1) if latest else 'Submit Training Package to FTO' }}</button>
+      </form>
+    </section>
+    {% endif %}
+
+    {% if latest %}
+    <section class="ops-panel mb-3">
+      <div class="eyebrow">Preserved Submission</div>
+      <h3>Latest Trainee Submission — Revision {{ latest.revision }}</h3>
+      <div class="row g-3">
+        <div class="col-lg-5">
+          <strong>Selected documentation</strong>
+          {% if latest.selected_documents %}<ul>{% for item in latest.selected_documents %}<li>{{ item }}</li>{% endfor %}</ul>{% else %}<p class="text-muted">No specific documents selected.</p>{% endif %}
+          <strong>CID decision</strong>
+          <p>{{ latest.cid_decision_label }}</p>
+          <strong>Notification notes</strong>
+          <p>{{ latest.notification_notes or 'None entered.' }}</p>
+        </div>
+        <div class="col-lg-7">
+          <strong>Narrative</strong>
+          <div class="border rounded p-3 mt-2" style="white-space:pre-wrap">{{ latest.narrative }}</div>
+        </div>
+      </div>
+    </section>
+    {% endif %}
+
+    {% if package.submissions|length > 1 %}
+    <section class="ops-panel mb-3">
+      <div class="eyebrow">Revision History</div>
+      <h3>Original Submission Preserved</h3>
+      <div class="d-grid gap-2">
+        {% for submission in package.submissions %}
+        <details class="border rounded p-2" {% if loop.first %}open{% endif %}>
+          <summary><strong>Revision {{ submission.revision }}</strong> — {{ submission.submitted_at }}</summary>
+          <div class="mt-2"><strong>CID:</strong> {{ submission.cid_decision_label }}</div>
+          <div><strong>Documents:</strong> {{ submission.selected_documents|join(', ') if submission.selected_documents else 'None selected' }}</div>
+          <div class="mt-2" style="white-space:pre-wrap">{{ submission.narrative }}</div>
+        </details>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    {% if evaluator_mode %}
+    <section class="ops-panel mb-3">
+      <div class="eyebrow">FTO Comparison</div>
+      <h3>Configured Requirements vs. Trainee Submission</h3>
+      <p class="small text-muted">These are training-review cues. The FTO must verify current MCPD procedure and make the final evaluation.</p>
+      {% if comparison %}
+      <div class="row g-3">
+        <div class="col-lg-6">
+          <strong>Configured officer documentation</strong>
+          {% if comparison.requirements.officer_documents %}<ul>{% for item in comparison.requirements.officer_documents %}<li>{{ item }}</li>{% endfor %}</ul>{% else %}<p class="text-muted">No officer form currently configured.</p>{% endif %}
+          {% if comparison.requirements.written_statements %}<strong>Written-statement requirement</strong><ul>{% for item in comparison.requirements.written_statements %}<li>{{ item }}</li>{% endfor %}</ul>{% endif %}
+          {% if comparison.missing_documents %}<div class="alert alert-warning"><strong>Possible missing documentation:</strong> {{ comparison.missing_documents|join(', ') }}</div>{% endif %}
+          {% if comparison.additional_documents %}<div class="alert alert-light"><strong>Additional trainee selections:</strong> {{ comparison.additional_documents|join(', ') }}</div>{% endif %}
+        </div>
+        <div class="col-lg-6">
+          <strong>CID training requirement</strong>
+          <p>{{ comparison.cid_required|replace('_',' ')|title }}</p>
+          <p>{{ comparison.requirements.cid.instruction }}</p>
+          {% if comparison.cid_match is sameas true %}<div class="alert alert-success">Trainee CID decision matches the configured training requirement.</div>{% elif comparison.cid_match is sameas false %}<div class="alert alert-warning">Trainee CID decision may not match the configured training requirement. Human review required.</div>{% else %}<div class="alert alert-secondary">CID requirement is conditional/unconfigured; verify the developed facts and current procedure.</div>{% endif %}
+          <div class="small text-muted">Verified for training: {{ 'Yes' if comparison.requirements.cid.verified_for_training else 'No — confirm before using as a formal deficiency.' }}</div>
+        </div>
+      </div>
+      {% else %}<p class="text-muted">The trainee has not submitted a training package yet.</p>{% endif %}
+    </section>
+    {% endif %}
+  </main>
+</div>
+{% endblock %}
