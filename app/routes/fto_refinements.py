@@ -3,9 +3,10 @@ from datetime import date, datetime
 
 from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
+from sqlalchemy import or_
 
 from ..extensions import db
-from ..fto_models import FTODailyObservation
+from ..fto_models import FTODailyObservation, FTOProgramAssignment, FTORemediation
 from .fto_program import (
     RATING_AREAS,
     RATING_CHOICES,
@@ -14,6 +15,7 @@ from .fto_program import (
     _parse_date,
     _text,
     can_evaluate_assignment,
+    can_manage,
 )
 
 bp = Blueprint('fto_refinements', __name__, url_prefix='/sentinel/fto-center')
@@ -32,6 +34,93 @@ def _ratings_from_form():
         if rating:
             observed.append(rating)
     return ratings, observed
+
+
+def dashboard_attention_items(user):
+    """Return role-scoped FTO work queues; no AI performance judgments are used."""
+    if not user or not getattr(user, 'is_authenticated', False):
+        return []
+
+    items = []
+    program_endpoint = 'reports.sentinel.fto_program.dashboard'
+
+    if can_manage(user):
+        pending_review = (
+            FTODailyObservation.query
+            .filter_by(status='FINALIZED', supervisor_reviewed_at=None)
+            .count()
+        )
+        open_remediation = FTORemediation.query.filter_by(status='OPEN').count()
+        if pending_review:
+            items.append({
+                'label': 'FTO DORs Awaiting Review',
+                'value': str(pending_review),
+                'detail': 'Finalized DORs awaiting supervisor review',
+                'endpoint': program_endpoint,
+            })
+        if open_remediation:
+            items.append({
+                'label': 'Open FTO Remediation',
+                'value': str(open_remediation),
+                'detail': 'Open trainee development plans requiring human follow-up',
+                'endpoint': program_endpoint,
+            })
+    else:
+        draft_count = (
+            FTODailyObservation.query
+            .join(FTOProgramAssignment, FTODailyObservation.assignment_id == FTOProgramAssignment.id)
+            .filter(
+                FTODailyObservation.status == 'DRAFT',
+                FTOProgramAssignment.assigned_fto_id == user.id,
+            )
+            .count()
+        )
+        open_remediation = (
+            FTORemediation.query
+            .join(FTOProgramAssignment, FTORemediation.assignment_id == FTOProgramAssignment.id)
+            .filter(
+                FTORemediation.status == 'OPEN',
+                or_(
+                    FTOProgramAssignment.assigned_fto_id == user.id,
+                    FTOProgramAssignment.supervisor_id == user.id,
+                ),
+            )
+            .count()
+        )
+        if draft_count:
+            items.append({
+                'label': 'FTO DOR Drafts',
+                'value': str(draft_count),
+                'detail': 'Unfinished DORs assigned to you',
+                'endpoint': program_endpoint,
+            })
+        if open_remediation:
+            items.append({
+                'label': 'FTO Remediation Follow-Up',
+                'value': str(open_remediation),
+                'detail': 'Open development plans on your assigned FTO records',
+                'endpoint': program_endpoint,
+            })
+
+    pending_ack = (
+        FTODailyObservation.query
+        .join(FTOProgramAssignment, FTODailyObservation.assignment_id == FTOProgramAssignment.id)
+        .filter(
+            FTODailyObservation.status == 'FINALIZED',
+            FTODailyObservation.trainee_acknowledged_at.is_(None),
+            FTOProgramAssignment.trainee_id == user.id,
+        )
+        .count()
+    )
+    if pending_ack:
+        items.append({
+            'label': 'FTO DOR Acknowledgment',
+            'value': str(pending_ack),
+            'detail': 'Finalized DORs waiting for your receipt acknowledgment',
+            'endpoint': program_endpoint,
+        })
+
+    return items
 
 
 @bp.route('/dor/<int:dor_id>/edit', methods=['GET', 'POST'])
