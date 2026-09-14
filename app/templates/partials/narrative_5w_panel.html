@@ -3,7 +3,7 @@
     <h3>
       {% if tool_mode == '5w' %}Incident Notes → 5W Summary
       {% elif tool_mode == 'blotter' %}Call Log → Watch Blotter
-      {% else %}Incident Notes → Narrative Draft
+      {% else %}Verified Facts → Narrative Draft
       {% endif %}
     </h3>
     {% if tool_mode == '5w' %}
@@ -11,21 +11,55 @@
     {% elif tool_mode == 'blotter' %}
       <p class="text-muted mb-2">Enter your call log for the watch (one call per line or paragraph). AI will format it into a professional watch blotter.</p>
     {% else %}
-      <p class="text-muted mb-2">Enter your incident notes. The tool will draft a professional narrative — then use AI Quality Check to score it and get specific feedback.</p>
+      <p class="text-muted mb-2">Enter only facts known to the reporting officer. Sentinel-style review will identify missing or unclear information without inventing facts to fill the gaps.</p>
+      <div class="alert alert-light border mb-3" role="note">
+        <strong>Before you generate:</strong>
+        <span class="d-block mt-1">Include the reason for response, date/time, location, involved persons, observations/statements, officer actions, evidence/property, disposition, and required notifications when applicable.</span>
+      </div>
     {% endif %}
     <label>
-      {% if tool_mode == 'blotter' %}Call log entries{% else %}Incident notes{% endif %}
+      {% if tool_mode == 'blotter' %}Call log entries{% else %}Incident facts / notes{% endif %}
       <textarea id="n5w-intake" class="form-control mobile-input" rows="12"
         placeholder="{% if tool_mode == 'blotter' %}Example: 1423 — Responded to PX for larceny. Subject John Smith. Watch Commander notified.
-1647 — Domestic disturbance at Bldg 2215. Separated parties. Victim statement obtained.{% elif tool_mode == '5w' %}Example: On 05/05/2026 at 1430, I responded to the PX for a larceny. Subject John Smith concealed items in a backpack. Witness Jane Doe saw him pass all points of sale. I detained him outside, recovered the property, photographed the items, and notified the Watch Commander.{% else %}Example: On 05/05/2026 at 1430, I responded to the PX for a larceny. Subject John Smith concealed items in a backpack. Witness Jane Doe saw him pass all points of sale. I detained him outside, recovered the property, photographed the items, and notified the Watch Commander.{% endif %}"></textarea>
+1647 — Domestic disturbance at Bldg 2215. Separated parties. Victim statement obtained.{% elif tool_mode == '5w' %}Example: On 05/05/2026 at 1430, I responded to the PX for a larceny. Subject John Smith concealed items in a backpack. Witness Jane Doe saw him pass all points of sale. I detained him outside, recovered the property, photographed the items, and notified the supervisor.{% else %}Example: At 1430, 05 May 2026, I was dispatched to the PX for a reported larceny. I arrived at 1436 and contacted the complainant, Jane Doe. Doe stated... I observed... I photographed/recovered... The subject was... The incident was concluded by... Supervisor notification was made at...{% endif %}"></textarea>
     </label>
     <div class="bodycam-control-row">
       <button id="n5w-build" class="btn btn-primary mobile-primary-action" type="button" data-tool-mode="{{ tool_mode or 'narrative' }}">
-        {% if tool_mode == '5w' %}Generate 5W Summary{% elif tool_mode == 'blotter' %}Generate Blotter (AI){% else %}Generate Narrative{% endif %}
+        {% if tool_mode == '5w' %}Generate 5W Summary{% elif tool_mode == 'blotter' %}Generate Blotter (AI){% else %}Build Narrative + Fact Review{% endif %}
       </button>
       <button id="n5w-clear" class="btn btn-outline-secondary mobile-secondary-action" type="button">Clear</button>
     </div>
   </article>
+
+  {% if tool_mode == 'narrative' %}
+  <article id="n5w-fact-review" class="ops-panel narrative-5w-card" style="display:none;" aria-live="polite">
+    <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+      <div>
+        <h3 class="mb-1">Fact Review</h3>
+        <p class="text-muted mb-0">These are drafting cues, not findings of law or policy.</p>
+      </div>
+      <span id="n5w-fact-status" class="badge bg-secondary">Not reviewed</span>
+    </div>
+    <div class="n5w-quality-grid">
+      <div class="n5w-quality-col">
+        <h4>✓ Facts Detected</h4>
+        <ul id="n5w-facts-detected"></ul>
+      </div>
+      <div class="n5w-quality-col">
+        <h4>⚠ Verify / Add</h4>
+        <ul id="n5w-facts-missing"></ul>
+      </div>
+      <div class="n5w-quality-col">
+        <h4>↔ Consistency Check</h4>
+        <ul id="n5w-facts-consistency"></ul>
+      </div>
+    </div>
+    <div class="bodycam-warning mt-2">
+      <strong>No fact fabrication</strong>
+      <span>If something is missing or unclear, verify it from the officer's knowledge/records. Do not add a fact merely to satisfy a checklist item.</span>
+    </div>
+  </article>
+  {% endif %}
 
   <article class="ops-panel narrative-5w-card">
     {% if tool_mode == '5w' %}
@@ -36,19 +70,19 @@
       <textarea id="n5w-output" class="form-control mobile-input" rows="16" placeholder="The formatted watch blotter will appear here. Review before distribution."></textarea>
     {% else %}
       <h3>Narrative Draft</h3>
-      <textarea id="n5w-output" class="form-control mobile-input" rows="16" placeholder="The draft narrative will appear here. Review and edit before using in a report."></textarea>
+      <textarea id="n5w-output" class="form-control mobile-input" rows="18" placeholder="The fact-preserving draft will appear here. Verify every sentence before using it in the authoritative report system."></textarea>
     {% endif %}
     <div class="bodycam-control-row">
       <button id="n5w-copy" class="btn btn-outline-secondary mobile-secondary-action" type="button">Copy</button>
-      <a id="n5w-text"  class="btn btn-outline-secondary mobile-secondary-action" href="#">Text</a>
+      <a id="n5w-text" class="btn btn-outline-secondary mobile-secondary-action" href="#">Text</a>
       <a id="n5w-email" class="btn btn-outline-secondary mobile-secondary-action" href="#">Email</a>
       {% if tool_mode != 'blotter' %}
-      <button id="n5w-check" class="btn btn-outline-primary mobile-secondary-action" type="button" title="AI quality check — score your narrative and get improvement tips">Quality Check</button>
+      <button id="n5w-check" class="btn btn-outline-primary mobile-secondary-action" type="button" title="AI quality check — reviews completeness, chronology, consistency, and professional articulation">AI Quality Check</button>
       {% endif %}
     </div>
     <div class="bodycam-warning mt-2">
-      <strong>Review required</strong>
-      <span>This tool organizes and formats facts only. It must not invent evidence, statements, charges, or probable cause.</span>
+      <strong>Officer review required</strong>
+      <span>Sentinel assists with organization and quality control. The officer remains responsible for factual accuracy, legal articulation, and the final report.</span>
     </div>
   </article>
 </section>
@@ -58,21 +92,21 @@
     <div class="n5w-quality-header">
       <div>
         <h3>Narrative Quality Check</h3>
-        <p class="text-muted" style="margin:0;">AI evaluation against MCPD narrative standards</p>
+        <p class="text-muted" style="margin:0;">AI-assisted review of writing quality and completeness. Verify every recommendation.</p>
       </div>
       <div class="n5w-score-badge" id="n5w-score-badge">—</div>
     </div>
     <div class="n5w-quality-grid">
       <div class="n5w-quality-col">
-        <h4>&#10003; Strengths</h4>
+        <h4>✓ Strengths</h4>
         <ul id="n5w-strengths"></ul>
       </div>
       <div class="n5w-quality-col">
-        <h4>&#9888; Issues Found</h4>
+        <h4>⚠ Issues Found</h4>
         <ul id="n5w-issues"></ul>
       </div>
       <div class="n5w-quality-col">
-        <h4>&#8593; Improvement Actions</h4>
+        <h4>↑ Improvement Actions</h4>
         <ul id="n5w-suggestions"></ul>
       </div>
     </div>
@@ -80,6 +114,6 @@
       <strong>Suggested Opening:</strong>
       <span id="n5w-improved-text"></span>
     </div>
-    <p style="font-size:11px;color:#9aa5b4;margin:10px 0 0;">Edit your narrative above and click Quality Check again to see how it improves.</p>
+    <p style="font-size:11px;color:#9aa5b4;margin:10px 0 0;">AI suggestions are drafting assistance only. Never add a fact, statement, evidence item, charge, or legal conclusion unless it is supported by the actual incident information.</p>
   </div>
 </section>
