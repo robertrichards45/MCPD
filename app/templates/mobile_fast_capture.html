@@ -67,12 +67,10 @@
   var STORAGE_KEY = 'mcpd.mobile.incident.state';
   var selectedSlug = null;
 
-  /* Pre-fill today's date and current time */
   var now = new Date();
   document.getElementById('mfc-date').value = now.toISOString().slice(0, 10);
   document.getElementById('mfc-time').value = now.toTimeString().slice(0, 5);
 
-  /* Call type selection */
   document.querySelectorAll('.mfc-type-btn').forEach(function (btn) {
     btn.addEventListener('click', function () {
       document.querySelectorAll('.mfc-type-btn').forEach(function (b) { b.classList.remove('is-sel'); });
@@ -130,6 +128,7 @@
       paperworkManualForms: [],
       paperworkSuppressedForms: [],
       paperworkGuidance: rule ? {
+        recommendedForms: JSON.parse(JSON.stringify(rule.recommendedForms || [])),
         conditionalRules: JSON.parse(JSON.stringify(rule.conditionalRules || [])),
         optionalForms: JSON.parse(JSON.stringify(rule.optionalForms || [])),
         notNormallyRequiredForms: JSON.parse(JSON.stringify(rule.notNormallyRequiredForms || []))
