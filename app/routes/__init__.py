@@ -27,7 +27,7 @@ def _retire_requested_portal_modules():
         return redirect('/dashboard')
     if path.startswith('/assistant-operations'):
         return redirect('/dashboard')
-    if path.startswith('/notifications'):
+    if path in {'/notifications', '/notifications/inbox'}:
         return redirect('/dashboard')
     if path.startswith('/bodycam'):
         return redirect('/tools/narrative')
@@ -35,13 +35,18 @@ def _retire_requested_portal_modules():
 
 
 def _remove_anchor_by_text(html, label):
-    pattern = re.compile(r'<a\b[^>]*>.*?' + re.escape(label) + r'.*?</a>', re.I | re.S)
+    # Do not allow the match to cross an </a>; this keeps adjacent navigation
+    # items safe when the requested label is absent from the first anchor.
+    pattern = re.compile(
+        r'<a\b[^>]*>(?:(?!</a>).)*?' + re.escape(label) + r'(?:(?!</a>).)*?</a>',
+        re.I | re.S,
+    )
     return pattern.sub('', html)
 
 
 def _remove_details_group(html, label):
     pattern = re.compile(
-        r'<details\b[^>]*>\s*<summary\b[^>]*>.*?' + re.escape(label) + r'.*?</summary>.*?</details>',
+        r'<details\b[^>]*>\s*<summary\b[^>]*>(?:(?!</summary>).)*?' + re.escape(label) + r'(?:(?!</summary>).)*?</summary>.*?</details>',
         re.I | re.S,
     )
     return pattern.sub('', html)
