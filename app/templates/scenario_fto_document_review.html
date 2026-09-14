@@ -3,15 +3,19 @@
 <div class="app-shell mcpd-command-app">
   {% include 'partials/nav.html' %}
   <main class="page-wrap narrative-tool-page">
+    {% set world = state.get('world', {}) %}
+    {% set people = world.get('people', {}) %}
+    {% set statements = world.get('statements', []) %}
+
     <section class="ops-head-card mb-3">
       <div class="ops-head-copy">
         <div class="eyebrow">Sentinel — FTO Documentation Review</div>
         <h2 class="mb-1">Trainee Training Package</h2>
-        <p class="text-muted mb-0">Reconstruct the call, review the officer's documentation, annotate specific problems, and make the final human training disposition.</p>
+        <p class="text-muted mb-0">Reconstruct the call, compare the officer's documentation with what was actually developed, and make the final human training disposition.</p>
       </div>
       <div class="ops-head-actions d-flex gap-2 flex-wrap">
         <a class="btn btn-outline-primary" href="{{ markup_url }}">Line-by-Line Markup</a>
-        <a class="btn btn-outline-primary" href="{{ forms_url }}">Training Forms</a>
+        <a class="btn btn-outline-primary" href="{{ forms_url }}">Officer Training Forms</a>
         <a class="btn btn-outline-secondary" href="{{ notebook_url }}">Field Notebook</a>
         <a class="btn btn-outline-secondary" href="{{ evaluator_url }}">Evaluator Replay</a>
       </div>
@@ -19,83 +23,40 @@
 
     <div class="alert alert-secondary mb-3"><strong>HUMAN REVIEW REQUIRED.</strong> Sentinel may surface comparison cues, but the FTO makes the training decision. Nothing here is an automatic DOR rating, disciplinary finding, criminal conclusion, or employment decision.</div>
 
+    <section class="ops-panel mb-3"><div class="row g-2"><div class="col-md-3"><div class="border rounded p-3"><div class="eyebrow">Run</div><strong>{{ run.run_id }}</strong></div></div><div class="col-md-3"><div class="border rounded p-3"><div class="eyebrow">Scenario</div><strong>{{ scenario.title or scenario_id }}</strong></div></div><div class="col-md-3"><div class="border rounded p-3"><div class="eyebrow">Revision</div><strong>{{ latest.revision if latest else '—' }}</strong></div></div><div class="col-md-3"><div class="border rounded p-3"><div class="eyebrow">Package Status</div><strong>{{ package.status|replace('_',' ')|title }}</strong></div></div></div></section>
+
     <section class="ops-panel mb-3">
-      <div class="row g-2">
-        <div class="col-md-3"><div class="border rounded p-3"><div class="eyebrow">Run</div><strong>{{ run.run_id }}</strong></div></div>
-        <div class="col-md-3"><div class="border rounded p-3"><div class="eyebrow">Scenario</div><strong>{{ scenario.title or scenario_id }}</strong></div></div>
-        <div class="col-md-3"><div class="border rounded p-3"><div class="eyebrow">Revision</div><strong>{{ latest.revision if latest else '—' }}</strong></div></div>
-        <div class="col-md-3"><div class="border rounded p-3"><div class="eyebrow">Package Status</div><strong>{{ package.status|replace('_',' ')|title }}</strong></div></div>
+      <div class="eyebrow">Field-to-Report Reference</div><h3>People and Identifying Information Developed</h3>
+      <div class="row g-3">
+        {% for person_id, person in people.items() %}
+          {% if person.get('discovered') %}
+          <div class="col-xl-6"><div class="border rounded p-3 h-100"><div class="d-flex justify-content-between gap-2 align-items-start flex-wrap"><div><strong>{{ person.get('name') or person_id }}</strong><div class="small text-muted">{{ person.get('role') or 'Person' }}</div></div>{% if person.get('identity_obtained') %}<span class="badge text-bg-success">Identified</span>{% else %}<span class="badge text-bg-warning">ID Not Obtained</span>{% endif %}</div>{% if person.get('identity_obtained') and person.get('identity') %}{% set ident = person.get('identity') %}<div class="small mt-2"><strong>DOB:</strong> {{ ident.get('dob') }}<br><strong>Address:</strong> {{ ident.get('address') }}<br><strong>Phone:</strong> {{ ident.get('phone') }}<br><strong>Training ID:</strong> {{ ident.get('state_id') }}</div>{% else %}<div class="small text-muted mt-2">No identifying information was developed before the trainee closed the call.</div>{% endif %}</div></div>
+          {% endif %}
+        {% endfor %}
       </div>
     </section>
 
-    {% if latest %}
-    <section class="row g-3 mb-3">
-      <div class="col-xl-7">
-        <article class="ops-panel h-100">
-          <div class="eyebrow">Trainee Narrative</div><h3>Revision {{ latest.revision }}</h3>
-          <div class="border rounded p-3" style="white-space:pre-wrap">{{ latest.narrative }}</div>
-          <div class="mt-3"><a class="btn btn-sm btn-outline-primary" href="{{ markup_url }}">Annotate Specific Lines</a></div>
-        </article>
-      </div>
-      <div class="col-xl-5">
-        <article class="ops-panel h-100">
-          <div class="eyebrow">Trainee Decisions</div><h3>Paperwork / Notifications</h3>
-          <strong>Selected documentation</strong>{% if latest.selected_documents %}<ul>{% for item in latest.selected_documents %}<li>{{ item }}</li>{% endfor %}</ul>{% else %}<p class="text-muted">None selected.</p>{% endif %}
-          <strong>CID decision</strong><p>{{ latest.cid_decision_label or latest.cid_decision }}</p>
-          <strong>Notification notes</strong><p style="white-space:pre-wrap">{{ latest.notification_notes or 'None entered.' }}</p>
-          <strong>Training forms</strong><p>{{ 'Complete' if latest.forms_complete else 'Incomplete / not submitted' }}</p>
-        </article>
-      </div>
+    <section class="ops-panel mb-3">
+      <div class="eyebrow">Third-Party Statements</div><h3>Declarant-Completed Written Statements</h3>
+      <p class="small text-muted">These are read-only synthetic documents completed by the simulated declarant. The trainee officer does not author another person's statement.</p>
+      {% if statements %}<div class="d-grid gap-3">{% for statement in statements %}{% if statement.get('status') == 'received' %}<article class="border rounded p-3"><div class="d-flex justify-content-between gap-2"><div><strong>{{ statement.get('declarant_name') }}</strong><div class="small text-muted">{{ statement.get('role') }} — {{ statement.get('id') }}</div></div><span class="badge text-bg-success">Received</span></div><div class="small mt-2"><strong>DOB:</strong> {{ statement.get('dob') }} | <strong>Phone:</strong> {{ statement.get('phone') }}<br><strong>Address:</strong> {{ statement.get('address') }}</div><div class="border rounded p-3 mt-2" style="white-space:pre-wrap">{{ statement.get('statement_text') }}</div><div class="small mt-2"><strong>Signature:</strong> {{ statement.get('signature') }}</div></article>{% endif %}{% endfor %}</div>{% else %}<div class="alert alert-light border mb-0">No written statement was obtained during the run.</div>{% endif %}
     </section>
+
+    {% if latest %}
+    <section class="row g-3 mb-3"><div class="col-xl-7"><article class="ops-panel h-100"><div class="eyebrow">Trainee Narrative</div><h3>Revision {{ latest.revision }}</h3><div class="border rounded p-3" style="white-space:pre-wrap">{{ latest.narrative }}</div><div class="mt-3"><a class="btn btn-sm btn-outline-primary" href="{{ markup_url }}">Annotate Specific Lines</a></div></article></div><div class="col-xl-5"><article class="ops-panel h-100"><div class="eyebrow">Trainee Decisions</div><h3>Officer Paperwork / Notifications</h3><strong>Selected officer documentation</strong>{% if latest.selected_documents %}<ul>{% for item in latest.selected_documents %}<li>{{ item }}</li>{% endfor %}</ul>{% else %}<p class="text-muted">None selected.</p>{% endif %}<strong>CID decision</strong><p>{{ latest.cid_decision_label or latest.cid_decision }}</p><strong>Notification notes</strong><p style="white-space:pre-wrap">{{ latest.notification_notes or 'None entered.' }}</p><strong>Officer training forms</strong><p>{{ 'Complete' if latest.forms_complete else 'Incomplete / not submitted' }}</p></article></div></section>
     {% else %}<div class="alert alert-warning">The trainee has not submitted post-call documentation yet.</div>{% endif %}
 
     {% if comparison %}
-    <section class="ops-panel mb-3">
-      <div class="eyebrow">Requirements Comparison</div><h3>Configured Requirements vs. Submission</h3>
-      <div class="row g-3">
-        <div class="col-lg-6">
-          <strong>Configured officer documentation</strong>{% if comparison.requirements.officer_documents %}<ul>{% for item in comparison.requirements.officer_documents %}<li>{{ item }}</li>{% endfor %}</ul>{% else %}<p class="text-muted">No officer document configured.</p>{% endif %}
-          {% if comparison.missing_documents %}<div class="alert alert-warning"><strong>Possible missing:</strong> {{ comparison.missing_documents|join(', ') }}</div>{% endif %}
-          {% if comparison.additional_documents %}<div class="alert alert-light"><strong>Additional trainee selections:</strong> {{ comparison.additional_documents|join(', ') }}</div>{% endif %}
-        </div>
-        <div class="col-lg-6">
-          <strong>CID training requirement</strong><p>{{ comparison.cid_required|replace('_',' ')|title }}</p><p>{{ comparison.requirements.cid.instruction }}</p>
-          {% if comparison.cid_match is sameas true %}<div class="alert alert-success">Trainee CID decision matches the configured training requirement.</div>{% elif comparison.cid_match is sameas false %}<div class="alert alert-warning">Trainee CID decision may not match the configured training requirement.</div>{% else %}<div class="alert alert-secondary">CID requirement is conditional or unconfigured; verify facts and current procedure.</div>{% endif %}
-        </div>
-      </div>
-    </section>
+    <section class="ops-panel mb-3"><div class="eyebrow">Requirements Comparison</div><h3>Configured Requirements vs. Submission</h3><div class="row g-3"><div class="col-lg-6"><strong>Configured officer documentation</strong>{% if comparison.requirements.officer_documents %}<ul>{% for item in comparison.requirements.officer_documents %}<li>{{ item }}</li>{% endfor %}</ul>{% else %}<p class="text-muted">No officer document configured.</p>{% endif %}{% if comparison.requirements.written_statements %}<strong>Configured third-party statement requirement</strong><ul>{% for item in comparison.requirements.written_statements %}<li>{{ item }}</li>{% endfor %}</ul>{% if not statements %}<div class="alert alert-warning"><strong>Possible missing statement:</strong> no declarant-completed written statement is recorded in this run. Human review required.</div>{% else %}<div class="alert alert-success">At least one declarant-completed written statement is recorded in the run.</div>{% endif %}{% endif %}{% if comparison.missing_documents %}<div class="alert alert-warning"><strong>Possible missing officer paperwork:</strong> {{ comparison.missing_documents|join(', ') }}</div>{% endif %}{% if comparison.additional_documents %}<div class="alert alert-light"><strong>Additional trainee selections:</strong> {{ comparison.additional_documents|join(', ') }}</div>{% endif %}</div><div class="col-lg-6"><strong>CID training requirement</strong><p>{{ comparison.cid_required|replace('_',' ')|title }}</p><p>{{ comparison.requirements.cid.instruction }}</p>{% if comparison.cid_match is sameas true %}<div class="alert alert-success">Trainee CID decision matches the configured training requirement.</div>{% elif comparison.cid_match is sameas false %}<div class="alert alert-warning">Trainee CID decision may not match the configured training requirement.</div>{% else %}<div class="alert alert-secondary">CID requirement is conditional or unconfigured; verify facts and current procedure.</div>{% endif %}</div></div></section>
 
-    <section class="ops-panel mb-3">
-      <div class="eyebrow">Sentinel Consistency Cues</div><h3>Possible Narrative Issues for Human Verification</h3>
-      {% set suggestions = comparison.report_analysis.suggestions if comparison.report_analysis else [] %}
-      {% if suggestions %}<div class="d-grid gap-2">{% for item in suggestions %}<div class="border rounded p-3"><div class="d-flex justify-content-between gap-2"><strong>{{ item.category|title }}</strong><span class="small text-muted">{{ item.confidence|title }} confidence</span></div><div class="mt-1">{{ item.issue }}</div>{% if item.evidence %}<div class="small text-muted mt-1">Basis: {{ item.evidence }}</div>{% endif %}</div>{% endfor %}</div>{% else %}<p class="text-muted mb-0">No reliable automated consistency cue was generated. This does not mean the report is correct; complete the human review.</p>{% endif %}
-    </section>
+    <section class="ops-panel mb-3"><div class="eyebrow">Sentinel Consistency Cues</div><h3>Possible Narrative Issues for Human Verification</h3>{% set suggestions = comparison.report_analysis.suggestions if comparison.report_analysis else [] %}{% if suggestions %}<div class="d-grid gap-2">{% for item in suggestions %}<div class="border rounded p-3"><div class="d-flex justify-content-between gap-2"><strong>{{ item.category|title }}</strong><span class="small text-muted">{{ item.confidence|title }} confidence</span></div><div class="mt-1">{{ item.issue }}</div>{% if item.evidence %}<div class="small text-muted mt-1">Basis: {{ item.evidence }}</div>{% endif %}</div>{% endfor %}</div>{% else %}<p class="text-muted mb-0">No reliable automated consistency cue was generated. This does not mean the report is correct; complete the human review.</p>{% endif %}</section>
     {% endif %}
 
-    {% if package.self_assessment %}
-    <section class="ops-panel mb-3">
-      <div class="eyebrow">Trainee Reflection</div><h3>Self-Assessment Before FTO Disposition</h3>
-      <div class="row g-3"><div class="col-lg-6"><strong>What went well</strong><p style="white-space:pre-wrap">{{ package.self_assessment.what_went_well }}</p></div><div class="col-lg-6"><strong>What would change</strong><p style="white-space:pre-wrap">{{ package.self_assessment.what_change }}</p></div><div class="col-lg-6"><strong>Decision / policy basis</strong><p style="white-space:pre-wrap">{{ package.self_assessment.decision_basis }}</p></div><div class="col-lg-6"><strong>Notifications considered</strong><p style="white-space:pre-wrap">{{ package.self_assessment.notifications_considered }}</p></div></div>
-    </section>
-    {% else %}<div class="alert alert-warning"><strong>FTO disposition locked:</strong> trainee self-assessment is still pending.</div>{% endif %}
+    {% if package.self_assessment %}<section class="ops-panel mb-3"><div class="eyebrow">Trainee Reflection</div><h3>Self-Assessment Before FTO Disposition</h3><div class="row g-3"><div class="col-lg-6"><strong>What went well</strong><p style="white-space:pre-wrap">{{ package.self_assessment.what_went_well }}</p></div><div class="col-lg-6"><strong>What would change</strong><p style="white-space:pre-wrap">{{ package.self_assessment.what_change }}</p></div><div class="col-lg-6"><strong>Decision / policy basis</strong><p style="white-space:pre-wrap">{{ package.self_assessment.decision_basis }}</p></div><div class="col-lg-6"><strong>Notifications considered</strong><p style="white-space:pre-wrap">{{ package.self_assessment.notifications_considered }}</p></div></div></section>{% else %}<div class="alert alert-warning"><strong>FTO disposition locked:</strong> trainee self-assessment is still pending.</div>{% endif %}
 
-    {% if annotations %}
-    <section class="ops-panel mb-3"><div class="eyebrow">Markup Summary</div><h3>FTO Annotations</h3><div class="d-grid gap-2">{% for item in annotations %}<div class="border rounded p-2"><strong>{{ item.category_label }}</strong> — {{ item.anchor_label }}{% if item.resolved %}<span class="badge text-bg-success ms-2">Resolved</span>{% endif %}<div class="small text-muted" style="white-space:pre-wrap">{{ item.comment }}</div></div>{% endfor %}</div></section>
-    {% endif %}
+    {% if annotations %}<section class="ops-panel mb-3"><div class="eyebrow">Markup Summary</div><h3>FTO Annotations</h3><div class="d-grid gap-2">{% for item in annotations %}<div class="border rounded p-2"><strong>{{ item.category_label }}</strong> — {{ item.anchor_label }}{% if item.resolved %}<span class="badge text-bg-success ms-2">Resolved</span>{% endif %}<div class="small text-muted" style="white-space:pre-wrap">{{ item.comment }}</div></div>{% endfor %}</div></section>{% endif %}
 
-    {% if latest %}
-    <section class="ops-panel mb-3">
-      <div class="eyebrow">Human FTO Decision</div><h3>Disposition for Revision {{ latest.revision }}</h3>
-      {% if package.self_assessment and latest.forms_complete %}
-      <form method="post">
-        <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
-        <div class="row g-2"><div class="col-md-4"><label class="form-label"><strong>Disposition</strong></label><select class="form-select" name="fto_action" required><option value="">Select...</option><option value="accept">Accept training package</option><option value="correction">Return for correction</option><option value="remediation">Assign remedial training</option></select></div><div class="col-md-8"><label class="form-label"><strong>FTO Comments</strong></label><textarea class="form-control" name="fto_comments" rows="4" maxlength="5000" placeholder="Document strengths, deficiencies, corrections, and coaching provided."></textarea></div></div>
-        <div class="row g-2 mt-2"><div class="col-md-4"><label class="form-label"><strong>Remediation Area</strong></label><input class="form-control" name="remediation_area" maxlength="120"></div><div class="col-md-8"><label class="form-label"><strong>Remediation Plan</strong></label><textarea class="form-control" name="remediation_plan" rows="3" maxlength="8000"></textarea></div></div>
-        <button class="btn btn-primary mt-3" type="submit">Save FTO Review</button>
-      </form>
-      {% elif not latest.forms_complete %}<div class="alert alert-warning mb-0">The trainee has not completed the selected training-form replicas for this revision.</div>{% else %}<div class="alert alert-warning mb-0">The trainee self-assessment is still pending.</div>{% endif %}
-    </section>
-    {% endif %}
+    {% if latest %}<section class="ops-panel mb-3"><div class="eyebrow">Human FTO Decision</div><h3>Disposition for Revision {{ latest.revision }}</h3>{% if package.self_assessment and latest.forms_complete %}<form method="post"><input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}"><div class="row g-2"><div class="col-md-4"><label class="form-label"><strong>Disposition</strong></label><select class="form-select" name="fto_action" required><option value="">Select...</option><option value="accept">Accept training package</option><option value="correction">Return for correction</option><option value="remediation">Assign remedial training</option></select></div><div class="col-md-8"><label class="form-label"><strong>FTO Comments</strong></label><textarea class="form-control" name="fto_comments" rows="4" maxlength="5000"></textarea></div></div><div class="row g-2 mt-2"><div class="col-md-4"><label class="form-label"><strong>Remediation Area</strong></label><input class="form-control" name="remediation_area" maxlength="120"></div><div class="col-md-8"><label class="form-label"><strong>Remediation Plan</strong></label><textarea class="form-control" name="remediation_plan" rows="3" maxlength="8000"></textarea></div></div><button class="btn btn-primary mt-3" type="submit">Save FTO Review</button></form>{% elif not latest.forms_complete %}<div class="alert alert-warning mb-0">The trainee has not completed the selected officer training-form replicas for this revision.</div>{% else %}<div class="alert alert-warning mb-0">The trainee self-assessment is still pending.</div>{% endif %}</section>{% endif %}
   </main>
 </div>
 {% endblock %}
