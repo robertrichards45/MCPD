@@ -48,6 +48,22 @@ def test_retired_desktop_modules_redirect_to_supported_workflows():
     assert '/dashboard' in messages.headers['Location']
 
 
+def test_retired_mobile_entry_points_redirect_to_narrative_creator():
+    client = _client()
+
+    mobile_report = client.get('/mobile/incident/start', follow_redirects=False)
+    assert mobile_report.status_code in {301, 302, 303, 307, 308}
+    assert '/tools/narrative' in mobile_report.headers['Location']
+
+    mobile_bodycam = client.get('/mobile/bodycam', follow_redirects=False)
+    assert mobile_bodycam.status_code in {301, 302, 303, 307, 308}
+    assert '/tools/narrative' in mobile_bodycam.headers['Location']
+
+    mobile_bodycam_library = client.get('/mobile/bodycam/footage', follow_redirects=False)
+    assert mobile_bodycam_library.status_code in {301, 302, 303, 307, 308}
+    assert '/tools/narrative' in mobile_bodycam_library.headers['Location']
+
+
 def test_narrative_creator_sentinel_and_accident_tools_are_available():
     client = _client()
 
