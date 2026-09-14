@@ -7,7 +7,7 @@
       <div class="ops-head-copy">
         <div class="eyebrow">Sentinel — Post-Call Documentation</div>
         <h2 class="mb-1">Training Package</h2>
-        <p class="text-muted mb-0">Complete the documentation and notification decisions you would be responsible for after this synthetic call.</p>
+        <p class="text-muted mb-0">Complete the documentation, notification decisions, and self-assessment for this synthetic call before FTO disposition.</p>
       </div>
       <div class="ops-head-actions d-flex gap-2 flex-wrap">
         {% if evaluator_mode and run %}<a class="btn btn-outline-secondary" href="{{ url_for('reports.fto_refinements.scenario_lab.evaluator', run_id=run.run_id) }}">Evaluator View</a>{% endif %}
@@ -82,7 +82,7 @@
           <div class="form-text">Narrative Creator assistance is intentionally not provided on this evaluation screen.</div>
         </div>
 
-        <button class="btn btn-primary" type="submit">{{ 'Submit Revision ' ~ ((latest.revision or 0) + 1) if latest else 'Submit Training Package to FTO' }}</button>
+        <button class="btn btn-primary" type="submit">{{ 'Submit Revision ' ~ ((latest.revision or 0) + 1) if latest else 'Submit Training Paperwork' }}</button>
       </form>
     </section>
     {% elif not evaluator_mode and package.status == 'FTO_ACCEPTED' %}
@@ -103,6 +103,38 @@
         <div class="col-lg-7">
           <strong>Narrative</strong><div class="border rounded p-3 mt-2" style="white-space:pre-wrap">{{ latest.narrative }}</div>
         </div>
+      </div>
+    </section>
+    {% endif %}
+
+    {% if not evaluator_mode and latest and not package.self_assessment and package.status != 'FTO_ACCEPTED' %}
+    <section class="ops-panel mb-3 border-primary">
+      <div class="eyebrow">Required Before FTO Disposition</div>
+      <h3>Trainee Self-Assessment</h3>
+      <p class="small text-muted">Complete this before the FTO gives you the final coaching/disposition. The purpose is to see whether you can recognize your own strengths, decisions, and training needs without being given the answer first.</p>
+      <form method="post">
+        <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
+        <input type="hidden" name="action" value="self_assess">
+        <div class="mb-3"><label class="form-label" for="what_went_well"><strong>What do you believe you handled well?</strong></label><textarea class="form-control" id="what_went_well" name="what_went_well" rows="4" maxlength="4000" required></textarea></div>
+        <div class="mb-3"><label class="form-label" for="what_change"><strong>What would you do differently if you handled this call again?</strong></label><textarea class="form-control" id="what_change" name="what_change" rows="4" maxlength="4000" required></textarea></div>
+        <div class="mb-3"><label class="form-label" for="decision_basis"><strong>What facts, authority, policy, or procedure did you rely on for your disposition?</strong></label><textarea class="form-control" id="decision_basis" name="decision_basis" rows="4" maxlength="4000" required></textarea></div>
+        <div class="mb-3"><label class="form-label" for="notifications_considered"><strong>What notifications or screenings did you consider, and why?</strong></label><textarea class="form-control" id="notifications_considered" name="notifications_considered" rows="4" maxlength="3000" required></textarea></div>
+        <div class="mb-3"><label class="form-label" for="training_need"><strong>Is there any area you want more training or practice on?</strong></label><textarea class="form-control" id="training_need" name="training_need" rows="3" maxlength="3000"></textarea></div>
+        <button class="btn btn-primary" type="submit">Submit Self-Assessment</button>
+      </form>
+    </section>
+    {% endif %}
+
+    {% if package.self_assessment %}
+    <section class="ops-panel mb-3">
+      <div class="eyebrow">Trainee Reflection</div>
+      <h3>Self-Assessment</h3>
+      <div class="row g-3">
+        <div class="col-lg-6"><strong>What went well</strong><p style="white-space:pre-wrap">{{ package.self_assessment.what_went_well }}</p></div>
+        <div class="col-lg-6"><strong>What the trainee would change</strong><p style="white-space:pre-wrap">{{ package.self_assessment.what_change }}</p></div>
+        <div class="col-lg-6"><strong>Decision / policy basis</strong><p style="white-space:pre-wrap">{{ package.self_assessment.decision_basis }}</p></div>
+        <div class="col-lg-6"><strong>Notifications considered</strong><p style="white-space:pre-wrap">{{ package.self_assessment.notifications_considered }}</p></div>
+        {% if package.self_assessment.training_need %}<div class="col-12"><strong>Requested training / practice</strong><p style="white-space:pre-wrap">{{ package.self_assessment.training_need }}</p></div>{% endif %}
       </div>
     </section>
     {% endif %}
@@ -159,18 +191,13 @@
       <div class="d-grid gap-2">
         {% for item in comparison.report_analysis.suggestions %}
         <article class="border rounded p-3">
-          <div class="d-flex justify-content-between gap-2 flex-wrap">
-            <strong>{{ item.category|title }}</strong>
-            <span class="badge text-bg-light">{{ item.confidence|title }} confidence</span>
-          </div>
+          <div class="d-flex justify-content-between gap-2 flex-wrap"><strong>{{ item.category|title }}</strong><span class="badge text-bg-light">{{ item.confidence|title }} confidence</span></div>
           <p class="mb-2 mt-2">{{ item.issue }}</p>
           {% if item.evidence %}<div class="small text-muted"><strong>Why Sentinel flagged it:</strong> {{ item.evidence }}</div>{% endif %}
         </article>
         {% endfor %}
       </div>
-      {% else %}
-      <div class="alert alert-secondary mb-0">No reliable consistency issue was identified automatically. The FTO should still conduct a complete human review.</div>
-      {% endif %}
+      {% else %}<div class="alert alert-secondary mb-0">No reliable consistency issue was identified automatically. The FTO should still conduct a complete human review.</div>{% endif %}
     </section>
     {% endif %}
 
@@ -179,24 +206,20 @@
       <div class="eyebrow">Human FTO Decision</div>
       <h3>Review This Submission</h3>
       <p class="small text-muted">Sentinel provides evidence and comparison cues. You—not the AI—decide whether the trainee's work is acceptable, needs correction, or requires remedial training.</p>
+      {% if package.self_assessment %}
       <form method="post">
         <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
         <div class="mb-3">
           <label class="form-label" for="fto_action"><strong>Disposition</strong></label>
-          <select class="form-select" id="fto_action" name="fto_action" required>
-            <option value="">Select FTO action...</option>
-            <option value="accept">Accept training package</option>
-            <option value="correction">Return for correction</option>
-            <option value="remediation">Assign remedial training</option>
-          </select>
+          <select class="form-select" id="fto_action" name="fto_action" required><option value="">Select FTO action...</option><option value="accept">Accept training package</option><option value="correction">Return for correction</option><option value="remediation">Assign remedial training</option></select>
         </div>
         <div class="mb-3"><label class="form-label" for="fto_comments"><strong>FTO Comments</strong></label><textarea class="form-control" id="fto_comments" name="fto_comments" rows="5" maxlength="5000" placeholder="Document strengths, deficiencies, corrections, and coaching provided."></textarea></div>
-        <div class="row g-2">
-          <div class="col-md-4"><label class="form-label" for="remediation_area"><strong>Remediation Area</strong></label><input class="form-control" id="remediation_area" name="remediation_area" maxlength="120" placeholder="Example: Report Writing"></div>
-          <div class="col-md-8"><label class="form-label" for="remediation_plan"><strong>Remediation Plan</strong></label><textarea class="form-control" id="remediation_plan" name="remediation_plan" rows="3" maxlength="8000" placeholder="Required only when assigning remediation."></textarea></div>
-        </div>
+        <div class="row g-2"><div class="col-md-4"><label class="form-label" for="remediation_area"><strong>Remediation Area</strong></label><input class="form-control" id="remediation_area" name="remediation_area" maxlength="120" placeholder="Example: Report Writing"></div><div class="col-md-8"><label class="form-label" for="remediation_plan"><strong>Remediation Plan</strong></label><textarea class="form-control" id="remediation_plan" name="remediation_plan" rows="3" maxlength="8000" placeholder="Required only when assigning remediation."></textarea></div></div>
         <button class="btn btn-primary mt-3" type="submit">Save FTO Review</button>
       </form>
+      {% else %}
+      <div class="alert alert-warning mb-0"><strong>FTO disposition locked.</strong> The trainee must complete the self-assessment before the final FTO disposition is recorded.</div>
+      {% endif %}
     </section>
     {% endif %}
 
