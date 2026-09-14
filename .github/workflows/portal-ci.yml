@@ -1,0 +1,67 @@
+name: MCPD Portal CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  portal-checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      APP_ENV: dev
+      REQUIRE_PERSISTENT_DATABASE: "0"
+      MCPD_DATABASE_URL: sqlite:////tmp/mcpd-ci.db
+      SECRET_KEY: mcpd-ci-only-not-production
+      LEGAL_AI_EXPANSION_ENABLED: "0"
+      ORDERS_AI_ASSIST_ENABLED: "0"
+      LEGAL_QUERY_LOG_ENABLED: "0"
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest
+
+      - name: Compile Python source
+        run: python -m compileall -q app
+
+      - name: Verify application routes load
+        run: |
+          python - <<'PY'
+          from app import create_app
+          app = create_app()
+          endpoints = {rule.endpoint for rule in app.url_map.iter_rules()}
+          required = {
+              'reports.sentinel.report_inspector',
+              'reports.sentinel.fto_center',
+              'reports.sentinel.portal_search',
+              'reports.accidents',
+              'bodycam.narrative_tool',
+          }
+          missing = sorted(required - endpoints)
+          if missing:
+              raise SystemExit(f'Missing required endpoints: {missing}')
+          print(f'Loaded {len(endpoints)} endpoints; required MCPD workflow endpoints are present.')
+          PY
+
+      - name: Run workflow regression tests
+        run: |
+          pytest -q \
+            app/tests/test_sentinel_integration.py \
+            app/tests/test_accident_tools_routing.py \
+            app/tests/test_production_database_guard.py
