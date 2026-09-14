@@ -25,6 +25,7 @@
   {% block head %}{% endblock %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-global.css', v='2026-09-14-mobile-audit-v2') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-components.css', v='2026-09-14-mobile-audit-v1') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-audit.css', v='2026-09-14-mobile-audit-v1') }}" />
 </head>
 <body class="{{ body_class|default('') }}">
   <a class="skip-nav-link" href="#main-content">Skip to main content</a>
@@ -34,9 +35,15 @@
     var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
     var theme = stored || (prefersDark ? 'dark' : 'light');
     document.body.setAttribute('data-theme', theme);
+    var dedicatedMobile = document.body.classList.contains('mobile-foundation');
     var viewMode = localStorage.getItem('mcpdViewMode') || localStorage.getItem('mcpd-view') || 'auto';
-    if (viewMode === 'mobile') document.body.classList.add('force-mobile-view', 'view-mobile');
-    if (viewMode === 'desktop') document.body.classList.add('view-desktop');
+    if (dedicatedMobile) {
+      document.body.classList.add('view-mobile');
+      document.body.classList.remove('view-desktop');
+    } else {
+      if (viewMode === 'mobile') document.body.classList.add('force-mobile-view', 'view-mobile');
+      if (viewMode === 'desktop') document.body.classList.add('view-desktop');
+    }
   }());
   </script>
 
@@ -74,6 +81,7 @@
 
   <script src="{{ url_for('static', filename='js/command_readiness.js', v='2026-05-16-command') }}"></script>
   <script src="{{ url_for('static', filename='js/app.js', v='2026-09-14-mobile-audit-v1') }}"></script>
+  <script src="{{ url_for('static', filename='js/mobile-audit.js', v='2026-09-14-mobile-audit-v1') }}"></script>
   <script src="{{ url_for('static', filename='js/voice_assistant.js', v='2026-05-09-voice-stability') }}"></script>
   <script src="{{ url_for('static', filename='js/assistant.js', v='2026-05-09-voice-stability') }}"></script>
 
@@ -129,6 +137,7 @@
       });
     }
     function isResponsiveMobileView() {
+      if (document.body.classList.contains('mobile-foundation')) return true;
       if (document.body.classList.contains('view-desktop')) return false;
       if (document.body.classList.contains('force-mobile-view')) return true;
       return !!(window.matchMedia && window.matchMedia('(max-width: 1020px)').matches);
