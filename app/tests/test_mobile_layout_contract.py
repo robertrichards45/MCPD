@@ -13,8 +13,11 @@ def test_base_loads_mobile_layers_last_and_uses_safe_viewport():
     assert 'width=device-width, initial-scale=1, viewport-fit=cover' in base
     assert "filename='css/mobile-refresh.css'" in base
     assert "filename='css/mobile-global.css'" in base
+    assert "filename='css/mobile-components.css'" in base
     assert base.index("filename='css/mcpd-unified.css'") < base.index("filename='css/mobile-refresh.css'")
-    assert base.index("filename='css/mobile-refresh.css'") < base.index("filename='css/mobile-global.css'")
+    assert base.index("filename='css/mobile-refresh.css'") < base.index('{% block head %}')
+    assert base.index('{% block head %}') < base.index("filename='css/mobile-global.css'")
+    assert base.index("filename='css/mobile-global.css'") < base.index("filename='css/mobile-components.css'")
     assert "'mobile-foundation' in (body_class|default(''))" in base
 
 
@@ -37,6 +40,23 @@ def test_mobile_stabilizer_covers_overflow_touch_forms_and_scenario_priority():
     assert '"radio"' in css
     assert '"action"' in css
     assert 'body.force-mobile-view:not(.mobile-foundation)' in css
+
+
+def test_mobile_component_layer_covers_high_use_workflows():
+    css = _read('app/static/css/mobile-components.css')
+    for selector in (
+        '.mfc-row-2',
+        '.cmd-counts-row',
+        '.cmd-packet-row',
+        '.spr-summary-row',
+        '.spr-approval-btns',
+        '.bodycam-main-grid',
+        '.accident-layout',
+        '.fto-actions',
+    ):
+        assert selector in css
+    assert '@media (max-width: 480px)' in css
+    assert 'grid-template-columns: minmax(0, 1fr) !important' in css
 
 
 def test_signature_canvas_coordinates_scale_when_css_resizes_canvas():
@@ -62,3 +82,25 @@ def test_mobile_primary_dock_names_incident_workspace_action():
     dock = _read('app/templates/partials/mobile_tab_bar.html')
     assert 'Open incident workspace' in dock
     assert '<span class="mobile-tab-label">Incident</span>' in dock
+
+
+def test_mobile_more_keeps_incident_workflow_inside_mobile_portal():
+    more = _read('app/templates/mobile_more.html')
+    assert "url_for('mobile.incident_start')" in more
+    assert "'/reports#reports-new'" not in more
+    assert 'Incident Workspace' in more
+
+
+def test_fast_capture_uses_local_calendar_date_not_utc_date():
+    fast_capture = _read('app/templates/mobile_fast_capture.html')
+    assert 'getFullYear()' in fast_capture
+    assert 'getMonth() + 1' in fast_capture
+    assert 'getDate()' in fast_capture
+    assert 'toISOString().slice(0, 10)' not in fast_capture
+
+
+def test_mobile_shell_only_references_existing_mobile_runtime_bundle():
+    shell = _read('app/templates/mobile_shell.html')
+    assert "filename='mobile/incident-core.js'" in shell
+    assert (ROOT / 'app/static/mobile/incident-core.js').exists()
+    assert 'mobile_incident.js' not in shell
