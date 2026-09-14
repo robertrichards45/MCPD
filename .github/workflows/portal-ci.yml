@@ -77,6 +77,9 @@ jobs:
       - name: Run Scenario Lab live branching tests
         run: python -m pytest -q app/tests/test_scenario_lab_live_training.py
 
+      - name: Run Scenario Lab adaptive state-engine tests
+        run: python -m pytest -q app/tests/test_scenario_state_engine.py
+
       - name: Run Scenario Lab FTO alert test
         run: python -m pytest -q app/tests/test_scenario_lab_fto_alert.py
 
