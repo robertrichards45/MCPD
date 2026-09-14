@@ -78,12 +78,11 @@ def _sentinel_dashboard_card_catalog():
         'stats_approvals',
         'readiness_tracker',
     ]
-    if current_user.can_manage_team():
-        order = supervisor_order
-    else:
-        order = officer_order
+    order = supervisor_order if current_user.can_manage_team() else officer_order
 
-    if can_access_builder_mode(current_user):
+    # The original catalog already includes Site Builder when the user has
+    # builder access; preserve it without duplicating permission logic here.
+    if 'site_builder' in by_id:
         order.append('site_builder')
 
     return [by_id[item_id] for item_id in order if item_id in by_id]
