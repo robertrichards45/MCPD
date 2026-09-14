@@ -11,9 +11,11 @@
     } catch (_err) {}
   }
 
-  /* A route under the dedicated mobile shell should always render as mobile,
-     even if the officer previously forced Desktop Mode on another page. */
+  /* Entering /mobile is an explicit request for the field interface. Preserve
+     that preference when the officer opens responsive desktop-backed tools
+     such as FTO Center, Forms, Reports, or Accident Tools. */
   if (body.classList.contains('mobile-foundation')) {
+    setStoredView('mobile');
     body.classList.remove('view-desktop');
     body.classList.add('view-mobile');
   }
