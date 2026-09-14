@@ -42,16 +42,24 @@ def _ratings_from_form():
     return ratings, observed
 
 
-def _open_scenario_alert_count(user):
-    query = FTOScenarioAlert.query.filter(FTOScenarioAlert.acknowledged_at.is_(None))
+def _scenario_alert_query_for(user):
+    query = FTOScenarioAlert.query
     if can_manage(user):
-        return query.count()
+        return query
     return query.filter(
         or_(
             FTOScenarioAlert.assigned_fto_id == user.id,
             FTOScenarioAlert.supervisor_id == user.id,
         )
-    ).count()
+    )
+
+
+def _can_review_scenario_alert(user, alert):
+    return can_manage(user) or user.id in {alert.assigned_fto_id, alert.supervisor_id}
+
+
+def _open_scenario_alert_count(user):
+    return _scenario_alert_query_for(user).filter(FTOScenarioAlert.acknowledged_at.is_(None)).count()
 
 
 def dashboard_attention_items(user):
@@ -68,7 +76,7 @@ def dashboard_attention_items(user):
             'label': 'Critical Scenario Lab Alerts',
             'value': str(critical_alerts),
             'detail': 'Synthetic training outcomes requiring assigned FTO/supervisor human review; not automatic DOR findings',
-            'endpoint': program_endpoint,
+            'endpoint': 'reports.fto_refinements.scenario_alerts',
         })
 
     if can_manage(user):
@@ -202,6 +210,37 @@ def persist_critical_scenario_alert(response):
     session[_SCENARIO_SESSION_KEY] = state
     session.modified = True
     return response
+
+
+@bp.get('/scenario-alerts')
+@login_required
+def scenario_alerts():
+    if not (can_manage(current_user) or current_user.has_any_role('FIELD_TRAINING')):
+        # Assigned FTOs are normally FIELD_TRAINING; supervisors/managers are handled above.
+        allowed = _scenario_alert_query_for(current_user).first() is not None
+        if not allowed:
+            abort(403)
+    alerts = (
+        _scenario_alert_query_for(current_user)
+        .order_by(FTOScenarioAlert.acknowledged_at.asc(), FTOScenarioAlert.created_at.desc())
+        .limit(100)
+        .all()
+    )
+    return render_template('fto_scenario_alerts.html', user=current_user, alerts=alerts)
+
+
+@bp.post('/scenario-alerts/<int:alert_id>/acknowledge')
+@login_required
+def acknowledge_scenario_alert(alert_id):
+    alert = FTOScenarioAlert.query.get_or_404(alert_id)
+    if not _can_review_scenario_alert(current_user, alert):
+        abort(403)
+    if alert.acknowledged_at is None:
+        alert.acknowledged_by = current_user.id
+        alert.acknowledged_at = datetime.utcnow()
+        db.session.commit()
+        flash('Scenario Lab alert acknowledged for human review. No DOR rating or remediation was created automatically.', 'success')
+    return redirect(url_for('reports.fto_refinements.scenario_alerts'))
 
 
 @bp.route('/dor/<int:dor_id>/edit', methods=['GET', 'POST'])
