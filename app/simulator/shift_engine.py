@@ -3,7 +3,7 @@ import random
 import secrets
 
 
-SHIFT_VERSION = 1
+SHIFT_VERSION = 2
 SHIFT_CALL_POOL = (
     ('S006', 22),  # medical assists / assistance calls
     ('S002', 20),  # gate/access-control calls
@@ -31,7 +31,10 @@ def new_shift(unit_id='214', seed=None):
         'call_index': 0,
         'calls_completed': 0,
         'active_scenario_id': None,
+        'active_call_seed': None,
+        'active_dispatch_text': '',
         'active_run_id': None,
+        'active_dispatched_minute': None,
         'last_scenario_id': None,
         'dispatch_log': [
             {'minute': 0, 'speaker': 'Dispatch', 'text': f'{unit_id}, copy you in service for training patrol.'},
@@ -59,8 +62,13 @@ def assign_next_call(shift):
     idle_minutes = rng.randint(4, 18)
     shift['clock_minutes'] = int(shift.get('clock_minutes', 0)) + idle_minutes
     scenario_id = _weighted_choice(rng, shift.get('last_scenario_id'))
+    scenario_seed = rng.randint(100000000, 999999999)
     shift['call_index'] = call_index
     shift['active_scenario_id'] = scenario_id
+    shift['active_call_seed'] = scenario_seed
+    shift['active_dispatch_text'] = ''
+    shift['active_run_id'] = None
+    shift['active_dispatched_minute'] = int(shift['clock_minutes'])
     shift['last_scenario_id'] = scenario_id
     shift['dispatch_log'].append({
         'minute': shift['clock_minutes'],
@@ -70,25 +78,50 @@ def assign_next_call(shift):
     return scenario_id, idle_minutes
 
 
-def attach_run(shift, scenario_id, run_id, dispatch_text):
-    shift['active_scenario_id'] = scenario_id
-    shift['active_run_id'] = run_id
-    shift['dispatch_log'].append({
-        'minute': int(shift.get('clock_minutes', 0)),
-        'speaker': 'Dispatch',
-        'text': str(dispatch_text or '').strip(),
-    })
+def set_dispatch_details(shift, dispatch_text):
+    """Attach only the CAD information the trainee should receive for this call."""
+    text = str(dispatch_text or '').strip()
+    shift['active_dispatch_text'] = text
+    if text:
+        log = list(shift.get('dispatch_log') or [])
+        if log and log[-1].get('minute') == shift.get('active_dispatched_minute'):
+            log[-1] = {
+                'minute': int(shift.get('active_dispatched_minute') or shift.get('clock_minutes', 0)),
+                'speaker': 'Dispatch',
+                'text': f"{shift['unit_id']}, {text}",
+            }
+        else:
+            log.append({
+                'minute': int(shift.get('clock_minutes', 0)),
+                'speaker': 'Dispatch',
+                'text': f"{shift['unit_id']}, {text}",
+            })
+        shift['dispatch_log'] = log
     return shift
 
 
-def complete_active_call(shift, run_id, outcome='CLEARED'):
+def attach_run(shift, scenario_id, run_id, dispatch_text):
+    shift['active_scenario_id'] = scenario_id
+    shift['active_run_id'] = run_id
+    if dispatch_text and not shift.get('active_dispatch_text'):
+        set_dispatch_details(shift, dispatch_text)
+    return shift
+
+
+def complete_active_call(shift, run_id, outcome='CLEARED', duration_minutes=0):
     if not shift.get('active_run_id') or shift.get('active_run_id') != run_id:
         return shift
+    duration_minutes = max(0, int(duration_minutes or 0))
+    dispatched_minute = int(shift.get('active_dispatched_minute') or shift.get('clock_minutes', 0))
+    shift['clock_minutes'] = max(int(shift.get('clock_minutes', 0)), dispatched_minute) + duration_minutes
     shift['history'].append({
         'call_number': int(shift.get('call_index', 0)),
         'scenario_id': shift.get('active_scenario_id'),
         'run_id': run_id,
+        'seed': shift.get('active_call_seed'),
         'outcome': outcome,
+        'dispatched_minute': dispatched_minute,
+        'duration_minutes': duration_minutes,
         'cleared_minute': int(shift.get('clock_minutes', 0)),
     })
     shift['calls_completed'] = int(shift.get('calls_completed', 0)) + 1
@@ -98,7 +131,10 @@ def complete_active_call(shift, run_id, outcome='CLEARED'):
         'text': f"{shift['unit_id']}, copy you clear and available.",
     })
     shift['active_scenario_id'] = None
+    shift['active_call_seed'] = None
+    shift['active_dispatch_text'] = ''
     shift['active_run_id'] = None
+    shift['active_dispatched_minute'] = None
     return shift
 
 
