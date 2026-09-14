@@ -11,21 +11,12 @@
           <p class="text-muted mb-0">One reporting workspace for call-type guidance, narratives, paperwork, submitted packets, corrections, and supervisor review.</p>
         </div>
         <div class="ops-head-stats">
-          <article class="ops-stat-pill">
-            <span>Standard Reports</span>
-            <strong>{{ report_count|default(0) }}</strong>
-          </article>
-          <article class="ops-stat-pill">
-            <span>Submitted Packets</span>
-            <strong>{{ incident_packets|length }}</strong>
-          </article>
-          <article class="ops-stat-pill">
-            <span>Review Queue</span>
-            <strong>{{ cleo_review_count|default(0) }}</strong>
-          </article>
+          <article class="ops-stat-pill"><span>Standard Reports</span><strong>{{ report_count|default(0) }}</strong></article>
+          <article class="ops-stat-pill"><span>Submitted Packets</span><strong>{{ incident_packets|length }}</strong></article>
+          <article class="ops-stat-pill"><span>Review Queue</span><strong>{{ cleo_review_count|default(0) }}</strong></article>
         </div>
         <div class="forms-toolbar">
-          <a class="btn btn-primary" href="#incident-workspace">Incident Workspace</a>
+          <a class="btn btn-primary" href="#packet-builder">Build Incident Packet</a>
           <a class="btn btn-outline-secondary" href="{{ url_for('bodycam.narrative_tool') }}">Narrative Creator</a>
           <a class="btn btn-outline-secondary" href="{{ url_for('reports.accidents') }}">Accident Tools</a>
           <a class="btn btn-outline-secondary" href="{{ url_for('forms.list_forms') }}">Forms Library</a>
@@ -33,19 +24,80 @@
       </div>
     </section>
 
+    <section id="packet-builder" class="ops-panel report-center-panel" aria-label="Paperwork Packet Builder">
+      <div class="report-panel-head">
+        <div>
+          <div class="eyebrow">Call Type Rules Engine</div>
+          <h3 class="mb-1">Paperwork Packet Builder</h3>
+          <p class="text-muted mb-0">Choose the call type, answer only the circumstances that actually apply, and the packet updates from the current Call Type Paperwork Manager rules.</p>
+        </div>
+        <span class="badge bg-primary">Guided Workflow</span>
+      </div>
+
+      <div class="alert alert-light border mb-3" role="note">
+        <strong>No automatic assumptions:</strong>
+        <span class="d-block mt-1">A circumstance is added only when the officer selects it. The Portal explains why paperwork was surfaced, but the officer must verify current approved guidance before treating it as mandatory.</span>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-lg-4">
+          <label class="w-100">
+            <strong>1. Call type</strong>
+            <select class="form-select mt-2" id="packet-builder-call-type">
+              <option value="">Select call type...</option>
+              {% for slug, rule in call_type_rules|dictsort %}
+              <option value="{{ slug }}">{{ rule.title }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <div id="packet-builder-description" class="small text-muted mt-2">Select the incident type to load the normal packet and decision questions.</div>
+        </div>
+        <div class="col-lg-8">
+          <strong>2. Circumstances that apply</strong>
+          <div id="packet-builder-conditions" class="row g-2 mt-1">
+            <div class="col-12"><div class="border rounded p-3 text-muted small">No call type selected.</div></div>
+          </div>
+        </div>
+      </div>
+
+      <hr class="my-4">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <article class="border rounded p-3 h-100">
+            <div class="eyebrow">Required / Normal</div>
+            <h4 class="mb-2">Active Packet</h4>
+            <div id="packet-builder-required" class="small text-muted">Choose a call type.</div>
+          </article>
+        </div>
+        <div class="col-md-4">
+          <article class="border rounded p-3 h-100">
+            <div class="eyebrow">Review If Applicable</div>
+            <h4 class="mb-2">Conditional</h4>
+            <div id="packet-builder-conditional" class="small text-muted">Choose a call type.</div>
+          </article>
+        </div>
+        <div class="col-md-4">
+          <article class="border rounded p-3 h-100">
+            <div class="eyebrow">Normally Excluded</div>
+            <h4 class="mb-2">Not Normally Required</h4>
+            <div id="packet-builder-not-normal" class="small text-muted">Choose a call type.</div>
+          </article>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3">
+        <div class="small text-muted" id="packet-builder-status">The packet will update as circumstances are checked.</div>
+        <button class="btn btn-primary" id="packet-builder-start" type="button" disabled>Start This Packet</button>
+      </div>
+    </section>
+
     <section id="incident-workspace" class="ops-panel report-center-panel" aria-label="Incident Workspace">
       <div class="report-panel-head">
         <div>
           <div class="eyebrow">Incident Workspace</div>
-          <h3 class="mb-1">Choose the Call Type First</h3>
-          <p class="text-muted mb-0">The Call Type Paperwork Manager drives this workflow. Pick the incident type and MCPD Portal will build the starting checklist and paperwork set from the currently configured rules.</p>
+          <h3 class="mb-1">Common Call Types</h3>
+          <p class="text-muted mb-0">Open a call type in the packet builder, review the circumstances, then continue into the incident or accident workflow.</p>
         </div>
-        <span class="badge bg-primary">Workflow Driven</span>
-      </div>
-
-      <div class="alert alert-light border mb-3" role="note">
-        <strong>How this works:</strong>
-        <span class="d-block mt-1">Default paperwork is shown as the normal starting set. Conditional paperwork is a prompt only and should be completed when the actual facts and approved policy make it applicable. The software does not create facts or turn a conditional form into a requirement.</span>
       </div>
 
       <div class="row g-3">
@@ -53,44 +105,18 @@
         <div class="col-md-6 col-xl-4">
           <article class="border rounded p-3 h-100 d-flex flex-column">
             <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
-              <div>
-                <div class="eyebrow">{{ rule.shortLabel or 'Call Type' }}</div>
-                <h4 class="mb-1">{{ rule.title }}</h4>
-              </div>
-              <span class="badge text-bg-light">{{ rule.recommendedForms|length }} default</span>
+              <div><div class="eyebrow">{{ rule.shortLabel or 'Call Type' }}</div><h4 class="mb-1">{{ rule.title }}</h4></div>
+              <span class="badge text-bg-light">{{ rule.recommendedForms|length }} normal</span>
             </div>
             <p class="text-muted small">{{ rule.description or 'Guided incident and paperwork workflow.' }}</p>
-
-            <div class="mb-2">
-              <strong class="d-block small">Default paperwork</strong>
-              {% if rule.recommendedForms %}
-              <ul class="small mb-0 ps-3">
-                {% for form_name in rule.recommendedForms[:3] %}<li>{{ form_name }}</li>{% endfor %}
-                {% if rule.recommendedForms|length > 3 %}<li>+ {{ rule.recommendedForms|length - 3 }} more</li>{% endif %}
-              </ul>
-              {% else %}<span class="small text-muted">No default forms configured.</span>{% endif %}
-            </div>
-
-            <div class="mb-3">
-              <strong class="d-block small">Conditional paperwork</strong>
-              {% if rule.optionalForms %}
-              <span class="small text-muted">{{ rule.optionalForms|join(' • ') }}</span>
-              {% else %}<span class="small text-muted">None configured.</span>{% endif %}
-            </div>
-
+            <div class="small mb-2"><strong>{{ rule.conditionalRules|default([])|length }}</strong> circumstance rule{{ '' if rule.conditionalRules|default([])|length == 1 else 's' }} · <strong>{{ rule.notNormallyRequiredForms|default([])|length }}</strong> normally excluded</div>
             <div class="mt-auto d-flex gap-2 flex-wrap">
-              {% if slug == 'traffic-accident' %}
-              <button class="btn btn-sm btn-primary report-call-type-card" type="button" data-call-type="{{ slug }}" data-next-url="{{ url_for('reports.accidents') }}">Open Accident Workspace</button>
-              {% else %}
-              <button class="btn btn-sm btn-primary report-call-type-card" type="button" data-call-type="{{ slug }}" data-next-url="{{ url_for('mobile.incident_basics') }}">Open Incident Workspace</button>
-              {% endif %}
+              <button class="btn btn-sm btn-primary report-call-type-builder" type="button" data-call-type="{{ slug }}">Build Packet</button>
               <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('bodycam.narrative_tool') }}">Narrative</a>
             </div>
           </article>
         </div>
-        {% else %}
-        <div class="col-12"><p class="text-muted mb-0">No active call-type rules are configured.</p></div>
-        {% endfor %}
+        {% else %}<div class="col-12"><p class="text-muted mb-0">No active call-type rules are configured.</p></div>{% endfor %}
       </div>
     </section>
 
@@ -110,42 +136,23 @@
 
     <section class="ops-panel report-center-panel report-command-board" aria-label="Report operating picture">
       <div class="report-panel-head">
-        <div>
-          <h3 class="mb-1">Needs My Attention</h3>
-          <p class="text-muted mb-0">Live packet status, correction workflow, and review actions in one view.</p>
-        </div>
+        <div><h3 class="mb-1">Needs My Attention</h3><p class="text-muted mb-0">Live packet status, correction workflow, and review actions in one view.</p></div>
         <span class="badge bg-primary">Live Queue</span>
       </div>
       <div class="report-ops-metrics">
         {% for metric in report_ops_metrics %}
-        <article class="report-ops-metric is-{{ metric.tone }}">
-          <span>{{ metric.label }}</span>
-          <strong>{{ metric.value }}</strong>
-          <small>{{ metric.detail }}</small>
-        </article>
+        <article class="report-ops-metric is-{{ metric.tone }}"><span>{{ metric.label }}</span><strong>{{ metric.value }}</strong><small>{{ metric.detail }}</small></article>
         {% endfor %}
       </div>
       <div class="report-command-grid">
         <div class="report-workflow-strip">
           {% for step in report_workflow_steps %}
-          <article class="report-workflow-step">
-            <span>{{ loop.index }}</span>
-            <div>
-              <strong>{{ step.label }}</strong>
-              <small>{{ step.detail }}</small>
-            </div>
-          </article>
+          <article class="report-workflow-step"><span>{{ loop.index }}</span><div><strong>{{ step.label }}</strong><small>{{ step.detail }}</small></div></article>
           {% endfor %}
         </div>
         <div class="report-queue-card-list">
           {% for card in report_queue_cards %}
-          <a class="report-queue-card is-{{ card.tone }}" href="{{ url_for(card.endpoint) }}">
-            <span>
-              <strong>{{ card.label }}</strong>
-              <small>{{ card.detail }}</small>
-            </span>
-            <b>{{ card.action }}</b>
-          </a>
+          <a class="report-queue-card is-{{ card.tone }}" href="{{ url_for(card.endpoint) }}"><span><strong>{{ card.label }}</strong><small>{{ card.detail }}</small></span><b>{{ card.action }}</b></a>
           {% endfor %}
         </div>
       </div>
@@ -153,59 +160,24 @@
 
     <div class="report-center-grid">
       <section class="ops-panel report-center-panel">
-        <div class="report-panel-head">
-          <div>
-            <h3 class="mb-1">Submitted Field Packets</h3>
-            <p class="text-muted mb-0">Field packet status from the guided incident workflow.</p>
-          </div>
-          <span class="badge bg-dark">{{ incident_packets|length }}</span>
-        </div>
+        <div class="report-panel-head"><div><h3 class="mb-1">Submitted Field Packets</h3><p class="text-muted mb-0">Field packet status from the guided incident workflow.</p></div><span class="badge bg-dark">{{ incident_packets|length }}</span></div>
         <div class="report-hub-list report-packet-list">
           {% for packet in incident_packets[:8] %}
           <article class="result-card report-hub-card report-packet-card">
-            <div class="result-head">
-              <h4>#{{ packet.id }} {{ packet.call_type or 'Incident Packet' }}</h4>
-              <span class="badge {% if packet.approval_status == 'NEEDS_CORRECTION' %}bg-danger{% elif packet.approval_status == 'APPROVED' %}bg-success{% else %}bg-warning text-dark{% endif %}">
-                {{ packet.approval_status.replace('_', ' ') }}
-              </span>
-            </div>
-            <p class="result-sub">
-              {{ packet.location or 'Location not entered' }}
-              {% if packet.submitted_at %} / Submitted {{ packet.submitted_at.strftime('%Y-%m-%d %H:%M') }}{% endif %}
-            </p>
-            {% if packet.summary %}
-              <p class="text-muted mb-2">{{ packet.summary }}</p>
-            {% endif %}
+            <div class="result-head"><h4>#{{ packet.id }} {{ packet.call_type or 'Incident Packet' }}</h4><span class="badge {% if packet.approval_status == 'NEEDS_CORRECTION' %}bg-danger{% elif packet.approval_status == 'APPROVED' %}bg-success{% else %}bg-warning text-dark{% endif %}">{{ packet.approval_status.replace('_', ' ') }}</span></div>
+            <p class="result-sub">{{ packet.location or 'Location not entered' }}{% if packet.submitted_at %} / Submitted {{ packet.submitted_at.strftime('%Y-%m-%d %H:%M') }}{% endif %}</p>
+            {% if packet.summary %}<p class="text-muted mb-2">{{ packet.summary }}</p>{% endif %}
           </article>
-          {% else %}
-          <div class="report-empty-state">No submitted field packets are visible yet.</div>
-          {% endfor %}
+          {% else %}<div class="report-empty-state">No submitted field packets are visible yet.</div>{% endfor %}
         </div>
       </section>
 
       <section class="ops-panel report-center-panel">
-        <div class="report-panel-head">
-          <div>
-            <h3 class="mb-1">Standard Reports</h3>
-            <p class="text-muted mb-0">Existing case shells, attachments, involved people, and co-author workflow.</p>
-          </div>
-          <span class="badge bg-dark">{{ reports|length }}</span>
-        </div>
+        <div class="report-panel-head"><div><h3 class="mb-1">Standard Reports</h3><p class="text-muted mb-0">Existing case shells, attachments, involved people, and co-author workflow.</p></div><span class="badge bg-dark">{{ reports|length }}</span></div>
         <div class="report-hub-list">
           {% for r in reports %}
-          <article class="result-card report-hub-card">
-            <div class="result-head">
-              <h4>#{{ r.id }} {{ r.title }}</h4>
-              <span class="badge bg-dark">{{ r.status }}</span>
-            </div>
-            <p class="result-sub">Updated {{ r.updated_at.strftime('%Y-%m-%d %H:%M') if r.updated_at else '' }}</p>
-            <div class="report-hub-actions">
-              <a class="btn btn-sm btn-primary" href="{{ url_for('reports.report_detail', report_id=r.id) }}">Open Report</a>
-            </div>
-          </article>
-          {% else %}
-          <div class="report-empty-state">No standard reports are in your visible queue yet.</div>
-          {% endfor %}
+          <article class="result-card report-hub-card"><div class="result-head"><h4>#{{ r.id }} {{ r.title }}</h4><span class="badge bg-dark">{{ r.status }}</span></div><p class="result-sub">Updated {{ r.updated_at.strftime('%Y-%m-%d %H:%M') if r.updated_at else '' }}</p><div class="report-hub-actions"><a class="btn btn-sm btn-primary" href="{{ url_for('reports.report_detail', report_id=r.id) }}">Open Report</a></div></article>
+          {% else %}<div class="report-empty-state">No standard reports are in your visible queue yet.</div>{% endfor %}
         </div>
       </section>
     </div>
@@ -213,42 +185,140 @@
 </div>
 <script>
   const REPORT_CALL_TYPE_RULES = {{ call_type_rules|tojson }};
+  const packetCallType = document.getElementById('packet-builder-call-type');
+  const packetConditions = document.getElementById('packet-builder-conditions');
+  const packetRequired = document.getElementById('packet-builder-required');
+  const packetConditional = document.getElementById('packet-builder-conditional');
+  const packetNotNormal = document.getElementById('packet-builder-not-normal');
+  const packetDescription = document.getElementById('packet-builder-description');
+  const packetStatus = document.getElementById('packet-builder-status');
+  const packetStart = document.getElementById('packet-builder-start');
 
-  function startDesktopFieldWorkflow(slug, nextUrl) {
-    const rules = REPORT_CALL_TYPE_RULES || {};
-    const rule = rules[slug] || {};
-    const selectedForms = ['MCPD Stat Sheet'].concat((rule.recommendedForms || []).filter((name) => name !== 'MCPD Stat Sheet'));
+  function uniqueNames(values) {
+    const seen = new Set();
+    return (values || []).filter((value) => {
+      const text = String(value || '').trim();
+      const key = text.toLowerCase();
+      if (!text || seen.has(key)) return false;
+      seen.add(key); return true;
+    });
+  }
+
+  function listHtml(items, emptyText) {
+    if (!items || !items.length) return '<span class="text-muted">' + emptyText + '</span>';
+    return '<ul class="mb-0 ps-3">' + items.map((item) => '<li>' + String(item).replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</li>').join('') + '</ul>';
+  }
+
+  function currentPacket() {
+    const slug = packetCallType.value;
+    const rule = REPORT_CALL_TYPE_RULES[slug] || null;
+    if (!rule) return null;
+    const circumstances = {};
+    document.querySelectorAll('[data-packet-condition]').forEach((input) => { circumstances[input.dataset.packetCondition] = input.checked; });
+
+    let requiredForms = uniqueNames(rule.recommendedForms || []);
+    const triggered = [];
+    const remaining = [];
+    (rule.conditionalRules || []).forEach((condition) => {
+      if (circumstances[condition.key]) {
+        requiredForms = uniqueNames(requiredForms.concat(condition.forms || []));
+        triggered.push(condition);
+      } else {
+        remaining.push(condition);
+      }
+    });
+    return { slug, rule, circumstances, requiredForms, triggered, remaining };
+  }
+
+  function renderPacketBuilder() {
+    const slug = packetCallType.value;
+    const rule = REPORT_CALL_TYPE_RULES[slug] || null;
+    if (!rule) {
+      packetConditions.innerHTML = '<div class="col-12"><div class="border rounded p-3 text-muted small">No call type selected.</div></div>';
+      packetRequired.innerHTML = '<span class="text-muted">Choose a call type.</span>';
+      packetConditional.innerHTML = '<span class="text-muted">Choose a call type.</span>';
+      packetNotNormal.innerHTML = '<span class="text-muted">Choose a call type.</span>';
+      packetDescription.textContent = 'Select the incident type to load the normal packet and decision questions.';
+      packetStatus.textContent = 'The packet will update as circumstances are checked.';
+      packetStart.disabled = true;
+      return;
+    }
+
+    packetDescription.textContent = rule.description || 'Review the configured packet and circumstances.';
+    const conditions = rule.conditionalRules || [];
+    packetConditions.innerHTML = conditions.length ? conditions.map((condition) => `
+      <div class="col-md-6">
+        <label class="border rounded p-3 h-100 d-flex gap-2 align-items-start">
+          <input class="form-check-input mt-1" type="checkbox" data-packet-condition="${condition.key}">
+          <span><strong>${condition.label || condition.key}</strong><small class="d-block text-muted mt-1">${condition.question || 'Select only when this circumstance applies.'}</small>${condition.why ? `<small class="d-block mt-1">Why: ${condition.why}</small>` : ''}</span>
+        </label>
+      </div>`).join('') : '<div class="col-12"><div class="border rounded p-3 text-muted small">No circumstance rules are configured for this call type. Use the normal packet and review the general conditional list.</div></div>';
+
+    document.querySelectorAll('[data-packet-condition]').forEach((input) => input.addEventListener('change', updatePacketPreview));
+    updatePacketPreview();
+  }
+
+  function updatePacketPreview() {
+    const packet = currentPacket();
+    if (!packet) return;
+    packetRequired.innerHTML = listHtml(packet.requiredForms, 'No normal paperwork configured.');
+
+    const reviewItems = [];
+    (packet.rule.optionalForms || []).forEach((name) => reviewItems.push(name + ' — review if applicable'));
+    packet.remaining.forEach((condition) => (condition.forms || []).forEach((name) => reviewItems.push(name + ' — if ' + (condition.label || condition.key))));
+    packetConditional.innerHTML = listHtml(uniqueNames(reviewItems), 'No additional conditional paperwork configured.');
+
+    const notNormal = (packet.rule.notNormallyRequiredForms || []).map((row) => {
+      const name = row.form || row.name || '';
+      return row.why ? name + ' — ' + row.why : name;
+    });
+    packetNotNormal.innerHTML = listHtml(notNormal, 'None configured.');
+
+    const activeCircumstances = Object.keys(packet.circumstances).filter((key) => packet.circumstances[key]);
+    packetStatus.textContent = `${packet.requiredForms.length} form${packet.requiredForms.length === 1 ? '' : 's'} in the active packet · ${activeCircumstances.length} circumstance${activeCircumstances.length === 1 ? '' : 's'} selected`;
+    packetStart.disabled = false;
+  }
+
+  function startDesktopFieldWorkflow(slug, circumstances) {
+    const rule = REPORT_CALL_TYPE_RULES[slug] || {};
+    const matchingConditions = (rule.conditionalRules || []).filter((condition) => circumstances && circumstances[condition.key]);
+    let selectedForms = uniqueNames(rule.recommendedForms || []);
+    matchingConditions.forEach((condition) => { selectedForms = uniqueNames(selectedForms.concat(condition.forms || [])); });
     const state = {
       callType: slug,
-      incidentBasics: {
-        occurredDate: '',
-        occurredTime: '',
-        dispatchTime: '',
-        arrivalTime: '',
-        location: '',
-        reportingOfficer: '',
-        callSource: '',
-        summary: ''
-      },
+      incidentBasics: { occurredDate: '', occurredTime: '', dispatchTime: '', arrivalTime: '', location: '', reportingOfficer: '', callSource: '', summary: '' },
       timeline: [],
       persons: [],
       selectedForms,
       statutes: rule.statutes || [],
-      checklist: (rule.checklistItems || []).map((text) => ({ text, completed: false })),
+      checklist: (rule.checklistItems || []).map((text, index) => ({ id: `${slug}-check-${index + 1}`, label: text, completed: false })),
       facts: [],
       narrative: '',
       narrativeApproved: false,
       statements: [],
       formDrafts: {},
-      packetStatus: 'not_started'
+      paperworkCircumstances: circumstances || {},
+      paperworkGuidance: {
+        conditionalRules: rule.conditionalRules || [],
+        optionalForms: rule.optionalForms || [],
+        notNormallyRequiredForms: rule.notNormallyRequiredForms || []
+      },
+      packetStatus: 'draft'
     };
     sessionStorage.setItem('mcpd.mobile.incident.state', JSON.stringify(state));
-    window.location.href = nextUrl || '{{ url_for("mobile.incident_basics") }}';
+    window.location.href = slug === 'traffic-accident' ? '{{ url_for("reports.accidents") }}' : '{{ url_for("mobile.incident_basics") }}';
   }
 
-  document.querySelectorAll('.report-call-type-card').forEach((button) => {
+  packetCallType.addEventListener('change', renderPacketBuilder);
+  packetStart.addEventListener('click', () => {
+    const packet = currentPacket();
+    if (packet) startDesktopFieldWorkflow(packet.slug, packet.circumstances);
+  });
+  document.querySelectorAll('.report-call-type-builder').forEach((button) => {
     button.addEventListener('click', () => {
-      startDesktopFieldWorkflow(button.dataset.callType, button.dataset.nextUrl);
+      packetCallType.value = button.dataset.callType || '';
+      renderPacketBuilder();
+      document.getElementById('packet-builder').scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   });
 </script>
