@@ -303,6 +303,38 @@ def _evidence_visible_to_trainee(row):
     return True
 
 
+def _visible_timeline_without_legacy_radio_duplicates(world):
+    """Hide only the exact duplicate pair produced by the retired radio writer.
+
+    Older runs may contain a ``radio_transmission`` and a ``trainee_action``
+    with identical trainee text at the same simulated clock. A real repeated
+    transmission at a later clock remains visible.
+    """
+    visible = [row for row in (world.get('timeline') or []) if row.get('visible_to_trainee')]
+    cleaned = []
+    for row in visible:
+        if cleaned:
+            previous = cleaned[-1]
+            same_payload = (
+                _text(previous.get('actor')).lower() == 'trainee'
+                and _text(row.get('actor')).lower() == 'trainee'
+                and _text(previous.get('channel')).lower() == 'radio'
+                and _text(row.get('channel')).lower() == 'radio'
+                and int(previous.get('clock', -1)) == int(row.get('clock', -2))
+                and _text(previous.get('summary')).lower() == _text(row.get('summary')).lower()
+            )
+            legacy_pair = {
+                _text(previous.get('event_type')).lower(),
+                _text(row.get('event_type')).lower(),
+            } == {'radio_transmission', 'trainee_action'}
+            if same_payload and legacy_pair:
+                if _text(row.get('event_type')).lower() == 'trainee_action':
+                    cleaned[-1] = row
+                continue
+        cleaned.append(row)
+    return [deepcopy(row) for row in cleaned]
+
+
 def observable_world(state):
     """Return only information an officer could reasonably see/receive."""
     world = ensure_world_state(state, state.get('scenario_id', ''))
@@ -348,7 +380,7 @@ def observable_world(state):
         'statements': statements,
         'known_information': deepcopy(world.get('known_information') or []),
         'radio_log': deepcopy(world.get('radio_log') or []),
-        'timeline': [deepcopy(row) for row in (world.get('timeline') or []) if row.get('visible_to_trainee')],
+        'timeline': _visible_timeline_without_legacy_radio_duplicates(world),
         'paused': bool(world.get('paused')),
         'coaching_mode': bool(world.get('coaching_mode')),
         'fto_message': _text(world.get('fto_message')),
