@@ -90,6 +90,19 @@ def persist_run(state, trainee_id):
         sequence = int(item.get('seq') or 0)
         if sequence <= existing_max:
             continue
+        fallback_snapshot = {
+            'clock': world.get('clock'),
+            'officer': world.get('officer'),
+            'environment': world.get('environment'),
+            'people': world.get('people'),
+            'resources': world.get('resources'),
+            'evidence': world.get('evidence'),
+            'records': world.get('records'),
+            'known_information': world.get('known_information'),
+            'irreversible_events': world.get('irreversible_events'),
+            'pending_radio': world.get('pending_radio'),
+            'scheduled_events': world.get('scheduled_events'),
+        }
         db.session.add(FTOScenarioEvent(
             scenario_run_id=row.id,
             sequence=sequence,
@@ -98,17 +111,7 @@ def persist_run(state, trainee_id):
             channel=str(item.get('channel') or '')[:30] or None,
             summary=str(item.get('summary') or '')[:10000] or None,
             structured_json=_json(item.get('details') or {}),
-            world_snapshot_json=_json({
-                'clock': world.get('clock'),
-                'officer': world.get('officer'),
-                'environment': world.get('environment'),
-                'people': world.get('people'),
-                'resources': world.get('resources'),
-                'evidence': world.get('evidence'),
-                'records': world.get('records'),
-                'known_information': world.get('known_information'),
-                'irreversible_events': world.get('irreversible_events'),
-            }),
+            world_snapshot_json=_json(item.get('world_snapshot') or fallback_snapshot),
             visible_to_trainee=bool(item.get('visible_to_trainee', True)),
         ))
 
