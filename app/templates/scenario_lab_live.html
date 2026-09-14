@@ -2,6 +2,7 @@
 {% block body %}
 {% set active_shift = session.get('sentinel_virtual_shift_v1') %}
 {% set shift_mode = active_shift and active_shift.status == 'ACTIVE' and active_shift.active_run_id == run_context.run_id %}
+{% set visual_evidence_ids = ['facility_video','gate_layout','property_damage','surveillance','retail_video','merchandise','vehicle_position','scene_layout'] %}
 <style>
   .patrol-page{max-width:none!important;width:100%!important;padding-right:18px!important}
   .patrol-shell{width:100%;max-width:2400px;margin:0 auto}
@@ -26,6 +27,9 @@
   .call-status-pill{display:inline-flex;gap:6px;align-items:center;border:1px solid var(--bs-border-color,#d9dee7);border-radius:999px;padding:5px 10px;font-size:.82rem}
   .patrol-textarea{min-height:132px;resize:vertical}
   .end-call-box{border-top:1px solid var(--bs-border-color,#d9dee7);margin-top:12px;padding-top:12px}
+  .evidence-visual{display:block;width:100%;height:auto;max-height:250px;object-fit:contain;border:1px solid var(--bs-border-color,#d9dee7);border-radius:8px;background:#f8f9fa;margin-top:8px}
+  .evidence-card{border:1px solid var(--bs-border-color,#d9dee7);border-radius:10px;padding:10px;margin-bottom:10px}
+  .evidence-status{font-size:.78rem;text-transform:uppercase;letter-spacing:.04em}
   @media(max-width:1400px){.patrol-workspace{grid-template-columns:minmax(260px,.85fr) minmax(430px,1.25fr) minmax(330px,1fr)}}
   @media(max-width:1100px){.patrol-toolbar{grid-template-columns:1fr}.patrol-workspace{grid-template-columns:1fr 1fr;grid-template-areas:'command command' 'people intel' 'activity activity' 'radio action'}.patrol-scroll{max-height:460px}}
   @media(max-width:760px){.patrol-workspace{grid-template-columns:1fr;grid-template-areas:'command' 'people' 'intel' 'activity' 'radio' 'action'}.patrol-scene-grid,.scenario-launcher{grid-template-columns:1fr}.patrol-page{padding-right:8px!important;padding-left:8px!important}}
@@ -163,7 +167,23 @@
           <div class="eyebrow">Information / Evidence</div>
           <h3>What You Have Developed</h3>
           {% if observable.known_information %}<ul class="compact-list">{% for item in observable.known_information[-8:] %}<li>{{ item.text }}</li>{% endfor %}</ul>{% endif %}
-          {% if observable.evidence %}<div class="mt-2">{% for item in observable.evidence %}<div class="border rounded p-2 mb-2"><strong>{{ item.label }}</strong><div class="small text-muted">{{ item.status }}</div></div>{% endfor %}</div>{% endif %}
+          {% if observable.evidence %}
+          <div class="mt-2">
+            {% for item in observable.evidence %}
+            <div class="evidence-card">
+              <div class="d-flex justify-content-between gap-2 align-items-start">
+                <strong>{{ item.label }}</strong>
+                <span class="evidence-status text-muted">{{ item.status }}</span>
+              </div>
+              {% if item.description %}<div class="small text-muted mt-1">{{ item.description }}</div>{% endif %}
+              {% if item.id in visual_evidence_ids %}
+              <img class="evidence-visual" loading="lazy" src="{{ url_for('reports.fto_refinements.scenario_evidence.evidence_svg', run_id=run_context.run_id, evidence_id=item.id) }}" alt="Synthetic training visual for {{ item.label }}">
+              <div class="small text-muted mt-1">Synthetic training visual generated from facts already developed in this run.</div>
+              {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
           {% if not observable.known_information and not observable.evidence %}<p class="text-muted small">Nothing beyond the initial dispatch has been developed.</p>{% endif %}
           <a class="btn btn-sm btn-outline-primary mt-2" href="{{ url_for('reports.fto_refinements.scenario_notebook.notebook') }}">Open Field Notebook</a>
         </article>
