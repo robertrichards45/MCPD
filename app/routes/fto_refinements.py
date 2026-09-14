@@ -176,3 +176,8 @@ def edit_dor(dor_id):
         rating_areas=RATING_AREAS,
         rating_choices=RATING_CHOICES,
     )
+
+
+# Interactive practice is nested here so it remains separate from official DOR records.
+from . import scenario_lab as _scenario_lab
+bp.register_blueprint(_scenario_lab.bp)
