@@ -216,7 +216,6 @@ def persist_critical_scenario_alert(response):
 @login_required
 def scenario_alerts():
     if not (can_manage(current_user) or current_user.has_any_role('FIELD_TRAINING')):
-        # Assigned FTOs are normally FIELD_TRAINING; supervisors/managers are handled above.
         allowed = _scenario_alert_query_for(current_user).first() is not None
         if not allowed:
             abort(403)
@@ -300,4 +299,6 @@ def edit_dor(dor_id):
 
 # Interactive practice is nested here so it remains separate from official DOR records.
 from . import scenario_lab_live as _scenario_lab
+from . import scenario_shift as _scenario_shift
 bp.register_blueprint(_scenario_lab.bp)
+bp.register_blueprint(_scenario_shift.bp)
