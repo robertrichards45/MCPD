@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell mcpd-command-app">
+  {% include 'partials/nav.html' %}
+  <main class="page-wrap narrative-tool-page">
+    <section class="ops-head-card mb-3">
+      <div class="ops-head-copy">
+        <div class="eyebrow">FTO Center — Human Review</div>
+        <h2 class="mb-1">Scenario Lab Alerts</h2>
+        <p class="text-muted mb-0">Critical synthetic-training outcomes routed to the assigned FTO or supervisor for review.</p>
+      </div>
+      <div class="ops-head-actions d-flex gap-2 flex-wrap">
+        <a class="btn btn-outline-secondary" href="{{ url_for('reports.sentinel.fto_program.dashboard') }}">Program Dashboard</a>
+        <a class="btn btn-outline-secondary" href="{{ url_for('reports.sentinel.fto_center') }}">FTO Center</a>
+      </div>
+    </section>
+
+    <div class="alert alert-warning mb-3">
+      <strong>Advisory only.</strong> A Scenario Lab alert means the synthetic exercise produced a critical outcome requiring human review. It does not create a DOR rating, remediation plan, disciplinary finding, or real criminal/legal conclusion.
+    </div>
+
+    <section class="ops-panel mb-3">
+      <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap mb-3">
+        <div>
+          <div class="eyebrow">Review Queue</div>
+          <h3 class="mb-0">Critical Training Outcomes</h3>
+        </div>
+        <span class="badge text-bg-danger">{{ alerts|selectattr('acknowledged_at', 'none')|list|length }} Open</span>
+      </div>
+
+      {% if alerts %}
+      <div class="d-grid gap-3">
+        {% for alert in alerts %}
+        <article class="border rounded p-3 {% if not alert.acknowledged_at %}border-danger{% endif %}">
+          <div class="d-flex justify-content-between gap-3 flex-wrap">
+            <div>
+              <div class="eyebrow">{{ alert.scenario_id }} · {{ alert.severity }}</div>
+              <h4 class="mb-1">{{ alert.outcome_title }}</h4>
+              <p class="small text-muted mb-0">
+                Trainee: <strong>{{ alert.trainee.display_name }}</strong> · Assigned FTO: <strong>{{ alert.assigned_fto.display_name }}</strong>
+                {% if alert.created_at %} · {{ alert.created_at.strftime('%Y-%m-%d %H:%M') }}{% endif %}
+              </p>
+            </div>
+            {% if alert.acknowledged_at %}
+            <span class="badge text-bg-success align-self-start">Reviewed</span>
+            {% else %}
+            <span class="badge text-bg-danger align-self-start">Human Review Required</span>
+            {% endif %}
+          </div>
+
+          {% if alert.outcome_summary %}
+          <div class="border rounded p-3 mt-3">{{ alert.outcome_summary }}</div>
+          {% endif %}
+
+          {% if alert.acknowledged_at %}
+          <p class="small text-muted mt-3 mb-0">Acknowledged by {{ alert.acknowledger.display_name if alert.acknowledger else 'reviewer' }} on {{ alert.acknowledged_at.strftime('%Y-%m-%d %H:%M') }}.</p>
+          {% else %}
+          <form method="post" action="{{ url_for('reports.fto_refinements.acknowledge_scenario_alert', alert_id=alert.id) }}" class="mt-3">
+            <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
+            <button class="btn btn-danger" type="submit">Acknowledge Human Review</button>
+          </form>
+          {% endif %}
+        </article>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="text-muted mb-0">No Scenario Lab alerts are in your review scope.</p>
+      {% endif %}
+    </section>
+  </main>
+</div>
+{% endblock %}
