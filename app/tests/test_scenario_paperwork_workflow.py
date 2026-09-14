@@ -29,6 +29,25 @@ def _client():
     return client
 
 
+def _complete_s004(client):
+    client.get('/sentinel/fto-center/scenario-lab/?scenario_id=S004')
+    with client.session_transaction() as s:
+        state = s['sentinel_scenario_lab_v2']
+        state['complete'] = True
+        s['sentinel_scenario_lab_v2'] = state
+
+
+def _submit_package(client, narrative='Synthetic training narrative based only on facts developed during the run.'):
+    return client.post('/sentinel/fto-center/scenario-paperwork/', data={
+        '_csrf_token': 'test-token',
+        'action': 'submit',
+        'selected_documents': ['OPNAV 5580 2 Voluntary Statement'],
+        'cid_decision': 'screen',
+        'notification_notes': 'Screen with CID and provide the developed facts.',
+        'narrative': narrative,
+    }, follow_redirects=True)
+
+
 def test_requirements_never_assign_blotter_to_trainee():
     for scenario_id in ('S001', 'S002', 'S003', 'S004', 'S005', 'S006'):
         requirements = requirements_for_scenario(scenario_id)
@@ -53,26 +72,15 @@ def test_active_call_cannot_open_post_call_paperwork():
 
 def test_completed_call_can_submit_and_preserve_original_package():
     client = _client()
-    client.get('/sentinel/fto-center/scenario-lab/?scenario_id=S004')
-    with client.session_transaction() as s:
-        state = s['sentinel_scenario_lab_v2']
-        state['complete'] = True
-        s['sentinel_scenario_lab_v2'] = state
+    _complete_s004(client)
 
     response = client.get('/sentinel/fto-center/scenario-paperwork/')
     assert response.status_code == 200
     html = response.get_data(as_text=True)
     assert 'Training Package' in html
-    assert 'blotter' not in html.lower() or 'not part of the trainee paperwork exercise' in html.lower()
+    assert 'not part of the trainee paperwork exercise' in html.lower()
 
-    response = client.post('/sentinel/fto-center/scenario-paperwork/', data={
-        '_csrf_token': 'test-token',
-        'action': 'submit',
-        'selected_documents': ['OPNAV 5580 2 Voluntary Statement'],
-        'cid_decision': 'screen',
-        'notification_notes': 'Screen with CID and provide the developed facts.',
-        'narrative': 'Synthetic training narrative based only on facts developed during the run.',
-    }, follow_redirects=True)
+    response = _submit_package(client)
     assert response.status_code == 200
     assert 'original submission is preserved' in response.get_data(as_text=True).lower()
 
@@ -99,3 +107,34 @@ def test_completed_call_can_submit_and_preserve_original_package():
         assert package['submissions'][1]['revision'] == 1
         assert 'facts developed' in package['submissions'][0]['narrative']
         assert 'Revision one' in package['submissions'][1]['narrative']
+
+
+def test_fto_can_return_package_and_trainee_session_receives_review():
+    client = _client()
+    _complete_s004(client)
+    _submit_package(client)
+
+    with client.session_transaction() as s:
+        run_id = s['sentinel_scenario_lab_v2']['run_context']['run_id']
+
+    response = client.post(f'/sentinel/fto-center/scenario-paperwork/run/{run_id}', data={
+        '_csrf_token': 'test-token',
+        'fto_action': 'correction',
+        'fto_comments': 'Correct the chronology and make the CID screening documentation clearer.',
+        'remediation_area': '',
+        'remediation_plan': '',
+    }, follow_redirects=True)
+    assert response.status_code == 200
+    assert 'returned for correction' in response.get_data(as_text=True).lower()
+
+    response = client.get('/sentinel/fto-center/scenario-paperwork/')
+    html = response.get_data(as_text=True)
+    assert 'Correction Required' in html
+    assert 'Correct the chronology' in html
+
+    with client.session_transaction() as s:
+        package = s['sentinel_scenario_lab_v2']['training_package']
+        assert package['status'] == 'CORRECTION_REQUIRED'
+        assert len(package['submissions']) == 1
+        assert len(package['review_history']) == 1
+        assert package['review_history'][0]['revision_reviewed'] == 0
