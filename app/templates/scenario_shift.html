@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell mcpd-command-app">
+  {% include 'partials/nav.html' %}
+  <main class="page-wrap narrative-tool-page">
+    <section class="ops-head-card mb-3">
+      <div class="ops-head-copy">
+        <div class="eyebrow">Sentinel — Virtual Shift</div>
+        <h2 class="mb-1">Patrol Shift</h2>
+        <p class="text-muted mb-0">Sign on, receive CAD calls from Dispatch, work them, clear, and return available. The call type and difficulty are not selected in advance.</p>
+      </div>
+      <div class="ops-head-actions">
+        <a class="btn btn-outline-secondary" href="{{ url_for('reports.fto_refinements.scenario_lab.lab') }}">Scenario Lab</a>
+      </div>
+    </section>
+
+    <div class="alert alert-secondary mb-3"><strong>TRAINING / SYNTHETIC.</strong> The shift, people, calls, locations, records, and evidence are fictional training data.</div>
+
+    {% if not shift %}
+    <section class="ops-panel mb-3">
+      <div class="eyebrow">Start Shift</div>
+      <h3>Sign On for Training Patrol</h3>
+      <p class="text-muted">You will not choose the call. Dispatch will assign the first synthetic call after a routine period of patrol.</p>
+      <form method="post" class="row g-3 align-items-end">
+        <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
+        <input type="hidden" name="action" value="start">
+        <div class="col-md-6">
+          <label class="form-label"><strong>Training unit identifier</strong></label>
+          <input class="form-control" name="unit_id" maxlength="20" value="214" required>
+        </div>
+        <div class="col-md-3 d-grid"><button class="btn btn-primary">Start Shift</button></div>
+      </form>
+    </section>
+    {% else %}
+    <section class="row g-3 mb-3">
+      <div class="col-xl-8">
+        <article class="ops-panel h-100">
+          <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+            <div>
+              <div class="eyebrow">CAD / Radio</div>
+              <h3>{{ shift.unit_id }} — {{ 'In Service' if shift.status == 'ACTIVE' else 'Off Duty' }}</h3>
+            </div>
+            <div class="small text-muted">Shift {{ shift.shift_id }} · T+{{ shift.clock_minutes }} min</div>
+          </div>
+          <div class="d-grid gap-2 mt-3">
+            {% for item in shift.dispatch_log[-12:] %}
+            <div class="border rounded p-2">
+              <div class="d-flex justify-content-between gap-2"><strong>{{ item.speaker }}</strong><span class="small text-muted">T+{{ item.minute }} min</span></div>
+              <div>{{ item.text }}</div>
+            </div>
+            {% endfor %}
+          </div>
+        </article>
+      </div>
+      <div class="col-xl-4">
+        <article class="ops-panel h-100">
+          <div class="eyebrow">Shift Status</div>
+          <h3>{{ shift.calls_completed }} Call{{ '' if shift.calls_completed == 1 else 's' }} Cleared</h3>
+          {% if shift.status == 'ACTIVE' and shift.active_scenario_id %}
+          <p><strong>CAD has assigned an active call.</strong></p>
+          <p class="text-muted">Respond using the information Dispatch has given you. The underlying scenario family is intentionally not shown here.</p>
+          <form method="post" class="d-grid mb-2">
+            <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
+            <button class="btn btn-primary" name="action" value="respond">Respond to Assigned Call</button>
+          </form>
+          {% elif shift.status == 'ACTIVE' %}
+          <p class="text-muted">No active call. You remain available for synthetic patrol assignments.</p>
+          {% else %}
+          <p class="text-muted">This synthetic shift has ended.</p>
+          {% endif %}
+          {% if shift.status == 'ACTIVE' %}
+          <form method="post" class="d-grid mt-3">
+            <input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}">
+            <button class="btn btn-outline-secondary" name="action" value="end">End Training Shift</button>
+          </form>
+          {% endif %}
+        </article>
+      </div>
+    </section>
+
+    {% if shift.history %}
+    <section class="ops-panel mb-3">
+      <div class="eyebrow">Shift History</div>
+      <h3>Calls Already Worked</h3>
+      <div class="d-grid gap-2">
+        {% for item in shift.history|reverse %}
+        <div class="border rounded p-2 d-flex justify-content-between gap-3 flex-wrap">
+          <div><strong>Call {{ item.call_number }}</strong> — {{ item.outcome }}</div>
+          <div class="small text-muted">Run {{ item.run_id }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+    {% endif %}
+  </main>
+</div>
+{% endblock %}
