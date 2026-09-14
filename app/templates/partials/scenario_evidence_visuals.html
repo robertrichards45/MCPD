@@ -1,0 +1,13 @@
+{% set visual_ids = ['facility_video','gate_layout','property_damage','surveillance','retail_video','merchandise','vehicle_position','scene_layout'] %}
+{% for item in observable.evidence or [] %}
+  {% if item.id in visual_ids and run_context.run_id %}
+  <div class="border rounded p-2 mt-2">
+    <div class="d-flex justify-content-between gap-2 align-items-center flex-wrap mb-2">
+      <strong>{{ item.label }}</strong>
+      <span class="badge text-bg-light border">{{ item.status }}</span>
+    </div>
+    <img class="img-fluid rounded border" loading="lazy" alt="Synthetic training visual for {{ item.label }}" src="{{ url_for('reports.fto_refinements.scenario_evidence.evidence_svg', run_id=run_context.run_id, evidence_id=item.id) }}">
+    <div class="small text-muted mt-1">Generated only from evidence already discovered in this synthetic run.</div>
+  </div>
+  {% endif %}
+{% endfor %}
