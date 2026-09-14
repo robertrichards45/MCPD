@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+{% block body %}
+{% set active_shift = session.get('sentinel_virtual_shift_v1') %}
+{% set shift_mode = active_shift and active_shift.status == 'ACTIVE' and active_shift.active_run_id == run_context.run_id %}
+<div class="app-shell mcpd-command-app">
+  {% include 'partials/nav.html' %}
+  <main class="page-wrap narrative-tool-page">
+    <section class="ops-head-card mb-3">
+      <div class="ops-head-copy">
+        <div class="eyebrow">Sentinel — Simulation Mode</div>
+        <h2 class="mb-1">Virtual Patrol</h2>
+        <p class="text-muted mb-0">Handle the call using the information you can actually see, hear, obtain, or develop.</p>
+      </div>
+      <div class="ops-head-actions d-flex gap-2 flex-wrap">
+        {% if shift_mode %}<a class="btn btn-outline-primary" href="{{ url_for('reports.fto_refinements.scenario_shift.shift') }}">Shift CAD</a>{% endif %}
+        <a class="btn btn-outline-primary" href="{{ url_for('reports.fto_refinements.scenario_notebook.notebook') }}">Field Notebook</a>
+        {% if evaluator_url %}<a class="btn btn-outline-secondary" href="{{ evaluator_url }}">FTO / Evaluator View</a>{% endif %}
+        <a class="btn btn-outline-secondary" href="{{ url_for('reports.sentinel.fto_center') }}">FTO Center</a>
+      </div>
+    </section>
+
+    <div class="alert alert-secondary mb-3">
+      <strong>TRAINING / SYNTHETIC.</strong> All people, records, evidence, outcomes, and identifiers in this simulator are fictional training data.
+    </div>
+
+    {% if observable.paused %}
+    <div class="alert alert-warning"><strong>Simulation paused by the instructor.</strong> The call state is preserved exactly where it is.</div>
+    {% endif %}
+
+    {% if observable.coaching_mode and observable.fto_message %}
+    <div class="alert alert-info">
+      <div class="eyebrow">FTO Coaching</div>
+      <strong>{{ observable.fto_message }}</strong>
+    </div>
+    {% endif %}
+
+    {% if terminated and terminal_outcome %}
+    <section class="ops-panel mb-3 border-danger">
+      <div class="eyebrow text-danger">Simulation Ended</div>
+      <h3>{{ terminal_outcome.title }}</h3>
+      <p>{{ terminal_outcome.public_outcome }}</p>
+      <p>{{ terminal_outcome.officer_outcome }}</p>
+      <p class="text-muted mb-3">This is a synthetic training outcome. The decision remains part of the run and cannot be rewritten. Complete the post-call documentation and self-assessment before debrief.</p>
+      <div class="d-flex gap-2 flex-wrap">
+        <a class="btn btn-primary" href="{{ url_for('reports.fto_refinements.scenario_paperwork.paperwork') }}">Complete Training Package</a>
+        <a class="btn btn-outline-primary" href="{{ url_for('reports.fto_refinements.scenario_notebook.notebook') }}">Review Field Notes</a>
+        {% if shift_mode %}<a class="btn btn-outline-secondary" href="{{ url_for('reports.fto_refinements.scenario_shift.shift') }}">Return to Shift</a>{% endif %}
+      </div>
+    </section>
+    {% endif %}
+
+    {% if complete and not terminated %}
+    <section class="ops-panel mb-3 border-success">
+      <div class="eyebrow">Call Cleared</div>
+      <h3>Complete the post-call work</h3>
+      <p class="text-muted">The live scene is over. Complete the officer paperwork, notification decisions, and self-assessment before opening the debrief.</p>
+      <div class="d-flex gap-2 flex-wrap">
+        <a class="btn btn-success" href="{{ url_for('reports.fto_refinements.scenario_paperwork.paperwork') }}">Complete Training Package</a>
+        <a class="btn btn-outline-primary" href="{{ url_for('reports.fto_refinements.scenario_notebook.notebook') }}">Review Field Notes</a>
+        {% if shift_mode %}<a class="btn btn-outline-secondary" href="{{ url_for('reports.fto_refinements.scenario_shift.shift') }}">Return to Shift</a>{% endif %}
+      </div>
+    </section>
+    {% endif %}
+
+    {% if not complete %}
+    <section class="row g-3 mb-3">
+      <div class="col-xl-7">
+        <article class="ops-panel h-100">
+          <div class="d-flex justify-content-between gap-2 align-items-start flex-wrap">
+            <div>
+              <div class="eyebrow">CAD / Dispatch</div>
+              <h3 class="mb-1">Active Call{% if shift_mode %} — Unit {{ active_shift.unit_id }}{% endif %}</h3>
+            </div>
+          </div>
+          <div class="border rounded p-3 my-3"><strong>{{ run_context.dispatch_variant or scenario.dispatch }}</strong></div>
+          {% if observable.radio_log %}
+          <div class="d-grid gap-2">
+            {% for item in observable.radio_log[-10:] %}
+            <div class="border rounded p-2">
+              <div class="d-flex justify-content-between gap-2"><strong>{{ item.speaker }}</strong><span class="small text-muted">T+{{ item.clock }}</span></div>
+              <div>{{ item.text }}</div>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </article>
+      </div>
+      <div class="col-xl-5">
+        <article class="ops-panel h-100">
+          <div class="eyebrow">Current Scene</div>
+          <h3>{{ scene_meta.scene }}</h3>
+          {% if observable.environment %}
+          <div class="d-flex gap-1 flex-wrap mb-3">
+            {% for key in ['time_of_day','weather','lighting','visibility','noise','crowd'] %}
+              {% if observable.environment.get(key) %}<span class="badge text-bg-light border">{{ key|replace('_',' ')|title }}: {{ observable.environment.get(key) }}</span>{% endif %}
+            {% endfor %}
+          </div>
+          {% endif %}
+          <div class="row g-2 mb-2">
+            {% for clue in scene_meta.visual %}<div class="col-12"><div class="border rounded p-2">{{ clue }}</div></div>{% endfor %}
+          </div>
+          {% if latest_reveal %}<div class="border rounded p-2 mb-2"><strong>Developed:</strong> {{ latest_reveal }}</div>{% endif %}
+          {% for item in visible_scene_updates %}<div class="border rounded p-2 mb-2">{{ item }}</div>{% endfor %}
+          <div class="small text-muted mt-2">Simulation time: T+{{ observable.clock }}</div>
+        </article>
+      </div>
+    </section>
+
+    <section class="row g-3 mb-3">
+      <div class="col-xl-4">
+        <article class="ops-panel h-100">
+          <div class="eyebrow">People / Resources Present</div>
+          <h3>Who Is Here</h3>
+          {% if observable.people %}
+          <div class="d-grid gap-2 mb-3">
+            {% for person in observable.people %}
+            <div class="border rounded p-2">
+              <div class="d-flex justify-content-between gap-2 align-items-start flex-wrap">
+                <strong>{{ person.name }}</strong>
+                <span class="badge text-bg-light border">{{ person.role }}</span>
+              </div>
+              {% if person.location %}<div class="small text-muted">Location: {{ person.location }}</div>{% endif %}
+              <div class="small mt-1"><strong>Contact label:</strong> {{ person.role or person.name }}</div>
+            </div>
+            {% endfor %}
+          </div>
+          <p class="small text-muted">You can address people naturally by role or common wording.</p>
+          {% else %}<p class="text-muted">No person has been identified or encountered yet.</p>{% endif %}
+          {% if observable.resources %}<hr>{% for resource in observable.resources %}<div class="mb-1"><strong>{{ resource.id|replace('_',' ')|title }}:</strong> {{ resource.status|replace('_',' ') }}</div>{% endfor %}{% endif %}
+        </article>
+      </div>
+      <div class="col-xl-4">
+        <article class="ops-panel h-100">
+          <div class="eyebrow">Information / Evidence Obtained</div>
+          <h3>Developed During the Call</h3>
+          {% if observable.known_information %}<ul>{% for item in observable.known_information %}<li>{{ item.text }}</li>{% endfor %}</ul>{% endif %}
+          {% if observable.evidence %}<div class="d-grid gap-2">{% for item in observable.evidence %}<div class="border rounded p-2"><strong>{{ item.label }}</strong><div class="small text-muted">{{ item.status }}</div></div>{% endfor %}</div>{% endif %}
+          {% include 'partials/scenario_evidence_visuals.html' %}
+          {% if not observable.known_information and not observable.evidence %}<p class="text-muted">Nothing beyond the initial call information has been developed yet.</p>{% endif %}
+          <hr><a class="btn btn-sm btn-outline-primary" href="{{ url_for('reports.fto_refinements.scenario_notebook.notebook') }}">Open Field Notebook</a>
+        </article>
+      </div>
+      <div class="col-xl-4">
+        <article class="ops-panel h-100">
+          <div class="eyebrow">Recent Scene Activity</div>
+          <h3>Who Said / Did What</h3>
+          {% if observable.timeline %}
+          <div class="d-grid gap-2">
+            {% for item in observable.timeline[-10:]|reverse %}
+            <div class="border rounded p-2 {% if item.channel == 'face_to_face' %}border-primary{% endif %}">
+              <div class="d-flex justify-content-between gap-2 align-items-center flex-wrap mb-1">
+                <div>
+                  {% if item.actor %}<strong>{{ item.actor }}</strong>{% else %}<strong>Scene</strong>{% endif %}
+                  {% if item.channel == 'face_to_face' %}<span class="badge text-bg-primary ms-1">Face-to-Face</span>{% elif item.channel == 'radio' %}<span class="badge text-bg-light border ms-1">Radio</span>{% elif item.channel == 'scene' %}<span class="badge text-bg-light border ms-1">Scene</span>{% endif %}
+                </div>
+                <span class="small text-muted">T+{{ item.clock }}</span>
+              </div>
+              <div>{{ item.summary }}</div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}<p class="text-muted">The call has just begun.</p>{% endif %}
+        </article>
+      </div>
+    </section>
+
+    <section class="row g-3 mb-3">
+      <div class="col-xl-5">
+        <article class="ops-panel h-100">
+          <div class="eyebrow">Radio</div><h3>Transmit</h3>
+          <p class="small text-muted">Talk to Dispatch and request agency resources naturally. Dispatch only knows what is available through this synthetic call, radio traffic, and simulated records.</p>
+          <form method="post"><input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}"><input type="hidden" name="scenario_id" value="{{ scenario_id }}"><input type="hidden" name="action" value="radio"><textarea class="form-control" name="radio_text" rows="5" maxlength="1200" required placeholder="Example: 214, show me on scene."></textarea><button class="btn btn-outline-primary mt-2" type="submit" {% if observable.paused %}disabled{% endif %}>Transmit</button></form>
+        </article>
+      </div>
+      <div class="col-xl-7">
+        <article class="ops-panel h-100">
+          <div class="eyebrow">Officer Action</div><h3>What do you do?</h3>
+          <p class="small text-muted">State what you actually do, say, observe, ask, move toward, preserve, check, or decide. When more than one person is present, identify who you are addressing.</p>
+          <form method="post"><input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}"><input type="hidden" name="scenario_id" value="{{ scenario_id }}"><input type="hidden" name="action" value="officer_action"><textarea class="form-control" name="command_text" rows="8" maxlength="2500" required placeholder="Example: I make contact with the reporting party and ask what they personally observed."></textarea><button class="btn btn-primary mt-2" type="submit" {% if observable.paused %}disabled{% endif %}>Do / Say This</button></form>
+        </article>
+      </div>
+    </section>
+    {% endif %}
+
+    {% if not shift_mode %}
+    <section class="ops-panel mb-3"><div class="d-flex justify-content-between gap-3 align-items-end flex-wrap"><div><div class="eyebrow">New Training Run</div><p class="text-muted mb-0">Starting over creates a different synthetic fact pattern. Run details remain available to the FTO for reproducible review.</p></div><form method="post" class="d-flex gap-2 flex-wrap"><input type="hidden" name="_csrf_token" value="{{ g.csrf_token }}"><select class="form-select" name="scenario_id">{% for sid, item in scenarios.items() %}<option value="{{ sid }}" {% if sid == scenario_id %}selected{% endif %}>{{ item.title }}</option>{% endfor %}</select><button class="btn btn-outline-secondary" type="submit" name="action" value="switch">Start New Run</button></form></div></section>
+    {% else %}
+    <section class="ops-panel mb-3"><div class="eyebrow">Shift Assignment</div><p class="text-muted mb-0">This call remains attached to your current synthetic shift. Return to Shift CAD to view the shift radio log or resume the assignment.</p></section>
+    {% endif %}
+  </main>
+</div>
+{% endblock %}
