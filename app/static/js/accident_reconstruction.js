@@ -180,7 +180,7 @@
   }
 
   function getPointer(evt) {
-    var rect = stage.getBoundingClientRect();
+    var rect = canvas.getBoundingClientRect();
     return {
       x: (evt.clientX - rect.left) * (canvas.width / rect.width) / zoom,
       y: (evt.clientY - rect.top) * (canvas.height / rect.height) / zoom
@@ -307,8 +307,8 @@
 
   function renderObjects() {
     objectLayer.innerHTML = '';
-    var scaleX = objectLayer.clientWidth / canvas.width;
-    var scaleY = objectLayer.clientHeight / canvas.height;
+    var scaleX = objectLayer.clientWidth / canvas.width * zoom;
+    var scaleY = objectLayer.clientHeight / canvas.height * zoom;
     allItems().forEach(function (item) {
       var node = document.createElement('div');
       node.className = 'recon-svg-object' + (item === selectedItem ? ' is-selected' : '');
@@ -430,11 +430,16 @@
 
   function showVehicleModal(point) {
     pendingInsertPoint = point;
-    if (modal) modal.hidden = false;
+    if (modal) {
+      modal.hidden = false;
+      if (modalClose) modalClose.focus({ preventScroll: true });
+    }
   }
 
   function hideVehicleModal() {
     if (modal) modal.hidden = true;
+    var vehicleTool = root.querySelector('[data-tool="vehicle"]');
+    if (vehicleTool) vehicleTool.focus({ preventScroll: true });
   }
 
   function addAsset(assetType, point) {
@@ -608,6 +613,15 @@
 
   if (modalClose) modalClose.addEventListener('click', hideVehicleModal);
   if (modal) {
+    modal.addEventListener('keydown', function (evt) {
+      if (evt.key === 'Escape') { evt.preventDefault(); hideVehicleModal(); }
+      if (evt.key === 'Tab') {
+        var controls = Array.prototype.slice.call(modal.querySelectorAll('button')).filter(function (el) { return !el.disabled && el.getClientRects().length; });
+        var first = controls[0], last = controls[controls.length - 1];
+        if (evt.shiftKey && document.activeElement === first) { evt.preventDefault(); last.focus(); }
+        else if (!evt.shiftKey && document.activeElement === last) { evt.preventDefault(); first.focus(); }
+      }
+    });
     modal.addEventListener('click', function (evt) {
       if (evt.target === modal) hideVehicleModal();
     });
@@ -623,8 +637,8 @@
   if (zoomSelect) {
     zoomSelect.addEventListener('change', function () {
       zoom = parseFloat(zoomSelect.value) || 1;
-      canvas.style.width = (980 * zoom) + 'px';
-      objectLayer.style.width = canvas.style.width;
+      // Zoom scene coordinates, not the CSS layer width. Both layers must
+      // retain identical bounds when a phone constrains the canvas.
       redraw();
     });
   }

@@ -1,5 +1,201 @@
-/* MCPD mobile audit — final narrow-screen interaction layer.
-   Keep this small and loaded after the shared mobile component styles. */
+/* Final responsive shell rules. Keep desktop geometry above 1020px intact. */
+.mcpd-command-sidebar .mcpd-nav-close { display: none !important; }
+body.force-mobile-view .mcpd-nav-close { display: block !important; min-height: 44px; }
+.mcpd-attention-summary > summary { cursor: pointer; font-weight: 700; }
+.mcpd-attention-summary[open] > summary { margin-bottom: 12px; }
+
+@media (max-width: 1020px) {
+  body:not(.view-desktop):not(.mobile-foundation) .app-shell > :is(.page-wrap, .dashboard, .mcpd-command-main, .demo-main),
+  body:not(.view-desktop):not(.mobile-foundation) :is(.page-wrap, .dashboard, .mcpd-command-main, .demo-main) {
+    margin-inline: 0 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+  }
+
+  body:not(.view-desktop) .mcpd-command-header {
+    display: flex !important;
+    justify-content: space-between;
+    height: auto !important;
+    min-height: 64px;
+    padding-block: 8px !important;
+    padding-top: max(8px, env(safe-area-inset-top, 0px)) !important;
+  }
+
+  body:not(.view-desktop) .mcpd-header-user {
+    flex-direction: row !important;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 4px;
+  }
+
+  body:not(.view-desktop) .mcpd-command-header :is(button, a) {
+    width: auto !important;
+    min-height: 44px !important;
+    flex: 0 0 auto;
+    min-width: 44px;
+  }
+
+  body:not(.view-desktop) .mcpd-mobile-menu {
+    min-width: 44px;
+  }
+
+  body:not(.view-desktop) .mcpd-command-sidebar {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+    height: 100dvh !important;
+    padding-bottom: max(24px, env(safe-area-inset-bottom, 0px));
+  }
+
+  body:not(.view-desktop) .mcpd-command-sidebar :is(a, summary, button) {
+    min-height: 44px;
+    white-space: normal;
+  }
+
+  body:not(.view-desktop) .mcpd-nav-close {
+    display: block !important;
+    margin: 0 0 8px;
+    flex-shrink: 0;
+    color: #fff;
+    background: #123352;
+    border: 1px solid #5e7187;
+    border-radius: 8px;
+  }
+  body.nav-mobile-open :is(.ai-fab, .ai-panel) { visibility: hidden; }
+
+  /* The previous drawer backdrop disabled vertical touch scrolling as well. */
+  body:not(.view-desktop).nav-mobile-open { touch-action: auto; }
+
+  .ai-panel-hidden { visibility: hidden; }
+
+  body:not(.view-desktop) .recon-tools-panel {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: 8px;
+    overflow: visible;
+  }
+  body:not(.view-desktop) .recon-tools-panel > :is(strong, .officer-diagram-tool-tip) {
+    grid-column: 1 / -1;
+  }
+  body:not(.view-desktop) .recon-tools-panel button {
+    min-width: 0;
+    width: 100%;
+    height: auto;
+    min-height: 44px;
+    white-space: normal;
+  }
+  body:not(.view-desktop) .recon-builder { align-items: start; }
+  body:not(.mobile-foundation):not(.view-desktop) .legal-lookup-page .legal-search-grid.legal-search-grid-v2 {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  body:not(.view-desktop) .legal-lookup-page .legal-search-action .btn {
+    height: auto;
+    align-self: end;
+  }
+  body:not(.mobile-foundation) .legal-lookup-page :is(.legal-hero, .legal-hero-chip) {
+    background: var(--mcpd-surface) !important;
+    color: var(--mcpd-ink) !important;
+  }
+  .table-responsive { min-width: 0; }
+  body .table-responsive > table { display: table; overflow: visible; }
+  .mobile-table-scroll:focus-visible { outline: 3px solid var(--mcpd-blue); outline-offset: 2px; }
+  .recon-asset-modal { padding: 10px; }
+  .recon-asset-modal-card {
+    box-sizing: border-box;
+    max-height: calc(100dvh - 20px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .recon-asset-modal-head { flex-wrap: wrap; padding: 12px; }
+  .recon-asset-modal-head h2 { color: var(--mcpd-ink) !important; }
+  .recon-asset-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 12px; }
+  .recon-asset-grid button { min-width: 0; }
+  body:has(.recon-asset-modal:not([hidden])) .ai-fab { visibility: hidden; }
+
+  body:not(.view-desktop):not(.mobile-foundation) .app-shell > :is(.page-wrap, .dashboard, .mcpd-command-main) {
+    margin-top: var(--responsive-header-height, 64px) !important;
+  }
+}
+
+@media (max-width: 767px) {
+  body:not(.view-desktop) .legal-lookup-page .legal-filter-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  body.mobile-foundation .mcpd-mobile-topbar > * {
+    flex: 0 0 auto;
+    width: auto !important;
+    white-space: nowrap;
+    overflow-wrap: normal;
+  }
+  body.mobile-foundation .mcpd-mobile-menu-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 44px;
+  }
+  body.mobile-foundation .mcpd-mobile-greeting { display: block; }
+  body.mobile-foundation .mcpd-mobile-draft-row { width: 100%; }
+  body.mobile-foundation .mcpd-mobile-draft-badge {
+    flex: 1 1 150px;
+    min-height: 44px;
+    border-radius: 12px;
+  }
+  :is(.page-wrap, .dashboard, .mcpd-command-main) :is(section, article, form, fieldset, .row, .ops-panel, .ops-head-copy, .mission-hero-copy) {
+    min-width: 0;
+    box-sizing: border-box;
+    overflow-wrap: anywhere;
+  }
+
+  .mcpd-clean-card > :last-child { min-width: 0; }
+  .mcpd-header-brand img { display: none; }
+  .ops-head-actions, .mission-hero-actions { flex-wrap: wrap; }
+  body :is(.btn, button, summary),
+  body:not(.view-desktop) :is(.page-wrap, .mobile-main, .dashboard) :is(.btn, button, summary),
+  body:not(.view-desktop) .btn.btn-sm {
+    min-height: 44px !important;
+    min-width: 44px;
+    box-sizing: border-box;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  body a.btn { display: inline-flex; align-items: center; justify-content: center; }
+  body :is(input, select, textarea):not([type="checkbox"]):not([type="radio"]):not([type="hidden"]) {
+    font-size: 16px !important;
+  }
+  :is(.page-wrap, .mcpd-command-main) input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]),
+  :is(.page-wrap, .mcpd-command-main) select { min-height: 44px; }
+
+  .mcpd-dashboard-clean .mcpd-clean-section,
+  .mcpd-dashboard-clean .mcpd-clean-section h2,
+  .mcpd-dashboard-clean .mcpd-clean-card strong { color: var(--mcpd-ink); }
+  .mcpd-dashboard-clean .mcpd-clean-card small { font-size: .875rem; }
+  body.mobile-foundation .mcpd-mobile-draft-badge {
+    position: static !important;
+    white-space: normal;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    box-sizing: border-box;
+  }
+
+  /* Legacy navy-card text rules were also applied to transparent/light cards. */
+  body:not(.mobile-foundation) :is(.ops-head-card, .ops-panel, .mcpd-clean-section) {
+    color: var(--mcpd-ink) !important;
+  }
+  body:not(.mobile-foundation) :is(.ops-head-card, .ops-panel, .mcpd-clean-section) :is(h1, h2, h3, h4, .ops-head-copy) {
+    color: var(--mcpd-ink) !important;
+  }
+  body:not(.mobile-foundation) .ops-head-card :is(p, .text-muted) {
+    color: var(--mcpd-muted) !important;
+  }
+  body:not(.mobile-foundation) :is(.btn-outline-primary, .btn-outline-secondary, .btn-outline-dark) {
+    color: var(--mcpd-ink) !important;
+    background: var(--mcpd-surface) !important;
+    border-color: var(--mcpd-line-2) !important;
+  }
+}
 
 .mcpd-mobile-home-link {
   display: none;

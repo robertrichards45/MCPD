@@ -321,10 +321,17 @@ window.addEventListener('load', () => {
   const nav = document.querySelector('.top-nav');
   const navToggle = document.querySelector('[data-nav-toggle]');
   const sidebar = document.querySelector('.mcpd-command-sidebar[data-nav-menu]');
+  const navClose = document.querySelector('[data-nav-close]');
+
+  function isNarrowNav() {
+    return !document.body.classList.contains('view-desktop') &&
+      (window.innerWidth <= 1020 || document.body.classList.contains('force-mobile-view'));
+  }
 
   function setMobileNavOpen(open) {
     if (!sidebar || !navToggle) return;
     sidebar.classList.toggle('is-open', open);
+    sidebar.inert = !open && isNarrowNav();
     document.body.classList.toggle('nav-mobile-open', open);
     navToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
     navToggle.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation');
@@ -335,9 +342,14 @@ window.addEventListener('load', () => {
   }
 
   if (sidebar && navToggle) {
+    sidebar.inert = isNarrowNav();
     navToggle.setAttribute('aria-expanded', 'false');
     navToggle.addEventListener('click', () => {
       setMobileNavOpen(!sidebar.classList.contains('is-open'));
+    });
+    if (navClose) navClose.addEventListener('click', () => {
+      setMobileNavOpen(false);
+      navToggle.focus({ preventScroll: true });
     });
     sidebar.querySelectorAll('a').forEach((link) => {
       link.addEventListener('click', () => setMobileNavOpen(false));
@@ -348,6 +360,16 @@ window.addEventListener('load', () => {
       setMobileNavOpen(false);
     });
     document.addEventListener('keydown', (event) => {
+      if (event.key === 'Tab' && sidebar.classList.contains('is-open') && isNarrowNav()) {
+        const controls = Array.from(sidebar.querySelectorAll('a, button, summary, [tabindex="0"]'))
+          .filter((node) => node.getClientRects().length && !node.disabled);
+        const first = controls[0], last = controls[controls.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault(); last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault(); first.focus();
+        }
+      }
       if (event.key === 'Escape' && sidebar.classList.contains('is-open')) {
         setMobileNavOpen(false);
         navToggle.focus({ preventScroll: true });
@@ -357,7 +379,11 @@ window.addEventListener('load', () => {
       if (window.innerWidth > 1020 && sidebar.classList.contains('is-open')) {
         setMobileNavOpen(false);
       }
+      sidebar.inert = isNarrowNav() && !sidebar.classList.contains('is-open');
     }, { passive: true });
+    new MutationObserver(() => {
+      sidebar.inert = isNarrowNav() && !sidebar.classList.contains('is-open');
+    }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
   }
 
   // Legacy top-nav (kept for any pages still using it)

@@ -25,7 +25,7 @@
   {% block head %}{% endblock %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-global.css', v='2026-09-14-mobile-audit-v2') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-components.css', v='2026-09-14-mobile-audit-v1') }}" />
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-audit.css', v='2026-09-14-mobile-audit-v1') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-audit.css', v='2026-09-15-responsive-v1') }}" />
 </head>
 <body class="{{ body_class|default('') }}">
   <a class="skip-nav-link" href="#main-content">Skip to main content</a>
@@ -79,9 +79,9 @@
 
   {% block body %}{% endblock %}
 
-  <script src="{{ url_for('static', filename='js/command_readiness.js', v='2026-05-16-command') }}"></script>
-  <script src="{{ url_for('static', filename='js/app.js', v='2026-09-14-mobile-audit-v1') }}"></script>
-  <script src="{{ url_for('static', filename='js/mobile-audit.js', v='2026-09-14-mobile-audit-v1') }}"></script>
+  <script src="{{ url_for('static', filename='js/command_readiness.js', v='2026-09-15-responsive-v1') }}"></script>
+  <script src="{{ url_for('static', filename='js/app.js', v='2026-09-15-responsive-v1') }}"></script>
+  <script src="{{ url_for('static', filename='js/mobile-audit.js', v='2026-09-15-responsive-v1') }}"></script>
   <script src="{{ url_for('static', filename='js/voice_assistant.js', v='2026-05-09-voice-stability') }}"></script>
   <script src="{{ url_for('static', filename='js/assistant.js', v='2026-05-09-voice-stability') }}"></script>
 

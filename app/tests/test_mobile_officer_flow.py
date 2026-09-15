@@ -132,7 +132,7 @@ def test_mobile_officer_flow_pages_include_updated_mobile_assets():
         assert 'Paperwork Navigator' not in home
         assert 'Admin / Desktop Tools' not in home
         assert 'data-mobile-incident-page="selected-forms"' in forms
-        assert '2026-05-04-draft-sync-1' in domestic
+        assert '/static/mobile/incident-core.js?v=' in domestic
         assert '/static/vendor/zxing-browser.min.js' in domestic
         assert 'mobile-domestic-schema-data' in domestic
         assert 'data-id-scan-raw' in runtime

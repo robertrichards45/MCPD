@@ -83,9 +83,10 @@
       node.classList.add('mcpd-command-ready-surface');
     });
 
-    document.querySelectorAll('main, .mcpd-dashboard, .mobile-shell, .mcpd-command-main, .command-center').forEach(function (node) {
-      if (!node.getAttribute('id')) node.setAttribute('id', 'main-content');
-    });
+    if (!document.getElementById('main-content')) {
+      var main = document.querySelector('main, .page-wrap, .mcpd-dashboard, .mobile-main, .mcpd-command-main, .command-center');
+      if (main && !main.id) main.id = 'main-content';
+    }
 
     document.querySelectorAll('.mcpd-map-canvas-wrap, .mcpd-mobile-map-canvas, .mcpd-map-fullscreen-canvas').forEach(function (node) {
       node.classList.add('mcpd-map-command-ready');
@@ -93,7 +94,7 @@
       if (!node.getAttribute('aria-describedby')) node.setAttribute('aria-describedby', 'mcpd-map-usage-note');
     });
 
-    if (!document.getElementById('mcpd-map-usage-note')) {
+    if (document.querySelector('.mcpd-map-command-ready') && !document.getElementById('mcpd-map-usage-note')) {
       var note = document.createElement('div');
       note.id = 'mcpd-map-usage-note';
       note.className = 'sr-only';

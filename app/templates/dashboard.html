@@ -161,6 +161,19 @@
     </section>
     {% endif %}
 
+    {% if dashboard_queue_items %}
+    <details class="mcpd-clean-section mcpd-attention-summary">
+      <summary>Needs attention</summary>
+      <div class="mcpd-clean-grid">
+        {% for item in dashboard_queue_items %}
+        <a class="mcpd-clean-card" href="{{ url_for(item.endpoint) }}">
+          <span><strong>{{ item.label }}</strong><small>{{ item.value }}{% if item.detail %} · {{ item.detail }}{% endif %}</small></span>
+        </a>
+        {% endfor %}
+      </div>
+    </details>
+    {% endif %}
+
     <section class="mcpd-clean-section" aria-label="MCPD tools">
       <div class="mcpd-clean-section-head">
         <div>

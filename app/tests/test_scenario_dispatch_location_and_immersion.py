@@ -2,7 +2,7 @@ from app import create_app
 from app.extensions import db
 from app.models import ROLE_WEBSITE_CONTROLLER, User
 from app.routes.scenario_variants import build_run_context
-from app.simulator.location_catalog import CRASH_LOCATIONS, PUBLIC_MCLB_ROADS
+from app.simulator.location_catalog import CRASH_LOCATIONS, PUBLIC_MCLB_ROADS, TRAFFIC_LOCATIONS, ACCESS_CONTROL_LOCATIONS
 
 
 def _client():
@@ -31,7 +31,7 @@ def _client():
 
 
 def test_dispatched_call_families_use_building_number_and_named_location():
-    for scenario_id in ('S001', 'S002', 'S003', 'S004', 'S006'):
+    for scenario_id in ('S001', 'S003', 'S004', 'S006'):
         context = build_run_context(scenario_id, seed=246813579)
         assert context['building_number']
         assert context['location_display'].startswith('Bldg.')
@@ -40,12 +40,19 @@ def test_dispatched_call_families_use_building_number_and_named_location():
         assert 'library public area' not in context['dispatch_variant'].lower()
 
 
-def test_traffic_scenario_uses_specific_road_location_and_building_landmark():
+def test_traffic_scenario_uses_approved_specific_road_location():
     context = build_run_context('S005', seed=975318642)
     assert context['location_display']
-    assert 'Bldg.' in context['location_display']
+    assert context['location_display'] in TRAFFIC_LOCATIONS
     assert context['location_display'] in context['dispatch_variant']
     assert 'MCLB Albany' in context['dispatch_variant']
+
+
+def test_access_control_uses_gate_designation_without_invented_building_number():
+    context = build_run_context('S002', seed=246813579)
+    assert context['location_display'] in ACCESS_CONTROL_LOCATIONS
+    assert not context['building_number']
+    assert context['location_display'] in context['dispatch_variant']
 
 
 def test_s007_crash_dispatch_uses_named_public_mclb_road():

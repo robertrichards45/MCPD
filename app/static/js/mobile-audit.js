@@ -4,6 +4,42 @@
   var body = document.body;
   if (!body) return;
 
+  // Header controls can wrap with text enlargement or a safe-area inset.
+  // Measure the actual height instead of covering the first page controls.
+  var header = document.querySelector('.mcpd-command-header');
+  if (header && window.ResizeObserver) {
+    new ResizeObserver(function () {
+      body.style.setProperty('--responsive-header-height', Math.ceil(header.getBoundingClientRect().height) + 'px');
+    }).observe(header);
+  }
+
+  // Keep wide data tables independently scrollable and keyboard reachable.
+  // Do not create nested scrollers when a page already supplies a wrapper.
+  var tableFrame = null;
+  function updateTables() {
+    tableFrame = null;
+    var narrow = window.matchMedia('(max-width: 1020px)').matches;
+    document.querySelectorAll('.page-wrap table, main table, .mobile-main table').forEach(function (table) {
+      var region = table.closest('.table-responsive') || table;
+      var overflow = narrow && region.scrollWidth > region.clientWidth + 2;
+      if (overflow && !region.hasAttribute('tabindex')) {
+        region.tabIndex = 0;
+        region.dataset.mobileTableFocus = 'true';
+      } else if (!overflow && region.dataset.mobileTableFocus) {
+        region.removeAttribute('tabindex');
+        delete region.dataset.mobileTableFocus;
+      }
+      if (overflow) region.classList.add('mobile-table-scroll');
+      else region.classList.remove('mobile-table-scroll');
+    });
+  }
+  function scheduleTables() {
+    if (!tableFrame) tableFrame = window.requestAnimationFrame(updateTables);
+  }
+  scheduleTables();
+  window.addEventListener('resize', scheduleTables, { passive: true });
+  new MutationObserver(scheduleTables).observe(body, { childList: true, subtree: true });
+
   function setStoredView(mode) {
     try {
       localStorage.setItem('mcpdViewMode', mode);
