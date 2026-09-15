@@ -1,6 +1,7 @@
 from flask import Blueprint, Response, abort
 from flask_login import current_user, login_required
 
+from ..simulator.crash_visual import render_s007_crash_svg
 from ..simulator.evidence_visuals import initialize_visual_evidence, render_evidence_svg
 from ..simulator.run_store import can_evaluator_view, can_trainee_view, load_run, load_run_state
 from .fto_program import can_manage
@@ -29,7 +30,10 @@ def evidence_svg(run_id, evidence_id):
     # Evaluators may inspect hidden synthetic evidence from their authorized
     # evaluator view. Trainees only receive evidence already made visible by
     # their own actions in the run.
-    svg = render_evidence_svg(state, evidence_id, evaluator=evaluator_access and not trainee_access)
+    evaluator_only = evaluator_access and not trainee_access
+    svg = render_evidence_svg(state, evidence_id, evaluator=evaluator_only)
+    if not svg and scenario_id == 'S007' and evidence_id == 'crash_scene':
+        svg = render_s007_crash_svg(state, evaluator=evaluator_only)
     if not svg:
         abort(404)
 
