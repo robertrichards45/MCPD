@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>MCPD Sentinel — Power Platform Visual Prototype</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand"><span class="shield">M</span><span>MCPD SENTINEL</span></div>
+      <div class="global-search"><input placeholder="Search reports, policy, training, or personnel…"></div>
+      <div class="user-block"><span class="avatar">RR</span><div><strong>Test Supervisor</strong><small>Supervisor</small></div></div>
+    </header>
+
+    <aside class="sidebar">
+      <nav id="nav">
+        <button class="nav-item active" data-screen="home">⌂ <span>Home</span></button>
+        <button class="nav-item" data-screen="action">✓ <span>Action Center</span></button>
+        <button class="nav-item" data-screen="reports">▤ <span>Reports</span></button>
+        <button class="nav-item" data-screen="inspector">◫ <span>Report Inspector</span></button>
+        <button class="nav-item" data-screen="policy">⌕ <span>Policy</span></button>
+        <button class="nav-item" data-screen="fto">◇ <span>FTO Center</span></button>
+        <button class="nav-item" data-screen="dor">▦ <span>DOR</span></button>
+        <button class="nav-item" data-screen="scenario">▶ <span>Scenario Lab</span></button>
+        <button class="nav-item" data-screen="watch">◆ <span>Watch Commander</span></button>
+        <button class="nav-item" data-screen="analytics">▥ <span>Analytics</span></button>
+      </nav>
+      <div class="sidebar-foot"><small>POWER PLATFORM PROTOTYPE</small><strong>Original Sentinel Baseline</strong></div>
+    </aside>
+
+    <main class="content">
+      <section class="screen active" id="screen-home">
+        <div class="page-head"><div><h1>Welcome, Test Supervisor</h1><p>Role-based command view</p></div><span class="status success">SYSTEM READY</span></div>
+        <div class="metric-grid">
+          <article class="metric"><span>My Open Tasks</span><strong>12</strong><small>4 due today</small></article>
+          <article class="metric"><span>Pending Reviews</span><strong>5</strong><small>2 high priority</small></article>
+          <article class="metric"><span>Overdue Training</span><strong>3</strong><small>Team scope</small></article>
+          <article class="metric"><span>Active FTO Trainees</span><strong>4</strong><small>1 phase review due</small></article>
+        </div>
+        <div class="two-col">
+          <article class="panel"><h2>Recent Activity</h2>
+            <div class="activity"><b>DOR submitted</b><span>Officer Test One · 18 min ago</span></div>
+            <div class="activity"><b>Report review completed</b><span>Traffic stop · 46 min ago</span></div>
+            <div class="activity"><b>Training assigned</b><span>Evidence handling · 2 hr ago</span></div>
+            <div class="activity"><b>Scenario available</b><span>Unknown-risk vehicle stop · 3 hr ago</span></div>
+          </article>
+          <article class="panel"><h2>Department Status</h2>
+            <div class="ring-grid"><div class="ring"><strong>87%</strong><span>Training</span></div><div class="ring"><strong>92%</strong><span>Report Quality</span></div><div class="ring"><strong>76%</strong><span>FTO Progress</span></div><div class="ring"><strong>95%</strong><span>Forms</span></div></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-action">
+        <div class="page-head"><div><h1>Action Center</h1><p>Everything requiring your attention in one place.</p></div><button class="primary">Refresh</button></div>
+        <div class="tabs"><button class="active">All</button><button>Reports</button><button>FTO</button><button>Training</button><button>Watch</button></div>
+        <article class="panel table-panel"><table><thead><tr><th>Priority</th><th>Action</th><th>Person / Record</th><th>Due</th><th>Status</th></tr></thead><tbody>
+          <tr><td><span class="status danger">URGENT</span></td><td>DOR supervisor review</td><td>Officer Test One</td><td>Today</td><td><span class="status warning">OPEN</span></td></tr>
+          <tr><td><span class="status warning">HIGH</span></td><td>Returned report correction</td><td>CCN TEST-0042</td><td>Today</td><td><span class="status warning">OPEN</span></td></tr>
+          <tr><td>Normal</td><td>Phase II evaluation</td><td>Officer Test Two</td><td>Tomorrow</td><td><span class="status info">DUE</span></td></tr>
+        </tbody></table></article>
+      </section>
+
+      <section class="screen" id="screen-reports">
+        <div class="page-head"><div><h1>Reports</h1><p>Officer reports and review workflow</p></div><button class="primary">New Report</button></div>
+        <div class="module-grid">
+          <button class="module-card"><b>Traffic Stop</b><span>Traffic documentation</span></button>
+          <button class="module-card"><b>Crash Report</b><span>Traffic collision</span></button>
+          <button class="module-card"><b>Incident Report</b><span>General incident</span></button>
+          <button class="module-card"><b>Theft / Larceny</b><span>Property offense</span></button>
+          <button class="module-card"><b>Assault</b><span>Person offense</span></button>
+          <button class="module-card"><b>Domestic</b><span>Domestic incident</span></button>
+        </div>
+        <article class="panel table-panel"><h2>Recent Reports</h2><table><thead><tr><th>Date</th><th>Report #</th><th>Type</th><th>Status</th><th></th></tr></thead><tbody>
+          <tr><td>09/24/2026</td><td>TEST-0042</td><td>Traffic Stop</td><td><span class="status warning">Draft</span></td><td><button class="small">Open</button></td></tr>
+          <tr><td>09/23/2026</td><td>TEST-0041</td><td>Incident</td><td><span class="status success">Reviewed</span></td><td><button class="small">View</button></td></tr>
+        </tbody></table></article>
+      </section>
+
+      <section class="screen" id="screen-inspector">
+        <div class="page-head"><div><h1>Report Inspector</h1><p>AI-assisted review with approved-source grounding and human judgment.</p></div><button class="primary">Run Inspection</button></div>
+        <div class="metric-grid">
+          <article class="metric"><span>Completeness</span><strong>92%</strong><small>Automated cue</small></article>
+          <article class="metric"><span>Policy Matches</span><strong>4</strong><small>Approved sources</small></article>
+          <article class="metric"><span>Review Cues</span><strong>2</strong><small>Human review needed</small></article>
+          <article class="metric"><span>Packet Items</span><strong>5/6</strong><small>1 item to verify</small></article>
+        </div>
+        <article class="finding"><div><span class="status warning">AUTOMATED CUE</span><h3>Clarify location detail</h3><p>The narrative may need a more specific location description.</p></div><button class="small">Why flagged?</button></article>
+        <article class="finding source"><div><span class="status info">APPROVED SOURCE</span><h3>Current approved reference</h3><p>Source passage and version appear here. The system does not turn this into a final legal conclusion.</p></div><button class="small">Open source</button></article>
+        <article class="finding human"><div><span class="status success">HUMAN JUDGMENT</span><h3>Supervisor disposition</h3><p>Accept, dismiss, return for correction, or document why the cue does not apply.</p></div><button class="primary small">Review</button></article>
+      </section>
+
+      <section class="screen" id="screen-policy">
+        <div class="page-head"><div><h1>Policy & Approved Sources</h1><p>Search controlled reference material.</p></div></div>
+        <article class="panel"><input class="wide-input" placeholder="Search policy, orders, PDIs, manuals, or law…"></article>
+        <article class="source-result"><div><span class="status success">APPROVED</span><h3>Sample Approved Source</h3><p>Version 3 · Current · Sample only</p><p class="muted">Matching passage preview would appear here with page or section citation.</p></div><button class="small">Open</button></article>
+      </section>
+
+      <section class="screen" id="screen-fto">
+        <div class="page-head"><div><h1>FTO Center</h1><p>Program progress, task book, DORs, evaluations, and remediation.</p></div><button class="primary">Assigned Trainees</button></div>
+        <div class="tabs"><button class="active">My Progress</button><button>Task Book</button><button>DORs</button><button>Evaluations</button><button>Remediation</button><button>Resources</button></div>
+        <div class="two-col">
+          <article class="panel"><h2>Training Phase</h2><h3>Phase II — Field Operations</h3><div class="progress"><i style="width:66%"></i></div><div class="spread"><span>66% complete</span><span>Week 3</span></div>
+            <h2>Phase Requirements</h2>
+            <div class="task"><span>Vehicle Stops</span><b>8/10</b></div><div class="task"><span>Investigative Stops</span><b>5/8</b></div><div class="task"><span>Report Writing</span><b>6/8</b></div><div class="task"><span>Evidence Handling</span><b>4/6</b></div>
+          </article>
+          <article class="panel"><h2>Recent Evaluations</h2>
+            <div class="eval"><span>DOR — Vehicle Operations</span><b>5.0</b></div><div class="eval"><span>DOR — Scene Management</span><b>4.0</b></div><div class="eval"><span>Weekly Evaluation</span><b>4.5</b></div><div class="eval"><span>Phase I Evaluation</span><b>4.0</b></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-dor">
+        <div class="page-head"><div><h1>Daily Observation Report</h1><p>Digital DOR · 1–7 standardized evaluation scale</p></div><button class="primary">Save Draft</button></div>
+        <div class="filter-row"><select><option>Officer Test One</option></select><input type="date" value="2026-09-24"><select><option>Phase II</option></select><select><option>Week 3</option></select></div>
+        <article class="panel">
+          <div class="rating-head"><span>Evaluation category</span><span>1 2 3 4 5 6 7 N/O</span></div>
+          <div class="rating-row"><b>Officer Safety — General</b><div class="ratings"><button>1</button><button>2</button><button>3</button><button class="selected">4</button><button>5</button><button>6</button><button>7</button><button>N/O</button></div></div>
+          <div class="rating-row"><b>Report Writing — Organization/Detail</b><div class="ratings"><button>1</button><button>2</button><button>3</button><button>4</button><button class="selected">5</button><button>6</button><button>7</button><button>N/O</button></div></div>
+          <div class="rating-row"><b>Problem Solving / Decision Making</b><div class="ratings"><button>1</button><button>2</button><button>3</button><button class="selected">4</button><button>5</button><button>6</button><button>7</button><button>N/O</button></div></div>
+          <div class="rating-row"><b>Radio — Articulation of Transmissions</b><div class="ratings"><button>1</button><button>2</button><button>3</button><button>4</button><button class="selected">5</button><button>6</button><button>7</button><button>N/O</button></div></div>
+        </article>
+      </section>
+
+      <section class="screen" id="screen-scenario">
+        <div class="page-head"><div><h1>Patrol Scenario Simulator</h1><p>Work the call. The trainee does not see the evaluator rubric.</p></div><button class="primary">Begin Scenario</button></div>
+        <div class="scenario-grid">
+          <article class="scene"><div class="scene-art"><span>SIMULATED NIGHT TRAFFIC STOP</span></div><div class="scene-meta"><b>Dispatch:</b><p>Unit respond to a suspicious vehicle complaint. Additional details pending.</p></div></article>
+          <article class="panel"><h2>Radio / CAD</h2><div class="radio-log"><p><b>21:04</b> Dispatch: Unit acknowledge call.</p><p><b>21:05</b> Additional caller information received.</p></div><input class="wide-input" placeholder="Transmit to Dispatch…"></article>
+          <article class="panel"><h2>Field Notebook</h2><textarea placeholder="Names, times, statements, evidence, notes…"></textarea></article>
+          <article class="panel"><h2>Officer Action</h2><textarea placeholder="Type what you do or say next…"></textarea><button class="primary full">Submit Action</button></article>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-watch">
+        <div class="page-head"><div><h1>Watch Commander</h1><p>Digital Lieutenant · controlled operational picture</p></div><span class="status warning">2 ITEMS STALE — VERIFY</span></div>
+        <div class="metric-grid"><article class="metric"><span>On Duty</span><strong>12</strong><small>Roster source</small></article><article class="metric"><span>Off Duty</span><strong>3</strong><small>Current shift</small></article><article class="metric"><span>Leave</span><strong>2</strong><small>Current shift</small></article><article class="metric"><span>Training</span><strong>1</strong><small>Current shift</small></article></div>
+        <div class="two-col"><article class="panel"><h2>Post Assignments</h2><div class="task"><span>Main Gate</span><b class="green">Active</b></div><div class="task"><span>Back Gate</span><b class="green">Active</b></div><div class="task"><span>MCX</span><b class="green">Active</b></div><div class="task"><span>Housing Patrol</span><b class="orange">STALE — VERIFY</b></div></article>
+        <article class="panel"><h2>Active Events / Due-Outs</h2><div class="activity"><b>Traffic Stop — Main Gate</b><span>Verified 20 min ago</span></div><div class="activity"><b>FTO remedial review</b><span>Due today</span></div><div class="activity"><b>Returned report</b><span>Correction pending</span></div></article></div>
+      </section>
+
+      <section class="screen" id="screen-analytics">
+        <div class="page-head"><div><h1>Department Analytics</h1><p>Power BI command view</p></div><select><option>Last 90 Days</option></select></div>
+        <div class="metric-grid"><article class="metric"><span>Training Compliance</span><strong>87%</strong><small>▲ 5%</small></article><article class="metric"><span>Report Quality</span><strong>92%</strong><small>▲ 3%</small></article><article class="metric"><span>FTO Progress</span><strong>76%</strong><small>▲ 8%</small></article><article class="metric"><span>Form Completion</span><strong>95%</strong><small>▲ 2%</small></article></div>
+        <div class="chart-grid"><article class="panel chart"><h2>Reports by Type</h2><div class="bars"><i style="height:80%"></i><i style="height:58%"></i><i style="height:42%"></i><i style="height:68%"></i><i style="height:51%"></i><i style="height:62%"></i></div></article><article class="panel chart"><h2>FTO Phase Completion</h2><div class="donut">76%</div></article><article class="panel chart"><h2>Training Status</h2><div class="donut">87%</div></article></div>
+      </section>
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
