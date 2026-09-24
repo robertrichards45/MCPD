@@ -18,7 +18,7 @@ app:
 screens:
   - key: home
     title: Home
-    visible_to: [Officer,FTO,Supervisor,Administrator]
+    visible_to: [Officer,FTO,Supervisor,AssistantOperationsOfficer,Administrator]
     purpose: "Role-aware landing page and My Work summary."
     components:
       - MyOpenWork
@@ -31,7 +31,7 @@ screens:
 
   - key: action_center
     title: Action Center
-    visible_to: [Officer,FTO,Supervisor,Administrator]
+    visible_to: [Officer,FTO,Supervisor,AssistantOperationsOfficer,Administrator]
     purpose: "Original Sentinel role-aware due-out center so users do not have to hunt through modules."
     components:
       - ReportCorrections
@@ -44,7 +44,7 @@ screens:
 
   - key: report_inspector
     title: Report Inspector
-    visible_to: [Officer,FTO,Supervisor,Administrator]
+    visible_to: [Officer,FTO,Supervisor,AssistantOperationsOfficer,Administrator]
     purpose: "Original Sentinel report-quality workflow."
     components:
       - NarrativeInput
@@ -61,7 +61,7 @@ screens:
 
   - key: policy_search
     title: Policy Search
-    visible_to: [Officer,FTO,Supervisor,Administrator]
+    visible_to: [Officer,FTO,Supervisor,AssistantOperationsOfficer,Administrator]
     purpose: "Search current approved sources and clearly identify source status."
     components:
       - SearchBox
@@ -73,7 +73,7 @@ screens:
 
   - key: fto_center
     title: FTO Center
-    visible_to: [Officer,FTO,Supervisor,Administrator]
+    visible_to: [Officer,FTO,Supervisor,AssistantOperationsOfficer,Administrator]
     purpose: "Original Sentinel FTO program hub."
     role_views:
       Officer:
@@ -101,7 +101,7 @@ screens:
 
   - key: fto_assignment
     title: FTO Program
-    visible_to: [Officer,FTO,Supervisor,Administrator]
+    visible_to: [Officer,FTO,Supervisor,AssistantOperationsOfficer,Administrator]
     purpose: "One trainee assignment with phases, weeks, progress and completion."
     components:
       - AssignmentHeader
@@ -128,7 +128,7 @@ screens:
 
   - key: dor_acknowledgment
     title: DOR Acknowledgment
-    visible_to: [Officer,FTO,Supervisor,Administrator]
+    visible_to: [Officer,FTO,Supervisor,AssistantOperationsOfficer,Administrator]
     purpose: "Trainee receipt/acknowledgment; acknowledgment does not imply agreement."
     components:
       - RatingSummary
@@ -138,7 +138,7 @@ screens:
 
   - key: scenario_lab
     title: Scenario Lab
-    visible_to: [Officer,FTO,Supervisor,Administrator]
+    visible_to: [Officer,FTO,Supervisor,AssistantOperationsOfficer,Administrator]
     purpose: "Original Sentinel FTO Instructor & Evaluator and patrol simulator."
     components:
       - ScenarioSelection
@@ -174,7 +174,7 @@ screens:
 
   - key: end_call_paperwork
     title: End Call
-    visible_to: [Officer,FTO,Supervisor,Administrator]
+    visible_to: [Officer,FTO,Supervisor,AssistantOperationsOfficer,Administrator]
     purpose: "Transition completed scenario into required officer paperwork."
     components:
       - RequiredPaperwork
@@ -187,7 +187,7 @@ screens:
 
   - key: watch_commander
     title: Watch Commander
-    visible_to: [Supervisor,Administrator]
+    visible_to: [Supervisor,AssistantOperationsOfficer,Administrator]
     purpose: "Original Sentinel Digital Lieutenant / Watch Commander decision-support workspace."
     components:
       - WatchDate
@@ -208,9 +208,31 @@ screens:
       - "Decision support cannot authorize legal or operational action."
       - "Finalized turnover briefs are frozen snapshots."
 
+  - key: assistant_operations
+    title: Assistant Operations Officer
+    visible_to: [AssistantOperationsOfficer,Administrator]
+    purpose: "Department-level operational oversight and command due-out workspace."
+    components:
+      - DepartmentStatus
+      - CrossWatchOverview
+      - OpenCommandTasks
+      - ReportReviewStatus
+      - FTOProgramStatus
+      - TrainingReadiness
+      - PersonnelReadiness
+      - OperationalEvents
+      - StaleDataWarnings
+      - PendingApprovals
+      - CommandNotes
+      - AnalyticsLinks
+    safeguards:
+      - "This role receives operational oversight, not automatic full system administration."
+      - "Record access remains governed by Dataverse role and scope."
+      - "Sensitive case content is shown only when separately authorized."
+
   - key: training
     title: Training
-    visible_to: [Officer,FTO,Supervisor,Administrator]
+    visible_to: [Officer,FTO,Supervisor,AssistantOperationsOfficer,Administrator]
     components:
       - MyAssignments
       - MyQualifications
@@ -220,7 +242,7 @@ screens:
 
   - key: personnel
     title: Personnel
-    visible_to: [Supervisor,Administrator]
+    visible_to: [Supervisor,AssistantOperationsOfficer,Administrator]
     components:
       - DepartmentDirectory
       - ProfileDetail
@@ -230,7 +252,7 @@ screens:
 
   - key: analytics
     title: Analytics
-    visible_to: [Supervisor,Administrator]
+    visible_to: [Supervisor,AssistantOperationsOfficer,Administrator]
     components:
       - FTOProgramDashboard
       - TrainingReadinessDashboard
