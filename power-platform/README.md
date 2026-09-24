@@ -46,10 +46,10 @@ Additional forms, accident tools, call-type rules, orders/reference tools, and o
 - [x] Initial portable solution manifest created
 - [x] Initial Dataverse schema created
 - [x] Initial security model created
-- [ ] Original-build screen map converted to Power Apps screen specification
+- [x] Original-build screen map converted to Power Apps screen specification
 - [ ] Dataverse tables generated in development tenant
 - [ ] Security roles generated in development tenant
-- [ ] Power App shell generated
+- [ ] Power App shell generated in Microsoft development tenant
 - [ ] Digital FTO module generated
 - [ ] Report Inspector generated
 - [ ] Policy/Reference Search generated
@@ -63,3 +63,23 @@ Additional forms, accident tools, call-type rules, orders/reference tools, and o
 All rebuild planning and source-controlled deployment assets are maintained on:
 
 `power-platform-rebuild`
+
+
+## Source-controlled assets now prepared
+
+- Original Sentinel baseline lock
+- Portable solution manifest
+- Dataverse schema including Report Inspector, FTO, Scenario Engine, Action Center, and Watch Commander entities
+- Role/security model and role permission seed matrix
+- Power Apps screen map, reusable component spec, Action Center rules, core Power Fx patterns, and FTO screen behavior
+- FTO DOR rating categories and rating scale from the uploaded Field Training Program Manual
+- FTO phase/task seed data from the uploaded Field Training Program Manual
+- Report Inspector specification
+- Scenario Engine specification
+- Grounding/human-judgment contract
+- FTO, report, watch, policy-expiration Power Automate workflow specifications
+- Power BI semantic-model specification
+- Synthetic demo users/roles/FTO assignments
+- Development export and government import helper scripts
+- Government deployment checklist
+- Functional/security acceptance tests
