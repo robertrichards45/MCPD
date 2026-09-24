@@ -1,0 +1,72 @@
+solution:
+  unique_name: MCPDSentinel
+  display_name: MCPD Sentinel
+  publisher:
+    display_name: MCPD
+    prefix: mcpd
+  version: 1.0.0.0
+  managed_for_production: true
+
+environment_variables:
+  - name: mcpd_DepartmentName
+    default: Marine Corps Police Department
+  - name: mcpd_InstallationName
+    default: MCLB Albany
+  - name: mcpd_SharePointDocumentSiteUrl
+    default: ""
+  - name: mcpd_OrdersLibraryName
+    default: Orders and PDIs
+  - name: mcpd_AttachmentsLibraryName
+    default: Sentinel Attachments
+  - name: mcpd_SupportEmail
+    default: ""
+  - name: mcpd_EnableFTO
+    default: "true"
+  - name: mcpd_EnableAccidentTools
+    default: "true"
+  - name: mcpd_EnablePowerBI
+    default: "true"
+  - name: mcpd_EnableScenarioLab
+    default: "true"
+
+connection_references:
+  - name: mcpd_SharePoint
+    connector: shared_sharepointonline
+    optional: true
+  - name: mcpd_Office365Users
+    connector: shared_office365users
+    optional: false
+  - name: mcpd_Outlook
+    connector: shared_office365
+    optional: true
+
+apps:
+  - name: MCPD Sentinel
+    type: canvas
+    purpose: Primary department application
+
+flows:
+  - Trainee DOR Submission
+  - Trainee Acknowledgment
+  - Supervisor DOR Review
+  - Remedial Training Assignment
+  - Phase Completion Review
+  - Training Due Reminder
+  - Pending Supervisor Review Reminder
+  - Personnel Approval
+  - Report Review Routing
+  - Document Publish Notification
+
+reports:
+  - MCPD Command Dashboard
+  - FTO Program Dashboard
+  - Training Readiness Dashboard
+  - Report Quality Dashboard
+
+deployment:
+  development_data: synthetic_only
+  government_target:
+    use_managed_solution: true
+    use_environment_variables: true
+    reconnect_connection_references: true
+    production_data_migration_from_personal_tenant: false
