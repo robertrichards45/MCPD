@@ -40,6 +40,14 @@ Everything a Patrol Officer can access, plus:
 - FTO progress for supervised personnel
 - Team analytics
 
+### Assistant Operations Officer
+- Department-level operational oversight workspace
+- Cross-watch due-outs and status review
+- Report-review, FTO, training, personnel-readiness, and operational summaries
+- Command task tracking and follow-up
+- Access to Watch Commander information across authorized scope
+- No unrestricted system configuration unless separately assigned an Administrator/System Controller role
+
 ### FTO Coordinator
 - All FTO assignments
 - FTO task books
