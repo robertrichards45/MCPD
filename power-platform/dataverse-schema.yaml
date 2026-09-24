@@ -1,0 +1,239 @@
+tables:
+
+  DepartmentProfile:
+    primary_name: DisplayName
+    columns:
+      EntraObjectId: text
+      EmployeeId: text
+      OfficerNumber: text
+      FirstName: text
+      LastName: text
+      RankTitle: text
+      Email: text
+      SectionUnit: text
+      Installation: text
+      Supervisor: lookup:DepartmentProfile
+      Active: yesno
+      PendingApproval: yesno
+      IsDemo: yesno
+    ownership: organization
+
+  RoleAssignment:
+    primary_name: RoleName
+    columns:
+      Person: lookup:DepartmentProfile
+      RoleKey: choice
+      Active: yesno
+      EffectiveDate: date
+      ExpirationDate: date
+    ownership: organization
+
+  SavedWork:
+    primary_name: Title
+    columns:
+      OwnerProfile: lookup:DepartmentProfile
+      WorkType: choice
+      Status: choice
+      PayloadJson: multiline
+      AccessScope: choice
+      LastSavedAt: datetime
+      SubmittedAt: datetime
+    ownership: user_or_team
+
+  FormDefinition:
+    primary_name: Title
+    columns:
+      Category: text
+      VersionLabel: text
+      RetentionMode: choice
+      ContainsPII: yesno
+      AllowCompletedSave: yesno
+      AllowDownload: yesno
+      AllowEmail: yesno
+      Active: yesno
+      DocumentUrl: url
+      ConfigurationJson: multiline
+    ownership: organization
+
+  CallTypeRule:
+    primary_name: CallType
+    columns:
+      Category: text
+      OfficerPaperworkJson: multiline
+      WrittenStatementRule: multiline
+      EvidenceRule: multiline
+      CIDRule: multiline
+      SupervisorRule: multiline
+      ReferencesJson: multiline
+      Active: yesno
+    ownership: organization
+
+  TrainingAssignment:
+    primary_name: AssignmentName
+    columns:
+      Trainee: lookup:DepartmentProfile
+      PrimaryFTO: lookup:DepartmentProfile
+      Supervisor: lookup:DepartmentProfile
+      ProgramType: choice[Standard8Week,Accelerated4Week,Custom]
+      StartDate: date
+      EstimatedCompletionDate: date
+      ActualCompletionDate: date
+      CurrentPhase: choice
+      CurrentWeek: whole
+      Status: choice[Planned,Active,Held,Completed,Terminated]
+    ownership: organization
+
+  DOR:
+    primary_name: DORTitle
+    columns:
+      TrainingAssignment: lookup:TrainingAssignment
+      Trainee: lookup:DepartmentProfile
+      FTO: lookup:DepartmentProfile
+      Supervisor: lookup:DepartmentProfile
+      ObservationDate: date
+      Phase: choice
+      Week: whole
+      Shift: choice
+      NarrativeComments: multiline
+      Status: choice[Draft,SubmittedToTrainee,TraineeAcknowledged,SubmittedToSupervisor,Approved,Returned]
+      FTOCompletedAt: datetime
+      TraineeAcknowledgedAt: datetime
+      SupervisorReviewedAt: datetime
+      TraineeComments: multiline
+      SupervisorComments: multiline
+    ownership: organization
+
+  DORRating:
+    primary_name: RatingLabel
+    columns:
+      DOR: lookup:DOR
+      CategoryKey: text
+      CategoryName: text
+      Observed: yesno
+      Rating: whole
+      Comments: multiline
+      RemedialRequired: yesno
+    ownership: organization
+
+  TaskBookItem:
+    primary_name: TaskName
+    columns:
+      TaskCode: text
+      Category: text
+      Phase: choice
+      Description: multiline
+      RequiredProgramTypes: multichoice
+      SortOrder: whole
+      Active: yesno
+    ownership: organization
+
+  TaskBookProgress:
+    primary_name: ProgressTitle
+    columns:
+      TrainingAssignment: lookup:TrainingAssignment
+      Task: lookup:TaskBookItem
+      Trainee: lookup:DepartmentProfile
+      FTO: lookup:DepartmentProfile
+      Status: choice[NotStarted,Observed,Assisted,PerformedSatisfactorily,Completed]
+      ObservationDate: date
+      Comments: multiline
+      CompletedAt: datetime
+    ownership: organization
+
+  RemedialTraining:
+    primary_name: RemedialTitle
+    columns:
+      TrainingAssignment: lookup:TrainingAssignment
+      DOR: lookup:DOR
+      Trainee: lookup:DepartmentProfile
+      AssignedBy: lookup:DepartmentProfile
+      Category: text
+      Deficiency: multiline
+      TrainingPlan: multiline
+      DueDate: date
+      Status: choice[Open,InProgress,ReadyForReevaluation,Closed]
+      ReevaluationResult: multiline
+      ClosedAt: datetime
+    ownership: organization
+
+  WeeklyEvaluation:
+    primary_name: EvaluationTitle
+    columns:
+      TrainingAssignment: lookup:TrainingAssignment
+      Trainee: lookup:DepartmentProfile
+      Evaluator: lookup:DepartmentProfile
+      WeekNumber: whole
+      Phase: choice
+      Strengths: multiline
+      Deficiencies: multiline
+      Recommendations: multiline
+      Status: choice[Draft,Submitted,Approved]
+    ownership: organization
+
+  PhaseEvaluation:
+    primary_name: EvaluationTitle
+    columns:
+      TrainingAssignment: lookup:TrainingAssignment
+      Trainee: lookup:DepartmentProfile
+      Evaluator: lookup:DepartmentProfile
+      Phase: choice
+      Summary: multiline
+      Recommendation: choice[Advance,Extend,Remedial,Terminate]
+      Status: choice[Draft,Submitted,Approved]
+    ownership: organization
+
+  TrainingEvent:
+    primary_name: Title
+    columns:
+      Description: multiline
+      TrainingDate: datetime
+      DueDate: date
+      Category: text
+      RequiredAudienceJson: multiline
+      Status: choice
+    ownership: organization
+
+  TrainingAttendance:
+    primary_name: AttendanceTitle
+    columns:
+      TrainingEvent: lookup:TrainingEvent
+      Person: lookup:DepartmentProfile
+      Status: choice[Assigned,Completed,Excused,Overdue]
+      CompletedAt: datetime
+      Comments: multiline
+    ownership: organization
+
+  ReportRecord:
+    primary_name: ReportTitle
+    columns:
+      OwnerProfile: lookup:DepartmentProfile
+      ReportType: choice
+      CCN: text
+      Status: choice
+      Narrative: multiline
+      Reviewer: lookup:DepartmentProfile
+      ReviewComments: multiline
+      SubmittedAt: datetime
+      ReviewedAt: datetime
+    ownership: user_or_team
+
+  Notice:
+    primary_name: Title
+    columns:
+      Message: multiline
+      Scope: choice
+      Active: yesno
+      EffectiveFrom: datetime
+      EffectiveTo: datetime
+      CreatedByProfile: lookup:DepartmentProfile
+    ownership: organization
+
+  AuditEvent:
+    primary_name: Action
+    columns:
+      Actor: lookup:DepartmentProfile
+      RecordType: text
+      RecordIdText: text
+      Details: multiline
+      EventAt: datetime
+    ownership: organization
