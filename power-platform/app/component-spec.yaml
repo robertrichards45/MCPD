@@ -1,0 +1,126 @@
+components:
+  ActionCard:
+    inputs:
+      Title: text
+      Subtitle: text
+      Count: number
+      IconKey: text
+      NavigateTo: screen
+      Visible: boolean
+    behavior:
+      - tap_navigates
+      - supports_zero_count
+      - no_hover_dependency
+
+  StatusPill:
+    inputs:
+      StatusText: text
+      StatusType: choice[Info,Success,Warning,Danger,Neutral]
+    accessibility:
+      - text_not_color_only
+
+  SourceCitationCard:
+    inputs:
+      SourceTitle: text
+      VersionLabel: text
+      PageOrSection: text
+      PassageText: text
+      SourceStatus: choice[Draft,Approved,Retired]
+    rules:
+      - approved_status_prominent
+      - never_present_draft_as_authority
+
+  FindingCard:
+    sections:
+      - AutomatedCue
+      - ApprovedSource
+      - HumanDisposition
+    rules:
+      - do_not_merge_sections
+      - human_disposition_required_for_closure
+
+  DORRatingRow:
+    inputs:
+      CategoryNumber: number
+      CategoryName: text
+      Observed: boolean
+      Rating: number
+      Comments: text
+    rules:
+      - rating_range_1_to_7
+      - no_rating_required_when_not_observed
+      - comments_required_for_low_rating_when_configured
+
+  TraineeTimeline:
+    items:
+      - ProgramStart
+      - PhaseI
+      - PhaseII
+      - PhaseIII
+      - PhaseIV
+      - ProgramCompletion
+    data:
+      - current_phase
+      - current_week
+      - percent_tasks_complete
+      - open_remediation
+
+  DispatchConsole:
+    panels:
+      - RadioHistory
+      - TransmissionInput
+      - Status
+      - CADChronology
+    rules:
+      - no_hidden_evaluator_data
+      - chronological_history
+      - trainee_can_type_natural_language
+
+  FieldNotebook:
+    fields:
+      - Names
+      - Times
+      - PhoneNumbers
+      - Vehicles
+      - Witnesses
+      - Statements
+      - Evidence
+      - Notifications
+      - FreeNotes
+    rules:
+      - remains_available_through_call
+      - does_not_autocomplete_perfect_case_summary
+
+  EvidenceCard:
+    fields:
+      - EvidenceType
+      - Source
+      - Location
+      - PreservationState
+      - CollectionState
+    rules:
+      - visible_only_when_discovered_or_revealed
+
+  FreshnessBanner:
+    inputs:
+      LastVerifiedAt: datetime
+      StaleThresholdHours: number
+    display:
+      fresh: "Verified"
+      stale: "STALE - VERIFY"
+
+  RoleAwareNav:
+    top_level:
+      - Home
+      - Action Center
+      - Report Inspector
+      - Policy
+      - FTO
+      - Watch
+      - Training
+      - Analytics
+      - Admin
+    rules:
+      - hide_unauthorized_destinations
+      - keep_normal_user_navigation_simple
+      - deeper_tools_live_inside_modules
