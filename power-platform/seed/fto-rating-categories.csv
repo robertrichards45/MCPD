@@ -1,0 +1,32 @@
+CategoryNumber,CategoryGroup,CategoryName,ScaleMin,ScaleAcceptable,ScaleMax,AllowNotObserved
+1,Appearance,General Appearance,1,4,7,true
+2,Attitude,Acceptance of Feedback,1,4,7,true
+3,Attitude,Attitude Toward the Job,1,4,7,true
+4,Knowledge,Department Policies and Procedures,1,4,7,true
+5,Knowledge,Criminal Laws,1,4,7,true
+6,Knowledge,Base/Department Regulations,1,4,7,true
+7,Knowledge,Motor Vehicle Laws,1,4,7,true
+8,Knowledge,Criminal Process,1,4,7,true
+9,Performance,Driving Skills - Normal Conditions,1,4,7,true
+10,Performance,Driving Skills - Moderate and High Stress Conditions,1,4,7,true
+11,Performance,Response Time to Calls / Orientation,1,4,7,true
+12,Performance,Routine Forms - Accuracy/Completeness,1,4,7,true
+13,Performance,Report Writing - Organization/Detail,1,4,7,true
+14,Performance,Report Writing - Grammar/Spelling/Neatness,1,4,7,true
+15,Performance,Report Writing - Appropriate Time Used,1,4,7,true
+16,Performance,Field Performance - Non-Stress Conditions,1,4,7,true
+17,Performance,Field Performance - Stress Conditions,1,4,7,true
+18,Performance,Investigative Skills,1,4,7,true
+19,Performance,Interview/Interrogation Skills,1,4,7,true
+20,Performance,Self-Initiated Field Activity,1,4,7,true
+21,Performance,Officer Safety - General,1,4,7,true
+22,Performance,Officer Safety - Suspects/Prisoners,1,4,7,true
+23,Performance,Control of Conflict - Voice/Command,1,4,7,true
+24,Performance,Control of Conflict - Physical Skill,1,4,7,true
+25,Performance,Problem Solving/Decision Making,1,4,7,true
+26,Performance,Radio - Appropriate Use of Codes/Procedures,1,4,7,true
+27,Performance,Radio - Listens and Comprehends,1,4,7,true
+28,Performance,Radio - Articulation of Transmissions,1,4,7,true
+29,Relationships,With Citizens - General,1,4,7,true
+30,Relationships,With Other Ethnic/Cultural/Social Groups,1,4,7,true
+31,Relationships,With Other PMO/MCPD Members,1,4,7,true
