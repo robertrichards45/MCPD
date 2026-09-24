@@ -1,67 +1,65 @@
 # MCPD Sentinel — Power Platform Rebuild
 
-This folder is the working source of truth for rebuilding MCPD Sentinel as a portable Microsoft Power Platform solution.
+This folder is the working source of truth for rebuilding the **original MCPD Sentinel** as a portable Microsoft Power Platform solution.
+
+> **Baseline warning:** the current/live mclbpd.com website and current GitHub `main` implementation are not the product baseline. See `ORIGINAL_BUILD_BASELINE.md`.
 
 ## Target architecture
 
 - **Power Apps** — primary user-facing MCPD Sentinel application.
-- **Dataverse** — structured operational, FTO, training, personnel-profile, workflow, and app configuration data.
+- **Dataverse** — structured FTO, reports, training, user, workflow, and configuration data.
 - **Power Automate** — approvals, notifications, assignments, overdue workflows, and scheduled processing.
 - **Power BI** — command, FTO, training, report-quality, and activity analytics.
-- **SharePoint** — optional document repository for Orders, PDIs, SOPs, reference files, attachments, and other file-heavy content.
+- **SharePoint** — optional document repository for Orders, PDIs, SOPs, references, attachments, and other file-heavy content.
 - **Microsoft Entra ID** — user identity and department access.
 
-SharePoint is not the primary website. Officers should open one Sentinel app and see the tools/data appropriate to their role.
+SharePoint is not the primary website. Officers should open one Sentinel application and see the tools and records appropriate to their role.
 
 ## Migration rule
 
-The personal Microsoft environment is a development/test environment only. Do not place real MCPD law-enforcement, personnel, investigative, or sensitive records in the personal tenant. Use synthetic test users and test records.
+The personal Microsoft environment is a development/test environment only. Use synthetic users and synthetic records. Do not place real MCPD law-enforcement, personnel, investigative, CJI, or other sensitive production records in the personal tenant.
 
 The production deliverable must be portable to the government tenant through a managed Power Platform solution and environment-specific configuration.
 
-## Initial module scope
+## Original-build module scope
 
 1. Home / My Work
-2. Reports Center
-3. Narrative Creator
-4. Report Quality Review
-5. Accident Tools
-6. Forms Library
-7. Saved Work
-8. Call Type Paperwork Manager
-9. Training Center
-10. FTO Center
-11. Digital FTO Program
-12. Qualifications / Readiness
-13. Law Lookup
-14. Orders & Memos
-15. BOLO / Notices
-16. Personnel
-17. Statistics / Power BI
-18. Administration / Configuration
-19. FTO Patrol Simulator
+2. Report Inspector / Report Quality Inspector
+3. Policy / Approved-Source Search
+4. FTO Instructor & Evaluator
+5. Digital FTO Program
+6. Scenario Lab / Patrol Simulator
+7. End-of-call paperwork and FTO review
+8. Remedial training and re-evaluation
+9. Training / qualification tracking
+10. Department personnel/profile and role access
+11. Power BI analytics built from the above records
+12. Administration / configuration
 
-## Explicitly not restored by default
-
-Do not re-add modules the owner previously removed unless requested.
+Additional forms, accident tools, call-type rules, orders/reference tools, and other MCPD functions can be incorporated where they belong, but the **original Sentinel build remains the UX/workflow baseline**.
 
 ## Build status
 
-- [x] Existing Flask/GitHub portal inventoried
-- [x] Existing roles/permission model reviewed
-- [x] Existing FTO simulator master specification reviewed
-- [x] Existing forms flow map reviewed
-- [ ] Dataverse tables created in development tenant
-- [ ] Security roles created
-- [ ] Power App shell created
-- [ ] FTO module created
-- [ ] Forms/report modules migrated
-- [ ] Power Automate workflows created
-- [ ] Power BI dataset/report created
+- [x] Recovered original Sentinel build lineage located
+- [x] Original Sentinel baseline documented
+- [x] Uploaded Field Training Program Manual reviewed for DOR/task-book content
+- [x] Initial portable solution manifest created
+- [x] Initial Dataverse schema created
+- [x] Initial security model created
+- [ ] Original-build screen map converted to Power Apps screen specification
+- [ ] Dataverse tables generated in development tenant
+- [ ] Security roles generated in development tenant
+- [ ] Power App shell generated
+- [ ] Digital FTO module generated
+- [ ] Report Inspector generated
+- [ ] Policy/Reference Search generated
+- [ ] Scenario Lab generated
+- [ ] Power Automate workflows generated
+- [ ] Power BI dataset/report generated
 - [ ] Government deployment package validated
 
 ## Development branch
 
-All rebuild planning and source-controlled deployment assets begin on:
+All rebuild planning and source-controlled deployment assets are maintained on:
 
 `power-platform-rebuild`
