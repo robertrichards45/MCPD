@@ -1,0 +1,168 @@
+modules:
+  - key: dashboard
+    name: Dashboard
+    group: Home
+    baseline: original_portal
+    enabled_default: true
+  - key: incident_reporting
+    name: Start Report / Incident Reporting
+    group: Reports
+    baseline: original_portal
+    enabled_default: true
+  - key: mobile_reporting
+    name: Mobile Incident Reporting
+    group: Reports
+    baseline: original_portal
+    enabled_default: true
+  - key: report_inspector
+    name: Report Inspector
+    group: Reports
+    baseline: original_sentinel
+    enabled_default: true
+  - key: cleo
+    name: CLEO Structured Reporting
+    group: Reports
+    baseline: original_portal
+    enabled_default: true
+  - key: accident_reconstruction
+    name: Accident Reconstruction
+    group: Reports
+    baseline: original_portal
+    enabled_default: true
+  - key: forms
+    name: Forms Library
+    group: Forms
+    baseline: original_portal
+    enabled_default: true
+  - key: call_type_rules
+    name: Call Type Paperwork Manager
+    group: Forms
+    baseline: original_portal
+    enabled_default: true
+  - key: policy_search
+    name: Law Lookup / Policy Search
+    group: LawAndReference
+    baseline: both
+    enabled_default: true
+  - key: orders
+    name: Orders & Memoranda
+    group: LawAndReference
+    baseline: original_portal
+    enabled_default: true
+  - key: handbook
+    name: Officer Handbook
+    group: LawAndReference
+    baseline: original_portal
+    enabled_default: true
+  - key: paperwork_guide
+    name: Incident Paperwork Guide
+    group: LawAndReference
+    baseline: original_portal
+    enabled_default: true
+  - key: training
+    name: Training Management
+    group: Training
+    baseline: original_portal
+    enabled_default: true
+  - key: qualifications
+    name: Qualification / Readiness Tracker
+    group: Training
+    baseline: original_portal
+    enabled_default: true
+  - key: fto
+    name: FTO Center
+    group: Training
+    baseline: original_sentinel
+    enabled_default: true
+  - key: scenario_lab
+    name: Scenario Lab
+    group: Training
+    baseline: original_sentinel
+    enabled_default: true
+  - key: bodycam
+    name: Bodycam Footage Management
+    group: Operations
+    baseline: original_portal
+    enabled_default: true
+    deployment_gate: evidence_and_cyber_approval
+  - key: bolo
+    name: BOLO
+    group: Operations
+    baseline: original_portal
+    enabled_default: true
+  - key: watch_commander
+    name: Watch Commander / Digital Lieutenant
+    group: Operations
+    baseline: both
+    enabled_default: true
+  - key: assistant_operations
+    name: Assistant Operations
+    group: Operations
+    baseline: original_portal
+    enabled_default: true
+  - key: armory
+    name: Armory
+    group: Operations
+    baseline: original_portal
+    enabled_default: true
+  - key: rfi
+    name: RFI
+    group: Operations
+    baseline: original_portal
+    enabled_default: true
+  - key: truck_gate
+    name: Truck Gate
+    group: Operations
+    baseline: original_portal
+    enabled_default: true
+  - key: vehicle_inspections
+    name: Vehicle Inspections
+    group: Operations
+    baseline: original_portal
+    enabled_default: true
+  - key: personnel
+    name: Personnel
+    group: Personnel
+    baseline: original_portal
+    enabled_default: true
+  - key: performance
+    name: Performance Evaluation
+    group: Personnel
+    baseline: original_portal
+    enabled_default: true
+  - key: stats
+    name: Statistics & Activity
+    group: Analytics
+    baseline: original_portal
+    enabled_default: true
+  - key: analytics
+    name: Department Analytics
+    group: Analytics
+    baseline: original_sentinel
+    enabled_default: true
+  - key: announcements
+    name: Announcements
+    group: Home
+    baseline: original_portal
+    enabled_default: true
+  - key: ai_assistant
+    name: AI Assistant & Tools
+    group: More
+    baseline: original_portal
+    enabled_default: true
+    deployment_gate: approved_ai_configuration
+  - key: data_exchange
+    name: Data Export & Import
+    group: Administration
+    baseline: original_portal
+    enabled_default: true
+  - key: administration
+    name: Administration
+    group: Administration
+    baseline: both
+    enabled_default: true
+  - key: builder
+    name: Builder / System Controller
+    group: Administration
+    baseline: original_portal
+    enabled_default: true
