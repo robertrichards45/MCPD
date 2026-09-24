@@ -27,6 +27,19 @@ Supervisor,Turnover Brief,Create/Finalize,Team
 Supervisor,Decision Log,Create/Read,Team
 Supervisor,Personnel,Read,Team
 Supervisor,Analytics,Read,Team
+AssistantOperationsOfficer,Home,Read,Department
+AssistantOperationsOfficer,Action Center,Read/Update,Department
+AssistantOperationsOfficer,Report Inspector,Review,DepartmentAuthorized
+AssistantOperationsOfficer,Policy Search,Read/DraftUpload,ApprovedAndDrafts
+AssistantOperationsOfficer,FTO Program,Read/Review,Department
+AssistantOperationsOfficer,DOR,SupervisorReview,DepartmentAuthorized
+AssistantOperationsOfficer,Watch Commander,Read/Write,Department
+AssistantOperationsOfficer,Turnover Brief,Read/Review,Department
+AssistantOperationsOfficer,Decision Log,Create/Read,Department
+AssistantOperationsOfficer,Assistant Operations,Read/Write,Department
+AssistantOperationsOfficer,Personnel,Read,Department
+AssistantOperationsOfficer,Training,Read/Review,Department
+AssistantOperationsOfficer,Analytics,Read,Department
 Administrator,Home,Read,Department
 Administrator,Action Center,Read/Update,Department
 Administrator,Report Inspector,Configure/Review,Department
