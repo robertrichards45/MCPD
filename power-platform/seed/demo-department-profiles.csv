@@ -1,0 +1,6 @@
+DisplayName,EntraObjectId,EmployeeId,OfficerNumber,FirstName,LastName,RankTitle,Email,SectionUnit,Installation,Active,PendingApproval,IsDemo
+Officer Test One,,TEST001,9001,Test,One,Police Officer,officer1@example.invalid,Patrol,MCLB Albany,true,false,true
+Officer Test Two,,TEST002,9002,Test,Two,Police Officer,officer2@example.invalid,Patrol,MCLB Albany,true,false,true
+FTO Test,,TESTFTO,9100,Test,FTO,Field Training Officer,fto@example.invalid,Patrol,MCLB Albany,true,false,true
+Supervisor Test,,TESTSUP,9200,Test,Supervisor,Supervisor,supervisor@example.invalid,Patrol,MCLB Albany,true,false,true
+Administrator Test,,TESTADM,9300,Test,Administrator,Administrator,admin@example.invalid,Administration,MCLB Albany,true,false,true
