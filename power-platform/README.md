@@ -21,7 +21,7 @@ The personal Microsoft environment is a development/test environment only. Use s
 
 The production deliverable must be portable to the government tenant through a managed Power Platform solution and environment-specific configuration.
 
-## Original-build module scope
+## Core Sentinel module scope
 
 1. Home / My Work
 2. Report Inspector / Report Quality Inspector
@@ -95,3 +95,6 @@ The owner approved the 24 Sep 2026 dark MCPD Sentinel concept. The rebuild now i
 - Screen-by-screen blueprints
 - Interactive HTML/CSS/JS prototype covering Home, Action Center, Reports, Report Inspector, Policy, FTO Center, DOR, Scenario Lab, Watch Commander, and Analytics
 - Standardized DOR rating-anchor help for all 31 categories
+
+
+See `FULL_ORIGINAL_PORTAL_INVENTORY.md` for the restored original-portal feature inventory.
