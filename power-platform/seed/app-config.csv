@@ -1,0 +1,17 @@
+ConfigKey,DefaultValue,ValueType,EnvironmentSpecific,Description
+DepartmentName,Marine Corps Police Department,Text,false,Displayed department name
+InstallationName,MCLB Albany,Text,true,Installation display name
+EnableReportInspector,true,Boolean,false,Enable Report Inspector
+EnablePolicySearch,true,Boolean,false,Enable approved-source search
+EnableFTO,true,Boolean,false,Enable FTO program
+EnableScenarioLab,true,Boolean,false,Enable FTO scenario engine
+EnableWatchCommander,true,Boolean,false,Enable original Sentinel Watch Commander module
+EnablePowerBI,true,Boolean,true,Enable embedded analytics
+WatchDataStaleHours,12,Number,true,Hours before controlled watch data is marked stale
+PolicyExpirationAlertDays,30,Number,true,Approved source expiration alert window
+RawReportNarrativeRetention,false,Boolean,true,Original Sentinel default is non-retention
+FTOTranscriptRetention,false,Boolean,true,Original Sentinel default is clearing transcript after scoring
+AllowExternalAI,false,Boolean,true,External AI remains disabled until explicitly approved/configured
+SharePointDocumentSiteUrl,,Text,true,Government/personal environment-specific document site
+OrdersLibraryName,Orders and PDIs,Text,true,Optional SharePoint document library
+AttachmentsLibraryName,Sentinel Attachments,Text,true,Optional SharePoint attachment library
