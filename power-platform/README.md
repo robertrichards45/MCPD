@@ -83,3 +83,15 @@ All rebuild planning and source-controlled deployment assets are maintained on:
 - Development export and government import helper scripts
 - Government deployment checklist
 - Functional/security acceptance tests
+
+
+## Approved visual direction
+
+The owner approved the 24 Sep 2026 dark MCPD Sentinel concept. The rebuild now includes:
+
+- Approved visual design system
+- Theme tokens
+- Power Apps styling formulas
+- Screen-by-screen blueprints
+- Interactive HTML/CSS/JS prototype covering Home, Action Center, Reports, Report Inspector, Policy, FTO Center, DOR, Scenario Lab, Watch Commander, and Analytics
+- Standardized DOR rating-anchor help for all 31 categories
