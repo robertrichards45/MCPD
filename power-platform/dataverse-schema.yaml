@@ -426,3 +426,82 @@ tables:
       Active: yesno
     ownership: organization
 
+  WatchRosterEntry:
+    primary_name: RosterLabel
+    columns:
+      WatchDate: date
+      Person: lookup:DepartmentProfile
+      AssignmentPost: text
+      ShiftStart: datetime
+      ShiftEnd: datetime
+      Status: choice[Present,Absent,Leave,Training,Other]
+      Note: multiline
+      VerifiedBy: lookup:DepartmentProfile
+      VerifiedAt: datetime
+    ownership: organization
+
+  OperationalPost:
+    primary_name: PostName
+    columns:
+      Status: choice[Open,Staffed,Unstaffed,Limited,Closed]
+      DataOwner: lookup:DepartmentProfile
+      VerifiedBy: lookup:DepartmentProfile
+      LastVerifiedAt: datetime
+      Note: multiline
+      Active: yesno
+    ownership: organization
+
+  OperationalVehicle:
+    primary_name: VehicleLabel
+    columns:
+      UnitNumber: text
+      Status: choice[Available,Assigned,OutOfService,Maintenance,Other]
+      AssignedTo: lookup:DepartmentProfile
+      DataOwner: lookup:DepartmentProfile
+      VerifiedBy: lookup:DepartmentProfile
+      LastVerifiedAt: datetime
+      Note: multiline
+      Active: yesno
+    ownership: organization
+
+  OperationalEvent:
+    primary_name: EventTitle
+    columns:
+      EventDate: date
+      StartAt: datetime
+      EndAt: datetime
+      Status: choice[Planned,Active,Completed,Cancelled]
+      LocationLabel: text
+      Summary: multiline
+      DataOwner: lookup:DepartmentProfile
+      VerifiedBy: lookup:DepartmentProfile
+      LastVerifiedAt: datetime
+    ownership: organization
+
+  WatchDecisionLog:
+    primary_name: DecisionTitle
+    columns:
+      WatchDate: date
+      Supervisor: lookup:DepartmentProfile
+      QuestionOrIssue: multiline
+      RecommendationSnapshot: multiline
+      SourceContextJson: multiline
+      DecisionTaken: multiline
+      IntegrityHash: text
+      SavedAt: datetime
+    ownership: organization
+
+  TurnoverBrief:
+    primary_name: BriefTitle
+    columns:
+      WatchDate: date
+      CreatedBy: lookup:DepartmentProfile
+      RevisionNumber: whole
+      Status: choice[Draft,Finalized]
+      SnapshotJson: multiline
+      HandoffNote: multiline
+      IntegrityHash: text
+      CreatedAt: datetime
+      FinalizedAt: datetime
+    ownership: organization
+
