@@ -29,6 +29,19 @@ screens:
       - Notices
       - QuickActions
 
+  - key: action_center
+    title: Action Center
+    visible_to: [Officer,FTO,Supervisor,Administrator]
+    purpose: "Original Sentinel role-aware due-out center so users do not have to hunt through modules."
+    components:
+      - ReportCorrections
+      - FTOProgress
+      - DORAcknowledgments
+      - FTORemediation
+      - SupervisorDueOuts
+      - StaleOperationalData
+      - PolicyAlerts
+
   - key: report_inspector
     title: Report Inspector
     visible_to: [Officer,FTO,Supervisor,Administrator]
@@ -171,6 +184,29 @@ screens:
       - NarrativeDraft
       - FormLaunchers
       - SubmitPacket
+
+  - key: watch_commander
+    title: Watch Commander
+    visible_to: [Supervisor,Administrator]
+    purpose: "Original Sentinel Digital Lieutenant / Watch Commander decision-support workspace."
+    components:
+      - WatchDate
+      - Roster
+      - StaffingSummary
+      - PostStatus
+      - VehicleStatus
+      - PlannedAndActiveEvents
+      - ReturnedReportDueOuts
+      - FTORemediationDueOuts
+      - DataFreshnessWarnings
+      - AskSentinel
+      - SaveDecision
+      - TurnoverBrief
+    safeguards:
+      - "Operational entries show data owner, verifier and last verified time."
+      - "Stale information is marked STALE - VERIFY."
+      - "Decision support cannot authorize legal or operational action."
+      - "Finalized turnover briefs are frozen snapshots."
 
   - key: training
     title: Training
