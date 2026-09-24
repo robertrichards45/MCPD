@@ -1,0 +1,59 @@
+theme:
+  name: MCPD Sentinel Dark
+  baseline: approved_2026_09_24_mockup
+
+  colors:
+    app_background: "#06111D"
+    shell_background: "#081725"
+    card_background: "#0C1B2A"
+    card_raised: "#102235"
+    border: "#1D3A52"
+    primary: "#147DFF"
+    primary_hover: "#3592FF"
+    text_primary: "#F4F8FC"
+    text_secondary: "#98AABD"
+    text_muted: "#6E8297"
+    success: "#2BC66D"
+    warning: "#F2B84B"
+    danger: "#F05B63"
+    info: "#37A7FF"
+
+  typography:
+    font_family: "Segoe UI"
+    fallback: "Arial"
+    sizes:
+      page_title: 28
+      section_title: 20
+      card_title: 15
+      body: 14
+      metadata: 12
+      metric: 30
+
+  radius:
+    small: 6
+    standard: 10
+    card: 12
+
+  spacing:
+    xs: 4
+    sm: 8
+    md: 12
+    lg: 20
+    xl: 28
+
+  desktop:
+    header_height: 64
+    sidebar_width: 224
+    content_gutter: 24
+
+  component_defaults:
+    card_border_width: 1
+    button_height: 40
+    input_height: 40
+    nav_item_height: 44
+
+  accessibility:
+    critical_status_requires_text: true
+    keyboard_focus_visible: true
+    minimum_touch_target: 40
+    avoid_color_only_meaning: true
