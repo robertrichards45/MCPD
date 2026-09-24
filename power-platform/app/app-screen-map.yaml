@@ -268,3 +268,279 @@ screens:
       - ApprovedSourceLifecycle
       - ScenarioApproval
       - AuditViewer
+
+  - key: start_report
+    title: Start Report
+    visible_to: [Officer,FTO,Supervisor,AssistantOperationsOfficer,Administrator]
+    purpose: "Original desktop incident-report creation and lifecycle."
+    components:
+      - ReportType
+      - IncidentDetails
+      - Persons
+      - Vehicles
+      - Property
+      - Offenses
+      - Facts
+      - NarrativeBuilder
+      - Attachments
+      - Photos
+      - CoAuthors
+      - PaperworkPacket
+      - SubmitToSupervisor
+
+  - key: mobile_reporting
+    title: Mobile Report
+    visible_to: [Officer,FTO,Supervisor,AssistantOperationsOfficer,Administrator]
+    purpose: "Original field-focused guided incident workflow."
+    components:
+      - MobileDrafts
+      - IncidentDetailsStep
+      - StatuteSelectionStep
+      - PersonEntryStep
+      - FactsStep
+      - NarrativeStep
+      - Statements
+      - DomesticSupplemental
+      - SmartFormSuggestions
+      - PacketReview
+      - FastCapture
+      - CriticalIncidentMode
+
+  - key: forms_library
+    title: Forms
+    visible_to: [Officer,FTO,Supervisor,AssistantOperationsOfficer,Administrator]
+    components:
+      - SearchForms
+      - Categories
+      - FillForm
+      - SavedForms
+      - PrefillFromIncident
+      - Preview
+      - Download
+      - Email
+      - Print
+
+  - key: forms_manager
+    title: Forms Manager
+    visible_to: [Administrator]
+    components:
+      - FormDefinitions
+      - SourceUpdates
+      - PdfFieldMapping
+      - RenderValidation
+      - RetentionRules
+      - CallTypePaperworkRules
+
+  - key: orders
+    title: Orders & Memoranda
+    visible_to: [Officer,FTO,Supervisor,AssistantOperationsOfficer,Administrator]
+    components:
+      - SearchOrders
+      - OrderDetail
+      - Download
+      - SimplifiedSummary
+      - Favorites
+      - VersionHistory
+      - Supersession
+      - SourceMetadata
+
+  - key: bodycam
+    title: Bodycam
+    visible_to: [Officer,FTO,Supervisor,AssistantOperationsOfficer,Administrator]
+    purpose: "Original bodycam/media management module; production evidence use remains deployment-gated."
+    components:
+      - MediaUpload
+      - MediaLibrary
+      - PlaybackTimeline
+      - ReportLink
+      - NarrativeCreator
+      - FiveWBuilder
+      - Transcript
+      - MobileMediaAccess
+
+  - key: bolo
+    title: BOLO
+    visible_to: [Officer,FTO,Supervisor,AssistantOperationsOfficer,Administrator]
+    components:
+      - ActiveBOLOs
+      - CreateBOLO
+      - Photos
+      - SubjectVehicleProperty
+      - LocatedStatus
+      - CloseCancel
+      - SearchFilter
+
+  - key: performance
+    title: Performance
+    visible_to: [Officer,FTO,Supervisor,AssistantOperationsOfficer,Administrator]
+    components:
+      - MyPerformance
+      - PerformanceElements
+      - AnnualSubmission
+      - SupervisorReview
+      - TeamOverview
+      - HistoricalTrend
+
+  - key: accident_reconstruction
+    title: Accident Reconstruction
+    visible_to: [Officer,FTO,Supervisor,AssistantOperationsOfficer,Administrator]
+    components:
+      - CaseList
+      - DiagramEditor
+      - VehiclesObjects
+      - Measurements
+      - SpeedDamage
+      - EventTimeline
+      - PhotosEvidence
+      - PdfPacketExport
+
+  - key: armory
+    title: Armory
+    visible_to: [Supervisor,AssistantOperationsOfficer,Administrator]
+    components:
+      - AssetInventory
+      - OfficerAssignments
+      - CheckOut
+      - CheckIn
+      - OfficerCards
+      - BulkImport
+      - Export
+
+  - key: rfi
+    title: RFI
+    visible_to: [Supervisor,AssistantOperationsOfficer,Administrator]
+    components:
+      - AssetTracking
+      - OfficerProfiles
+      - CommandDefaults
+      - AppointmentLetters
+      - Transactions
+      - Export
+
+  - key: truck_gate
+    title: Truck Gate
+    visible_to: [Supervisor,AssistantOperationsOfficer,Administrator]
+    components:
+      - EntryExitLog
+      - CompanyDirectory
+      - DriverDirectory
+      - VehicleDirectory
+      - ImportValidation
+      - QrLabels
+      - DailyWorkbook
+
+  - key: vehicle_inspections
+    title: Vehicle Inspections
+    visible_to: [Officer,FTO,Supervisor,AssistantOperationsOfficer,Administrator]
+    components:
+      - InspectionForms
+      - PdfOverlay
+      - Calibration
+      - ElectronicSignature
+      - ReturnForCorrection
+      - Export
+      - BatchPrint
+
+  - key: cleo_reporting
+    title: CLEO Structured Reporting
+    visible_to: [Officer,FTO,Supervisor,AssistantOperationsOfficer,Administrator]
+    components:
+      - IncidentAdmin
+      - Persons
+      - Property
+      - Vehicle
+      - Offenses
+      - Narrative
+      - AutoCCN
+      - FileUpload
+      - Submission
+      - Return
+      - Grading
+      - FieldFeedback
+      - Summary
+
+  - key: statistics
+    title: Statistics & Activity
+    visible_to: [Officer,FTO,Supervisor,AssistantOperationsOfficer,Administrator]
+    components:
+      - MyStatistics
+      - ActivityUpload
+      - Categories
+      - Targets
+      - Trends
+      - TeamStatistics
+      - Export
+
+  - key: announcements
+    title: Announcements
+    visible_to: [Officer,FTO,Supervisor,AssistantOperationsOfficer,Administrator]
+    components:
+      - AnnouncementBoard
+      - PinnedAnnouncements
+      - CreatePublish
+      - Archive
+
+  - key: ai_assistant
+    title: AI Assistant
+    visible_to: [Officer,FTO,Supervisor,AssistantOperationsOfficer,Administrator]
+    components:
+      - Ask
+      - VoiceInput
+      - VoiceOutput
+      - CounselingDraft
+      - AwardDraft
+      - AnnualTrainingAssistant
+      - NarrativeAssistant
+      - OrderSimplifier
+      - SmartFormAssistant
+      - LearningSubmission
+
+  - key: officer_handbook
+    title: Officer Handbook
+    visible_to: [Officer,FTO,Supervisor,AssistantOperationsOfficer,Administrator]
+    components:
+      - Browse
+      - Search
+      - DownloadPdf
+      - Email
+      - Print
+      - VersionHistory
+
+  - key: paperwork_guide
+    title: Incident Paperwork Guide
+    visible_to: [Officer,FTO,Supervisor,AssistantOperationsOfficer,Administrator]
+    components:
+      - CallTypeSearch
+      - RequiredPaperwork
+      - RequiredStatements
+      - EvidenceRequirements
+      - CIDRequirements
+      - SupervisorRequirements
+      - References
+
+  - key: data_exchange
+    title: Data Export & Import
+    visible_to: [Administrator]
+    components:
+      - CsvExports
+      - CsvImports
+      - PdfExports
+      - PdfImports
+      - JsonExports
+      - JsonImports
+      - ZipBundles
+      - ExcelExports
+
+  - key: builder
+    title: Builder / System Controller
+    visible_to: [Administrator]
+    components:
+      - FeatureFlags
+      - ModuleConfiguration
+      - LegalCorpusAdmin
+      - FormsAdmin
+      - AnalyticsAdmin
+      - EnvironmentConfiguration
+      - AuditViewer
+      - DeploymentTools
+
