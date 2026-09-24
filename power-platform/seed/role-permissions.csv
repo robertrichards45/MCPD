@@ -1,0 +1,40 @@
+Role,Area,Permission,Scope
+Officer,Home,Read,Own
+Officer,Action Center,Read/Update,Own
+Officer,Report Inspector,Use,Own
+Officer,Policy Search,Read,Approved
+Officer,FTO Program,Read/Acknowledge,Own
+Officer,Scenario Lab,Run,Assigned
+Officer,Training,Read,Own
+FTO,Home,Read,OwnAndAssigned
+FTO,Action Center,Read/Update,OwnAndAssigned
+FTO,Report Inspector,Use,Own
+FTO,Policy Search,Read,Approved
+FTO,FTO Program,Read/Update,AssignedTrainees
+FTO,DOR,Create/Edit/Finalize,AssignedTrainees
+FTO,Task Book,Create/Edit,AssignedTrainees
+FTO,Remediation,Create/Edit,AssignedTrainees
+FTO,Scenario Lab,Run/Review,AssignedTrainees
+FTO,Training,Read,OwnAndAssigned
+Supervisor,Home,Read,Team
+Supervisor,Action Center,Read/Update,Team
+Supervisor,Report Inspector,Review,Team
+Supervisor,Policy Search,Read/DraftUpload,ApprovedAndDrafts
+Supervisor,FTO Program,Read/Review,Team
+Supervisor,DOR,SupervisorReview,Team
+Supervisor,Watch Commander,Read/Write,Team
+Supervisor,Turnover Brief,Create/Finalize,Team
+Supervisor,Decision Log,Create/Read,Team
+Supervisor,Personnel,Read,Team
+Supervisor,Analytics,Read,Team
+Administrator,Home,Read,Department
+Administrator,Action Center,Read/Update,Department
+Administrator,Report Inspector,Configure/Review,Department
+Administrator,Policy Search,Approve/Retire/Configure,Department
+Administrator,FTO Program,Configure/Review,Department
+Administrator,Scenario Library,Approve/Retire,Department
+Administrator,Watch Commander,Configure/Read/Write,Department
+Administrator,Personnel,Administer,Department
+Administrator,Analytics,Read,Department
+Administrator,System Configuration,Administer,Department
+Administrator,Audit,Read,Department
