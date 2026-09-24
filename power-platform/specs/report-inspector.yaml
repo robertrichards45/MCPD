@@ -1,0 +1,70 @@
+report_inspector:
+  baseline: original_sentinel
+  purpose: "Surface review cues without inventing facts or making the final legal/supervisory decision."
+
+  input:
+    narrative:
+      persisted_by_default: false
+      processing: session_only
+      after_review:
+        persist:
+          - narrative_hash
+          - review_metadata
+          - finding_records
+          - disposition_workflow
+          - revision_lineage
+    supporting_documents:
+      accepted_types: [PDF,DOCX,TXT]
+      persisted_raw_text_by_default: false
+      temporary_extraction: true
+
+  review_layers:
+    - key: automated_cue
+      label: Automated cue
+      authoritative: false
+    - key: approved_source
+      label: Approved source
+      authoritative_only_when_status: Approved
+    - key: authorized_human_judgment
+      label: Supervisor judgment
+      required_for_final_disposition: true
+
+  finding_types:
+    - completeness
+    - consistency
+    - documentation_cue
+    - packet_requirement
+    - approved_source_match
+    - correction_cue
+
+  packet_rules:
+    source: CallTypeRule
+    may_include:
+      - required officer paperwork
+      - written statement requirement
+      - evidence/property documentation
+      - CID screening/notification
+      - supervisor notification
+      - other required attachment
+      - governing source/reference
+
+  prohibited_behavior:
+    - invent missing facts
+    - turn narrative-cue matrix into legal sufficiency determination
+    - determine guilt
+    - determine probable cause
+    - claim final policy compliance
+    - bypass supervisor disposition
+    - use Draft or Retired sources as approved authority
+
+  workflow:
+    - officer_enters_narrative
+    - inspector_runs_deterministic_and_configured_checks
+    - approved_sources_are_retrieved
+    - findings_are_displayed
+    - officer_or_supervisor_can_ask_why_flagged
+    - supervisor_disposes_findings
+    - if_returned_create_correction_action_item
+    - corrected_authoritative_narrative_is_entered_as_new_revision
+    - preserve_revision_lineage_without_reconstructing_old_raw_narrative
+    - close_when_human_review_complete
