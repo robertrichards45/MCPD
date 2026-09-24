@@ -1,0 +1,89 @@
+flows:
+  - name: MCPD - DOR Submitted To Trainee
+    trigger:
+      table: DOR
+      event: update
+      condition: "Status changes to SubmittedToTrainee"
+    actions:
+      - resolve: Trainee.Email
+      - send_notification:
+          subject: "FTO DOR ready for acknowledgment"
+          body: "A Daily Observation Report is ready for your review and acknowledgment in MCPD Sentinel."
+      - create_audit_event: DOR_SUBMITTED_TO_TRAINEE
+
+  - name: MCPD - DOR Trainee Acknowledged
+    trigger:
+      table: DOR
+      event: update
+      condition: "Status changes to TraineeAcknowledged"
+    actions:
+      - update_record:
+          Status: SubmittedToSupervisor
+      - resolve: Supervisor.Email
+      - send_notification:
+          subject: "FTO DOR ready for supervisor review"
+      - create_audit_event: DOR_TRAINEE_ACKNOWLEDGED
+
+  - name: MCPD - DOR Supervisor Decision
+    trigger:
+      table: DOR
+      event: update
+      condition: "Status changes to Approved or Returned"
+    actions:
+      - branch:
+          when_Approved:
+            - stamp: SupervisorReviewedAt
+            - notify: FTO
+            - notify: Trainee
+            - create_audit_event: DOR_APPROVED
+          when_Returned:
+            - notify: FTO
+            - create_audit_event: DOR_RETURNED
+
+  - name: MCPD - Remedial Training Assigned
+    trigger:
+      table: RemedialTraining
+      event: create
+    actions:
+      - notify: Trainee
+      - notify: AssignedFTO
+      - create_audit_event: REMEDIAL_TRAINING_ASSIGNED
+
+  - name: MCPD - Remedial Training Due Watch
+    trigger:
+      type: recurrence
+      cadence: daily
+    query:
+      table: RemedialTraining
+      filter: "Status is Open/InProgress and DueDate <= Today+2"
+    actions:
+      - notify: AssignedFTO
+      - notify_if_overdue: Supervisor
+
+  - name: MCPD - Phase Completion Candidate
+    trigger:
+      table: TrainingAssignment
+      event: update
+    condition:
+      all_required:
+        - "Current phase required task items are complete"
+        - "Required DORs for phase exist"
+        - "No blocking open remediation"
+    actions:
+      - create_phase_review_task: true
+      - notify: Supervisor
+      - notify: FTOCoordinator
+
+  - name: MCPD - Program Completion
+    trigger:
+      table: TrainingAssignment
+      event: update
+      condition: "Status changes to Completed"
+    actions:
+      - stamp: ActualCompletionDate
+      - create_completion_record: true
+      - notify: Trainee
+      - notify: PrimaryFTO
+      - notify: Supervisor
+      - notify: FTOCoordinator
+      - create_audit_event: FTO_PROGRAM_COMPLETED
