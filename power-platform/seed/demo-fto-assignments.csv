@@ -1,0 +1,3 @@
+AssignmentName,TraineeEmail,PrimaryFTOEmail,SupervisorEmail,ProgramType,StartDate,CurrentPhase,CurrentWeek,Status
+TEST - Officer One Standard Program,officer1@example.invalid,fto@example.invalid,supervisor@example.invalid,Standard8Week,2026-01-05,I,1,Active
+TEST - Officer Two Accelerated Program,officer2@example.invalid,fto@example.invalid,supervisor@example.invalid,Accelerated4Week,2026-01-05,II,2,Active
