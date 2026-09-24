@@ -1,0 +1,96 @@
+ProgramPhase,TaskOrder,TaskName,PhaseSpecific,SourceStatus
+I,1,Record field notes,true,verified
+I,2,Secure a crime scene,true,verified
+I,3,Determine offense(s) based on incident,true,verified
+I,4,Operate an emergency vehicle,true,verified
+I,5,Employ interpersonal communications skills,true,verified
+I,6,Execute protective measures against blood-borne pathogens,true,verified
+I,7,Respond to calls for service (non-criminal),true,verified
+I,8,Complete an abandoned vehicle notice,true,verified
+I,9,Complete an incident/complaint report using basic fundamentals of report writing,true,verified
+I,10,Complete an Armed Forces Traffic Citation (DD Form 1408),true,verified
+I,11,Complete a voluntary statement,true,verified
+I,12,Discuss ethical behavior for law enforcement,true,verified
+I,13,Identify aspects of community policing,true,verified
+I,14,Identify jurisdictional areas on assigned installation,true,verified
+I,15,Conduct building checks,true,verified
+I,16,Respond to alarms,true,verified
+I,17,Perform an escort,true,verified
+I,18,Explain the Victim/Witness Assistance Program,true,verified
+I,19,Conduct traffic control,true,verified
+I,20,Conduct Entry/Access Control operation,true,verified
+I,21,Establish liaison with installation resources,true,verified
+II,1,Record field notes,true,verified
+II,2,Write an incident/complaint report using basic fundamentals of report writing,true,verified
+II,3,Determine elements of proof for a crime,true,verified
+II,4,Enforce traffic regulations,true,verified
+II,5,Employ interpersonal communications skills,true,verified
+II,6,Perform a personal search,true,verified
+II,7,Apprehend a suspect,true,verified
+II,8,Conduct an unknown risk vehicle stop,true,verified
+II,9,Conduct an interview,true,verified
+II,10,Respond to calls for service (non-criminal),true,verified
+II,11,Complete a log book entry,true,verified
+II,12,Use crime information systems,true,verified
+II,13,Complete an evidence/property custody receipt,true,verified
+II,14,Complete a complaint of stolen vehicle report,true,verified
+II,15,Complete an evidence tag,true,verified
+II,16,Complete an Armed Forces Traffic Citation (DD Form 1408),true,verified
+II,17,Complete a permissive authorization for search and seizure form,true,verified
+II,18,Complete a voluntary statement,true,verified
+II,19,Identify aspects of intelligence-led policing,true,verified
+II,20,Conduct a building and area search,true,verified
+II,21,Conduct a vehicle search,true,verified
+II,22,Use the communications network,true,verified
+II,23,Identify evidence room procedures,true,verified
+II,24,Identify controlled substances,true,verified
+II,25,Conduct field interviews/frisks,true,verified
+III,1,Record field notes,true,verified
+III,2,Write an incident/complaint report using basic fundamentals of report writing,true,verified
+III,3,Determine offense(s) based on incident,true,verified
+III,4,Conduct a high risk (felony) vehicle stop,true,verified
+III,5,Employ interpersonal communications skills,true,verified
+III,6,Advise a suspect of rights,true,verified
+III,7,Conduct an interrogation,true,verified
+III,8,Respond to calls for service (non-criminal),true,verified
+III,9,Respond to a juvenile-related incident,true,verified
+III,10,Complete a US District Court Violation (DD Form 1805),true,verified
+III,11,Transport a suspect,true,verified
+III,12,Complete a receipt for prisoner or detained person,true,verified
+III,13,Process a DUI,true,verified
+III,14,Respond to a domestic incident,true,verified
+III,15,Complete an Armed Forces Traffic Citation (DD Form 1408),true,verified
+III,16,Complete an affidavit/command authorization for search and seizure form,true,verified
+III,17,Record investigative notes,true,verified
+III,18,Interview a witness and complete a voluntary statement form,true,verified
+III,19,Identify aspects of community policing,true,verified
+III,20,Respond to an Active Shooter threat,true,verified
+III,21,Respond to explosive threats,true,verified
+III,22,Respond to sexual assault,true,verified
+IV,1,Record field notes,true,verified
+IV,2,Write an incident/complaint report using basic fundamentals of report writing,true,verified
+IV,3,Determine offense(s) based on incident,true,verified
+IV,4,Conduct a high risk (felony) vehicle stop,true,verified
+IV,5,Employ interpersonal communications skills,true,verified
+IV,6,Respond to calls for service (non-criminal),true,verified
+IV,7,Conduct a vehicle patrol,true,verified
+IV,8,Complete an Armed Forces Traffic Citation (DD Form 1408),true,verified
+ANY,1,Employ empty hand defensive tactics,false,verified
+ANY,2,Employ an impact baton,false,verified
+ANY,3,Employ restraint devices,false,verified
+ANY,4,Employ oleoresin capsicum,false,verified
+ANY,5,Identify characteristics/effects of drugs/alcohol,false,verified
+ANY,6,Respond to crime against person(s),false,verified
+ANY,7,Conduct a seizure,false,verified
+ANY,8,Use appropriate force,false,verified
+ANY,9,Respond to a medical incident,false,verified
+ANY,10,Respond to property crimes,false,verified
+ANY,11,Detain a suspect,false,verified
+ANY,12,Complete a statement of force form,false,verified
+ANY,13,Complete a telephonic threat complaint form,false,verified
+OPTIONAL,1,Perform one-man cardiopulmonary resuscitation (CPR),false,verified
+OPTIONAL,2,Operate a breathalyzer,false,verified
+OPTIONAL,3,Complete a desk journal entry,false,verified
+OPTIONAL,4,Operate a preliminary breath analyzer,false,verified
+OPTIONAL,5,Maintain breathalyzer equipment,false,verified
+OPTIONAL,6,Conduct a limited traffic accident investigation,false,verified
