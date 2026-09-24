@@ -1,0 +1,212 @@
+app:
+  name: MCPD Sentinel
+  type: canvas
+  baseline: original_sentinel
+  shell:
+    navigation_style: role_aware_sidebar
+    responsive: true
+    theme:
+      intent: professional_law_enforcement
+      notes: "Preserve original Sentinel simplicity; avoid recreating the current live website navigation."
+  startup:
+    resolve_signed_in_user: true
+    resolve_department_profile: true
+    resolve_role_assignments: true
+    load_feature_flags: true
+    load_my_action_counts: true
+
+screens:
+  - key: home
+    title: Home
+    visible_to: [Officer,FTO,Supervisor,Administrator]
+    purpose: "Role-aware landing page and My Work summary."
+    components:
+      - MyOpenWork
+      - MyTraining
+      - MyFTOStatus
+      - MyReturnedReports
+      - MyPendingAcknowledgments
+      - Notices
+      - QuickActions
+
+  - key: report_inspector
+    title: Report Inspector
+    visible_to: [Officer,FTO,Supervisor,Administrator]
+    purpose: "Original Sentinel report-quality workflow."
+    components:
+      - NarrativeInput
+      - SupportingPacketUpload
+      - RunInspection
+      - FindingsList
+      - ApprovedSourceMatches
+      - WhyFlaggedPanel
+      - RevisionSubmission
+    safeguards:
+      - "Never invent missing facts."
+      - "Separate automated cue, approved source, and human judgment."
+      - "Raw narrative retention disabled by default."
+
+  - key: policy_search
+    title: Policy Search
+    visible_to: [Officer,FTO,Supervisor,Administrator]
+    purpose: "Search current approved sources and clearly identify source status."
+    components:
+      - SearchBox
+      - SourceStatusFilter
+      - ResultList
+      - SourceDetail
+      - VersionHistory
+      - CitationCopy
+
+  - key: fto_center
+    title: FTO Center
+    visible_to: [Officer,FTO,Supervisor,Administrator]
+    purpose: "Original Sentinel FTO program hub."
+    role_views:
+      Officer:
+        - MyProgram
+        - MyTaskBook
+        - MyDORs
+        - MyRemedialTraining
+        - MyScenarioAssignments
+      FTO:
+        - AssignedTrainees
+        - DORQueue
+        - TaskBookReview
+        - Evaluations
+        - Remediation
+        - ScenarioLibrary
+      Supervisor:
+        - ProgramOversight
+        - DORSupervisorReview
+        - PhaseReviews
+        - FTOPerformance
+      Administrator:
+        - ProgramConfiguration
+        - ScenarioApproval
+        - RatingCategoryConfiguration
+
+  - key: fto_assignment
+    title: FTO Program
+    visible_to: [Officer,FTO,Supervisor,Administrator]
+    purpose: "One trainee assignment with phases, weeks, progress and completion."
+    components:
+      - AssignmentHeader
+      - PhaseTimeline
+      - DORHistory
+      - TaskBookProgress
+      - WeeklyEvaluations
+      - PhaseEvaluations
+      - RemedialTraining
+      - CompletionChecklist
+
+  - key: dor_editor
+    title: Daily Observation Report
+    visible_to: [FTO,Supervisor,Administrator]
+    purpose: "Digital DOR based on the uploaded Field Training Program Manual."
+    components:
+      - ObservationHeader
+      - RatingGrid
+      - MostSatisfactoryArea
+      - LeastSatisfactoryArea
+      - RemedialMinutes
+      - NarrativeComments
+      - SubmitToTrainee
+
+  - key: dor_acknowledgment
+    title: DOR Acknowledgment
+    visible_to: [Officer,FTO,Supervisor,Administrator]
+    purpose: "Trainee receipt/acknowledgment; acknowledgment does not imply agreement."
+    components:
+      - RatingSummary
+      - Narrative
+      - TraineeComments
+      - AcknowledgeButton
+
+  - key: scenario_lab
+    title: Scenario Lab
+    visible_to: [Officer,FTO,Supervisor,Administrator]
+    purpose: "Original Sentinel FTO Instructor & Evaluator and patrol simulator."
+    components:
+      - ScenarioSelection
+      - RandomCall
+      - StartShift
+      - DispatchRadio
+      - ScenePanel
+      - FieldNotebook
+      - EvidencePanel
+      - ResourcePanel
+      - ActionInput
+      - Timeline
+      - EndCall
+    trainee_hidden:
+      - scoring_logic
+      - hidden_facts
+      - evaluator_notes
+      - competency_scores
+
+  - key: scenario_review
+    title: FTO Scenario Review
+    visible_to: [FTO,Supervisor,Administrator]
+    purpose: "Review decision history, evidence handling, notifications, paperwork and deficiencies."
+    components:
+      - DecisionTimeline
+      - HiddenStateReview
+      - CompetencyEvidence
+      - MissedOpportunities
+      - RequiredNotifications
+      - PaperworkReview
+      - RemedialAssignment
+      - CloseReview
+
+  - key: end_call_paperwork
+    title: End Call
+    visible_to: [Officer,FTO,Supervisor,Administrator]
+    purpose: "Transition completed scenario into required officer paperwork."
+    components:
+      - RequiredPaperwork
+      - CIDNotificationRequirement
+      - SupervisorNotificationRequirement
+      - EvidenceRequirement
+      - NarrativeDraft
+      - FormLaunchers
+      - SubmitPacket
+
+  - key: training
+    title: Training
+    visible_to: [Officer,FTO,Supervisor,Administrator]
+    components:
+      - MyAssignments
+      - MyQualifications
+      - DueSoon
+      - CompletedTraining
+      - TeamReadiness
+
+  - key: personnel
+    title: Personnel
+    visible_to: [Supervisor,Administrator]
+    components:
+      - DepartmentDirectory
+      - ProfileDetail
+      - RoleAssignments
+      - SupervisorRelationship
+      - AccountApproval
+
+  - key: analytics
+    title: Analytics
+    visible_to: [Supervisor,Administrator]
+    components:
+      - FTOProgramDashboard
+      - TrainingReadinessDashboard
+      - ReportQualityDashboard
+
+  - key: administration
+    title: Administration
+    visible_to: [Administrator]
+    components:
+      - UserRoleAdministration
+      - FeatureFlags
+      - EnvironmentConfiguration
+      - ApprovedSourceLifecycle
+      - ScenarioApproval
+      - AuditViewer
