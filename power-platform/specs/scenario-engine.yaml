@@ -1,0 +1,164 @@
+scenario_engine:
+  product_name: MCPD Sentinel FTO Instructor & Evaluator
+  principle: "The trainee should feel like they are working patrol from a computer, not completing a quiz."
+
+  modes:
+    Evaluation:
+      coaching: false
+      hidden_evaluator_state: true
+    Coaching:
+      coaching: limited
+      hidden_evaluator_state: true
+    Remedial:
+      coaching: configured
+      linked_to_remedial_training: true
+    Shift:
+      multiple_calls: true
+      pending_work: true
+      call_priority: true
+
+  complete_loop:
+    - Dispatch
+    - Response
+    - Investigation
+    - Decisions
+    - RequiredNotifications
+    - Disposition
+    - OfficerPaperwork
+    - TraineeSubmission
+    - FTOReview
+    - DeficiencyIdentification
+    - RemedialTraining
+    - Reevaluation
+    - FTOClosure
+
+  trainee_surfaces:
+    - DispatchRadio
+    - CADChronology
+    - SceneInformation
+    - NaturalLanguageActionInput
+    - FieldNotebook
+    - EvidencePanel
+    - ResourceStatus
+    - PaperworkAtEndOfCall
+
+  hidden_during_evaluation:
+    - risk_scores
+    - branch_counts
+    - rubric_criteria
+    - competency_scores
+    - pass_fail_indicators
+    - future_facts
+    - evaluator_reasoning
+    - recommended_solution
+
+  action_interpreter:
+    input: natural_language
+    output: structured_action
+    categories:
+      - radio_communication
+      - movement_observation
+      - interview_question
+      - command_direction
+      - records_request
+      - resource_request
+      - evidence_action
+      - detention_arrest_release
+      - medical_request
+      - CID_notification
+      - supervisor_notification
+      - disposition
+      - reporting_followup
+    rule: "AI may interpret wording; deterministic scenario state controls truth."
+
+  world_state:
+    fields:
+      - simulation_clock
+      - officer_location
+      - people
+      - locations
+      - resources
+      - witnesses
+      - environment
+      - evidence
+      - vehicles_property
+      - injuries_medical
+      - crowd_behavior
+      - surveillance
+      - records_checks
+      - CAD_information
+      - known_unknown_facts
+      - legal_policy_relevant_facts
+      - prior_actions
+      - outstanding_tasks
+      - consequences
+      - notification_state
+
+  evidence:
+    structured_objects: true
+    track:
+      - source
+      - location
+      - discovery_condition
+      - preservation_state
+      - collection_state
+      - transfer_state
+
+  NPCs:
+    independent_memory: true
+    fields:
+      - identity
+      - role
+      - personality
+      - emotional_state
+      - current_location
+      - known_facts
+      - incorrect_beliefs
+      - observations
+      - motivations
+      - cooperation
+      - conversation_history
+    rule: "NPCs cannot know or reveal facts they have not observed/received."
+
+  time:
+    matters: true
+    possible_changes:
+      - witnesses_leave
+      - evidence_degrades_or_becomes_unavailable
+      - resources_arrive
+      - callers_update
+      - subject_behavior_changes
+      - supervisor_or_CID_followup
+      - environmental_change
+
+  randomization:
+    reproducible_seed: true
+    dimensions:
+      - location_type
+      - involved_person_count
+      - witness_reliability
+      - cooperation
+      - evidence_availability
+      - surveillance_availability
+      - injuries
+      - communication_difficulty
+      - resource_availability
+      - caller_accuracy
+      - time_of_day
+      - environment
+      - records_responses
+
+  end_call:
+    required:
+      - calculate_required_paperwork_from_authoritative_rules_matrix
+      - calculate_required_notifications
+      - present_only_officer_required_forms
+      - preserve_decision_timeline_for_FTO
+      - submit_packet_for_review
+
+  evaluation:
+    scenario_score_is_draft_aid_only: true
+    final_FTO_rating_requires_human: true
+    DOR_generation: draft
+    longitudinal_skill_tracking: true
+    transcript_retention_default: false
