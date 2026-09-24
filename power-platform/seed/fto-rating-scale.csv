@@ -1,0 +1,9 @@
+Code,NumericValue,Label,Meaning
+1,1,Unacceptable,Unacceptable program performance
+2,2,Below Acceptable,Intermediate rating between unacceptable and acceptable
+3,3,Needs Improvement,Intermediate rating below acceptable
+4,4,Acceptable,Acceptable program performance
+5,5,Above Acceptable,Intermediate rating above acceptable
+6,6,Strong,Intermediate rating below superior
+7,7,Superior,Superior program performance
+NO,,Not Observed,Category was not observed during the rating period
