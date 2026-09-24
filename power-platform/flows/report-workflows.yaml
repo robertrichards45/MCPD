@@ -1,0 +1,42 @@
+flows:
+  - name: MCPD - Report Submitted For Review
+    trigger:
+      table: ReportRecord
+      event: update
+      condition: "Status changes to Submitted"
+    actions:
+      - assign_reviewer_from_supervisor_or_queue: true
+      - notify: Reviewer
+      - create_audit_event: REPORT_SUBMITTED
+
+  - name: MCPD - Report Returned For Correction
+    trigger:
+      table: ReportRecord
+      event: update
+      condition: "Status changes to Returned"
+    actions:
+      - notify: OwnerProfile
+      - create_saved_work_item:
+          WorkType: ReportCorrection
+          Status: Open
+      - create_audit_event: REPORT_RETURNED
+
+  - name: MCPD - Report Resubmitted
+    trigger:
+      table: ReportRecord
+      event: update
+      condition: "Status changes from Returned to Submitted"
+    actions:
+      - preserve_revision_lineage: true
+      - notify: Reviewer
+      - create_audit_event: REPORT_RESUBMITTED
+
+  - name: MCPD - Approved Source Published
+    trigger:
+      table: SourceDocument
+      event: update
+      condition: "Status changes to Approved"
+    actions:
+      - retire_superseded_version_when_configured: true
+      - refresh_search_index: true
+      - create_audit_event: SOURCE_APPROVED
