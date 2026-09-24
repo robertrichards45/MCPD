@@ -1,0 +1,48 @@
+action_center:
+  intent: "One place for due-outs and required follow-up."
+  rules:
+    Officer:
+      sources:
+        - ReportRecord where OwnerProfile = current user and Status = Returned
+        - DOR where Trainee = current user and Status = SubmittedToTrainee
+        - RemedialTraining where Trainee = current user and Status != Closed
+        - TrainingAttendance where Person = current user and Status in [Assigned,Overdue]
+        - ScenarioRun where Trainee = current user and Status = NotStarted
+
+    FTO:
+      inherits: Officer
+      sources:
+        - DOR where FTO = current user and Status in [Draft,Returned]
+        - RemedialTraining for assigned trainees where Status != Closed
+        - ScenarioRun for assigned trainees where Status = SubmittedForReview
+        - PhaseEvaluation for assigned trainees where Status = Draft
+
+    Supervisor:
+      inherits: FTO
+      sources:
+        - DOR where Supervisor = current user and Status = SubmittedToSupervisor
+        - ReportRecord where Reviewer = current user and Status = Submitted
+        - stale OperationalPost records in scope
+        - stale OperationalVehicle records in scope
+        - stale OperationalEvent records in scope
+        - PhaseEvaluation where supervisor review is due
+        - open team remedial training
+
+    Administrator:
+      inherits: Supervisor
+      sources:
+        - SourceDocument where Status = Draft
+        - SourceDocument approved and nearing expiration
+        - ScenarioDefinition where Status = Draft
+        - DepartmentProfile where PendingApproval = true
+        - system configuration alerts
+
+  sort_order:
+    - Urgent
+    - Overdue
+    - DueSoon
+    - Normal
+
+  completion:
+    - action item disappears only when its underlying required state is satisfied
+    - closing an action item never bypasses the underlying record workflow
