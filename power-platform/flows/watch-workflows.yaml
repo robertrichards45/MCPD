@@ -1,0 +1,55 @@
+flows:
+  - name: MCPD - Watch Data Freshness Check
+    trigger:
+      type: recurrence
+      cadence: hourly
+    configuration:
+      stale_threshold_hours_key: WatchDataStaleHours
+      default_hours: 12
+    query:
+      tables:
+        - OperationalPost
+        - OperationalVehicle
+        - OperationalEvent
+    actions:
+      - mark_stale_in_action_center: true
+      - notify_supervisor_only_when_high_priority: true
+      - create_audit_event: WATCH_FRESHNESS_CHECK
+
+  - name: MCPD - Turnover Brief Finalized
+    trigger:
+      table: TurnoverBrief
+      event: update
+      condition: "Status changes to Finalized"
+    actions:
+      - stamp: FinalizedAt
+      - compute_integrity_hash: SnapshotJson
+      - prevent_normal_editing_after_finalization: true
+      - create_audit_event: TURNOVER_BRIEF_FINALIZED
+
+  - name: MCPD - Watch Decision Saved
+    trigger:
+      table: WatchDecisionLog
+      event: create
+    actions:
+      - compute_integrity_hash:
+          fields:
+            - QuestionOrIssue
+            - RecommendationSnapshot
+            - SourceContextJson
+            - DecisionTaken
+      - create_audit_event: WATCH_DECISION_SAVED
+
+  - name: MCPD - Policy Expiration Watch
+    trigger:
+      type: recurrence
+      cadence: daily
+    configuration:
+      alert_window_days_key: PolicyExpirationAlertDays
+      default_days: 30
+    query:
+      table: SourceDocument
+      filter: "Status = Approved and ExpirationDate is within alert window"
+    actions:
+      - create_or_update_admin_action_item: true
+      - no_officer_alert_for_drafts: true
