@@ -1,0 +1,9 @@
+ProfileEmail,RoleKey,Active
+officer1@example.invalid,Officer,true
+officer2@example.invalid,Officer,true
+fto@example.invalid,Officer,true
+fto@example.invalid,FTO,true
+supervisor@example.invalid,Officer,true
+supervisor@example.invalid,FTO,true
+supervisor@example.invalid,Supervisor,true
+admin@example.invalid,Administrator,true
