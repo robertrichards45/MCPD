@@ -209,10 +209,13 @@ tables:
       OwnerProfile: lookup:DepartmentProfile
       ReportType: choice
       CCN: text
-      Status: choice
-      Narrative: multiline
+      Status: choice[Draft,Submitted,Returned,Resubmitted,Approved,Closed]
+      NarrativeHash: text
+      RevisionNumber: whole
+      ParentRevision: lookup:ReportRecord
       Reviewer: lookup:DepartmentProfile
       ReviewComments: multiline
+      FindingCount: whole
       SubmittedAt: datetime
       ReviewedAt: datetime
     ownership: user_or_team
@@ -237,3 +240,189 @@ tables:
       Details: multiline
       EventAt: datetime
     ownership: organization
+
+  DORRatingCategory:
+    primary_name: CategoryName
+    columns:
+      CategoryNumber: whole
+      CategoryGroup: choice[Appearance,Attitude,Knowledge,Performance,Relationships]
+      ScaleMin: whole
+      ScaleAcceptable: whole
+      ScaleMax: whole
+      AllowNotObserved: yesno
+      Active: yesno
+      SortOrder: whole
+    ownership: organization
+
+  SourceDocument:
+    primary_name: Title
+    columns:
+      SourceType: choice[Policy,Order,PDI,Manual,Law,TrainingReference,Other]
+      VersionLabel: text
+      EffectiveDate: date
+      ExpirationDate: date
+      Status: choice[Draft,Approved,Retired]
+      IssuingAuthority: text
+      ApprovedByProfile: lookup:DepartmentProfile
+      ApprovedAt: datetime
+      Supersedes: lookup:SourceDocument
+      DocumentUrl: url
+      FileHash: text
+      ActiveForGrounding: yesno
+    ownership: organization
+
+  SourcePassage:
+    primary_name: PassageLabel
+    columns:
+      SourceDocument: lookup:SourceDocument
+      PageNumber: whole
+      SectionLabel: text
+      PassageText: multiline
+      SearchText: multiline
+      Active: yesno
+    ownership: organization
+
+  ReportFinding:
+    primary_name: FindingTitle
+    columns:
+      ReportRecord: lookup:ReportRecord
+      FindingType: choice[Completeness,Consistency,DocumentationCue,PacketRequirement,SourceMatch,Other]
+      Severity: choice[Info,Review,Correction]
+      AutomatedCue: multiline
+      SourceDocument: lookup:SourceDocument
+      SourcePassage: lookup:SourcePassage
+      SourceCitation: multiline
+      HumanDisposition: choice[Unreviewed,Accepted,Rejected,Corrected,NotApplicable]
+      HumanComments: multiline
+      CreatedAt: datetime
+    ownership: organization
+
+  ScenarioDefinition:
+    primary_name: Title
+    columns:
+      ScenarioCode: text
+      Family: text
+      VersionLabel: text
+      Status: choice[Draft,Approved,Retired]
+      Difficulty: choice[Introductory,Intermediate,Advanced]
+      EvaluationModeAllowed: yesno
+      CoachingModeAllowed: yesno
+      Randomizable: yesno
+      ScenarioJson: multiline
+      ApprovedByProfile: lookup:DepartmentProfile
+      ApprovedAt: datetime
+      Active: yesno
+    ownership: organization
+
+  ScenarioRun:
+    primary_name: RunTitle
+    columns:
+      Scenario: lookup:ScenarioDefinition
+      Trainee: lookup:DepartmentProfile
+      AssignedFTO: lookup:DepartmentProfile
+      TrainingAssignment: lookup:TrainingAssignment
+      Mode: choice[Evaluation,Coaching,Remedial,Shift]
+      RunSeed: text
+      StartedAt: datetime
+      EndedAt: datetime
+      Status: choice[NotStarted,Active,Ended,SubmittedForReview,Reviewed,Closed]
+      CurrentSimulationTime: datetime
+      CurrentLocationLabel: text
+      WorldStateJson: multiline
+      EvaluatorStateJson: multiline
+      TranscriptRetentionAllowed: yesno
+    ownership: organization
+
+  ScenarioAction:
+    primary_name: ActionLabel
+    columns:
+      ScenarioRun: lookup:ScenarioRun
+      SequenceNumber: whole
+      ActorType: choice[Trainee,Dispatch,NPC,System,FTO]
+      ActorLabel: text
+      RawTraineeText: multiline
+      StructuredActionJson: multiline
+      VisibleResultText: multiline
+      HiddenEvaluatorResultJson: multiline
+      SimulationTime: datetime
+      CreatedAt: datetime
+    ownership: organization
+
+  ScenarioEvidence:
+    primary_name: EvidenceLabel
+    columns:
+      ScenarioRun: lookup:ScenarioRun
+      EvidenceType: text
+      SourceLabel: text
+      LocationLabel: text
+      DiscoveryCondition: multiline
+      PreservationState: choice[Unknown,Available,Preserved,Collected,Transferred,Lost]
+      CollectionState: choice[NotObserved,Observed,Requested,Collected,Transferred]
+      StructuredDataJson: multiline
+      VisibleToTrainee: yesno
+    ownership: organization
+
+  ScenarioNotification:
+    primary_name: NotificationLabel
+    columns:
+      ScenarioRun: lookup:ScenarioRun
+      NotificationType: choice[Dispatch,Supervisor,CID,EMS,Fire,Gate,Other]
+      Required: yesno
+      TriggerCondition: multiline
+      Completed: yesno
+      CompletedAt: datetime
+      CompletionAction: lookup:ScenarioAction
+      EvaluatorComments: multiline
+    ownership: organization
+
+  ScenarioPaperwork:
+    primary_name: PaperworkLabel
+    columns:
+      ScenarioRun: lookup:ScenarioRun
+      FormDefinition: lookup:FormDefinition
+      Required: yesno
+      RequirementReason: multiline
+      Status: choice[NotStarted,Draft,Submitted,Reviewed,Returned,Accepted]
+      SavedWork: lookup:SavedWork
+      Reviewer: lookup:DepartmentProfile
+      ReviewComments: multiline
+    ownership: organization
+
+  CompetencyObservation:
+    primary_name: ObservationTitle
+    columns:
+      ScenarioRun: lookup:ScenarioRun
+      Trainee: lookup:DepartmentProfile
+      CategoryNumber: whole
+      CategoryName: text
+      EvidenceJson: multiline
+      DraftRating: whole
+      FinalRating: whole
+      FinalizedBy: lookup:DepartmentProfile
+      RemedialRecommended: yesno
+    ownership: organization
+
+  ActionItem:
+    primary_name: Title
+    columns:
+      AssignedTo: lookup:DepartmentProfile
+      ActionType: choice[DORAcknowledgment,DORReview,ReportCorrection,RemedialTraining,TrainingDue,PhaseReview,ScenarioReview,Other]
+      RelatedRecordType: text
+      RelatedRecordIdText: text
+      DueDate: datetime
+      Status: choice[Open,InProgress,Completed,Cancelled]
+      Priority: choice[Normal,High,Urgent]
+      CreatedAt: datetime
+      CompletedAt: datetime
+    ownership: user_or_team
+
+  AppConfiguration:
+    primary_name: ConfigKey
+    columns:
+      ConfigValue: multiline
+      ValueType: choice[Text,Boolean,Number,Json]
+      EnvironmentSpecific: yesno
+      Description: multiline
+      Active: yesno
+    ownership: organization
+
