@@ -1,0 +1,75 @@
+dataset:
+  name: MCPD Sentinel Analytics
+  mode: import_or_directquery_per_tenant_policy
+
+dimensions:
+  - DepartmentProfile
+  - Calendar
+  - RatingCategory
+  - TaskBookItem
+  - TrainingProgramType
+  - Phase
+  - ReportType
+
+facts:
+  - DOR
+  - DORRating
+  - TaskBookProgress
+  - RemedialTraining
+  - WeeklyEvaluation
+  - PhaseEvaluation
+  - TrainingAttendance
+  - ReportRecord
+  - ReportFinding
+
+relationships:
+  - "DepartmentProfile 1-* DOR (Trainee)"
+  - "DepartmentProfile 1-* DOR (FTO)"
+  - "DOR 1-* DORRating"
+  - "TrainingAssignment 1-* DOR"
+  - "TrainingAssignment 1-* TaskBookProgress"
+  - "TrainingAssignment 1-* RemedialTraining"
+  - "TaskBookItem 1-* TaskBookProgress"
+
+measures:
+  - name: Active Trainees
+    expression: "COUNTROWS(FILTER(TrainingAssignment, TrainingAssignment[Status] = "Active"))"
+  - name: Open Remedial Training
+    expression: "COUNTROWS(FILTER(RemedialTraining, RemedialTraining[Status] <> "Closed"))"
+  - name: DORs Awaiting Supervisor
+    expression: "COUNTROWS(FILTER(DOR, DOR[Status] = "SubmittedToSupervisor"))"
+  - name: Average Observed Rating
+    expression: "AVERAGEX(FILTER(DORRating, DORRating[Observed] = TRUE()), DORRating[Rating])"
+  - name: Task Completion Percent
+    expression: "DIVIDE(CALCULATE(COUNTROWS(TaskBookProgress), TaskBookProgress[Status] = "Completed"), COUNTROWS(TaskBookProgress))"
+  - name: Returned Reports
+    expression: "COUNTROWS(FILTER(ReportRecord, ReportRecord[Status] = "Returned"))"
+
+reports:
+  - name: FTO Program Dashboard
+    pages:
+      - Overview
+      - Trainee Progress
+      - Rating Trends
+      - Remedial Training
+      - FTO Workload
+      - Phase Completion
+
+  - name: Training Readiness Dashboard
+    pages:
+      - Department Readiness
+      - Due and Overdue
+      - Qualification Detail
+
+  - name: Report Quality Dashboard
+    pages:
+      - Review Volume
+      - Return Reasons
+      - Correction Trends
+      - Common Findings
+
+row_level_security:
+  Officer: "ProfileEmail = USERPRINCIPALNAME()"
+  FTO: "ProfileEmail = USERPRINCIPALNAME() OR AssignedFTOEmail = USERPRINCIPALNAME()"
+  Supervisor: "SupervisorEmail = USERPRINCIPALNAME() OR ProfileEmail = USERPRINCIPALNAME()"
+  Administrator: "true"
