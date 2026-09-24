@@ -1,0 +1,104 @@
+fto_ui:
+  trainee_program:
+    header:
+      fields:
+        - ProgramType
+        - StartDate
+        - CurrentPhase
+        - CurrentWeek
+        - PrimaryFTO
+        - Supervisor
+        - EstimatedCompletionDate
+        - Status
+    sections:
+      - Progress
+      - TaskBook
+      - DORs
+      - Evaluations
+      - RemedialTraining
+      - ScenarioAssignments
+
+  dor_editor:
+    header_fields:
+      - ObservationDate
+      - Trainee
+      - FTO
+      - BadgeOrEmployeeId
+      - Phase
+      - Week
+      - Shift
+    rating_grid:
+      source: DORRatingCategory
+      rating_scale: 1_to_7
+      supports_not_observed: true
+      group_order:
+        - Appearance
+        - Attitude
+        - Knowledge
+        - Performance
+        - Relationships
+    narrative_sections:
+      - MostSatisfactoryArea
+      - MostSatisfactorySpecificIncident
+      - LeastSatisfactoryArea
+      - LeastSatisfactorySpecificIncident
+      - CategoryDocumentation
+      - AdditionalNarrative
+    remedial:
+      fields:
+        - RemedialMinutesToday
+        - RemedialMinutesPhase
+        - RemedialCategory
+        - TrainingDescription
+    submission:
+      requires_FTO_completion: true
+      next_status: SubmittedToTrainee
+
+  trainee_acknowledgment:
+    banner: "Acknowledgment confirms receipt, not agreement."
+    allows_comment: true
+    on_acknowledge:
+      status: TraineeAcknowledged
+      trigger_supervisor_review: true
+
+  supervisor_review:
+    actions:
+      - Approve
+      - ReturnToFTO
+    on_change_after_prior_approval:
+      reset_trainee_acknowledgment: true
+      reset_supervisor_review: true
+
+  task_book:
+    views:
+      - ByPhase
+      - AllTasks
+      - Incomplete
+      - Completed
+    allowed_status:
+      - NotStarted
+      - Observed
+      - Assisted
+      - PerformedSatisfactorily
+      - Completed
+    completion_requires:
+      - FTO_identity
+      - completion_date
+      - status
+      - optional_comment
+
+  remediation:
+    lifecycle:
+      - Open
+      - InProgress
+      - ReadyForReevaluation
+      - Closed
+    cannot_auto_close_from_score: true
+
+  phase_completion:
+    checklist:
+      - required_tasks_complete
+      - required_DORs_present
+      - phase_evaluation_complete
+      - no_blocking_remediation
+      - supervisor_or_FTC_review
