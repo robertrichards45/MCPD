@@ -31,8 +31,20 @@
 
 ## In progress
 
-### Phase 1
-Complete Dataverse coverage for the entire original portal and normalize existing schema definitions.
+### Phase 1 — Active
+Dataverse coverage has now been expanded across the full original Portal scope.
+
+Completed this pass:
+- full original-portal schema expansion
+- normalized choice registry
+- relationship map
+- data classification/storage guidance
+
+Remaining in Phase 1:
+- normalize inline choices to the shared registry
+- add table-by-table retention/ownership/security classification
+- validate every module-to-table mapping
+- add schema validation checklist/tests
 
 ## Blocked until Microsoft development environment is available
 
