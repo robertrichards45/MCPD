@@ -28,6 +28,16 @@ environment_variables:
     default: "true"
   - name: mcpd_EnableScenarioLab
     default: "true"
+  - name: mcpd_GenAIEnabled
+    default: "false"
+  - name: mcpd_GenAIBaseUrl
+    default: ""
+  - name: mcpd_GenAIModel
+    default: ""
+  - name: mcpd_GenAITimeoutSeconds
+    default: "60"
+  - name: mcpd_GenAIMaxOutputTokens
+    default: "4096"
 
 connection_references:
   - name: mcpd_SharePoint
