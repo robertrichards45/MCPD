@@ -1,0 +1,158 @@
+# MCPD Sentinel — Normalized Dataverse Choices
+
+choices:
+  RoleKey:
+    - Officer
+    - FTO
+    - DeskSergeant
+    - WatchCommander
+    - AssistantOperationsOfficer
+    - FTOCoordinator
+    - TrainingManager
+    - FormsManager
+    - ReportReviewer
+    - SystemController
+    - SiteOwner
+    - ArmoryManager
+    - RFIManager
+    - TruckGateOperator
+    - VehicleInspectionReviewer
+
+  RecordStatus:
+    - Draft
+    - Submitted
+    - Returned
+    - Approved
+    - Rejected
+    - Completed
+    - Closed
+    - Cancelled
+    - Archived
+
+  Priority:
+    - Normal
+    - High
+    - Urgent
+
+  AccessScope:
+    - Personal
+    - Team
+    - Department
+
+  SourceDocumentStatus:
+    - Draft
+    - Approved
+    - Retired
+
+  SourceDocumentType:
+    - Policy
+    - Order
+    - PDI
+    - Manual
+    - Law
+    - TrainingReference
+    - Other
+
+  ReportStatus:
+    - Draft
+    - Submitted
+    - Returned
+    - Resubmitted
+    - Approved
+    - Closed
+
+  DORStatus:
+    - Draft
+    - SubmittedToTrainee
+    - TraineeAcknowledged
+    - SubmittedToSupervisor
+    - Approved
+    - Returned
+
+  FTOProgramType:
+    - Standard8Week
+    - Accelerated4Week
+    - Custom
+
+  FTOAssignmentStatus:
+    - Planned
+    - Active
+    - Held
+    - Completed
+    - Terminated
+
+  FTOPhase:
+    - I
+    - II
+    - III
+    - IV
+
+  TaskBookStatus:
+    - NotStarted
+    - Observed
+    - Assisted
+    - PerformedSatisfactorily
+    - Completed
+
+  RemedialStatus:
+    - Open
+    - InProgress
+    - ReadyForReevaluation
+    - Closed
+
+  ScenarioStatus:
+    - Draft
+    - Approved
+    - Retired
+
+  ScenarioRunStatus:
+    - NotStarted
+    - Active
+    - Ended
+    - SubmittedForReview
+    - Reviewed
+    - Closed
+
+  ScenarioMode:
+    - Evaluation
+    - Coaching
+    - Remedial
+    - Shift
+
+  TrainingAttendanceStatus:
+    - Assigned
+    - Completed
+    - Excused
+    - Overdue
+
+  QualificationStatus:
+    - Current
+    - DueSoon
+    - Expired
+    - Waived
+    - NotQualified
+
+  BOLOStatus:
+    - Draft
+    - Active
+    - Located
+    - Cancelled
+    - Closed
+
+  OperationalFreshnessState:
+    - Verified
+    - Stale
+
+  AssistantOpsTaskStatus:
+    - Open
+    - InProgress
+    - Blocked
+    - Completed
+    - Cancelled
+
+  ImportExportStatus:
+    - Queued
+    - Running
+    - Completed
+    - Failed
+    - Cancelled
