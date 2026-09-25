@@ -156,3 +156,478 @@ choices:
     - Completed
     - Failed
     - Cancelled
+
+  SavedWorkType:
+    - ReportDraft
+    - ReportCorrection
+    - FormDraft
+    - ScenarioPaperwork
+    - Other
+
+  SavedWorkStatus:
+    - Draft
+    - Open
+    - InProgress
+    - Submitted
+    - Completed
+    - Cancelled
+    - Archived
+
+  TrainingEventStatus:
+    - Draft
+    - Scheduled
+    - InProgress
+    - Completed
+    - Cancelled
+
+  FormRetentionMode:
+    - Full
+    - PIIOnly
+    - BlankOnly
+    - MetadataOnly
+
+  WeeklyEvaluationStatus:
+    - Draft
+    - Submitted
+    - Approved
+
+  PhaseEvaluationRecommendation:
+    - Advance
+    - Extend
+    - Remedial
+    - Terminate
+
+  PhaseEvaluationStatus:
+    - Draft
+    - Submitted
+    - Approved
+
+  DORRatingCategoryCategoryGroup:
+    - Appearance
+    - Attitude
+    - Knowledge
+    - Performance
+    - Relationships
+
+  ReportFindingFindingType:
+    - Completeness
+    - Consistency
+    - DocumentationCue
+    - PacketRequirement
+    - SourceMatch
+    - Other
+
+  ReportFindingSeverity:
+    - Info
+    - Review
+    - Correction
+
+  ReportFindingHumanDisposition:
+    - Unreviewed
+    - Accepted
+    - Rejected
+    - Corrected
+    - NotApplicable
+
+  ScenarioDefinitionDifficulty:
+    - Introductory
+    - Intermediate
+    - Advanced
+
+  ScenarioActionActorType:
+    - Trainee
+    - Dispatch
+    - NPC
+    - System
+    - FTO
+
+  ScenarioEvidencePreservationState:
+    - Unknown
+    - Available
+    - Preserved
+    - Collected
+    - Transferred
+    - Lost
+
+  ScenarioEvidenceCollectionState:
+    - NotObserved
+    - Observed
+    - Requested
+    - Collected
+    - Transferred
+
+  ScenarioNotificationNotificationType:
+    - Dispatch
+    - Supervisor
+    - CID
+    - EMS
+    - Fire
+    - Gate
+    - Other
+
+  ScenarioPaperworkStatus:
+    - NotStarted
+    - Draft
+    - Submitted
+    - Reviewed
+    - Returned
+    - Accepted
+
+  ActionItemActionType:
+    - DORAcknowledgment
+    - DORReview
+    - ReportCorrection
+    - RemedialTraining
+    - TrainingDue
+    - PhaseReview
+    - ScenarioReview
+    - Other
+
+  ActionItemStatus:
+    - Open
+    - InProgress
+    - Completed
+    - Cancelled
+
+  AppConfigurationValueType:
+    - Text
+    - Boolean
+    - Number
+    - Json
+
+  WatchRosterEntryStatus:
+    - Present
+    - Absent
+    - Leave
+    - Training
+    - Other
+
+  OperationalPostStatus:
+    - Open
+    - Staffed
+    - Unstaffed
+    - Limited
+    - Closed
+
+  OperationalVehicleStatus:
+    - Available
+    - Assigned
+    - OutOfService
+    - Maintenance
+    - Other
+
+  OperationalEventStatus:
+    - Planned
+    - Active
+    - Completed
+    - Cancelled
+
+  TurnoverBriefStatus:
+    - Draft
+    - Finalized
+
+  DashboardPreferenceThemePreference:
+    - Dark
+    - Light
+    - System
+
+  ReportPersonPersonType:
+    - Victim
+    - Suspect
+    - Witness
+    - Complainant
+    - Driver
+    - Passenger
+    - Other
+
+  ReportPersonMilitaryStatus:
+    - Unknown
+    - Civilian
+    - ActiveDuty
+    - Reserve
+    - Retired
+    - Dependent
+    - Other
+
+  ReportVehicleRole:
+    - Involved
+    - Suspect
+    - Victim
+    - Impounded
+    - Witness
+    - Other
+
+  ReportPropertyPropertyType:
+    - Evidence
+    - Found
+    - Lost
+    - Stolen
+    - Damaged
+    - Recovered
+    - Contraband
+    - Other
+
+  ReportOffenseSourceSystem:
+    - Georgia
+    - UCMJ
+    - Federal
+    - BaseOrder
+    - Local
+    - Other
+
+  ReportOffenseAttemptedCompleted:
+    - Attempted
+    - Completed
+    - Unknown
+
+  ReportCoAuthorRole:
+    - CoAuthor
+    - AssistingOfficer
+    - Reviewer
+    - Other
+
+  ReportAttachmentAttachmentType:
+    - Document
+    - Photo
+    - Video
+    - Audio
+    - Statement
+    - Other
+
+  ReportAttachmentStorageProvider:
+    - SharePoint
+    - DataverseFile
+    - Other
+
+  FormInstanceStatus:
+    - Draft
+    - Completed
+    - Submitted
+    - Returned
+    - Archived
+
+  FormFieldValueValueType:
+    - Text
+    - Date
+    - Number
+    - Boolean
+    - Signature
+    - Json
+
+  TrainingRosterStatus:
+    - Draft
+    - Open
+    - Closed
+    - Archived
+
+  TrainingSignatureSignatureMethod:
+    - Electronic
+    - CAC
+    - PIV
+    - Other
+
+  SourceTagTagType:
+    - Audience
+    - Topic
+    - Authority
+    - Other
+
+  BodycamMediaMediaType:
+    - Video
+    - Audio
+    - Photo
+
+  BodycamMediaStatus:
+    - Uploaded
+    - Processing
+    - Ready
+    - Restricted
+    - Archived
+
+  BOLOBOLOType:
+    - Person
+    - Vehicle
+    - Property
+    - Other
+
+  PerformanceSubmissionStatus:
+    - Draft
+    - Submitted
+    - Approved
+    - Rejected
+    - Closed
+
+  AccidentCaseStatus:
+    - Draft
+    - Active
+    - Review
+    - Completed
+    - Archived
+
+  AccidentObjectObjectType:
+    - Vehicle
+    - Pedestrian
+    - FixedObject
+    - Debris
+    - ReferencePoint
+    - Other
+
+  AccidentMeasurementMeasurementType:
+    - Distance
+    - Angle
+    - Skid
+    - Offset
+    - Other
+
+  ArmoryAssetAssetType:
+    - Weapon
+    - Ammunition
+    - Equipment
+    - Other
+
+  ArmoryAssetStatus:
+    - Available
+    - Assigned
+    - CheckedOut
+    - Maintenance
+    - OutOfService
+    - Retired
+
+  ArmoryTransactionTransactionType:
+    - CheckOut
+    - CheckIn
+    - Assign
+    - Unassign
+    - Maintenance
+    - InventoryAdjustment
+
+  ArmoryTransactionVerificationMethod:
+    - MicrosoftIdentity
+    - CAC
+    - PIV
+    - PIN
+    - Other
+
+  RFIAssetAssetType:
+    - Firearm
+    - Ammunition
+    - Equipment
+    - Other
+
+  RFIAssetStatus:
+    - Available
+    - Restricted
+    - OutOfService
+    - Retired
+
+  RFITransactionTransactionType:
+    - Issue
+    - Return
+    - Consume
+    - Adjust
+    - Transfer
+
+  RFIAppointmentLetterStatus:
+    - Current
+    - Expired
+    - Revoked
+    - Pending
+
+  TruckGateEntryDirection:
+    - Inbound
+    - Outbound
+    - Both
+
+  TruckGateEntrySource:
+    - Manual
+    - Import
+    - QR
+    - Other
+
+  TruckGateEntryValidationStatus:
+    - Valid
+    - NeedsReview
+    - Rejected
+
+  VehicleInspectionStatus:
+    - Draft
+    - Submitted
+    - Returned
+    - Accepted
+    - Closed
+
+  VehicleInspectionItemResult:
+    - Pass
+    - Fail
+    - NotApplicable
+    - NotInspected
+
+  CLEOReportStatus:
+    - Draft
+    - Submitted
+    - Returned
+    - Graded
+    - Closed
+
+  CLEOFieldFeedbackSeverity:
+    - Info
+    - Correction
+    - Required
+
+  ActivityEntrySource:
+    - Manual
+    - Import
+    - System
+
+  ActivityTargetPeriodType:
+    - Monthly
+    - Quarterly
+    - Annual
+
+  AssistantOpsTaskTaskType:
+    - Training
+    - Inspection
+    - Suspense
+    - Project
+    - Administrative
+    - Other
+
+  AIRequestLogPurpose:
+    - Narrative
+    - LegalSearch
+    - OrderSummary
+    - Training
+    - Counseling
+    - Award
+    - FormHelp
+    - Navigation
+    - Other
+
+  AIRequestLogStatus:
+    - Completed
+    - Rejected
+    - Failed
+
+  LearningSubmissionStatus:
+    - Draft
+    - Submitted
+    - Approved
+    - Rejected
+
+  ReferenceMaterialReferenceType:
+    - OfficerHandbook
+    - PaperworkGuide
+    - TrainingReference
+    - Other
+
+  DataExchangeJobDirection:
+    - Import
+    - Export
+
+  DataExchangeJobFormat:
+    - CSV
+    - PDF
+    - JSON
+    - ZIP
+    - Excel
+    - Other

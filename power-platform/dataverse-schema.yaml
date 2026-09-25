@@ -22,7 +22,7 @@ tables:
     primary_name: RoleName
     columns:
       Person: lookup:DepartmentProfile
-      RoleKey: choice
+      RoleKey: choice:RoleKey
       Active: yesno
       EffectiveDate: date
       ExpirationDate: date
@@ -32,10 +32,10 @@ tables:
     primary_name: Title
     columns:
       OwnerProfile: lookup:DepartmentProfile
-      WorkType: choice
-      Status: choice
+      WorkType: choice:SavedWorkType
+      Status: choice:SavedWorkStatus
       PayloadJson: multiline
-      AccessScope: choice
+      AccessScope: choice:AccessScope
       LastSavedAt: datetime
       SubmittedAt: datetime
     ownership: user_or_team
@@ -45,7 +45,7 @@ tables:
     columns:
       Category: text
       VersionLabel: text
-      RetentionMode: choice
+      RetentionMode: choice:FormRetentionMode
       ContainsPII: yesno
       AllowCompletedSave: yesno
       AllowDownload: yesno
@@ -74,13 +74,13 @@ tables:
       Trainee: lookup:DepartmentProfile
       PrimaryFTO: lookup:DepartmentProfile
       Supervisor: lookup:DepartmentProfile
-      ProgramType: choice[Standard8Week,Accelerated4Week,Custom]
+      ProgramType: choice:FTOProgramType
       StartDate: date
       EstimatedCompletionDate: date
       ActualCompletionDate: date
-      CurrentPhase: choice
+      CurrentPhase: choice:FTOPhase
       CurrentWeek: whole
-      Status: choice[Planned,Active,Held,Completed,Terminated]
+      Status: choice:FTOAssignmentStatus
     ownership: organization
 
   DOR:
@@ -91,11 +91,11 @@ tables:
       FTO: lookup:DepartmentProfile
       Supervisor: lookup:DepartmentProfile
       ObservationDate: date
-      Phase: choice
+      Phase: choice:FTOPhase
       Week: whole
-      Shift: choice
+      Shift: text
       NarrativeComments: multiline
-      Status: choice[Draft,SubmittedToTrainee,TraineeAcknowledged,SubmittedToSupervisor,Approved,Returned]
+      Status: choice:DORStatus
       FTOCompletedAt: datetime
       TraineeAcknowledgedAt: datetime
       SupervisorReviewedAt: datetime
@@ -120,9 +120,9 @@ tables:
     columns:
       TaskCode: text
       Category: text
-      Phase: choice
+      Phase: choice:FTOPhase
       Description: multiline
-      RequiredProgramTypes: multichoice
+      RequiredProgramTypes: multichoice:FTOProgramType
       SortOrder: whole
       Active: yesno
     ownership: organization
@@ -134,7 +134,7 @@ tables:
       Task: lookup:TaskBookItem
       Trainee: lookup:DepartmentProfile
       FTO: lookup:DepartmentProfile
-      Status: choice[NotStarted,Observed,Assisted,PerformedSatisfactorily,Completed]
+      Status: choice:TaskBookStatus
       ObservationDate: date
       Comments: multiline
       CompletedAt: datetime
@@ -151,7 +151,7 @@ tables:
       Deficiency: multiline
       TrainingPlan: multiline
       DueDate: date
-      Status: choice[Open,InProgress,ReadyForReevaluation,Closed]
+      Status: choice:RemedialStatus
       ReevaluationResult: multiline
       ClosedAt: datetime
     ownership: organization
@@ -163,11 +163,11 @@ tables:
       Trainee: lookup:DepartmentProfile
       Evaluator: lookup:DepartmentProfile
       WeekNumber: whole
-      Phase: choice
+      Phase: choice:FTOPhase
       Strengths: multiline
       Deficiencies: multiline
       Recommendations: multiline
-      Status: choice[Draft,Submitted,Approved]
+      Status: choice:WeeklyEvaluationStatus
     ownership: organization
 
   PhaseEvaluation:
@@ -176,10 +176,10 @@ tables:
       TrainingAssignment: lookup:TrainingAssignment
       Trainee: lookup:DepartmentProfile
       Evaluator: lookup:DepartmentProfile
-      Phase: choice
+      Phase: choice:FTOPhase
       Summary: multiline
-      Recommendation: choice[Advance,Extend,Remedial,Terminate]
-      Status: choice[Draft,Submitted,Approved]
+      Recommendation: choice:PhaseEvaluationRecommendation
+      Status: choice:PhaseEvaluationStatus
     ownership: organization
 
   TrainingEvent:
@@ -190,7 +190,7 @@ tables:
       DueDate: date
       Category: text
       RequiredAudienceJson: multiline
-      Status: choice
+      Status: choice:TrainingEventStatus
     ownership: organization
 
   TrainingAttendance:
@@ -198,7 +198,7 @@ tables:
     columns:
       TrainingEvent: lookup:TrainingEvent
       Person: lookup:DepartmentProfile
-      Status: choice[Assigned,Completed,Excused,Overdue]
+      Status: choice:TrainingAttendanceStatus
       CompletedAt: datetime
       Comments: multiline
     ownership: organization
@@ -207,9 +207,9 @@ tables:
     primary_name: ReportTitle
     columns:
       OwnerProfile: lookup:DepartmentProfile
-      ReportType: choice
+      ReportType: text
       CCN: text
-      Status: choice[Draft,Submitted,Returned,Resubmitted,Approved,Closed]
+      Status: choice:ReportStatus
       NarrativeHash: text
       RevisionNumber: whole
       ParentRevision: lookup:ReportRecord
@@ -224,7 +224,7 @@ tables:
     primary_name: Title
     columns:
       Message: multiline
-      Scope: choice
+      Scope: choice:AccessScope
       Active: yesno
       EffectiveFrom: datetime
       EffectiveTo: datetime
@@ -245,7 +245,7 @@ tables:
     primary_name: CategoryName
     columns:
       CategoryNumber: whole
-      CategoryGroup: choice[Appearance,Attitude,Knowledge,Performance,Relationships]
+      CategoryGroup: choice:DORRatingCategoryCategoryGroup
       ScaleMin: whole
       ScaleAcceptable: whole
       ScaleMax: whole
@@ -257,11 +257,11 @@ tables:
   SourceDocument:
     primary_name: Title
     columns:
-      SourceType: choice[Policy,Order,PDI,Manual,Law,TrainingReference,Other]
+      SourceType: choice:SourceDocumentType
       VersionLabel: text
       EffectiveDate: date
       ExpirationDate: date
-      Status: choice[Draft,Approved,Retired]
+      Status: choice:SourceDocumentStatus
       IssuingAuthority: text
       ApprovedByProfile: lookup:DepartmentProfile
       ApprovedAt: datetime
@@ -286,13 +286,13 @@ tables:
     primary_name: FindingTitle
     columns:
       ReportRecord: lookup:ReportRecord
-      FindingType: choice[Completeness,Consistency,DocumentationCue,PacketRequirement,SourceMatch,Other]
-      Severity: choice[Info,Review,Correction]
+      FindingType: choice:ReportFindingFindingType
+      Severity: choice:ReportFindingSeverity
       AutomatedCue: multiline
       SourceDocument: lookup:SourceDocument
       SourcePassage: lookup:SourcePassage
       SourceCitation: multiline
-      HumanDisposition: choice[Unreviewed,Accepted,Rejected,Corrected,NotApplicable]
+      HumanDisposition: choice:ReportFindingHumanDisposition
       HumanComments: multiline
       CreatedAt: datetime
     ownership: organization
@@ -303,8 +303,8 @@ tables:
       ScenarioCode: text
       Family: text
       VersionLabel: text
-      Status: choice[Draft,Approved,Retired]
-      Difficulty: choice[Introductory,Intermediate,Advanced]
+      Status: choice:ScenarioStatus
+      Difficulty: choice:ScenarioDefinitionDifficulty
       EvaluationModeAllowed: yesno
       CoachingModeAllowed: yesno
       Randomizable: yesno
@@ -321,11 +321,11 @@ tables:
       Trainee: lookup:DepartmentProfile
       AssignedFTO: lookup:DepartmentProfile
       TrainingAssignment: lookup:TrainingAssignment
-      Mode: choice[Evaluation,Coaching,Remedial,Shift]
+      Mode: choice:ScenarioMode
       RunSeed: text
       StartedAt: datetime
       EndedAt: datetime
-      Status: choice[NotStarted,Active,Ended,SubmittedForReview,Reviewed,Closed]
+      Status: choice:ScenarioRunStatus
       CurrentSimulationTime: datetime
       CurrentLocationLabel: text
       WorldStateJson: multiline
@@ -338,7 +338,7 @@ tables:
     columns:
       ScenarioRun: lookup:ScenarioRun
       SequenceNumber: whole
-      ActorType: choice[Trainee,Dispatch,NPC,System,FTO]
+      ActorType: choice:ScenarioActionActorType
       ActorLabel: text
       RawTraineeText: multiline
       StructuredActionJson: multiline
@@ -356,8 +356,8 @@ tables:
       SourceLabel: text
       LocationLabel: text
       DiscoveryCondition: multiline
-      PreservationState: choice[Unknown,Available,Preserved,Collected,Transferred,Lost]
-      CollectionState: choice[NotObserved,Observed,Requested,Collected,Transferred]
+      PreservationState: choice:ScenarioEvidencePreservationState
+      CollectionState: choice:ScenarioEvidenceCollectionState
       StructuredDataJson: multiline
       VisibleToTrainee: yesno
     ownership: organization
@@ -366,7 +366,7 @@ tables:
     primary_name: NotificationLabel
     columns:
       ScenarioRun: lookup:ScenarioRun
-      NotificationType: choice[Dispatch,Supervisor,CID,EMS,Fire,Gate,Other]
+      NotificationType: choice:ScenarioNotificationNotificationType
       Required: yesno
       TriggerCondition: multiline
       Completed: yesno
@@ -382,7 +382,7 @@ tables:
       FormDefinition: lookup:FormDefinition
       Required: yesno
       RequirementReason: multiline
-      Status: choice[NotStarted,Draft,Submitted,Reviewed,Returned,Accepted]
+      Status: choice:ScenarioPaperworkStatus
       SavedWork: lookup:SavedWork
       Reviewer: lookup:DepartmentProfile
       ReviewComments: multiline
@@ -406,12 +406,12 @@ tables:
     primary_name: Title
     columns:
       AssignedTo: lookup:DepartmentProfile
-      ActionType: choice[DORAcknowledgment,DORReview,ReportCorrection,RemedialTraining,TrainingDue,PhaseReview,ScenarioReview,Other]
+      ActionType: choice:ActionItemActionType
       RelatedRecordType: text
       RelatedRecordIdText: text
       DueDate: datetime
-      Status: choice[Open,InProgress,Completed,Cancelled]
-      Priority: choice[Normal,High,Urgent]
+      Status: choice:ActionItemStatus
+      Priority: choice:Priority
       CreatedAt: datetime
       CompletedAt: datetime
     ownership: user_or_team
@@ -420,7 +420,7 @@ tables:
     primary_name: ConfigKey
     columns:
       ConfigValue: multiline
-      ValueType: choice[Text,Boolean,Number,Json]
+      ValueType: choice:AppConfigurationValueType
       EnvironmentSpecific: yesno
       Description: multiline
       Active: yesno
@@ -434,7 +434,7 @@ tables:
       AssignmentPost: text
       ShiftStart: datetime
       ShiftEnd: datetime
-      Status: choice[Present,Absent,Leave,Training,Other]
+      Status: choice:WatchRosterEntryStatus
       Note: multiline
       VerifiedBy: lookup:DepartmentProfile
       VerifiedAt: datetime
@@ -443,7 +443,7 @@ tables:
   OperationalPost:
     primary_name: PostName
     columns:
-      Status: choice[Open,Staffed,Unstaffed,Limited,Closed]
+      Status: choice:OperationalPostStatus
       DataOwner: lookup:DepartmentProfile
       VerifiedBy: lookup:DepartmentProfile
       LastVerifiedAt: datetime
@@ -455,7 +455,7 @@ tables:
     primary_name: VehicleLabel
     columns:
       UnitNumber: text
-      Status: choice[Available,Assigned,OutOfService,Maintenance,Other]
+      Status: choice:OperationalVehicleStatus
       AssignedTo: lookup:DepartmentProfile
       DataOwner: lookup:DepartmentProfile
       VerifiedBy: lookup:DepartmentProfile
@@ -470,7 +470,7 @@ tables:
       EventDate: date
       StartAt: datetime
       EndAt: datetime
-      Status: choice[Planned,Active,Completed,Cancelled]
+      Status: choice:OperationalEventStatus
       LocationLabel: text
       Summary: multiline
       DataOwner: lookup:DepartmentProfile
@@ -497,7 +497,7 @@ tables:
       WatchDate: date
       CreatedBy: lookup:DepartmentProfile
       RevisionNumber: whole
-      Status: choice[Draft,Finalized]
+      Status: choice:TurnoverBriefStatus
       SnapshotJson: multiline
       HandoffNote: multiline
       IntegrityHash: text
@@ -522,7 +522,7 @@ tables:
     columns:
       Person: lookup:DepartmentProfile
       LayoutJson: multiline
-      ThemePreference: choice[Dark,Light,System]
+      ThemePreference: choice:DashboardPreferenceThemePreference
       DefaultRoleContext: text
       UpdatedAt: datetime
     ownership: user_or_team
@@ -531,7 +531,7 @@ tables:
     primary_name: DisplayName
     columns:
       ReportRecord: lookup:ReportRecord
-      PersonType: choice[Victim,Suspect,Witness,Complainant,Driver,Passenger,Other]
+      PersonType: choice:ReportPersonPersonType
       FirstName: text
       MiddleName: text
       LastName: text
@@ -540,7 +540,7 @@ tables:
       Phone: text
       Email: text
       Address: multiline
-      MilitaryStatus: choice[Unknown,Civilian,ActiveDuty,Reserve,Retired,Dependent,Other]
+      MilitaryStatus: choice:ReportPersonMilitaryStatus
       Notes: multiline
     ownership: user_or_team
 
@@ -548,7 +548,7 @@ tables:
     primary_name: VehicleLabel
     columns:
       ReportRecord: lookup:ReportRecord
-      Role: choice[Involved,Suspect,Victim,Impounded,Witness,Other]
+      Role: choice:ReportVehicleRole
       Year: whole
       Make: text
       Model: text
@@ -566,7 +566,7 @@ tables:
     primary_name: PropertyLabel
     columns:
       ReportRecord: lookup:ReportRecord
-      PropertyType: choice[Evidence,Found,Lost,Stolen,Damaged,Recovered,Contraband,Other]
+      PropertyType: choice:ReportPropertyPropertyType
       Description: multiline
       SerialNumber: text
       Quantity: decimal
@@ -580,11 +580,11 @@ tables:
     primary_name: OffenseLabel
     columns:
       ReportRecord: lookup:ReportRecord
-      SourceSystem: choice[Georgia,UCMJ,Federal,BaseOrder,Local,Other]
+      SourceSystem: choice:ReportOffenseSourceSystem
       CitationCode: text
       OffenseName: text
       Classification: text
-      AttemptedCompleted: choice[Attempted,Completed,Unknown]
+      AttemptedCompleted: choice:ReportOffenseAttemptedCompleted
       PrimaryOffense: yesno
       SourceDocument: lookup:SourceDocument
     ownership: user_or_team
@@ -594,7 +594,7 @@ tables:
     columns:
       ReportRecord: lookup:ReportRecord
       Person: lookup:DepartmentProfile
-      Role: choice[CoAuthor,AssistingOfficer,Reviewer,Other]
+      Role: choice:ReportCoAuthorRole
       AddedAt: datetime
       Active: yesno
     ownership: user_or_team
@@ -603,8 +603,8 @@ tables:
     primary_name: FileName
     columns:
       ReportRecord: lookup:ReportRecord
-      AttachmentType: choice[Document,Photo,Video,Audio,Statement,Other]
-      StorageProvider: choice[SharePoint,DataverseFile,Other]
+      AttachmentType: choice:ReportAttachmentAttachmentType
+      StorageProvider: choice:ReportAttachmentStorageProvider
       StorageUrl: url
       FileHash: text
       MimeType: text
@@ -621,9 +621,9 @@ tables:
       FormDefinition: lookup:FormDefinition
       OwnerProfile: lookup:DepartmentProfile
       ReportRecord: lookup:ReportRecord
-      Status: choice[Draft,Completed,Submitted,Returned,Archived]
-      AccessScope: choice[Personal,Team,Department]
-      RetentionMode: choice[Full,PIIOnly,BlankOnly,MetadataOnly]
+      Status: choice:FormInstanceStatus
+      AccessScope: choice:AccessScope
+      RetentionMode: choice:FormRetentionMode
       PayloadJson: multiline
       OutputDocumentUrl: url
       CreatedAt: datetime
@@ -637,7 +637,7 @@ tables:
       FormInstance: lookup:FormInstance
       FieldKey: text
       ValueText: multiline
-      ValueType: choice[Text,Date,Number,Boolean,Signature,Json]
+      ValueType: choice:FormFieldValueValueType
       Sensitive: yesno
       SortOrder: whole
     ownership: user_or_team
@@ -657,7 +657,7 @@ tables:
     columns:
       Person: lookup:DepartmentProfile
       Qualification: lookup:QualificationDefinition
-      Status: choice[Current,DueSoon,Expired,Waived,NotQualified]
+      Status: choice:QualificationStatus
       CompletionDate: date
       ExpirationDate: date
       InstructorOrAuthority: text
@@ -672,7 +672,7 @@ tables:
       SourceDocumentUrl: url
       UploadedBy: lookup:DepartmentProfile
       UploadedAt: datetime
-      Status: choice[Draft,Open,Closed,Archived]
+      Status: choice:TrainingRosterStatus
       Notes: multiline
     ownership: organization
 
@@ -682,7 +682,7 @@ tables:
       TrainingRoster: lookup:TrainingRoster
       Person: lookup:DepartmentProfile
       SignedAt: datetime
-      SignatureMethod: choice[Electronic,CAC,PIV,Other]
+      SignatureMethod: choice:TrainingSignatureSignatureMethod
       SignatureData: multiline
       AcknowledgmentText: multiline
     ownership: user_or_team
@@ -699,7 +699,7 @@ tables:
     primary_name: TagName
     columns:
       SourceDocument: lookup:SourceDocument
-      TagType: choice[Audience,Topic,Authority,Other]
+      TagType: choice:SourceTagTagType
       TagValue: text
     ownership: organization
 
@@ -709,10 +709,10 @@ tables:
       OwnerProfile: lookup:DepartmentProfile
       ReportRecord: lookup:ReportRecord
       IncidentDate: datetime
-      MediaType: choice[Video,Audio,Photo]
+      MediaType: choice:BodycamMediaMediaType
       StorageUrl: url
       FileHash: text
-      Status: choice[Uploaded,Processing,Ready,Restricted,Archived]
+      Status: choice:BodycamMediaStatus
       TranscriptAvailable: yesno
       TranscriptText: multiline
       UploadedAt: datetime
@@ -722,8 +722,8 @@ tables:
   BOLO:
     primary_name: BOLOTitle
     columns:
-      BOLOType: choice[Person,Vehicle,Property,Other]
-      Status: choice[Draft,Active,Located,Cancelled,Closed]
+      BOLOType: choice:BOLOBOLOType
+      Status: choice:BOLOStatus
       Description: multiline
       SubjectName: text
       VehicleDescription: multiline
@@ -754,7 +754,7 @@ tables:
       Person: lookup:DepartmentProfile
       Supervisor: lookup:DepartmentProfile
       EvaluationYear: whole
-      Status: choice[Draft,Submitted,Approved,Rejected,Closed]
+      Status: choice:PerformanceSubmissionStatus
       OverallComments: multiline
       SubmittedAt: datetime
       ReviewedAt: datetime
@@ -778,7 +778,7 @@ tables:
       CaseNumber: text
       IncidentDate: datetime
       LocationDescription: multiline
-      Status: choice[Draft,Active,Review,Completed,Archived]
+      Status: choice:AccidentCaseStatus
       DiagramJson: multiline
       TimelineJson: multiline
       ExportPacketUrl: url
@@ -788,7 +788,7 @@ tables:
     primary_name: ObjectLabel
     columns:
       AccidentCase: lookup:AccidentCase
-      ObjectType: choice[Vehicle,Pedestrian,FixedObject,Debris,ReferencePoint,Other]
+      ObjectType: choice:AccidentObjectObjectType
       StructuredDataJson: multiline
       XCoordinate: decimal
       YCoordinate: decimal
@@ -800,7 +800,7 @@ tables:
     primary_name: MeasurementLabel
     columns:
       AccidentCase: lookup:AccidentCase
-      MeasurementType: choice[Distance,Angle,Skid,Offset,Other]
+      MeasurementType: choice:AccidentMeasurementMeasurementType
       StartObject: lookup:AccidentObject
       EndObject: lookup:AccidentObject
       Value: decimal
@@ -811,11 +811,11 @@ tables:
   ArmoryAsset:
     primary_name: AssetLabel
     columns:
-      AssetType: choice[Weapon,Ammunition,Equipment,Other]
+      AssetType: choice:ArmoryAssetAssetType
       SerialNumber: text
       AssetNumber: text
       MakeModel: text
-      Status: choice[Available,Assigned,CheckedOut,Maintenance,OutOfService,Retired]
+      Status: choice:ArmoryAssetStatus
       AssignedTo: lookup:DepartmentProfile
       StorageLocation: text
       Notes: multiline
@@ -827,11 +827,11 @@ tables:
     columns:
       Asset: lookup:ArmoryAsset
       Person: lookup:DepartmentProfile
-      TransactionType: choice[CheckOut,CheckIn,Assign,Unassign,Maintenance,InventoryAdjustment]
+      TransactionType: choice:ArmoryTransactionTransactionType
       Quantity: decimal
       PerformedBy: lookup:DepartmentProfile
       PerformedAt: datetime
-      VerificationMethod: choice[MicrosoftIdentity,CAC,PIV,PIN,Other]
+      VerificationMethod: choice:ArmoryTransactionVerificationMethod
       Notes: multiline
     ownership: organization
 
@@ -847,11 +847,11 @@ tables:
   RFIAsset:
     primary_name: AssetLabel
     columns:
-      AssetType: choice[Firearm,Ammunition,Equipment,Other]
+      AssetType: choice:RFIAssetAssetType
       SerialOrLotNumber: text
       Description: multiline
       QuantityOnHand: decimal
-      Status: choice[Available,Restricted,OutOfService,Retired]
+      Status: choice:RFIAssetStatus
     ownership: organization
 
   RFITransaction:
@@ -859,7 +859,7 @@ tables:
     columns:
       RFIProfile: lookup:RFIProfile
       RFIAsset: lookup:RFIAsset
-      TransactionType: choice[Issue,Return,Consume,Adjust,Transfer]
+      TransactionType: choice:RFITransactionTransactionType
       Quantity: decimal
       PerformedBy: lookup:DepartmentProfile
       PerformedAt: datetime
@@ -873,7 +873,7 @@ tables:
       DocumentUrl: url
       EffectiveDate: date
       ExpirationDate: date
-      Status: choice[Current,Expired,Revoked,Pending]
+      Status: choice:RFIAppointmentLetterStatus
       UploadedBy: lookup:DepartmentProfile
       UploadedAt: datetime
     ownership: organization
@@ -918,11 +918,11 @@ tables:
       Vehicle: lookup:TruckGateVehicle
       EntryTime: datetime
       ExitTime: datetime
-      Direction: choice[Inbound,Outbound,Both]
+      Direction: choice:TruckGateEntryDirection
       Purpose: text
       ProcessedBy: lookup:DepartmentProfile
-      Source: choice[Manual,Import,QR,Other]
-      ValidationStatus: choice[Valid,NeedsReview,Rejected]
+      Source: choice:TruckGateEntrySource
+      ValidationStatus: choice:TruckGateEntryValidationStatus
       Notes: multiline
     ownership: organization
 
@@ -932,9 +932,9 @@ tables:
       Inspector: lookup:DepartmentProfile
       VehicleIdentifier: text
       InspectionDate: datetime
-      Status: choice[Draft,Submitted,Returned,Accepted,Closed]
+      Status: choice:VehicleInspectionStatus
       TemplateVersion: text
-      SignatureMethod: choice[Electronic,CAC,PIV,Other]
+      SignatureMethod: choice:TrainingSignatureSignatureMethod
       SignatureData: multiline
       ReturnReason: multiline
       PdfOutputUrl: url
@@ -945,7 +945,7 @@ tables:
     columns:
       VehicleInspection: lookup:VehicleInspection
       ItemKey: text
-      Result: choice[Pass,Fail,NotApplicable,NotInspected]
+      Result: choice:VehicleInspectionItemResult
       Comments: multiline
       PhotoUrl: url
       SortOrder: whole
@@ -956,7 +956,7 @@ tables:
     columns:
       ReportRecord: lookup:ReportRecord
       CCN: text
-      Status: choice[Draft,Submitted,Returned,Graded,Closed]
+      Status: choice:CLEOReportStatus
       Grade: decimal
       Summary: multiline
       Reviewer: lookup:DepartmentProfile
@@ -1002,7 +1002,7 @@ tables:
       PageKey: text
       FieldKey: text
       FeedbackText: multiline
-      Severity: choice[Info,Correction,Required]
+      Severity: choice:CLEOFieldFeedbackSeverity
       Resolved: yesno
       ResolvedAt: datetime
     ownership: user_or_team
@@ -1022,7 +1022,7 @@ tables:
       ActivityCategory: lookup:ActivityCategory
       ActivityDate: date
       Quantity: decimal
-      Source: choice[Manual,Import,System]
+      Source: choice:ActivityEntrySource
       Comments: multiline
     ownership: user_or_team
 
@@ -1031,7 +1031,7 @@ tables:
     columns:
       Person: lookup:DepartmentProfile
       ActivityCategory: lookup:ActivityCategory
-      PeriodType: choice[Monthly,Quarterly,Annual]
+      PeriodType: choice:ActivityTargetPeriodType
       PeriodStart: date
       PeriodEnd: date
       TargetValue: decimal
@@ -1041,13 +1041,13 @@ tables:
   AssistantOpsTask:
     primary_name: TaskTitle
     columns:
-      TaskType: choice[Training,Inspection,Suspense,Project,Administrative,Other]
+      TaskType: choice:AssistantOpsTaskTaskType
       Description: multiline
       AssignedTo: lookup:DepartmentProfile
       AssignedBy: lookup:DepartmentProfile
       WatchScope: text
-      Priority: choice[Normal,High,Urgent]
-      Status: choice[Open,InProgress,Blocked,Completed,Cancelled]
+      Priority: choice:Priority
+      Status: choice:AssistantOpsTaskStatus
       DueDate: datetime
       ProgressPercent: whole
       Comments: multiline
@@ -1060,11 +1060,11 @@ tables:
     columns:
       RequestedBy: lookup:DepartmentProfile
       ToolKey: text
-      Purpose: choice[Narrative,LegalSearch,OrderSummary,Training,Counseling,Award,FormHelp,Navigation,Other]
+      Purpose: choice:AIRequestLogPurpose
       InputHash: text
       SourceIdsJson: multiline
       OutputHash: text
-      Status: choice[Completed,Rejected,Failed]
+      Status: choice:AIRequestLogStatus
       ExternalAIUsed: yesno
       CreatedAt: datetime
     ownership: organization
@@ -1075,7 +1075,7 @@ tables:
       SubmittedBy: lookup:DepartmentProfile
       SubmissionType: text
       Content: multiline
-      Status: choice[Draft,Submitted,Approved,Rejected]
+      Status: choice:LearningSubmissionStatus
       ReviewedBy: lookup:DepartmentProfile
       SubmittedAt: datetime
       ReviewedAt: datetime
@@ -1084,9 +1084,9 @@ tables:
   ReferenceMaterial:
     primary_name: Title
     columns:
-      ReferenceType: choice[OfficerHandbook,PaperworkGuide,TrainingReference,Other]
+      ReferenceType: choice:ReferenceMaterialReferenceType
       VersionLabel: text
-      Status: choice[Draft,Approved,Retired]
+      Status: choice:SourceDocumentStatus
       DocumentUrl: url
       EffectiveDate: date
       ApprovedBy: lookup:DepartmentProfile
@@ -1098,9 +1098,9 @@ tables:
     columns:
       RequestedBy: lookup:DepartmentProfile
       ModuleKey: text
-      Direction: choice[Import,Export]
-      Format: choice[CSV,PDF,JSON,ZIP,Excel,Other]
-      Status: choice[Queued,Running,Completed,Failed,Cancelled]
+      Direction: choice:DataExchangeJobDirection
+      Format: choice:DataExchangeJobFormat
+      Status: choice:ImportExportStatus
       SourceOrOutputUrl: url
       RecordCount: whole
       ErrorSummary: multiline
