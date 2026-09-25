@@ -505,3 +505,606 @@ tables:
       FinalizedAt: datetime
     ownership: organization
 
+  EmergencyContact:
+    primary_name: ContactName
+    columns:
+      Person: lookup:DepartmentProfile
+      Relationship: text
+      Phone: text
+      Email: text
+      Address: multiline
+      PrimaryContact: yesno
+      Active: yesno
+    ownership: user_or_team
+
+  DashboardPreference:
+    primary_name: PreferenceName
+    columns:
+      Person: lookup:DepartmentProfile
+      LayoutJson: multiline
+      ThemePreference: choice[Dark,Light,System]
+      DefaultRoleContext: text
+      UpdatedAt: datetime
+    ownership: user_or_team
+
+  ReportPerson:
+    primary_name: DisplayName
+    columns:
+      ReportRecord: lookup:ReportRecord
+      PersonType: choice[Victim,Suspect,Witness,Complainant,Driver,Passenger,Other]
+      FirstName: text
+      MiddleName: text
+      LastName: text
+      OrganizationName: text
+      DateOfBirth: date
+      Phone: text
+      Email: text
+      Address: multiline
+      MilitaryStatus: choice[Unknown,Civilian,ActiveDuty,Reserve,Retired,Dependent,Other]
+      Notes: multiline
+    ownership: user_or_team
+
+  ReportVehicle:
+    primary_name: VehicleLabel
+    columns:
+      ReportRecord: lookup:ReportRecord
+      Role: choice[Involved,Suspect,Victim,Impounded,Witness,Other]
+      Year: whole
+      Make: text
+      Model: text
+      Color: text
+      LicensePlate: text
+      PlateState: text
+      VIN: text
+      RegisteredOwnerName: text
+      DamageDescription: multiline
+      Towed: yesno
+      TowDisposition: multiline
+    ownership: user_or_team
+
+  ReportProperty:
+    primary_name: PropertyLabel
+    columns:
+      ReportRecord: lookup:ReportRecord
+      PropertyType: choice[Evidence,Found,Lost,Stolen,Damaged,Recovered,Contraband,Other]
+      Description: multiline
+      SerialNumber: text
+      Quantity: decimal
+      EstimatedValue: currency
+      OwnerName: text
+      EvidenceTag: text
+      Disposition: multiline
+    ownership: user_or_team
+
+  ReportOffense:
+    primary_name: OffenseLabel
+    columns:
+      ReportRecord: lookup:ReportRecord
+      SourceSystem: choice[Georgia,UCMJ,Federal,BaseOrder,Local,Other]
+      CitationCode: text
+      OffenseName: text
+      Classification: text
+      AttemptedCompleted: choice[Attempted,Completed,Unknown]
+      PrimaryOffense: yesno
+      SourceDocument: lookup:SourceDocument
+    ownership: user_or_team
+
+  ReportCoAuthor:
+    primary_name: CoAuthorLabel
+    columns:
+      ReportRecord: lookup:ReportRecord
+      Person: lookup:DepartmentProfile
+      Role: choice[CoAuthor,AssistingOfficer,Reviewer,Other]
+      AddedAt: datetime
+      Active: yesno
+    ownership: user_or_team
+
+  ReportAttachment:
+    primary_name: FileName
+    columns:
+      ReportRecord: lookup:ReportRecord
+      AttachmentType: choice[Document,Photo,Video,Audio,Statement,Other]
+      StorageProvider: choice[SharePoint,DataverseFile,Other]
+      StorageUrl: url
+      FileHash: text
+      MimeType: text
+      UploadedBy: lookup:DepartmentProfile
+      UploadedAt: datetime
+      ContainsPII: yesno
+      EvidenceRelated: yesno
+      RetentionClass: text
+    ownership: user_or_team
+
+  FormInstance:
+    primary_name: InstanceTitle
+    columns:
+      FormDefinition: lookup:FormDefinition
+      OwnerProfile: lookup:DepartmentProfile
+      ReportRecord: lookup:ReportRecord
+      Status: choice[Draft,Completed,Submitted,Returned,Archived]
+      AccessScope: choice[Personal,Team,Department]
+      RetentionMode: choice[Full,PIIOnly,BlankOnly,MetadataOnly]
+      PayloadJson: multiline
+      OutputDocumentUrl: url
+      CreatedAt: datetime
+      UpdatedAt: datetime
+      CompletedAt: datetime
+    ownership: user_or_team
+
+  FormFieldValue:
+    primary_name: FieldLabel
+    columns:
+      FormInstance: lookup:FormInstance
+      FieldKey: text
+      ValueText: multiline
+      ValueType: choice[Text,Date,Number,Boolean,Signature,Json]
+      Sensitive: yesno
+      SortOrder: whole
+    ownership: user_or_team
+
+  QualificationDefinition:
+    primary_name: QualificationName
+    columns:
+      Category: text
+      ValidityMonths: whole
+      RenewalRequired: yesno
+      DocumentationRequired: yesno
+      Active: yesno
+    ownership: organization
+
+  QualificationRecord:
+    primary_name: QualificationRecordName
+    columns:
+      Person: lookup:DepartmentProfile
+      Qualification: lookup:QualificationDefinition
+      Status: choice[Current,DueSoon,Expired,Waived,NotQualified]
+      CompletionDate: date
+      ExpirationDate: date
+      InstructorOrAuthority: text
+      DocumentUrl: url
+      Comments: multiline
+    ownership: user_or_team
+
+  TrainingRoster:
+    primary_name: RosterName
+    columns:
+      TrainingEvent: lookup:TrainingEvent
+      SourceDocumentUrl: url
+      UploadedBy: lookup:DepartmentProfile
+      UploadedAt: datetime
+      Status: choice[Draft,Open,Closed,Archived]
+      Notes: multiline
+    ownership: organization
+
+  TrainingSignature:
+    primary_name: SignatureLabel
+    columns:
+      TrainingRoster: lookup:TrainingRoster
+      Person: lookup:DepartmentProfile
+      SignedAt: datetime
+      SignatureMethod: choice[Electronic,CAC,PIV,Other]
+      SignatureData: multiline
+      AcknowledgmentText: multiline
+    ownership: user_or_team
+
+  SourceFavorite:
+    primary_name: FavoriteLabel
+    columns:
+      Person: lookup:DepartmentProfile
+      SourceDocument: lookup:SourceDocument
+      CreatedAt: datetime
+    ownership: user_or_team
+
+  SourceTag:
+    primary_name: TagName
+    columns:
+      SourceDocument: lookup:SourceDocument
+      TagType: choice[Audience,Topic,Authority,Other]
+      TagValue: text
+    ownership: organization
+
+  BodycamMedia:
+    primary_name: MediaTitle
+    columns:
+      OwnerProfile: lookup:DepartmentProfile
+      ReportRecord: lookup:ReportRecord
+      IncidentDate: datetime
+      MediaType: choice[Video,Audio,Photo]
+      StorageUrl: url
+      FileHash: text
+      Status: choice[Uploaded,Processing,Ready,Restricted,Archived]
+      TranscriptAvailable: yesno
+      TranscriptText: multiline
+      UploadedAt: datetime
+      EvidenceUseApproved: yesno
+    ownership: user_or_team
+
+  BOLO:
+    primary_name: BOLOTitle
+    columns:
+      BOLOType: choice[Person,Vehicle,Property,Other]
+      Status: choice[Draft,Active,Located,Cancelled,Closed]
+      Description: multiline
+      SubjectName: text
+      VehicleDescription: multiline
+      PropertyDescription: multiline
+      PhotoUrl: url
+      CreatedBy: lookup:DepartmentProfile
+      CreatedAt: datetime
+      EffectiveFrom: datetime
+      EffectiveTo: datetime
+      LocatedAt: datetime
+      ClosedAt: datetime
+      ClosureComments: multiline
+    ownership: organization
+
+  PerformanceElement:
+    primary_name: ElementName
+    columns:
+      Description: multiline
+      Weight: decimal
+      RatingScaleKey: text
+      Active: yesno
+      SortOrder: whole
+    ownership: organization
+
+  PerformanceSubmission:
+    primary_name: SubmissionTitle
+    columns:
+      Person: lookup:DepartmentProfile
+      Supervisor: lookup:DepartmentProfile
+      EvaluationYear: whole
+      Status: choice[Draft,Submitted,Approved,Rejected,Closed]
+      OverallComments: multiline
+      SubmittedAt: datetime
+      ReviewedAt: datetime
+    ownership: user_or_team
+
+  PerformanceRating:
+    primary_name: RatingTitle
+    columns:
+      PerformanceSubmission: lookup:PerformanceSubmission
+      PerformanceElement: lookup:PerformanceElement
+      Rating: decimal
+      EmployeeComments: multiline
+      SupervisorComments: multiline
+    ownership: user_or_team
+
+  AccidentCase:
+    primary_name: CaseTitle
+    columns:
+      ReportRecord: lookup:ReportRecord
+      Investigator: lookup:DepartmentProfile
+      CaseNumber: text
+      IncidentDate: datetime
+      LocationDescription: multiline
+      Status: choice[Draft,Active,Review,Completed,Archived]
+      DiagramJson: multiline
+      TimelineJson: multiline
+      ExportPacketUrl: url
+    ownership: user_or_team
+
+  AccidentObject:
+    primary_name: ObjectLabel
+    columns:
+      AccidentCase: lookup:AccidentCase
+      ObjectType: choice[Vehicle,Pedestrian,FixedObject,Debris,ReferencePoint,Other]
+      StructuredDataJson: multiline
+      XCoordinate: decimal
+      YCoordinate: decimal
+      RotationDegrees: decimal
+      Notes: multiline
+    ownership: user_or_team
+
+  AccidentMeasurement:
+    primary_name: MeasurementLabel
+    columns:
+      AccidentCase: lookup:AccidentCase
+      MeasurementType: choice[Distance,Angle,Skid,Offset,Other]
+      StartObject: lookup:AccidentObject
+      EndObject: lookup:AccidentObject
+      Value: decimal
+      Unit: text
+      Notes: multiline
+    ownership: user_or_team
+
+  ArmoryAsset:
+    primary_name: AssetLabel
+    columns:
+      AssetType: choice[Weapon,Ammunition,Equipment,Other]
+      SerialNumber: text
+      AssetNumber: text
+      MakeModel: text
+      Status: choice[Available,Assigned,CheckedOut,Maintenance,OutOfService,Retired]
+      AssignedTo: lookup:DepartmentProfile
+      StorageLocation: text
+      Notes: multiline
+      Active: yesno
+    ownership: organization
+
+  ArmoryTransaction:
+    primary_name: TransactionLabel
+    columns:
+      Asset: lookup:ArmoryAsset
+      Person: lookup:DepartmentProfile
+      TransactionType: choice[CheckOut,CheckIn,Assign,Unassign,Maintenance,InventoryAdjustment]
+      Quantity: decimal
+      PerformedBy: lookup:DepartmentProfile
+      PerformedAt: datetime
+      VerificationMethod: choice[MicrosoftIdentity,CAC,PIV,PIN,Other]
+      Notes: multiline
+    ownership: organization
+
+  RFIProfile:
+    primary_name: RFIProfileName
+    columns:
+      Person: lookup:DepartmentProfile
+      CommandLevel: text
+      DefaultSettingsJson: multiline
+      Active: yesno
+    ownership: organization
+
+  RFIAsset:
+    primary_name: AssetLabel
+    columns:
+      AssetType: choice[Firearm,Ammunition,Equipment,Other]
+      SerialOrLotNumber: text
+      Description: multiline
+      QuantityOnHand: decimal
+      Status: choice[Available,Restricted,OutOfService,Retired]
+    ownership: organization
+
+  RFITransaction:
+    primary_name: TransactionLabel
+    columns:
+      RFIProfile: lookup:RFIProfile
+      RFIAsset: lookup:RFIAsset
+      TransactionType: choice[Issue,Return,Consume,Adjust,Transfer]
+      Quantity: decimal
+      PerformedBy: lookup:DepartmentProfile
+      PerformedAt: datetime
+      Notes: multiline
+    ownership: organization
+
+  RFIAppointmentLetter:
+    primary_name: LetterTitle
+    columns:
+      RFIProfile: lookup:RFIProfile
+      DocumentUrl: url
+      EffectiveDate: date
+      ExpirationDate: date
+      Status: choice[Current,Expired,Revoked,Pending]
+      UploadedBy: lookup:DepartmentProfile
+      UploadedAt: datetime
+    ownership: organization
+
+  TruckGateCompany:
+    primary_name: CompanyName
+    columns:
+      Address: multiline
+      Phone: text
+      Active: yesno
+      Notes: multiline
+    ownership: organization
+
+  TruckGateDriver:
+    primary_name: DriverName
+    columns:
+      Company: lookup:TruckGateCompany
+      LicenseNumber: text
+      LicenseState: text
+      Phone: text
+      Active: yesno
+      Notes: multiline
+    ownership: organization
+
+  TruckGateVehicle:
+    primary_name: VehicleLabel
+    columns:
+      Company: lookup:TruckGateCompany
+      UnitNumber: text
+      LicensePlate: text
+      PlateState: text
+      VIN: text
+      VehicleType: text
+      Active: yesno
+    ownership: organization
+
+  TruckGateEntry:
+    primary_name: EntryLabel
+    columns:
+      Company: lookup:TruckGateCompany
+      Driver: lookup:TruckGateDriver
+      Vehicle: lookup:TruckGateVehicle
+      EntryTime: datetime
+      ExitTime: datetime
+      Direction: choice[Inbound,Outbound,Both]
+      Purpose: text
+      ProcessedBy: lookup:DepartmentProfile
+      Source: choice[Manual,Import,QR,Other]
+      ValidationStatus: choice[Valid,NeedsReview,Rejected]
+      Notes: multiline
+    ownership: organization
+
+  VehicleInspection:
+    primary_name: InspectionTitle
+    columns:
+      Inspector: lookup:DepartmentProfile
+      VehicleIdentifier: text
+      InspectionDate: datetime
+      Status: choice[Draft,Submitted,Returned,Accepted,Closed]
+      TemplateVersion: text
+      SignatureMethod: choice[Electronic,CAC,PIV,Other]
+      SignatureData: multiline
+      ReturnReason: multiline
+      PdfOutputUrl: url
+    ownership: user_or_team
+
+  VehicleInspectionItem:
+    primary_name: ItemLabel
+    columns:
+      VehicleInspection: lookup:VehicleInspection
+      ItemKey: text
+      Result: choice[Pass,Fail,NotApplicable,NotInspected]
+      Comments: multiline
+      PhotoUrl: url
+      SortOrder: whole
+    ownership: user_or_team
+
+  CLEOReport:
+    primary_name: CLEOTitle
+    columns:
+      ReportRecord: lookup:ReportRecord
+      CCN: text
+      Status: choice[Draft,Submitted,Returned,Graded,Closed]
+      Grade: decimal
+      Summary: multiline
+      Reviewer: lookup:DepartmentProfile
+      SubmittedAt: datetime
+      ReviewedAt: datetime
+    ownership: user_or_team
+
+  CLEOPerson:
+    primary_name: PersonLabel
+    columns:
+      CLEOReport: lookup:CLEOReport
+      Role: text
+      StructuredDataJson: multiline
+    ownership: user_or_team
+
+  CLEOProperty:
+    primary_name: PropertyLabel
+    columns:
+      CLEOReport: lookup:CLEOReport
+      StructuredDataJson: multiline
+    ownership: user_or_team
+
+  CLEOVehicle:
+    primary_name: VehicleLabel
+    columns:
+      CLEOReport: lookup:CLEOReport
+      StructuredDataJson: multiline
+    ownership: user_or_team
+
+  CLEOOffense:
+    primary_name: OffenseLabel
+    columns:
+      CLEOReport: lookup:CLEOReport
+      CitationCode: text
+      OffenseName: text
+      StructuredDataJson: multiline
+    ownership: user_or_team
+
+  CLEOFieldFeedback:
+    primary_name: FeedbackLabel
+    columns:
+      CLEOReport: lookup:CLEOReport
+      PageKey: text
+      FieldKey: text
+      FeedbackText: multiline
+      Severity: choice[Info,Correction,Required]
+      Resolved: yesno
+      ResolvedAt: datetime
+    ownership: user_or_team
+
+  ActivityCategory:
+    primary_name: CategoryName
+    columns:
+      UnitOfMeasure: text
+      Active: yesno
+      SortOrder: whole
+    ownership: organization
+
+  ActivityEntry:
+    primary_name: EntryLabel
+    columns:
+      Person: lookup:DepartmentProfile
+      ActivityCategory: lookup:ActivityCategory
+      ActivityDate: date
+      Quantity: decimal
+      Source: choice[Manual,Import,System]
+      Comments: multiline
+    ownership: user_or_team
+
+  ActivityTarget:
+    primary_name: TargetLabel
+    columns:
+      Person: lookup:DepartmentProfile
+      ActivityCategory: lookup:ActivityCategory
+      PeriodType: choice[Monthly,Quarterly,Annual]
+      PeriodStart: date
+      PeriodEnd: date
+      TargetValue: decimal
+      SetBy: lookup:DepartmentProfile
+    ownership: user_or_team
+
+  AssistantOpsTask:
+    primary_name: TaskTitle
+    columns:
+      TaskType: choice[Training,Inspection,Suspense,Project,Administrative,Other]
+      Description: multiline
+      AssignedTo: lookup:DepartmentProfile
+      AssignedBy: lookup:DepartmentProfile
+      WatchScope: text
+      Priority: choice[Normal,High,Urgent]
+      Status: choice[Open,InProgress,Blocked,Completed,Cancelled]
+      DueDate: datetime
+      ProgressPercent: whole
+      Comments: multiline
+      CreatedAt: datetime
+      CompletedAt: datetime
+    ownership: organization
+
+  AIRequestLog:
+    primary_name: RequestLabel
+    columns:
+      RequestedBy: lookup:DepartmentProfile
+      ToolKey: text
+      Purpose: choice[Narrative,LegalSearch,OrderSummary,Training,Counseling,Award,FormHelp,Navigation,Other]
+      InputHash: text
+      SourceIdsJson: multiline
+      OutputHash: text
+      Status: choice[Completed,Rejected,Failed]
+      ExternalAIUsed: yesno
+      CreatedAt: datetime
+    ownership: organization
+
+  LearningSubmission:
+    primary_name: SubmissionTitle
+    columns:
+      SubmittedBy: lookup:DepartmentProfile
+      SubmissionType: text
+      Content: multiline
+      Status: choice[Draft,Submitted,Approved,Rejected]
+      ReviewedBy: lookup:DepartmentProfile
+      SubmittedAt: datetime
+      ReviewedAt: datetime
+    ownership: user_or_team
+
+  ReferenceMaterial:
+    primary_name: Title
+    columns:
+      ReferenceType: choice[OfficerHandbook,PaperworkGuide,TrainingReference,Other]
+      VersionLabel: text
+      Status: choice[Draft,Approved,Retired]
+      DocumentUrl: url
+      EffectiveDate: date
+      ApprovedBy: lookup:DepartmentProfile
+      ApprovedAt: datetime
+    ownership: organization
+
+  DataExchangeJob:
+    primary_name: JobTitle
+    columns:
+      RequestedBy: lookup:DepartmentProfile
+      ModuleKey: text
+      Direction: choice[Import,Export]
+      Format: choice[CSV,PDF,JSON,ZIP,Excel,Other]
+      Status: choice[Queued,Running,Completed,Failed,Cancelled]
+      SourceOrOutputUrl: url
+      RecordCount: whole
+      ErrorSummary: multiline
+      RequestedAt: datetime
+      CompletedAt: datetime
+    ownership: organization
+
