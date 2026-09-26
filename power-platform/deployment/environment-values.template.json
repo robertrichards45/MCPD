@@ -1,0 +1,18 @@
+{
+  "mcpd_DepartmentName": "Marine Corps Police Department",
+  "mcpd_InstallationName": "MCLB Albany",
+  "mcpd_SharePointDocumentSiteUrl": "",
+  "mcpd_OrdersLibraryName": "Orders and PDIs",
+  "mcpd_AttachmentsLibraryName": "Sentinel Attachments",
+  "mcpd_EvidenceMediaStoreId": "",
+  "mcpd_SupportEmail": "",
+  "mcpd_EnableFTO": "true",
+  "mcpd_EnableAccidentTools": "true",
+  "mcpd_EnablePowerBI": "true",
+  "mcpd_EnableScenarioLab": "true",
+  "mcpd_GenAIEnabled": "false",
+  "mcpd_GenAIBaseUrl": "",
+  "mcpd_GenAIModel": "",
+  "mcpd_GenAITimeoutSeconds": "60",
+  "mcpd_GenAIMaxOutputTokens": "4096"
+}
