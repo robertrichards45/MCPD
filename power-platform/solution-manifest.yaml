@@ -18,6 +18,8 @@ environment_variables:
     default: Orders and PDIs
   - name: mcpd_AttachmentsLibraryName
     default: Sentinel Attachments
+  - name: mcpd_EvidenceMediaStoreId
+    default: ""
   - name: mcpd_SupportEmail
     default: ""
   - name: mcpd_EnableFTO

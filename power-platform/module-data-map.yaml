@@ -1,0 +1,424 @@
+version: 1
+scope: Table-level coverage only; not proof that every feature is implemented.
+external_stores:
+  reports:
+    provider: approved_sharepoint_library
+    environment_variables:
+    - mcpd_SharePointDocumentSiteUrl
+    - mcpd_AttachmentsLibraryName
+    locator_columns:
+    - ReportAttachment.StorageUrl
+    - AccidentCase.ExportPacketUrl
+    access_rule: Authorize against the linked record and apply equivalent storage ACLs; a URL is not an
+      access grant.
+    retention_rule: Coordinate disposition with the linked record, including legal hold; no orphaned files
+      or metadata.
+    deployment_gate: approved_storage_and_acl_validation
+  forms:
+    provider: approved_sharepoint_library
+    environment_variables:
+    - mcpd_SharePointDocumentSiteUrl
+    - mcpd_AttachmentsLibraryName
+    locator_columns:
+    - FormDefinition.DocumentUrl
+    - FormInstance.OutputDocumentUrl
+    access_rule: Authorize against the linked record and apply equivalent storage ACLs; a URL is not an
+      access grant.
+    retention_rule: Coordinate disposition with the linked record, including legal hold; no orphaned files
+      or metadata.
+    deployment_gate: approved_storage_and_acl_validation
+  references:
+    provider: approved_sharepoint_library
+    environment_variables:
+    - mcpd_SharePointDocumentSiteUrl
+    - mcpd_OrdersLibraryName
+    locator_columns:
+    - SourceDocument.DocumentUrl
+    - ReferenceMaterial.DocumentUrl
+    access_rule: Authorize against the linked record and apply equivalent storage ACLs; a URL is not an
+      access grant.
+    retention_rule: Coordinate disposition with the linked record, including legal hold; no orphaned files
+      or metadata.
+    deployment_gate: approved_storage_and_acl_validation
+  training_documents:
+    provider: approved_sharepoint_library
+    environment_variables:
+    - mcpd_SharePointDocumentSiteUrl
+    - mcpd_AttachmentsLibraryName
+    locator_columns:
+    - QualificationRecord.DocumentUrl
+    - TrainingRoster.SourceDocumentUrl
+    access_rule: Authorize against the linked record and apply equivalent storage ACLs; a URL is not an
+      access grant.
+    retention_rule: Coordinate disposition with the linked record, including legal hold; no orphaned files
+      or metadata.
+    deployment_gate: approved_storage_and_acl_validation
+  operational_documents:
+    provider: approved_sharepoint_library
+    environment_variables:
+    - mcpd_SharePointDocumentSiteUrl
+    - mcpd_AttachmentsLibraryName
+    locator_columns:
+    - BOLO.PhotoUrl
+    - RFIAppointmentLetter.DocumentUrl
+    - VehicleInspection.PdfOutputUrl
+    - VehicleInspectionItem.PhotoUrl
+    access_rule: Authorize against the linked record and apply equivalent storage ACLs; a URL is not an
+      access grant.
+    retention_rule: Coordinate disposition with the linked record, including legal hold; no orphaned files
+      or metadata.
+    deployment_gate: approved_storage_and_acl_validation
+  exchange_staging:
+    provider: approved_sharepoint_library
+    environment_variables:
+    - mcpd_SharePointDocumentSiteUrl
+    - mcpd_AttachmentsLibraryName
+    locator_columns:
+    - DataExchangeJob.SourceOrOutputUrl
+    access_rule: Authorize against the linked record and apply equivalent storage ACLs; a URL is not an
+      access grant.
+    retention_rule: Coordinate disposition with the linked record, including legal hold; no orphaned files
+      or metadata.
+    deployment_gate: approved_storage_and_acl_validation
+  evidence_media:
+    provider: approved_evidence_system
+    environment_variables:
+    - mcpd_EvidenceMediaStoreId
+    locator_columns:
+    - BodycamMedia.StorageUrl
+    access_rule: Authorize against the linked record and apply equivalent storage ACLs; a URL is not an
+      access grant.
+    retention_rule: Coordinate disposition with the linked record, including legal hold; no orphaned files
+      or metadata.
+    deployment_gate: evidence_and_cyber_approval
+modules:
+  dashboard:
+    tables:
+    - DashboardPreference
+    - SavedWork
+    - ActionItem
+    - Notice
+    - ReportRecord
+    - TrainingAttendance
+    external_stores: []
+  incident_reporting:
+    tables:
+    - ReportRecord
+    - ReportPerson
+    - ReportVehicle
+    - ReportProperty
+    - ReportOffense
+    - ReportCoAuthor
+    - ReportAttachment
+    - FormInstance
+    - SavedWork
+    external_stores:
+    - reports
+    - forms
+  mobile_reporting:
+    tables:
+    - ReportRecord
+    - ReportPerson
+    - ReportVehicle
+    - ReportProperty
+    - ReportOffense
+    - ReportCoAuthor
+    - ReportAttachment
+    - FormInstance
+    - FormFieldValue
+    - SavedWork
+    - CallTypeRule
+    external_stores:
+    - reports
+    - forms
+  report_inspector:
+    tables:
+    - ReportRecord
+    - ReportFinding
+    - SourceDocument
+    - SourcePassage
+    - CallTypeRule
+    - ActionItem
+    - AIRequestLog
+    external_stores:
+    - references
+  cleo:
+    tables:
+    - CLEOReport
+    - CLEOPerson
+    - CLEOProperty
+    - CLEOVehicle
+    - CLEOOffense
+    - CLEOFieldFeedback
+    - ReportRecord
+    - ReportAttachment
+    external_stores:
+    - reports
+  accident_reconstruction:
+    tables:
+    - AccidentCase
+    - AccidentObject
+    - AccidentMeasurement
+    - ReportRecord
+    - ReportAttachment
+    external_stores:
+    - reports
+  forms:
+    tables:
+    - FormDefinition
+    - FormInstance
+    - FormFieldValue
+    - SavedWork
+    - CallTypeRule
+    external_stores:
+    - forms
+  call_type_rules:
+    tables:
+    - CallTypeRule
+    - FormDefinition
+    - SourceDocument
+    external_stores:
+    - forms
+    - references
+  policy_search:
+    tables:
+    - SourceDocument
+    - SourcePassage
+    - SourceTag
+    - SourceFavorite
+    - AIRequestLog
+    external_stores:
+    - references
+  orders:
+    tables:
+    - SourceDocument
+    - SourcePassage
+    - SourceTag
+    - SourceFavorite
+    - AIRequestLog
+    external_stores:
+    - references
+  handbook:
+    tables:
+    - ReferenceMaterial
+    - SourceDocument
+    - SourcePassage
+    external_stores:
+    - references
+  paperwork_guide:
+    tables:
+    - ReferenceMaterial
+    - CallTypeRule
+    - FormDefinition
+    - SourceDocument
+    external_stores:
+    - forms
+    - references
+  training:
+    tables:
+    - TrainingEvent
+    - TrainingAttendance
+    - TrainingRoster
+    - TrainingSignature
+    - QualificationDefinition
+    - QualificationRecord
+    external_stores:
+    - training_documents
+  qualifications:
+    tables:
+    - QualificationDefinition
+    - QualificationRecord
+    - DepartmentProfile
+    external_stores:
+    - training_documents
+  fto:
+    tables:
+    - TrainingAssignment
+    - DOR
+    - DORRating
+    - DORRatingCategory
+    - TaskBookItem
+    - TaskBookProgress
+    - RemedialTraining
+    - WeeklyEvaluation
+    - PhaseEvaluation
+    - ActionItem
+    - DepartmentProfile
+    external_stores: []
+  scenario_lab:
+    tables:
+    - ScenarioDefinition
+    - ScenarioRun
+    - ScenarioAction
+    - ScenarioEvidence
+    - ScenarioNotification
+    - ScenarioPaperwork
+    - CompetencyObservation
+    - RemedialTraining
+    - SavedWork
+    - FormDefinition
+    - CallTypeRule
+    external_stores:
+    - forms
+  bodycam:
+    tables:
+    - BodycamMedia
+    - ReportRecord
+    - ReportAttachment
+    - AIRequestLog
+    external_stores:
+    - reports
+    - evidence_media
+  bolo:
+    tables:
+    - BOLO
+    external_stores:
+    - operational_documents
+  watch_commander:
+    tables:
+    - WatchRosterEntry
+    - OperationalPost
+    - OperationalVehicle
+    - OperationalEvent
+    - WatchDecisionLog
+    - TurnoverBrief
+    - ReportRecord
+    - ActionItem
+    - Notice
+    external_stores: []
+  assistant_operations:
+    tables:
+    - AssistantOpsTask
+    - WatchRosterEntry
+    - OperationalPost
+    - OperationalVehicle
+    - OperationalEvent
+    - WatchDecisionLog
+    - TurnoverBrief
+    - ActionItem
+    external_stores: []
+  armory:
+    tables:
+    - ArmoryAsset
+    - ArmoryTransaction
+    - DepartmentProfile
+    external_stores: []
+  rfi:
+    tables:
+    - RFIProfile
+    - RFIAsset
+    - RFITransaction
+    - RFIAppointmentLetter
+    - AppConfiguration
+    external_stores:
+    - operational_documents
+  truck_gate:
+    tables:
+    - TruckGateCompany
+    - TruckGateDriver
+    - TruckGateVehicle
+    - TruckGateEntry
+    - DataExchangeJob
+    external_stores:
+    - exchange_staging
+  vehicle_inspections:
+    tables:
+    - VehicleInspection
+    - VehicleInspectionItem
+    - FormDefinition
+    - DataExchangeJob
+    external_stores:
+    - forms
+    - operational_documents
+    - exchange_staging
+  personnel:
+    tables:
+    - DepartmentProfile
+    - RoleAssignment
+    - EmergencyContact
+    external_stores: []
+  performance:
+    tables:
+    - PerformanceElement
+    - PerformanceSubmission
+    - PerformanceRating
+    - ActivityEntry
+    - ActivityTarget
+    external_stores: []
+  stats:
+    tables:
+    - ActivityCategory
+    - ActivityEntry
+    - ActivityTarget
+    - DataExchangeJob
+    external_stores:
+    - exchange_staging
+  analytics:
+    tables:
+    - DepartmentProfile
+    - DOR
+    - DORRating
+    - DORRatingCategory
+    - TaskBookItem
+    - TrainingAssignment
+    - TaskBookProgress
+    - RemedialTraining
+    - WeeklyEvaluation
+    - PhaseEvaluation
+    - TrainingAttendance
+    - ReportRecord
+    - ReportFinding
+    - QualificationRecord
+    - ActivityEntry
+    - ActivityTarget
+    external_stores:
+    - training_documents
+    note: Power BI consumes scoped records; Calendar and program/phase/report-type dimensions are derived,
+      not extra transactional tables.
+  announcements:
+    tables:
+    - Notice
+    external_stores: []
+  ai_assistant:
+    tables:
+    - AIRequestLog
+    - LearningSubmission
+    - SourceDocument
+    - SourcePassage
+    - AppConfiguration
+    external_stores:
+    - references
+    note: Only request metadata is stored. Provider configuration comes from the solution environment;
+      credentials stay in an approved connection/secret store.
+  data_exchange:
+    tables:
+    - DataExchangeJob
+    - AuditEvent
+    external_stores:
+    - exchange_staging
+  administration:
+    tables:
+    - DepartmentProfile
+    - RoleAssignment
+    - AppConfiguration
+    - AuditEvent
+    - FormDefinition
+    - CallTypeRule
+    - SourceDocument
+    - ScenarioDefinition
+    external_stores:
+    - forms
+    - references
+  builder:
+    tables:
+    - AppConfiguration
+    - RoleAssignment
+    - AuditEvent
+    - FormDefinition
+    - CallTypeRule
+    - SourceDocument
+    - ActivityCategory
+    - PerformanceElement
+    external_stores:
+    - forms
+    - references

@@ -2,6 +2,11 @@
 
 This is a design classification for development and migration planning. Final government records, privacy, CUI/CJI, evidence, and retention decisions require command/cybersecurity/records approval.
 
+Authoritative per-table declarations are now in `table-data-policies.yaml`, checked
+against `dataverse-schema.yaml`. The family table below is background guidance,
+not a grant of organization-wide access. Scoped records use user/team ownership;
+see `DATA_MODEL_CONTRACT.md` for access and retention implementation boundaries.
+
 | Data family | Primary storage target | Ownership model | Development rule | Notes |
 |---|---|---|---|---|
 | User profile / roles | Dataverse | Organization + role scopes | Synthetic only | Entra identity is authoritative for authentication |

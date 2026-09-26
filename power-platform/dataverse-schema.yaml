@@ -16,7 +16,7 @@ tables:
       Active: yesno
       PendingApproval: yesno
       IsDemo: yesno
-    ownership: organization
+    ownership: user_or_team
 
   RoleAssignment:
     primary_name: RoleName
@@ -26,7 +26,7 @@ tables:
       Active: yesno
       EffectiveDate: date
       ExpirationDate: date
-    ownership: organization
+    ownership: user_or_team
 
   SavedWork:
     primary_name: Title
@@ -81,7 +81,7 @@ tables:
       CurrentPhase: choice:FTOPhase
       CurrentWeek: whole
       Status: choice:FTOAssignmentStatus
-    ownership: organization
+    ownership: user_or_team
 
   DOR:
     primary_name: DORTitle
@@ -101,7 +101,7 @@ tables:
       SupervisorReviewedAt: datetime
       TraineeComments: multiline
       SupervisorComments: multiline
-    ownership: organization
+    ownership: user_or_team
 
   DORRating:
     primary_name: RatingLabel
@@ -113,7 +113,7 @@ tables:
       Rating: whole
       Comments: multiline
       RemedialRequired: yesno
-    ownership: organization
+    ownership: user_or_team
 
   TaskBookItem:
     primary_name: TaskName
@@ -138,7 +138,7 @@ tables:
       ObservationDate: date
       Comments: multiline
       CompletedAt: datetime
-    ownership: organization
+    ownership: user_or_team
 
   RemedialTraining:
     primary_name: RemedialTitle
@@ -154,7 +154,7 @@ tables:
       Status: choice:RemedialStatus
       ReevaluationResult: multiline
       ClosedAt: datetime
-    ownership: organization
+    ownership: user_or_team
 
   WeeklyEvaluation:
     primary_name: EvaluationTitle
@@ -168,7 +168,7 @@ tables:
       Deficiencies: multiline
       Recommendations: multiline
       Status: choice:WeeklyEvaluationStatus
-    ownership: organization
+    ownership: user_or_team
 
   PhaseEvaluation:
     primary_name: EvaluationTitle
@@ -180,7 +180,7 @@ tables:
       Summary: multiline
       Recommendation: choice:PhaseEvaluationRecommendation
       Status: choice:PhaseEvaluationStatus
-    ownership: organization
+    ownership: user_or_team
 
   TrainingEvent:
     primary_name: Title
@@ -191,7 +191,7 @@ tables:
       Category: text
       RequiredAudienceJson: multiline
       Status: choice:TrainingEventStatus
-    ownership: organization
+    ownership: user_or_team
 
   TrainingAttendance:
     primary_name: AttendanceTitle
@@ -201,7 +201,7 @@ tables:
       Status: choice:TrainingAttendanceStatus
       CompletedAt: datetime
       Comments: multiline
-    ownership: organization
+    ownership: user_or_team
 
   ReportRecord:
     primary_name: ReportTitle
@@ -229,7 +229,7 @@ tables:
       EffectiveFrom: datetime
       EffectiveTo: datetime
       CreatedByProfile: lookup:DepartmentProfile
-    ownership: organization
+    ownership: user_or_team
 
   AuditEvent:
     primary_name: Action
@@ -269,7 +269,7 @@ tables:
       DocumentUrl: url
       FileHash: text
       ActiveForGrounding: yesno
-    ownership: organization
+    ownership: user_or_team
 
   SourcePassage:
     primary_name: PassageLabel
@@ -280,7 +280,7 @@ tables:
       PassageText: multiline
       SearchText: multiline
       Active: yesno
-    ownership: organization
+    ownership: user_or_team
 
   ReportFinding:
     primary_name: FindingTitle
@@ -295,7 +295,7 @@ tables:
       HumanDisposition: choice:ReportFindingHumanDisposition
       HumanComments: multiline
       CreatedAt: datetime
-    ownership: organization
+    ownership: user_or_team
 
   ScenarioDefinition:
     primary_name: Title
@@ -312,7 +312,7 @@ tables:
       ApprovedByProfile: lookup:DepartmentProfile
       ApprovedAt: datetime
       Active: yesno
-    ownership: organization
+    ownership: user_or_team
 
   ScenarioRun:
     primary_name: RunTitle
@@ -331,7 +331,7 @@ tables:
       WorldStateJson: multiline
       EvaluatorStateJson: multiline
       TranscriptRetentionAllowed: yesno
-    ownership: organization
+    ownership: user_or_team
 
   ScenarioAction:
     primary_name: ActionLabel
@@ -346,7 +346,7 @@ tables:
       HiddenEvaluatorResultJson: multiline
       SimulationTime: datetime
       CreatedAt: datetime
-    ownership: organization
+    ownership: user_or_team
 
   ScenarioEvidence:
     primary_name: EvidenceLabel
@@ -360,7 +360,7 @@ tables:
       CollectionState: choice:ScenarioEvidenceCollectionState
       StructuredDataJson: multiline
       VisibleToTrainee: yesno
-    ownership: organization
+    ownership: user_or_team
 
   ScenarioNotification:
     primary_name: NotificationLabel
@@ -373,7 +373,7 @@ tables:
       CompletedAt: datetime
       CompletionAction: lookup:ScenarioAction
       EvaluatorComments: multiline
-    ownership: organization
+    ownership: user_or_team
 
   ScenarioPaperwork:
     primary_name: PaperworkLabel
@@ -386,7 +386,7 @@ tables:
       SavedWork: lookup:SavedWork
       Reviewer: lookup:DepartmentProfile
       ReviewComments: multiline
-    ownership: organization
+    ownership: user_or_team
 
   CompetencyObservation:
     primary_name: ObservationTitle
@@ -400,7 +400,7 @@ tables:
       FinalRating: whole
       FinalizedBy: lookup:DepartmentProfile
       RemedialRecommended: yesno
-    ownership: organization
+    ownership: user_or_team
 
   ActionItem:
     primary_name: Title
@@ -438,7 +438,7 @@ tables:
       Note: multiline
       VerifiedBy: lookup:DepartmentProfile
       VerifiedAt: datetime
-    ownership: organization
+    ownership: user_or_team
 
   OperationalPost:
     primary_name: PostName
@@ -449,7 +449,7 @@ tables:
       LastVerifiedAt: datetime
       Note: multiline
       Active: yesno
-    ownership: organization
+    ownership: user_or_team
 
   OperationalVehicle:
     primary_name: VehicleLabel
@@ -462,7 +462,7 @@ tables:
       LastVerifiedAt: datetime
       Note: multiline
       Active: yesno
-    ownership: organization
+    ownership: user_or_team
 
   OperationalEvent:
     primary_name: EventTitle
@@ -476,7 +476,7 @@ tables:
       DataOwner: lookup:DepartmentProfile
       VerifiedBy: lookup:DepartmentProfile
       LastVerifiedAt: datetime
-    ownership: organization
+    ownership: user_or_team
 
   WatchDecisionLog:
     primary_name: DecisionTitle
@@ -489,7 +489,7 @@ tables:
       DecisionTaken: multiline
       IntegrityHash: text
       SavedAt: datetime
-    ownership: organization
+    ownership: user_or_team
 
   TurnoverBrief:
     primary_name: BriefTitle
@@ -503,7 +503,7 @@ tables:
       IntegrityHash: text
       CreatedAt: datetime
       FinalizedAt: datetime
-    ownership: organization
+    ownership: user_or_team
 
   EmergencyContact:
     primary_name: ContactName
@@ -674,7 +674,7 @@ tables:
       UploadedAt: datetime
       Status: choice:TrainingRosterStatus
       Notes: multiline
-    ownership: organization
+    ownership: user_or_team
 
   TrainingSignature:
     primary_name: SignatureLabel
@@ -701,7 +701,7 @@ tables:
       SourceDocument: lookup:SourceDocument
       TagType: choice:SourceTagTagType
       TagValue: text
-    ownership: organization
+    ownership: user_or_team
 
   BodycamMedia:
     primary_name: MediaTitle
@@ -736,7 +736,7 @@ tables:
       LocatedAt: datetime
       ClosedAt: datetime
       ClosureComments: multiline
-    ownership: organization
+    ownership: user_or_team
 
   PerformanceElement:
     primary_name: ElementName
@@ -820,7 +820,7 @@ tables:
       StorageLocation: text
       Notes: multiline
       Active: yesno
-    ownership: organization
+    ownership: user_or_team
 
   ArmoryTransaction:
     primary_name: TransactionLabel
@@ -833,7 +833,7 @@ tables:
       PerformedAt: datetime
       VerificationMethod: choice:ArmoryTransactionVerificationMethod
       Notes: multiline
-    ownership: organization
+    ownership: user_or_team
 
   RFIProfile:
     primary_name: RFIProfileName
@@ -842,7 +842,7 @@ tables:
       CommandLevel: text
       DefaultSettingsJson: multiline
       Active: yesno
-    ownership: organization
+    ownership: user_or_team
 
   RFIAsset:
     primary_name: AssetLabel
@@ -852,7 +852,7 @@ tables:
       Description: multiline
       QuantityOnHand: decimal
       Status: choice:RFIAssetStatus
-    ownership: organization
+    ownership: user_or_team
 
   RFITransaction:
     primary_name: TransactionLabel
@@ -864,7 +864,7 @@ tables:
       PerformedBy: lookup:DepartmentProfile
       PerformedAt: datetime
       Notes: multiline
-    ownership: organization
+    ownership: user_or_team
 
   RFIAppointmentLetter:
     primary_name: LetterTitle
@@ -876,7 +876,7 @@ tables:
       Status: choice:RFIAppointmentLetterStatus
       UploadedBy: lookup:DepartmentProfile
       UploadedAt: datetime
-    ownership: organization
+    ownership: user_or_team
 
   TruckGateCompany:
     primary_name: CompanyName
@@ -885,7 +885,7 @@ tables:
       Phone: text
       Active: yesno
       Notes: multiline
-    ownership: organization
+    ownership: user_or_team
 
   TruckGateDriver:
     primary_name: DriverName
@@ -896,7 +896,7 @@ tables:
       Phone: text
       Active: yesno
       Notes: multiline
-    ownership: organization
+    ownership: user_or_team
 
   TruckGateVehicle:
     primary_name: VehicleLabel
@@ -908,7 +908,7 @@ tables:
       VIN: text
       VehicleType: text
       Active: yesno
-    ownership: organization
+    ownership: user_or_team
 
   TruckGateEntry:
     primary_name: EntryLabel
@@ -924,7 +924,7 @@ tables:
       Source: choice:TruckGateEntrySource
       ValidationStatus: choice:TruckGateEntryValidationStatus
       Notes: multiline
-    ownership: organization
+    ownership: user_or_team
 
   VehicleInspection:
     primary_name: InspectionTitle
@@ -1053,7 +1053,7 @@ tables:
       Comments: multiline
       CreatedAt: datetime
       CompletedAt: datetime
-    ownership: organization
+    ownership: user_or_team
 
   AIRequestLog:
     primary_name: RequestLabel
@@ -1067,7 +1067,7 @@ tables:
       Status: choice:AIRequestLogStatus
       ExternalAIUsed: yesno
       CreatedAt: datetime
-    ownership: organization
+    ownership: user_or_team
 
   LearningSubmission:
     primary_name: SubmissionTitle
@@ -1091,7 +1091,7 @@ tables:
       EffectiveDate: date
       ApprovedBy: lookup:DepartmentProfile
       ApprovedAt: datetime
-    ownership: organization
+    ownership: user_or_team
 
   DataExchangeJob:
     primary_name: JobTitle
@@ -1106,5 +1106,5 @@ tables:
       ErrorSummary: multiline
       RequestedAt: datetime
       CompletedAt: datetime
-    ownership: organization
+    ownership: user_or_team
 

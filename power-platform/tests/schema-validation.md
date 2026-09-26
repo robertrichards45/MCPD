@@ -10,7 +10,9 @@ python -m unittest discover -s power-platform/tests -p "test_*.py"
 
 The validator rejects duplicate YAML keys, unresolved/inline choices, missing lookup
 targets, invalid ownership values, duplicate choice values, and changes to the core
-FTO program/phase/acknowledgment vocabulary. These are source checks, not proof of
+FTO program/phase/acknowledgment vocabulary. It also checks exact module/table-policy
+coverage, URL storage mappings, environment references, ownership consistency,
+evaluator-only fields and retention safeguards. These are source checks, not proof of
 Dataverse deployment, authorization, records retention, or end-to-end workflow behavior.
 
 ## Choice contract
@@ -45,9 +47,8 @@ relationships are preserved by this normalization pass.
 
 ## Remaining Phase 1 checks
 
-- Map every module to explicit tables and any external document store.
 - Resolve overlapping Report/CLEO and reference/versioning concepts.
-- Define ownership, row/column security, retention and legal-hold handling per table.
+- Implement and tenant-test the declared row/column security and retention rules.
 - Validate seed values, workflow transitions and all cross-file references.
 - Resolve cardinality constraints and required/unique fields before provisioning.
 - Preserve the disabled-by-default GenAI settings and secret-free source model.

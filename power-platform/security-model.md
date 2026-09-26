@@ -91,6 +91,16 @@ Use a combination of:
 
 Do not rely on Power Apps filtering alone to protect records.
 
+### Source-controlled table policies
+
+`table-data-policies.yaml` defines ownership and access intent for every table.
+Scoped FTO, report findings, scenario runtime, personnel and operations records
+now use user/team ownership. A lookup to a person or parent does not grant access.
+Provision owner/access teams and child-record grants, and revoke obsolete grants
+on reassignment. Protect evaluator-only fields and raw scenario definitions from
+direct trainee reads and exports. See `DATA_MODEL_CONTRACT.md` for implementation
+boundaries. These definitions do not constitute deployed security roles.
+
 ## Department-wide sharing
 
 One MCPD Sentinel app is shared with the department. The signed-in user's Entra identity determines their profile, role assignments, and authorized records.

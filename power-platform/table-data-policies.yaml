@@ -1,0 +1,705 @@
+version: 1
+development_data: synthetic_only
+classifications:
+- audience_scoped
+- controlled_configuration
+- controlled_reference
+- personal_workspace
+- personnel_private
+- restricted_administration
+- restricted_audit
+- restricted_evaluator
+- restricted_evidence
+- restricted_form
+- restricted_incident
+- restricted_inventory
+- restricted_operations
+- restricted_request_metadata
+- restricted_submission
+- restricted_training
+- restricted_visitor
+security_profiles:
+  personnel:
+    ownership: user_or_team
+    access_rule: Own profile/contact records and explicitly authorized personnel staff; expose a minimal
+      directory projection separately.
+  identity_admin:
+    ownership: user_or_team
+    access_rule: Identity administrators manage grants; role rows do not themselves confer Dataverse privileges.
+  personal:
+    ownership: user_or_team
+    access_rule: Owner plus explicit task/form recipients; sharing must not bypass the linked record scope.
+  configuration:
+    ownership: organization
+    access_rule: Authorized configuration managers write; app users read non-sensitive published configuration.
+  system_configuration:
+    ownership: organization
+    access_rule: System configuration administrators only; ConfigValue must never contain credentials.
+  fto_assignment:
+    ownership: user_or_team
+    access_rule: Trainee, assigned FTO, authorized supervisor and FTO coordinator within assignment scope;
+      only authorized FTO/supervisor actions finalize ratings/reviews.
+  training:
+    ownership: user_or_team
+    access_rule: Participant sees own attendance/signature/qualification; training managers manage scoped
+      events and rosters; roster access does not expose other participants signatures.
+  report:
+    ownership: user_or_team
+    access_rule: Report owner, authorized co-authors and assigned reviewers; all child rows receive explicit
+      report-team permissions.
+  form:
+    ownership: user_or_team
+    access_rule: Owner and explicit Personal/Team/Department recipients, intersected with report authorization
+      when linked.
+  reference:
+    ownership: user_or_team
+    access_rule: Source managers maintain versions; approved audiences read published sources; drafts/retired
+      sources cannot be used as current grounding.
+  scenario_definition:
+    ownership: user_or_team
+    access_rule: FTO/scenario authors only for raw definition; trainees receive a sanitized dispatch/scene
+      projection from the runtime.
+  scenario_run:
+    ownership: user_or_team
+    access_rule: Assigned trainee receives only visible runtime output; FTO/reviewer accesses evaluator
+      content; secure hidden columns before any trainee access.
+  watch:
+    ownership: user_or_team
+    access_rule: Authorized watch/operations teams; Assistant Operations receives explicitly assigned
+      operational scope, never automatic case or admin privileges.
+  announcement:
+    ownership: user_or_team
+    access_rule: Publisher controls write; read shares follow Personal/Team/Department audience, including
+      inactive drafts.
+  armory:
+    ownership: user_or_team
+    access_rule: Authorized armory team only; assigning an asset to an officer does not grant inventory
+      or transaction administration.
+  rfi:
+    ownership: user_or_team
+    access_rule: Authorized RFI team only; officer-specific projections require explicit grants.
+  gate:
+    ownership: user_or_team
+    access_rule: Authorized gate team only; visitor identity is not department-wide directory data.
+  inspection:
+    ownership: user_or_team
+    access_rule: Inspector and authorized inspection reviewers; child records match the inspection access
+      scope.
+  performance:
+    ownership: user_or_team
+    access_rule: Employee and assigned performance supervisor; command summaries do not grant unrestricted
+      evaluation access.
+  activity:
+    ownership: user_or_team
+    access_rule: Officer and authorized team supervisor; analytics must apply equivalent row-level scope.
+  media:
+    ownership: user_or_team
+    access_rule: Explicit media/evidence custodians and authorized report participants only after deployment
+      approval.
+  ai_metadata:
+    ownership: user_or_team
+    access_rule: Requester and authorized reviewers; hashes and source IDs only, no raw prompt/output
+      or credentials.
+  learning:
+    ownership: user_or_team
+    access_rule: Submitter and assigned learning reviewers; approval is required before promotion to source
+      material.
+  exchange:
+    ownership: user_or_team
+    access_rule: Requester and authorized exchange operators; job authorization never expands source-record
+      privileges.
+  audit:
+    ownership: organization
+    access_rule: Trusted service writes append-only events; designated auditors read; ordinary app roles
+      cannot update or delete.
+retention_profiles:
+  personnel_record:
+    schedule_key: personnel_record
+    production_schedule_required: true
+    automatic_delete: false
+    legal_hold_blocks_disposition: true
+    disposition: No purge until an approved deployment records schedule and hold check authorize it; expire
+      visibility separately from deletion.
+  administration_record:
+    schedule_key: administration_record
+    production_schedule_required: true
+    automatic_delete: false
+    legal_hold_blocks_disposition: true
+    disposition: No purge until an approved deployment records schedule and hold check authorize it; expire
+      visibility separately from deletion.
+  working_record:
+    schedule_key: working_record
+    production_schedule_required: true
+    automatic_delete: false
+    legal_hold_blocks_disposition: true
+    disposition: No purge until an approved deployment records schedule and hold check authorize it; expire
+      visibility separately from deletion.
+  configuration_history:
+    schedule_key: configuration_history
+    production_schedule_required: true
+    automatic_delete: false
+    legal_hold_blocks_disposition: true
+    disposition: No purge until an approved deployment records schedule and hold check authorize it; expire
+      visibility separately from deletion.
+  training_record:
+    schedule_key: training_record
+    production_schedule_required: true
+    automatic_delete: false
+    legal_hold_blocks_disposition: true
+    disposition: No purge until an approved deployment records schedule and hold check authorize it; expire
+      visibility separately from deletion.
+  incident_record:
+    schedule_key: incident_record
+    production_schedule_required: true
+    automatic_delete: false
+    legal_hold_blocks_disposition: true
+    disposition: No purge until an approved deployment records schedule and hold check authorize it; expire
+      visibility separately from deletion.
+  form_record:
+    schedule_key: form_record
+    production_schedule_required: true
+    automatic_delete: false
+    legal_hold_blocks_disposition: true
+    disposition: No purge until an approved deployment records schedule and hold check authorize it; expire
+      visibility separately from deletion.
+  reference_history:
+    schedule_key: reference_history
+    production_schedule_required: true
+    automatic_delete: false
+    legal_hold_blocks_disposition: true
+    disposition: No purge until an approved deployment records schedule and hold check authorize it; expire
+      visibility separately from deletion.
+  operations_record:
+    schedule_key: operations_record
+    production_schedule_required: true
+    automatic_delete: false
+    legal_hold_blocks_disposition: true
+    disposition: No purge until an approved deployment records schedule and hold check authorize it; expire
+      visibility separately from deletion.
+  inventory_record:
+    schedule_key: inventory_record
+    production_schedule_required: true
+    automatic_delete: false
+    legal_hold_blocks_disposition: true
+    disposition: No purge until an approved deployment records schedule and hold check authorize it; expire
+      visibility separately from deletion.
+  visitor_record:
+    schedule_key: visitor_record
+    production_schedule_required: true
+    automatic_delete: false
+    legal_hold_blocks_disposition: true
+    disposition: No purge until an approved deployment records schedule and hold check authorize it; expire
+      visibility separately from deletion.
+  inspection_record:
+    schedule_key: inspection_record
+    production_schedule_required: true
+    automatic_delete: false
+    legal_hold_blocks_disposition: true
+    disposition: No purge until an approved deployment records schedule and hold check authorize it; expire
+      visibility separately from deletion.
+  activity_record:
+    schedule_key: activity_record
+    production_schedule_required: true
+    automatic_delete: false
+    legal_hold_blocks_disposition: true
+    disposition: No purge until an approved deployment records schedule and hold check authorize it; expire
+      visibility separately from deletion.
+  evidence_record:
+    schedule_key: evidence_record
+    production_schedule_required: true
+    automatic_delete: false
+    legal_hold_blocks_disposition: true
+    disposition: No purge until an approved deployment records schedule and hold check authorize it; expire
+      visibility separately from deletion.
+  request_metadata:
+    schedule_key: request_metadata
+    production_schedule_required: true
+    automatic_delete: false
+    legal_hold_blocks_disposition: true
+    disposition: No purge until an approved deployment records schedule and hold check authorize it; expire
+      visibility separately from deletion.
+  learning_record:
+    schedule_key: learning_record
+    production_schedule_required: true
+    automatic_delete: false
+    legal_hold_blocks_disposition: true
+    disposition: No purge until an approved deployment records schedule and hold check authorize it; expire
+      visibility separately from deletion.
+  exchange_record:
+    schedule_key: exchange_record
+    production_schedule_required: true
+    automatic_delete: false
+    legal_hold_blocks_disposition: true
+    disposition: No purge until an approved deployment records schedule and hold check authorize it; expire
+      visibility separately from deletion.
+  audit_record:
+    schedule_key: audit_record
+    production_schedule_required: true
+    automatic_delete: false
+    legal_hold_blocks_disposition: true
+    disposition: No purge until an approved deployment records schedule and hold check authorize it; expire
+      visibility separately from deletion.
+tables:
+  DepartmentProfile:
+    ownership: user_or_team
+    classification: personnel_private
+    security_profile: personnel
+    retention_profile: personnel_record
+  EmergencyContact:
+    ownership: user_or_team
+    classification: personnel_private
+    security_profile: personnel
+    retention_profile: personnel_record
+  RoleAssignment:
+    ownership: user_or_team
+    classification: restricted_administration
+    security_profile: identity_admin
+    retention_profile: administration_record
+  SavedWork:
+    ownership: user_or_team
+    classification: personal_workspace
+    security_profile: personal
+    retention_profile: working_record
+  DashboardPreference:
+    ownership: user_or_team
+    classification: personal_workspace
+    security_profile: personal
+    retention_profile: working_record
+  SourceFavorite:
+    ownership: user_or_team
+    classification: personal_workspace
+    security_profile: personal
+    retention_profile: working_record
+  ActionItem:
+    ownership: user_or_team
+    classification: personal_workspace
+    security_profile: personal
+    retention_profile: working_record
+  FormDefinition:
+    ownership: organization
+    classification: controlled_configuration
+    security_profile: configuration
+    retention_profile: configuration_history
+  CallTypeRule:
+    ownership: organization
+    classification: controlled_configuration
+    security_profile: configuration
+    retention_profile: configuration_history
+  TaskBookItem:
+    ownership: organization
+    classification: controlled_configuration
+    security_profile: configuration
+    retention_profile: configuration_history
+  DORRatingCategory:
+    ownership: organization
+    classification: controlled_configuration
+    security_profile: configuration
+    retention_profile: configuration_history
+  QualificationDefinition:
+    ownership: organization
+    classification: controlled_configuration
+    security_profile: configuration
+    retention_profile: configuration_history
+  PerformanceElement:
+    ownership: organization
+    classification: controlled_configuration
+    security_profile: configuration
+    retention_profile: configuration_history
+  ActivityCategory:
+    ownership: organization
+    classification: controlled_configuration
+    security_profile: configuration
+    retention_profile: configuration_history
+  AppConfiguration:
+    ownership: organization
+    classification: restricted_administration
+    security_profile: system_configuration
+    retention_profile: configuration_history
+  TrainingAssignment:
+    ownership: user_or_team
+    classification: restricted_training
+    security_profile: fto_assignment
+    retention_profile: training_record
+  DOR:
+    ownership: user_or_team
+    classification: restricted_training
+    security_profile: fto_assignment
+    retention_profile: training_record
+  DORRating:
+    ownership: user_or_team
+    classification: restricted_training
+    security_profile: fto_assignment
+    retention_profile: training_record
+  TaskBookProgress:
+    ownership: user_or_team
+    classification: restricted_training
+    security_profile: fto_assignment
+    retention_profile: training_record
+  RemedialTraining:
+    ownership: user_or_team
+    classification: restricted_training
+    security_profile: fto_assignment
+    retention_profile: training_record
+  WeeklyEvaluation:
+    ownership: user_or_team
+    classification: restricted_training
+    security_profile: fto_assignment
+    retention_profile: training_record
+  PhaseEvaluation:
+    ownership: user_or_team
+    classification: restricted_training
+    security_profile: fto_assignment
+    retention_profile: training_record
+  TrainingEvent:
+    ownership: user_or_team
+    classification: restricted_training
+    security_profile: training
+    retention_profile: training_record
+  TrainingAttendance:
+    ownership: user_or_team
+    classification: restricted_training
+    security_profile: training
+    retention_profile: training_record
+  TrainingRoster:
+    ownership: user_or_team
+    classification: restricted_training
+    security_profile: training
+    retention_profile: training_record
+  TrainingSignature:
+    ownership: user_or_team
+    classification: restricted_training
+    security_profile: training
+    retention_profile: training_record
+  QualificationRecord:
+    ownership: user_or_team
+    classification: restricted_training
+    security_profile: training
+    retention_profile: training_record
+  ReportRecord:
+    ownership: user_or_team
+    classification: restricted_incident
+    security_profile: report
+    retention_profile: incident_record
+  ReportFinding:
+    ownership: user_or_team
+    classification: restricted_incident
+    security_profile: report
+    retention_profile: incident_record
+  ReportPerson:
+    ownership: user_or_team
+    classification: restricted_incident
+    security_profile: report
+    retention_profile: incident_record
+  ReportVehicle:
+    ownership: user_or_team
+    classification: restricted_incident
+    security_profile: report
+    retention_profile: incident_record
+  ReportProperty:
+    ownership: user_or_team
+    classification: restricted_incident
+    security_profile: report
+    retention_profile: incident_record
+  ReportOffense:
+    ownership: user_or_team
+    classification: restricted_incident
+    security_profile: report
+    retention_profile: incident_record
+  ReportCoAuthor:
+    ownership: user_or_team
+    classification: restricted_incident
+    security_profile: report
+    retention_profile: incident_record
+  ReportAttachment:
+    ownership: user_or_team
+    classification: restricted_incident
+    security_profile: report
+    retention_profile: incident_record
+  CLEOReport:
+    ownership: user_or_team
+    classification: restricted_incident
+    security_profile: report
+    retention_profile: incident_record
+  CLEOPerson:
+    ownership: user_or_team
+    classification: restricted_incident
+    security_profile: report
+    retention_profile: incident_record
+  CLEOProperty:
+    ownership: user_or_team
+    classification: restricted_incident
+    security_profile: report
+    retention_profile: incident_record
+  CLEOVehicle:
+    ownership: user_or_team
+    classification: restricted_incident
+    security_profile: report
+    retention_profile: incident_record
+  CLEOOffense:
+    ownership: user_or_team
+    classification: restricted_incident
+    security_profile: report
+    retention_profile: incident_record
+  CLEOFieldFeedback:
+    ownership: user_or_team
+    classification: restricted_incident
+    security_profile: report
+    retention_profile: incident_record
+  AccidentCase:
+    ownership: user_or_team
+    classification: restricted_incident
+    security_profile: report
+    retention_profile: incident_record
+  AccidentObject:
+    ownership: user_or_team
+    classification: restricted_incident
+    security_profile: report
+    retention_profile: incident_record
+  AccidentMeasurement:
+    ownership: user_or_team
+    classification: restricted_incident
+    security_profile: report
+    retention_profile: incident_record
+  FormInstance:
+    ownership: user_or_team
+    classification: restricted_form
+    security_profile: form
+    retention_profile: form_record
+    raw_content_rule: Apply FormDefinition retention/save controls before writing PayloadJson or output
+      files; metadata retention never authorizes raw payload storage.
+  FormFieldValue:
+    ownership: user_or_team
+    classification: restricted_form
+    security_profile: form
+    retention_profile: form_record
+    raw_content_rule: Inherit FormInstance save/retention controls for ValueText including signatures
+      and PII; no secondary copy bypass.
+  SourceDocument:
+    ownership: user_or_team
+    classification: controlled_reference
+    security_profile: reference
+    retention_profile: reference_history
+  SourcePassage:
+    ownership: user_or_team
+    classification: controlled_reference
+    security_profile: reference
+    retention_profile: reference_history
+  SourceTag:
+    ownership: user_or_team
+    classification: controlled_reference
+    security_profile: reference
+    retention_profile: reference_history
+  ReferenceMaterial:
+    ownership: user_or_team
+    classification: controlled_reference
+    security_profile: reference
+    retention_profile: reference_history
+  ScenarioDefinition:
+    ownership: user_or_team
+    classification: restricted_evaluator
+    security_profile: scenario_definition
+    retention_profile: configuration_history
+    evaluator_only_columns:
+    - ScenarioJson
+  ScenarioRun:
+    ownership: user_or_team
+    classification: restricted_training
+    security_profile: scenario_run
+    retention_profile: training_record
+    evaluator_only_columns:
+    - WorldStateJson
+    - EvaluatorStateJson
+    - RunSeed
+    raw_content_rule: TranscriptRetentionAllowed defaults false at provisioning; a retention schedule
+      does not enable transcript capture.
+  ScenarioAction:
+    ownership: user_or_team
+    classification: restricted_training
+    security_profile: scenario_run
+    retention_profile: training_record
+    evaluator_only_columns:
+    - HiddenEvaluatorResultJson
+    - StructuredActionJson
+    raw_content_rule: RawTraineeText is not persisted when ScenarioRun.TranscriptRetentionAllowed is false;
+      redact derived JSON/output that would recreate a transcript.
+  ScenarioEvidence:
+    ownership: user_or_team
+    classification: restricted_training
+    security_profile: scenario_run
+    retention_profile: training_record
+    evaluator_only_columns:
+    - DiscoveryCondition
+    - StructuredDataJson
+  ScenarioNotification:
+    ownership: user_or_team
+    classification: restricted_training
+    security_profile: scenario_run
+    retention_profile: training_record
+    evaluator_only_columns:
+    - TriggerCondition
+    - EvaluatorComments
+  ScenarioPaperwork:
+    ownership: user_or_team
+    classification: restricted_training
+    security_profile: scenario_run
+    retention_profile: training_record
+  CompetencyObservation:
+    ownership: user_or_team
+    classification: restricted_training
+    security_profile: scenario_run
+    retention_profile: training_record
+    evaluator_only_columns:
+    - EvidenceJson
+    - DraftRating
+  WatchRosterEntry:
+    ownership: user_or_team
+    classification: restricted_operations
+    security_profile: watch
+    retention_profile: operations_record
+  OperationalPost:
+    ownership: user_or_team
+    classification: restricted_operations
+    security_profile: watch
+    retention_profile: operations_record
+  OperationalVehicle:
+    ownership: user_or_team
+    classification: restricted_operations
+    security_profile: watch
+    retention_profile: operations_record
+  OperationalEvent:
+    ownership: user_or_team
+    classification: restricted_operations
+    security_profile: watch
+    retention_profile: operations_record
+  WatchDecisionLog:
+    ownership: user_or_team
+    classification: restricted_operations
+    security_profile: watch
+    retention_profile: operations_record
+  TurnoverBrief:
+    ownership: user_or_team
+    classification: restricted_operations
+    security_profile: watch
+    retention_profile: operations_record
+  AssistantOpsTask:
+    ownership: user_or_team
+    classification: restricted_operations
+    security_profile: watch
+    retention_profile: operations_record
+  BOLO:
+    ownership: user_or_team
+    classification: restricted_operations
+    security_profile: watch
+    retention_profile: operations_record
+  Notice:
+    ownership: user_or_team
+    classification: audience_scoped
+    security_profile: announcement
+    retention_profile: operations_record
+  ArmoryAsset:
+    ownership: user_or_team
+    classification: restricted_inventory
+    security_profile: armory
+    retention_profile: inventory_record
+  ArmoryTransaction:
+    ownership: user_or_team
+    classification: restricted_inventory
+    security_profile: armory
+    retention_profile: inventory_record
+  RFIProfile:
+    ownership: user_or_team
+    classification: restricted_inventory
+    security_profile: rfi
+    retention_profile: inventory_record
+  RFIAsset:
+    ownership: user_or_team
+    classification: restricted_inventory
+    security_profile: rfi
+    retention_profile: inventory_record
+  RFITransaction:
+    ownership: user_or_team
+    classification: restricted_inventory
+    security_profile: rfi
+    retention_profile: inventory_record
+  RFIAppointmentLetter:
+    ownership: user_or_team
+    classification: restricted_inventory
+    security_profile: rfi
+    retention_profile: inventory_record
+  TruckGateCompany:
+    ownership: user_or_team
+    classification: restricted_visitor
+    security_profile: gate
+    retention_profile: visitor_record
+  TruckGateDriver:
+    ownership: user_or_team
+    classification: restricted_visitor
+    security_profile: gate
+    retention_profile: visitor_record
+  TruckGateVehicle:
+    ownership: user_or_team
+    classification: restricted_visitor
+    security_profile: gate
+    retention_profile: visitor_record
+  TruckGateEntry:
+    ownership: user_or_team
+    classification: restricted_visitor
+    security_profile: gate
+    retention_profile: visitor_record
+  VehicleInspection:
+    ownership: user_or_team
+    classification: restricted_operations
+    security_profile: inspection
+    retention_profile: inspection_record
+  VehicleInspectionItem:
+    ownership: user_or_team
+    classification: restricted_operations
+    security_profile: inspection
+    retention_profile: inspection_record
+  PerformanceSubmission:
+    ownership: user_or_team
+    classification: personnel_private
+    security_profile: performance
+    retention_profile: personnel_record
+  PerformanceRating:
+    ownership: user_or_team
+    classification: personnel_private
+    security_profile: performance
+    retention_profile: personnel_record
+  ActivityEntry:
+    ownership: user_or_team
+    classification: personnel_private
+    security_profile: activity
+    retention_profile: activity_record
+  ActivityTarget:
+    ownership: user_or_team
+    classification: personnel_private
+    security_profile: activity
+    retention_profile: activity_record
+  BodycamMedia:
+    ownership: user_or_team
+    classification: restricted_evidence
+    security_profile: media
+    retention_profile: evidence_record
+    raw_content_rule: TranscriptText capture is disabled unless separately approved with a records schedule;
+      evidence approval does not imply transcript or AI approval.
+  AIRequestLog:
+    ownership: user_or_team
+    classification: restricted_request_metadata
+    security_profile: ai_metadata
+    retention_profile: request_metadata
+  LearningSubmission:
+    ownership: user_or_team
+    classification: restricted_submission
+    security_profile: learning
+    retention_profile: learning_record
+  DataExchangeJob:
+    ownership: user_or_team
+    classification: restricted_administration
+    security_profile: exchange
+    retention_profile: exchange_record
+  AuditEvent:
+    ownership: organization
+    classification: restricted_audit
+    security_profile: audit
+    retention_profile: audit_record

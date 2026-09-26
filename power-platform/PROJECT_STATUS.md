@@ -41,10 +41,29 @@ Completed this pass:
 - data classification/storage guidance
 
 Remaining in Phase 1:
-- add table-by-table retention/ownership/security classification
-- validate every module-to-table mapping
 - resolve overlapping concepts, required fields and relationship cardinality constraints
 - extend source validation to seed values, workflow transitions and cross-file mappings
+- repair BI source YAML quoting and validate analytics table references
+
+### 25 Sep 2026 — Module coverage and table data policies
+
+- Mapped all 33 registered modules to explicit tables and external document stores
+  in `module-data-map.yaml`; all 87 tables are covered.
+- Added per-table ownership, design classification, security and retention profiles
+  in `table-data-policies.yaml`. Approved production schedules remain deployment
+  inputs; automatic deletion is disabled and legal holds must block disposition.
+- Corrected 45 organization-owned declarations to user/team ownership to support
+  required scopes. Actual roles, teams, sharing, evaluator field security and
+  lifecycle enforcement remain tenant/Phase 2 work.
+- Mapped every existing URL column and added the empty, non-secret
+  `mcpd_EvidenceMediaStoreId` environment setting for future approved media storage.
+- Extended validation to module/table-policy coverage, storage dependencies,
+  environment references, ownership consistency and evaluator/retention safeguards.
+- All 20 regression tests and the validator pass, including intentionally broken
+  mappings, ownership, storage references and safeguards.
+- Documented boundaries and remaining decisions in `DATA_MODEL_CONTRACT.md`.
+  Structural coverage does not imply feature completion or deployed security.
+  Full original scope and approved UI assets remain unchanged.
 
 ### 25 Sep 2026 — Choice normalization and executable validation
 
@@ -71,11 +90,11 @@ Numeric Dataverse option IDs remain part of solution-generation work.
 - Actual Power BI workspace/model deployment
 - Managed solution export
 
-These are tenant-execution tasks, not design gaps.
+These tenant tasks are separate from the remaining source-model decisions above.
 
 ## Next source-controlled work
 
-1. Create explicit module-to-table/document-store mappings and check coverage.
-2. Resolve Report/CLEO and reference-versioning overlaps and cardinality constraints.
-3. Add retention/ownership/security classification per table.
-4. Extend the executable validator and acceptance tests for those decisions.
+1. Resolve Report/CLEO and reference-versioning overlaps and cardinality constraints.
+2. Validate required/unique fields, seed values and workflow transitions.
+3. Repair BI source YAML and validate analytics mappings.
+4. Complete Phase 2 role/team/column-security definitions using the table policies.

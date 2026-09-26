@@ -70,3 +70,30 @@
 4. Government environment variables can be changed without editing every screen.
 5. Synthetic development data can be excluded from production.
 6. Power BI row-level security is tested under Officer/FTO/Supervisor/Admin identities.
+
+## Table policy enforcement (tenant execution required)
+
+1. Provision ownership from `dataverse-schema.yaml` and match every table to
+   `table-data-policies.yaml`; an organization-wide role grant must not defeat
+   intended assignment/report/watch scopes.
+2. Direct API reads under two unrelated trainee accounts cannot retrieve each
+   other's DORs, ratings, scenario runs or action rows. Reassignment revokes the
+   old FTO's access to both parents and children where no independent grant exists.
+3. A trainee with access to a scenario run cannot retrieve raw ScenarioDefinition,
+   world/evaluator state, hidden action results or hidden evidence conditions via
+   API, export, search or BI. The authorized FTO can access evaluation content.
+4. A trainee cannot finalize DOR/competency ratings using a direct update or flow
+   invocation. A matching owner/profile ID alone is insufficient authorization.
+5. An unrelated officer cannot open report attachments using a copied storage URL.
+   Parent, child and external file access remain aligned after owner/team changes.
+6. Missing retention configuration prevents purge. A legal hold blocks metadata
+   and file disposition; clearing a hold does not bypass the approved schedule.
+7. Transcript retention disabled prevents RawTraineeText and reconstructed raw
+   transcripts in derived JSON/output. Form save restrictions apply to payloads,
+   field-value rows and generated output files.
+8. An empty evidence-store setting or absent deployment approval leaves production
+   media access unavailable. Adding a store identifier does not enable AI access
+   or bypass evidence authorization.
+9. Assistant Operations can access assigned operational scope but cannot read an
+   unrelated case, personnel evaluation or administration setting without a
+   separate grant. Directory projections exclude emergency-contact details.
