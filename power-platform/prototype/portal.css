@@ -1,0 +1,4 @@
+.module-card.selected{border-color:#37a7ff;box-shadow:0 0 0 1px #147dff inset;background:#102235}
+.portal-intro{margin-bottom:16px}.portal-grid{grid-template-columns:repeat(4,minmax(0,1fr));max-height:58vh;overflow:auto;padding-right:4px}.portal-grid .module-card{min-height:130px}.portal-detail{margin-top:16px}.portal-detail h2{margin-top:0}.portal-detail h3{color:#77c4ff}
+@media(max-width:1100px){.portal-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:760px){.portal-grid{grid-template-columns:1fr}}

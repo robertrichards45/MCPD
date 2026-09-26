@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>MCPD Sentinel — Power Platform Visual Prototype</title>
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="portal.css">
 </head>
 <body>
   <div class="app-shell">
@@ -26,6 +27,7 @@
         <button class="nav-item" data-screen="scenario">▶ <span>Scenario Lab</span></button>
         <button class="nav-item" data-screen="watch">◆ <span>Watch Commander</span></button>
         <button class="nav-item" data-screen="analytics">▥ <span>Analytics</span></button>
+        <button class="nav-item" data-screen="portal">▦ <span>Original Portal</span></button>
       </nav>
       <div class="sidebar-foot"><small>POWER PLATFORM PROTOTYPE</small><strong>Original Sentinel Baseline</strong></div>
     </aside>
@@ -144,6 +146,45 @@
         <div class="page-head"><div><h1>Department Analytics</h1><p>Power BI command view</p></div><select><option>Last 90 Days</option></select></div>
         <div class="metric-grid"><article class="metric"><span>Training Compliance</span><strong>87%</strong><small>▲ 5%</small></article><article class="metric"><span>Report Quality</span><strong>92%</strong><small>▲ 3%</small></article><article class="metric"><span>FTO Progress</span><strong>76%</strong><small>▲ 8%</small></article><article class="metric"><span>Form Completion</span><strong>95%</strong><small>▲ 2%</small></article></div>
         <div class="chart-grid"><article class="panel chart"><h2>Reports by Type</h2><div class="bars"><i style="height:80%"></i><i style="height:58%"></i><i style="height:42%"></i><i style="height:68%"></i><i style="height:51%"></i><i style="height:62%"></i></div></article><article class="panel chart"><h2>FTO Phase Completion</h2><div class="donut">76%</div></article><article class="panel chart"><h2>Training Status</h2><div class="donut">87%</div></article></div>
+      </section>
+
+      <section class="screen" id="screen-portal">
+        <div class="page-head"><div><h1>Original MCPD Portal</h1><p>Complete original capability surface · synthetic preview data</p></div><span class="status info">33 MODULES</span></div>
+        <article class="panel portal-intro"><h2>All original Portal capabilities are preserved here</h2><p>Choose a module to open its workflow preview. Each card represents the source-controlled MCPD Portal inventory and remains available for later Power Platform implementation.</p><div class="filter-row"><input id="portal-filter" placeholder="Filter modules…"><select id="portal-group"><option value="all">All groups</option><option>Reports & Forms</option><option>Law & Reference</option><option>Training & FTO</option><option>Operations</option><option>Personnel & Analytics</option><option>Administration</option></select><select id="portal-role"><option value="all">All roles</option><option>Officer</option><option>FTO</option><option>Supervisor</option><option>Administrator</option></select><select><option>All statuses</option><option>Ready for preview</option><option>Tenant build pending</option></select></div></article>
+        <div class="module-grid portal-grid" id="portal-grid">
+          <button class="module-card" data-group="Reports & Forms" data-role="Officer FTO Supervisor Administrator"><b>Incident Reporting</b><span>Desktop + mobile reports, persons, vehicles, property, narrative, attachments, co-authors</span></button>
+          <button class="module-card" data-group="Reports & Forms" data-role="Officer FTO Supervisor Administrator"><b>Mobile Reporting</b><span>Fast capture, critical incident mode, statements, domestic supplemental, packet review</span></button>
+          <button class="module-card" data-group="Reports & Forms" data-role="Officer FTO Supervisor Administrator"><b>Forms Library</b><span>Search, prefill, web fill, saved progress, PDF output, compact statements</span></button>
+          <button class="module-card" data-group="Reports & Forms" data-role="Administrator"><b>Forms Manager</b><span>Field mapping, calibration, rendering validation, retention and call-type rules</span></button>
+          <button class="module-card" data-group="Reports & Forms" data-role="Officer FTO Supervisor Administrator"><b>CLEO Reporting</b><span>Incident admin, persons, property, vehicle, offenses, CCN, grading, field feedback</span></button>
+          <button class="module-card" data-group="Reports & Forms" data-role="Officer FTO Supervisor Administrator"><b>Accident Reconstruction</b><span>Diagram, vehicles, objects, measurements, speed, damage, timeline, packet export</span></button>
+          <button class="module-card" data-group="Law & Reference" data-role="Officer FTO Supervisor Administrator"><b>Law Lookup</b><span>Georgia law, UCMJ, USC, base orders, query logs, source-grounded assistance</span></button>
+          <button class="module-card" data-group="Law & Reference" data-role="Officer FTO Supervisor Administrator"><b>Orders & Memoranda</b><span>Browse, versions, favorites, tags, supersession, ingestion, summaries</span></button>
+          <button class="module-card" data-group="Law & Reference" data-role="Officer FTO Supervisor Administrator"><b>Officer Handbook</b><span>Versioned handbook browse, search, PDF, email and print</span></button>
+          <button class="module-card" data-group="Law & Reference" data-role="Officer FTO Supervisor Administrator"><b>Paperwork Guide</b><span>Call-type navigator, required forms, statements, evidence and CID requirements</span></button>
+          <button class="module-card" data-group="Training & FTO" data-role="Officer FTO Supervisor Administrator"><b>Training Management</b><span>Roster upload, distribution, signatures, completion, readiness and exports</span></button>
+          <button class="module-card" data-group="Training & FTO" data-role="Officer FTO Supervisor Administrator"><b>Qualifications</b><span>Qualification tracker, expiration, documentation and readiness status</span></button>
+          <button class="module-card" data-group="Training & FTO" data-role="Officer FTO Supervisor Administrator"><b>Digital FTO Program</b><span>Standard 8-week and accelerated 4-week programs, task book, DOR, remediation</span></button>
+          <button class="module-card" data-group="Training & FTO" data-role="Officer FTO Supervisor Administrator"><b>Scenario Lab</b><span>Dispatch, response, investigation, decisions, paperwork, review and re-evaluation</span></button>
+          <button class="module-card" data-group="Operations" data-role="Officer FTO Supervisor Administrator"><b>Bodycam / Media</b><span>Metadata, timeline, report linkage, 5-W Builder, transcript where approved</span></button>
+          <button class="module-card" data-group="Operations" data-role="Officer FTO Supervisor Administrator"><b>BOLO</b><span>Person, vehicle and property bulletins, photos, locate, cancel and close</span></button>
+          <button class="module-card" data-group="Operations" data-role="Supervisor Administrator"><b>Armory</b><span>Asset inventory, assignment, check-out/check-in, officer cards and bulk exchange</span></button>
+          <button class="module-card" data-group="Operations" data-role="Supervisor Administrator"><b>RFI</b><span>Firearm and ammunition profiles, defaults, appointment letters and transactions</span></button>
+          <button class="module-card" data-group="Operations" data-role="Supervisor Administrator"><b>Truck Gate</b><span>Vehicle entry/exit, companies, drivers, validation, QR labels and daily log</span></button>
+          <button class="module-card" data-group="Operations" data-role="Officer FTO Supervisor Administrator"><b>Vehicle Inspections</b><span>Digital forms, signatures, calibration, correction, batch print and export</span></button>
+          <button class="module-card" data-group="Operations" data-role="Supervisor AssistantOperationsOfficer Administrator"><b>Watch Commander</b><span>Roster, posts, vehicles, events, due-outs, turnover brief and decision log</span></button>
+          <button class="module-card" data-group="Operations" data-role="AssistantOperationsOfficer Administrator"><b>Assistant Operations</b><span>Command tasks, inspections, suspense items, projects and cross-watch oversight</span></button>
+          <button class="module-card" data-group="Personnel & Analytics" data-role="Supervisor AssistantOperationsOfficer Administrator"><b>Personnel</b><span>Directory, profiles, emergency contacts, roles, supervisors and approvals</span></button>
+          <button class="module-card" data-group="Personnel & Analytics" data-role="Officer FTO Supervisor AssistantOperationsOfficer Administrator"><b>Performance</b><span>Elements, annual submission, supervisor review, history and team overview</span></button>
+          <button class="module-card" data-group="Personnel & Analytics" data-role="Officer FTO Supervisor AssistantOperationsOfficer Administrator"><b>Statistics & Activity</b><span>Uploads, categories, targets, history, trends and exports</span></button>
+          <button class="module-card" data-group="Personnel & Analytics" data-role="Officer FTO Supervisor AssistantOperationsOfficer Administrator"><b>Announcements</b><span>Create, publish, pin, audience visibility and archive</span></button>
+          <button class="module-card" data-group="Personnel & Analytics" data-role="Supervisor AssistantOperationsOfficer Administrator"><b>Command Analytics</b><span>Training, reports, FTO, operations, personnel and readiness views</span></button>
+          <button class="module-card" data-group="Administration" data-role="Officer FTO Supervisor AssistantOperationsOfficer Administrator"><b>AI Assistant & Tools</b><span>Narratives, orders, legal expansion, training, counseling and award drafts</span></button>
+          <button class="module-card" data-group="Administration" data-role="Administrator"><b>Data Exchange</b><span>CSV, PDF, JSON, ZIP and Excel import/export with job history</span></button>
+          <button class="module-card" data-group="Administration" data-role="Administrator"><b>Administration</b><span>Identity, roles, audit, references, forms, analytics and environment settings</span></button>
+          <button class="module-card" data-group="Administration" data-role="Administrator"><b>Builder / System Controller</b><span>Feature flags, module configuration, deployment and controlled source lifecycle</span></button>
+        </div>
+        <article class="panel portal-detail" id="portal-detail"><h2>Select a module</h2><p>The preview will show its primary workflow, role boundary, and synthetic records here.</p></article>
       </section>
     </main>
   </div>
