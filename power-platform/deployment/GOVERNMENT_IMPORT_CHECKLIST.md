@@ -11,6 +11,7 @@
 - Export an unmanaged development backup.
 - Export a managed production solution.
 - Record solution version and source commit.
+- Run `deployment/preflight.ps1` in the receiving environment and retain the output.
 
 ## Government tenant import
 

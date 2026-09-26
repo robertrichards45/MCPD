@@ -22,6 +22,8 @@ This sequence is designed so the maximum amount of work can be prepared in sourc
 - [ ] Complete seed/reference data mapping.
 - [ ] Complete solution test cases.
 
+Before any export, run `deployment/preflight.ps1` against the approved development environment and retain its output with the release evidence.
+
 ## Phase 1 — Development tenant
 
 1. Create/select a Dataverse environment.
