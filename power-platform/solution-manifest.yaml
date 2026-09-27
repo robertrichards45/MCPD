@@ -1,10 +1,11 @@
 solution:
-  unique_name: MCPDSentinel
-  display_name: MCPD Sentinel
+  unique_name: MCPDSentinelDevelopment
+  display_name: MCPD Sentinel Development
   publisher:
     display_name: MCPD
     prefix: mcpd
   version: 1.0.0.0
+  development_solution_type: unmanaged
   managed_for_production: true
 
 environment_variables:
@@ -77,6 +78,7 @@ reports:
 
 deployment:
   development_data: synthetic_only
+  development_solution_type: unmanaged
   government_target:
     use_managed_solution: true
     use_environment_variables: true
