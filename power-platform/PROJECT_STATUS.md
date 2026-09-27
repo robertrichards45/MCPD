@@ -45,6 +45,29 @@ Remaining in Phase 1:
 - extend source validation to seed values, workflow transitions and cross-file mappings
 - repair BI source YAML quoting and validate analytics table references
 
+### 26 Sep 2026 — Development environment alignment
+
+- Development solution source is now aligned to the requested unmanaged solution identity:
+  - display name `MCPD Sentinel Development`
+  - unique name `MCPDSentinelDevelopment`
+  - publisher `MCPD`
+  - publisher prefix `mcpd`
+- Sentinel theme tokens are locked to the requested development palette:
+  - background `#07111F`
+  - header/navigation `#0A1624`
+  - panels `#10243A`
+  - accent blue `#1593FF`
+  - primary text `#FFFFFF`
+  - secondary text `#B8C7D9`
+- Development build sequence now requires:
+  - USD ($)
+  - English (United States)
+  - sample apps/data Off
+  - stop-and-diagnose behavior when Currency/Language lists are blank
+  - reusable responsive shell, centralized theme, data-driven role-aware navigation, Home/Dashboard, then Watch Commander
+  - synthetic data only and no credentials/sensitive government data
+- Current tenant blocker: the Power Apps development environment still requires direct Microsoft tenant access to provision Dataverse and create the Canvas App. Source-controlled work is ready to continue independently.
+
 ### 25 Sep 2026 — Module coverage and table data policies
 
 - Mapped all 33 registered modules to explicit tables and external document stores
