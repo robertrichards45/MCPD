@@ -1,18 +1,18 @@
 theme:
   name: MCPD Sentinel Dark
-  baseline: approved_2026_09_24_mockup
+  baseline: approved_2026_09_26_build_spec
 
   colors:
-    app_background: "#06111D"
-    shell_background: "#081725"
-    card_background: "#0C1B2A"
-    card_raised: "#102235"
+    app_background: "#07111F"
+    shell_background: "#0A1624"
+    card_background: "#10243A"
+    card_raised: "#10243A"
     border: "#1D3A52"
-    primary: "#147DFF"
-    primary_hover: "#3592FF"
-    text_primary: "#F4F8FC"
-    text_secondary: "#98AABD"
-    text_muted: "#6E8297"
+    primary: "#1593FF"
+    primary_hover: "#35A4FF"
+    text_primary: "#FFFFFF"
+    text_secondary: "#B8C7D9"
+    text_muted: "#7F91A6"
     success: "#2BC66D"
     warning: "#F2B84B"
     danger: "#F05B63"
