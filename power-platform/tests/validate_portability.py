@@ -28,12 +28,12 @@ if missing_modules:
     print("FAIL: preview is missing registered modules: " + ", ".join(missing_modules))
     sys.exit(1)
 
-scan_roots = [ROOT / "app", ROOT / "flows", ROOT / "deployment", ROOT / "design"]
+scan_roots = [ROOT / "app", ROOT / "flows", ROOT / "deployment", ROOT / "design", ROOT / "integrations"]
 forbidden = re.compile(r"(?:password|client_secret|tenant[_-]?id|access[_-]?token)\s*[:=]\s*['\"]?[^\s,'\"]+", re.I)
 hits = []
 for folder in scan_roots:
     for path in folder.rglob("*"):
-        if path.is_file() and path.suffix.lower() in {".yaml", ".yml", ".json", ".md", ".fx", ".txt"}:
+        if path.is_file() and path.suffix.lower() in {".yaml", ".yml", ".json", ".md", ".fx", ".txt", ".js", ".mjs"}:
             for line_no, line in enumerate(path.read_text(encoding="utf-8", errors="ignore").splitlines(), 1):
                 if forbidden.search(line) and "example" not in line.lower() and "placeholder" not in line.lower():
                     hits.append(f"{path.relative_to(ROOT)}:{line_no}")

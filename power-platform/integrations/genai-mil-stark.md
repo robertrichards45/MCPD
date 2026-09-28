@@ -16,13 +16,7 @@ Official DON guidance designates GenAI.mil as the enterprise generative-AI platf
 
 ## Intended Sentinel architecture
 
-Preferred path:
-
-Power Apps
-  -> Power Automate or approved custom connector/API layer
-  -> GenAI.mil STARK endpoint
-  -> Model response
-  -> Sentinel UI
+All AI modules submit a named task to the [shared Sentinel AI gateway](sentinel-ai-gateway/README.md). The gateway alone invokes the logical `SentinelAI` provider connection. The approved connection may target GenAI.mil/STARK or another approved provider without changing module logic. The development app currently uses local placeholders and does not yet contain that provider connection. For ordinary chat, prefer the approved direct connector path when its action and security contract are verified; do not add a flow solely to route a chat call.
 
 Do not call the GenAI.mil endpoint directly from a Canvas App if that would expose the key or bypass approved connection controls.
 

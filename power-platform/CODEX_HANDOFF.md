@@ -14,6 +14,10 @@ Primary working directory:
 
 ## Current state
 
+### September 27, 2026 AI gateway update
+
+The development solution was inspected through an unchanged-version export. Its Canvas App has five screens and two synthetic AI placeholder buttons (`btnAIGateway` on `scrAskSentinel` and `btnNarrAIGateway` on `scrFormsReports`). The solution has no cloud flows or connection references. The repository now has the `SentinelAI` task contract and tested, secret-free shared gateway reference in `integrations/sentinel-ai-gateway/`, but **the Canvas App does not yet load it or call a live AI provider**. See that directory's README and `PROJECT_STATUS.md` before continuing. Verify the approved connector operation/schema, then add exactly one solution connection reference and wire both entry points through one shared Canvas gateway; preserve their synthetic fallback. Do not mark the government one-time binding complete until an actual solution import proves it.
+
 The source-controlled Power Platform definition is substantially prepared.
 
 Already present:

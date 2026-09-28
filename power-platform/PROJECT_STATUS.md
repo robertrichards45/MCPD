@@ -31,6 +31,15 @@
 
 ## In progress
 
+### 27 Sep 2026 — Central Sentinel AI gateway contract
+
+- Pulled the latest `power-platform-rebuild` branch before work and inspected an unchanged-version export of the live development solution.
+- Added one secret-free `SentinelAI` task contract and a tested shared dispatch reference for `GeneralChat`, `NarrativeCreate`, `NarrativeImprove`, `NarrativeEvaluate`, `ReportInspect`, `ScenarioGenerate`, `TrainingAssist`, and `LawExplain`.
+- The reference implementation validates task/input/source requirements, makes one logical provider invocation, and normalizes success/errors. Portability validation now scans integrations for hard-coded secret patterns.
+- Recorded the proposed `mcpd_SentinelAI` connection reference and `SentinelAI` alias in the solution manifest as a **contract**, pending the approved connector's stable ID/action schema.
+- The live development solution has five Canvas screens, 35 tables, two choices, zero cloud flows, and no connection references. Ask Sentinel and Narrative Assistant still contain separate deterministic placeholder buttons. No live tenant component was changed by this batch; the two Canvas calls and future modules are **not yet routed through the gateway**.
+- Next gate: verify the approved connector's action contract, add one real solution connection reference, implement the shared Canvas action, route the two existing entry points, and re-export/test the solution. Do not claim government binding works before the import test.
+
 ### Phase 1 — Active
 Dataverse coverage has now been expanded across the full original Portal scope.
 
@@ -66,7 +75,7 @@ Remaining in Phase 1:
   - stop-and-diagnose behavior when Currency/Language lists are blank
   - reusable responsive shell, centralized theme, data-driven role-aware navigation, Home/Dashboard, then Watch Commander
   - synthetic data only and no credentials/sensitive government data
-- Current tenant blocker: the Power Apps development environment still requires direct Microsoft tenant access to provision Dataverse and create the Canvas App. Source-controlled work is ready to continue independently.
+- Historical note: direct tenant access was pending on September 26. By September 27, the development Canvas App and Dataverse tables were visible in maker Studio. Approved connector metadata and an authenticated Power Platform CLI profile remain unavailable for the AI binding work.
 
 ### 25 Sep 2026 — Module coverage and table data policies
 

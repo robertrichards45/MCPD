@@ -53,6 +53,15 @@ connection_references:
     connector: shared_office365
     optional: true
 
+# Contract only. Do not emit a deployable connection reference until the approved
+# custom connector's stable connector ID and action schema are known in the tenant.
+ai_gateway:
+  logical_data_source_alias: SentinelAI
+  connection_reference_name: mcpd_SentinelAI
+  task_contract: integrations/sentinel-ai-gateway/tasks.json
+  implementation_reference: integrations/sentinel-ai-gateway/gateway.mjs
+  tenant_binding_status: pending_approved_connector_schema
+
 apps:
   - name: MCPD Sentinel
     type: canvas

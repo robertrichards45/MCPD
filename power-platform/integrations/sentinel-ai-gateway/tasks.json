@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "logicalDataSource": "SentinelAI",
+  "tasks": {
+    "GeneralChat": {"humanReview": false, "grounding": "optional"},
+    "NarrativeCreate": {"humanReview": true, "grounding": "supplied-facts"},
+    "NarrativeImprove": {"humanReview": true, "grounding": "supplied-facts"},
+    "NarrativeEvaluate": {"humanReview": true, "grounding": "supplied-facts"},
+    "ReportInspect": {"humanReview": true, "grounding": "approved-sources"},
+    "ScenarioGenerate": {"humanReview": true, "grounding": "approved-training-rules"},
+    "TrainingAssist": {"humanReview": true, "grounding": "approved-training-sources"},
+    "LawExplain": {"humanReview": true, "grounding": "authoritative-legal-source"}
+  }
+}
